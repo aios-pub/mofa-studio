@@ -25,6 +25,9 @@ import {
   FolderOutlined,
   FileSearchOutlined,
   PieChartOutlined,
+  MenuOutlined,
+  TeamOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { useAppStore, useSettings } from '../../stores';
@@ -157,6 +160,21 @@ const menuItems: MenuProps['items'] = [
     key: '/system/insight',
     icon: <PieChartOutlined />,
     label: '洞察分析',
+  },
+  {
+    key: '/system/menu',
+    icon: <MenuOutlined />,
+    label: '菜单管理',
+  },
+  {
+    key: '/system/role',
+    icon: <TeamOutlined />,
+    label: '角色管理',
+  },
+  {
+    key: '/system/settings',
+    icon: <SettingOutlined />,
+    label: '系统设置',
   },
 ];
 

@@ -14,6 +14,8 @@ import AuditLogsPage from './pages/system/AuditLogsPage';
 import ResourceManagementPage from './pages/system/ResourceManagementPage';
 import SettingsPage from './pages/system/SettingsPage';
 import InsightPage from './pages/system/InsightPage';
+import MenuManagementPage from './pages/system/menu';
+import RoleManagementPage from './pages/system/role';
 import LoginPage from './pages/auth/LoginPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import TracingPage from './pages/tracing/TracingPage';
@@ -61,6 +63,8 @@ function App() {
                   <Route path="/system/audit-logs" element={<AuditLogsPage />} />
                   <Route path="/system/settings" element={<SettingsPage />} />
                   <Route path="/system/insight" element={<InsightPage />} />
+                  <Route path="/system/menu" element={<MenuManagementPage />} />
+                  <Route path="/system/role" element={<RoleManagementPage />} />
 
                   {/* 个人中心 */}
                   <Route path="/profile" element={<ProfilePage />} />

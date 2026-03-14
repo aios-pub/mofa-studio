@@ -23,5 +23,8 @@ export * from './tracing';
 // 评估相关类型
 export * from './evaluation';
 
+// 系统管理相关类型
+export * from './system';
+
 // 通用类型
 export * from './common';

@@ -4,7 +4,7 @@
 
 ## 项目概述
 
-**项目名称**: Amos-Claw
+**项目名称**: AmosClaw
 **技术栈**: Tauri + React + TypeScript
 **项目类型**: AI对话平台桌面客户端
 

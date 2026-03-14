@@ -18,6 +18,7 @@ import {
   Building2,
   FileBox,
   ScrollText,
+  Settings,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -66,6 +67,7 @@ const menuGroups = [
     items: [
       { path: "/system/resources", icon: FileBox, label: "资源管理" },
       { path: "/system/audit-logs", icon: ScrollText, label: "审计日志" },
+      { path: "/system/settings", icon: Settings, label: "设置" },
     ],
   },
 ];

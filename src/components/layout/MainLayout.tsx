@@ -5,6 +5,7 @@
 import { ReactNode } from 'react';
 import Sidebar from './Sidebar';
 import { useAppStore } from '../../stores';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -12,6 +13,9 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const { sidebarCollapsed } = useAppStore();
+
+  // 初始化全局快捷键
+  useKeyboardShortcuts();
 
   return (
     <div className="flex h-screen bg-[var(--color-bg-base)]">

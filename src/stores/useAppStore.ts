@@ -6,10 +6,16 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { ThemeMode, WindowMode } from '../types';
 
+export type SupportedLanguage = 'zh-CN' | 'en-US';
+
 interface AppState {
   // 主题
   theme: ThemeMode;
   setTheme: (theme: ThemeMode) => void;
+
+  // 语言
+  language: SupportedLanguage;
+  setLanguage: (language: SupportedLanguage) => void;
 
   // 窗口模式 (悬浮球相关)
   windowMode: WindowMode;
@@ -35,6 +41,10 @@ export const useAppStore = create<AppState>()(
       theme: 'system',
       setTheme: (theme) => set({ theme }),
 
+      // 语言
+      language: 'zh-CN',
+      setLanguage: (language) => set({ language }),
+
       // 窗口模式
       windowMode: 'full',
       setWindowMode: (windowMode) => set({ windowMode }),
@@ -55,6 +65,7 @@ export const useAppStore = create<AppState>()(
       name: 'amos-claw-app-store',
       partialize: (state) => ({
         theme: state.theme,
+        language: state.language,
         sidebarCollapsed: state.sidebarCollapsed,
       }),
     }

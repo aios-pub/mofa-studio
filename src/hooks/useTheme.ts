@@ -2,31 +2,38 @@
  * 主题 Hook
  */
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useAppStore } from '../stores';
 import type { ThemeMode } from '../types';
 
 export function useTheme() {
   const { theme, setTheme } = useAppStore();
+  const [isDark, setIsDark] = useState(false);
+
+  // 获取实际的主题模式
+  const getActualTheme = useCallback((mode: ThemeMode): 'light' | 'dark' => {
+    if (mode === 'system') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return mode;
+  }, []);
 
   // 应用主题
   const applyTheme = useCallback((mode: ThemeMode) => {
     const root = document.documentElement;
+    const actualTheme = getActualTheme(mode);
+    const dark = actualTheme === 'dark';
 
-    if (mode === 'system') {
-      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      root.classList.toggle('dark', isDark);
-    } else {
-      root.classList.toggle('dark', mode === 'dark');
-    }
-  }, []);
+    root.classList.toggle('dark', dark);
+    setIsDark(dark);
+  }, [getActualTheme]);
 
   // 监听系统主题变化
   useEffect(() => {
     if (theme !== 'system') return;
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = (_e: MediaQueryListEvent) => {
+    const handler = () => {
       applyTheme('system');
     };
 
@@ -49,6 +56,6 @@ export function useTheme() {
     theme,
     setTheme,
     toggleTheme,
-    isDark: typeof window !== 'undefined' && document.documentElement.classList.contains('dark'),
+    isDark,
   };
 }

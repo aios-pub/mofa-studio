@@ -1,10 +1,11 @@
 /**
  * 侧边栏导航组件
+ * 参考 slash-admin 的 NavVerticalLayout 设计
  * 支持桌面端固定侧边栏和移动端抽屉模式
  */
 
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button, Tooltip } from 'antd';
+import { Layout, Menu, Button } from 'antd';
 import {
   RobotOutlined,
   LeftOutlined,
@@ -190,9 +191,8 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
 
   // 主题相关样式
   const siderBg = isDark ? '#001529' : '#ffffff';
-  const borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)';
-  const logoTextColor = isDark ? 'text-white' : 'text-gray-900';
-  const collapseBtnColor = isDark ? '!text-white/70 hover:!bg-white/10 hover:!text-white' : '!text-gray-600 hover:!bg-gray-100 hover:!text-gray-900';
+  const borderColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+  const logoTextColor = isDark ? 'text-white' : 'text-[var(--color-text-primary)]';
 
   const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
     navigate(key);
@@ -213,7 +213,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       <div className="h-full flex flex-col" style={{ backgroundColor: siderBg }}>
         {/* Logo 区域 */}
         <div
-          className="flex items-center gap-2 h-14 px-4 border-b"
+          className="flex items-center gap-2 h-[var(--layout-header-height)] px-4 border-b"
           style={{ borderColor }}
         >
           <RobotOutlined className="text-2xl text-[var(--color-primary)]" />
@@ -221,7 +221,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
         </div>
 
         {/* 菜单列表 */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto scrollbar-thin px-2">
           <Menu
             theme={isDark ? 'dark' : 'light'}
             mode="inline"
@@ -242,28 +242,44 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       onCollapse={toggleSidebar}
       width={224}
       collapsedWidth={64}
-      className="h-screen overflow-hidden relative transition-all duration-300 ease-in-out"
-      style={{ backgroundColor: siderBg }}
+      className="h-screen overflow-hidden relative transition-all duration-300 ease-in-out border-r"
+      style={{ backgroundColor: siderBg, borderColor: borderColor }}
       trigger={null}
     >
-      {/* Logo 区域 */}
+      {/* Logo 区域 - 参考 slash-admin 的设计 */}
       <div
-        className="flex items-center justify-center h-14 border-b transition-all duration-300"
+        className="relative flex items-center h-[var(--layout-header-height)] px-2 border-b transition-all duration-300"
         style={{ borderColor }}
       >
-        {isMini ? (
-          <RobotOutlined className="text-2xl text-[var(--color-primary)]" />
-        ) : (
-          <div className="flex items-center gap-2">
-            <RobotOutlined className="text-2xl text-[var(--color-primary)]" />
-            <span className={`text-lg font-bold ${logoTextColor}`}>AmosClaw</span>
-          </div>
-        )}
+        <div className={`flex items-center ${isMini ? 'justify-center w-full' : ''}`}>
+          <RobotOutlined className="text-2xl text-[var(--color-primary)] flex-shrink-0" />
+          <span
+            className="text-lg font-bold transition-all duration-300 ease-in-out whitespace-nowrap"
+            style={{
+              opacity: isMini ? 0 : 1,
+              maxWidth: isMini ? 0 : 'auto',
+              marginLeft: isMini ? 0 : '8px',
+              overflow: 'hidden',
+              color: isDark ? '#fff' : 'var(--color-text-primary)',
+            }}
+          >
+            AmosClaw
+          </span>
+        </div>
+
+        {/* 折叠按钮 - 参考 slash-admin 的边缘定位 */}
+        <Button
+          type="text"
+          size="small"
+          onClick={toggleSidebar}
+          className="!absolute !right-0 translate-x-1/2 !w-7 !h-7 !rounded-full !border !border-[var(--color-border)] !bg-[var(--color-bg-base)] hover:!bg-[var(--color-bg-secondary)] z-10 flex items-center justify-center"
+          icon={isMini ? <RightOutlined className="text-xs" /> : <LeftOutlined className="text-xs" />}
+        />
       </div>
 
       {/* 菜单列表 - 使用自定义滚动条 */}
       <div
-        className="h-[calc(100vh-120px)] overflow-y-auto scrollbar-thin"
+        className="h-[calc(100vh-var(--layout-header-height))] overflow-y-auto scrollbar-thin px-2"
         style={{
           scrollbarColor: isDark ? 'rgba(255,255,255,0.2) transparent' : 'rgba(0,0,0,0.2) transparent',
         }}
@@ -277,31 +293,6 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           items={menuItems}
           className="!border-none"
         />
-      </div>
-
-      {/* 底部折叠按钮区域 */}
-      <div
-        className="absolute bottom-0 left-0 right-0 border-t"
-        style={{ backgroundColor: siderBg, borderColor }}
-      >
-        <div className="p-2">
-          <Tooltip title={isMini ? '展开侧边栏' : '收起侧边栏'} placement="right">
-            <Button
-              type="text"
-              onClick={toggleSidebar}
-              className={`w-full flex items-center justify-center transition-colors duration-200 ${collapseBtnColor}`}
-            >
-              {isMini ? (
-                <RightOutlined />
-              ) : (
-                <>
-                  <LeftOutlined />
-                  <span className="ml-2">收起</span>
-                </>
-              )}
-            </Button>
-          </Tooltip>
-        </div>
       </div>
     </Sider>
   );

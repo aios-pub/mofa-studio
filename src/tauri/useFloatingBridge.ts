@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Window, LogicalSize } from "@tauri-apps/api/window";
+import { getCurrentWindow, Window, LogicalSize } from "@tauri-apps/api/window";
 import { isTauriApp } from "../utils/tauri";
 
 type NavigatePayload = {
@@ -15,7 +15,7 @@ export const useFloatingBridge = () => {
       return;
     }
 
-    const appWindow = Window.getCurrent();
+    const appWindow = getCurrentWindow();
     if (appWindow.label !== "main") {
       return;
     }

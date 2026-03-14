@@ -22,6 +22,7 @@
       {
         "label": "floating",
         "title": "Amos-Claw Floating",
+        "url": "floating.html",
         "width": 64,
         "height": 64,
         "decorations": false,
@@ -30,7 +31,8 @@
         "skipTaskbar": true,
         "resizable": false,
         "visible": true,
-        "focusable": false
+        "focusable": true,
+        "shadow": false
       }
     ],
     "security": {

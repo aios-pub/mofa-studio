@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   CSSProperties,
-  PointerEvent as ReactPointerEvent,
   MouseEvent as ReactMouseEvent,
 } from "react";
 import {
+  getCurrentWindow,
   Window,
   LogicalPosition,
   LogicalSize,
@@ -36,20 +36,11 @@ type MonitorBounds = {
   height: number;
 };
 
-type DragState = {
-  startX: number;
-  startY: number;
-  winX: number;
-  winY: number;
-  moved: boolean;
-};
-
 const BALL_SIZE = 64;
 const MENU_WIDTH = 240;
 const MENU_HEIGHT = 300;
 const MENU_GAP = 12;
 const EDGE_PEEK = 18;
-const DRAG_THRESHOLD = 4;
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
@@ -73,7 +64,16 @@ const getMenuWindowSize = () => ({
   height: MENU_HEIGHT + BALL_SIZE + MENU_GAP,
 });
 
-const getBallStyle = (placement: MenuPlacement): CSSProperties => ({
+// 收起状态下的球体样式 - 填满整个窗口
+const getCollapsedBallStyle = (): CSSProperties => ({
+  left: 0,
+  top: 0,
+  right: "auto",
+  bottom: "auto",
+});
+
+// 展开状态下的球体样式 - 根据菜单位置定位
+const getExpandedBallStyle = (placement: MenuPlacement): CSSProperties => ({
   left: placement.horizontal === "right" ? 0 : "auto",
   right: placement.horizontal === "left" ? 0 : "auto",
   top: placement.vertical === "down" ? 0 : "auto",
@@ -93,7 +93,6 @@ export default function FloatingApp() {
     horizontal: "left",
     vertical: "up",
   });
-  const [dragging, setDragging] = useState(false);
   const [snapping, setSnapping] = useState(false);
   const [contextMenuVisible, setContextMenuVisible] = useState(false);
   const [alwaysOnTop, setAlwaysOnTop] = useState(true);
@@ -102,26 +101,14 @@ export default function FloatingApp() {
     if (!isTauriApp()) {
       return null;
     }
-
-    return Window.getCurrent();
+    return getCurrentWindow();
   }, []);
 
-  const dragStateRef = useRef<DragState | null>(null);
   const anchorRef = useRef<{ x: number; y: number } | null>(null);
-  const rafRef = useRef<number | null>(null);
-  const pendingPositionRef = useRef<{ x: number; y: number } | null>(null);
   const ballRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const contextMenuRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    document.body.classList.add("floating-body");
-    document.documentElement.classList.add("floating-html");
-    return () => {
-      document.body.classList.remove("floating-body");
-      document.documentElement.classList.remove("floating-html");
-    };
-  }, []);
+  const isDraggingRef = useRef(false);
 
   useEffect(() => {
     if (!appWindow) {
@@ -203,10 +190,8 @@ export default function FloatingApp() {
       targetY = bounds.y + bounds.height - EDGE_PEEK;
     }
 
-    // Trigger snap animation
     setSnapping(true);
 
-    // Animate position with easing
     const startX = position.x;
     const startY = position.y;
     const duration = 280;
@@ -251,15 +236,13 @@ export default function FloatingApp() {
 
     if (bounds) {
       const spaceLeft = position.x - bounds.x;
-      const spaceRight =
-        bounds.x + bounds.width - (position.x + BALL_SIZE);
+      const spaceRight = bounds.x + bounds.width - (position.x + BALL_SIZE);
       if (spaceLeft < MENU_WIDTH + MENU_GAP && spaceRight >= MENU_WIDTH + MENU_GAP) {
         horizontal = "right";
       }
 
       const spaceTop = position.y - bounds.y;
-      const spaceBottom =
-        bounds.y + bounds.height - (position.y + BALL_SIZE);
+      const spaceBottom = bounds.y + bounds.height - (position.y + BALL_SIZE);
       if (spaceTop < MENU_HEIGHT + MENU_GAP && spaceBottom >= MENU_HEIGHT + MENU_GAP) {
         vertical = "down";
       }
@@ -267,10 +250,8 @@ export default function FloatingApp() {
 
     setMenuPlacement({ horizontal, vertical });
 
-    let nextX =
-      horizontal === "left" ? position.x - (width - BALL_SIZE) : position.x;
-    let nextY =
-      vertical === "up" ? position.y - (height - BALL_SIZE) : position.y;
+    let nextX = horizontal === "left" ? position.x - (width - BALL_SIZE) : position.x;
+    let nextY = vertical === "up" ? position.y - (height - BALL_SIZE) : position.y;
 
     if (bounds) {
       nextX = clamp(nextX, bounds.x, bounds.x + bounds.width - width);
@@ -302,13 +283,13 @@ export default function FloatingApp() {
   const toggleMenu = async () => {
     if (expanded) {
       await collapseMenu();
-      return;
+    } else {
+      await expandMenu();
     }
-
-    await expandMenu();
   };
 
-  const handlePointerDown = async (event: ReactPointerEvent) => {
+  // 使用 Tauri 的 startDragging 进行窗口拖动
+  const handleMouseDown = async (event: ReactMouseEvent) => {
     if (!appWindow || expanded) {
       return;
     }
@@ -317,72 +298,49 @@ export default function FloatingApp() {
       return;
     }
 
-    event.preventDefault();
-    event.currentTarget.setPointerCapture(event.pointerId);
-
-    const position = await appWindow.outerPosition();
-    dragStateRef.current = {
-      startX: event.screenX,
-      startY: event.screenY,
-      winX: position.x,
-      winY: position.y,
-      moved: false,
-    };
-
-    setDragging(false);
+    // 记录起始位置用于判断是点击还是拖动
+    isDraggingRef.current = false;
+    anchorRef.current = { x: event.clientX, y: event.clientY };
   };
 
-  const handlePointerMove = (event: ReactPointerEvent) => {
-    const dragState = dragStateRef.current;
-    if (!dragState || !appWindow || expanded) {
+  const handleMouseMove = (event: ReactMouseEvent) => {
+    if (!appWindow || expanded) {
       return;
     }
 
-    const deltaX = event.screenX - dragState.startX;
-    const deltaY = event.screenY - dragState.startY;
-    const distance = Math.hypot(deltaX, deltaY);
-
-    if (!dragState.moved && distance >= DRAG_THRESHOLD) {
-      dragState.moved = true;
-      setDragging(true);
-    }
-
-    if (!dragState.moved) {
+    const anchor = anchorRef.current;
+    if (!anchor) {
       return;
     }
 
-    pendingPositionRef.current = {
-      x: dragState.winX + deltaX,
-      y: dragState.winY + deltaY,
-    };
+    // 判断是否开始拖动（移动超过 5px）
+    const dx = event.clientX - anchor.x;
+    const dy = event.clientY - anchor.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
 
-    if (rafRef.current === null) {
-      rafRef.current = window.requestAnimationFrame(() => {
-        rafRef.current = null;
-        const next = pendingPositionRef.current;
-        if (!next || !appWindow) {
-          return;
-        }
-        void appWindow.setPosition(new LogicalPosition(next.x, next.y));
-      });
+    if (distance > 5 && !isDraggingRef.current) {
+      isDraggingRef.current = true;
+      // 使用 Tauri 的 startDragging 方法
+      void appWindow.startDragging();
     }
   };
 
-  const handlePointerUp = async () => {
-    const dragState = dragStateRef.current;
-    dragStateRef.current = null;
-
-    if (!dragState) {
+  const handleMouseUp = async () => {
+    if (!appWindow || expanded) {
       return;
     }
 
-    if (!dragState.moved) {
+    anchorRef.current = null;
+
+    // 如果没有拖动，则展开菜单
+    if (!isDraggingRef.current) {
       await toggleMenu();
     } else {
+      // 拖动结束后吸附到边缘
       await snapToEdge();
     }
 
-    setDragging(false);
+    isDraggingRef.current = false;
   };
 
   const handleContextMenu = async (event: ReactMouseEvent) => {
@@ -467,16 +425,19 @@ export default function FloatingApp() {
     await appWindow.hide();
   };
 
+  // 根据展开状态获取球体样式
+  const ballStyle = expanded ? getExpandedBallStyle(menuPlacement) : getCollapsedBallStyle();
+
   return (
     <div className={`floating-root ${expanded ? "is-expanded" : ""}`}>
       <button
         ref={ballRef}
-        className={`floating-ball ${dragging ? "is-dragging" : ""} ${snapping ? "is-snapping" : ""}`}
-        style={getBallStyle(menuPlacement)}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
+        className={`floating-ball ${snapping ? "is-snapping" : ""}`}
+        style={ballStyle}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
         onContextMenu={handleContextMenu}
         aria-label={expanded ? "收起菜单" : "展开菜单"}
       >

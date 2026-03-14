@@ -115,6 +115,16 @@ export default function Header({ showBreadcrumb = true }: HeaderProps) {
       ),
       onClick: () => setTheme('dark'),
     },
+    {
+      key: 'system',
+      label: (
+        <Space>
+          <GlobalOutlined />
+          {t('theme.system', '跟随系统')}
+        </Space>
+      ),
+      onClick: () => setTheme('system'),
+    },
   ];
 
   const getThemeIcon = () => {
@@ -123,13 +133,24 @@ export default function Header({ showBreadcrumb = true }: HeaderProps) {
         return <SunOutlined />;
       case 'dark':
         return <MoonOutlined />;
+      case 'system':
+        return <GlobalOutlined />;
       default:
         return <SunOutlined />;
     }
   };
 
   return (
-    <header className="h-14 flex items-center justify-between px-4 bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)]">
+    <header
+      className="
+        sticky top-0 z-[var(--z-sticky)]
+        flex items-center justify-between px-4
+        h-14
+        bg-[var(--color-bg-secondary)]/80 backdrop-blur-xl
+        border-b border-[var(--color-border)]
+        transition-all duration-200
+      "
+    >
       {/* 左侧 */}
       <div className="flex items-center gap-4">
         {/* 移动端菜单按钮 */}
@@ -145,33 +166,49 @@ export default function Header({ showBreadcrumb = true }: HeaderProps) {
       </div>
 
       {/* 右侧工具栏 */}
-      <Space size={4}>
+      <div className="flex items-center gap-1">
         {/* 搜索按钮 */}
         <Tooltip title={t('common.search', '搜索')}>
-          <Button type="text" icon={<SearchOutlined />} />
+          <Button
+            type="text"
+            icon={<SearchOutlined />}
+            className="rounded-full hover:bg-[var(--color-action-hover)]"
+          />
         </Tooltip>
 
         {/* 通知按钮 */}
         <Tooltip title={t('common.notifications', '通知')}>
           <Button
             type="text"
+            className="rounded-full hover:bg-[var(--color-action-hover)]"
             icon={
               <div className="relative">
                 <BellOutlined />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-[var(--color-error)] rounded-full animate-pulse" />
               </div>
             }
           />
         </Tooltip>
 
+        {/* 分隔线 */}
+        <div className="w-px h-5 bg-[var(--color-border)] mx-1" />
+
         {/* 语言切换 */}
         <Dropdown menu={{ items: languageMenu, selectedKeys: [language] }} trigger={['click']}>
-          <Button type="text" icon={<GlobalOutlined />} />
+          <Button
+            type="text"
+            icon={<GlobalOutlined />}
+            className="rounded-full hover:bg-[var(--color-action-hover)]"
+          />
         </Dropdown>
 
         {/* 主题切换 */}
         <Dropdown menu={{ items: themeMenu, selectedKeys: [theme] }} trigger={['click']}>
-          <Button type="text" icon={getThemeIcon()} />
+          <Button
+            type="text"
+            icon={getThemeIcon()}
+            className="rounded-full hover:bg-[var(--color-action-hover)]"
+          />
         </Dropdown>
 
         {/* 设置按钮 */}
@@ -180,15 +217,16 @@ export default function Header({ showBreadcrumb = true }: HeaderProps) {
             type="text"
             icon={<SettingOutlined />}
             onClick={() => setSettingsOpen(true)}
+            className="rounded-full hover:bg-[var(--color-action-hover)]"
           />
         </Tooltip>
 
         {/* 分隔线 */}
-        <div className="w-px h-6 bg-[var(--color-border)] mx-2" />
+        <div className="w-px h-5 bg-[var(--color-border)] mx-1" />
 
         {/* 账户下拉 */}
         <AccountDropdown />
-      </Space>
+      </div>
     </header>
   );
 }

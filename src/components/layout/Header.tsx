@@ -169,7 +169,7 @@ export default function Header({ showBreadcrumb = true }: HeaderProps) {
       </div>
 
       {/* 右侧工具栏 */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 pr-1">
         {/* 搜索按钮 */}
         <Tooltip title={`${t('common.search', '搜索')} (Ctrl+K)`}>
           <Button

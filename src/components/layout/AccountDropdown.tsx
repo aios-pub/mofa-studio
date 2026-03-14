@@ -110,21 +110,21 @@ export default function AccountDropdown({ collapsed = false }: AccountDropdownPr
       dropdownRender={dropdownRender}
       placement="topRight"
     >
-      <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/10 transition-colors cursor-pointer">
+      <div className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-[var(--color-action-hover)] transition-colors cursor-pointer">
         <Avatar
           size={32}
           src={userInfo.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}
           icon={<UserOutlined />}
         />
         <div className="hidden md:block text-left flex-1 min-w-0">
-          <div className="text-sm font-medium text-white truncate">
+          <div className="text-sm font-medium text-[var(--color-text-primary)] truncate">
             {userInfo.username}
           </div>
-          <div className="text-xs text-white/60 truncate">
+          <div className="text-xs text-[var(--color-text-tertiary)] truncate">
             {userInfo.email}
           </div>
         </div>
-        <DownOutlined className="hidden md:block text-white/60 text-xs" />
+        <DownOutlined className="hidden md:block text-[var(--color-text-tertiary)] text-xs" />
       </div>
     </Dropdown>
   );

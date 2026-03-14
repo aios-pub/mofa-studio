@@ -8,3 +8,4 @@ export * from './useStorage';
 export * from './useDebounce';
 export * from './useLifecycle';
 export * from './useEventListener';
+export * from './useRequest';

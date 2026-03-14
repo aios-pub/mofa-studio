@@ -12,13 +12,13 @@ import {
   MoonOutlined,
   GlobalOutlined,
   SettingOutlined,
-  BellOutlined,
   SearchOutlined,
   MenuOutlined,
 } from '@ant-design/icons';
 import type { MenuProps, BreadcrumbProps } from 'antd';
 import { useAppStore } from '../../stores';
 import AccountDropdown from './AccountDropdown';
+import NotificationDropdown from './NotificationDropdown';
 import { useSettingsDrawer } from './MainLayout';
 import { SearchCommand } from '../common';
 
@@ -181,18 +181,7 @@ export default function Header({ showBreadcrumb = true }: HeaderProps) {
         </Tooltip>
 
         {/* 通知按钮 */}
-        <Tooltip title={t('common.notifications', '通知')}>
-          <Button
-            type="text"
-            className="rounded-full hover:bg-[var(--color-action-hover)]"
-            icon={
-              <div className="relative">
-                <BellOutlined />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-[var(--color-error)] rounded-full animate-pulse" />
-              </div>
-            }
-          />
-        </Tooltip>
+        <NotificationDropdown />
 
         {/* 分隔线 */}
         <div className="w-px h-5 bg-[var(--color-border)] mx-1" />

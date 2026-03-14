@@ -11,3 +11,5 @@ export * from './useEventListener';
 export * from './useRequest';
 export * from './useKeyboard';
 export * from './useText';
+export * from './useImage';
+export * from './useDrag';

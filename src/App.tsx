@@ -4,7 +4,13 @@ import { useAppStore } from './stores';
 import MainLayout from './components/layout/MainLayout';
 import Dashboard from './pages/workbench/Dashboard';
 import Conversation from './pages/workbench/Conversation';
-import { AgentListPage, PromptListPage, SkillsListPage } from './pages/management';
+import { AgentListPage, PromptListPage, SkillsListPage, TestSetsListPage, ProvidersListPage, ScheduledTasksPage } from './pages/management';
+import AnalyticsPage from './pages/analytics/AnalyticsPage';
+import MonitoringPage from './pages/monitoring/MonitoringPage';
+import UsersPage from './pages/organization/UsersPage';
+import DepartmentsPage from './pages/organization/DepartmentsPage';
+import AuditLogsPage from './pages/system/AuditLogsPage';
+import ResourceManagementPage from './pages/system/ResourceManagementPage';
 
 function App() {
   const { theme } = useAppStore();
@@ -32,35 +38,23 @@ function App() {
         <Route path="/management/agents" element={<AgentListPage />} />
         <Route path="/management/prompts" element={<PromptListPage />} />
         <Route path="/management/skills" element={<SkillsListPage />} />
-        <Route path="/management/test-sets" element={<PlaceholderPage title="测试集管理" />} />
-        <Route path="/management/providers" element={<PlaceholderPage title="Provider 管理" />} />
-        <Route path="/management/tasks" element={<PlaceholderPage title="定时任务" />} />
+        <Route path="/management/test-sets" element={<TestSetsListPage />} />
+        <Route path="/management/providers" element={<ProvidersListPage />} />
+        <Route path="/management/tasks" element={<ScheduledTasksPage />} />
 
-        {/* 监控模块 - 占位 */}
-        <Route path="/analytics" element={<PlaceholderPage title="统计分析" />} />
-        <Route path="/monitoring" element={<PlaceholderPage title="实时监控" />} />
+        {/* 监控模块 */}
+        <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/monitoring" element={<MonitoringPage />} />
 
-        {/* 组织模块 - 占位 */}
-        <Route path="/organization/users" element={<PlaceholderPage title="用户管理" />} />
-        <Route path="/organization/departments" element={<PlaceholderPage title="部门管理" />} />
+        {/* 组织模块 */}
+        <Route path="/organization/users" element={<UsersPage />} />
+        <Route path="/organization/departments" element={<DepartmentsPage />} />
 
-        {/* 系统模块 - 占位 */}
-        <Route path="/system/resources" element={<PlaceholderPage title="资源管理" />} />
-        <Route path="/system/audit-logs" element={<PlaceholderPage title="审计日志" />} />
+        {/* 系统模块 */}
+        <Route path="/system/resources" element={<ResourceManagementPage />} />
+        <Route path="/system/audit-logs" element={<AuditLogsPage />} />
       </Routes>
     </MainLayout>
-  );
-}
-
-// 占位页面组件
-function PlaceholderPage({ title }: { title: string }) {
-  return (
-    <div className="flex items-center justify-center h-full">
-      <div className="text-center">
-        <h2 className="text-2xl font-semibold text-[var(--color-text-primary)]">{title}</h2>
-        <p className="mt-2 text-[var(--color-text-secondary)]">功能开发中...</p>
-      </div>
-    </div>
   );
 }
 

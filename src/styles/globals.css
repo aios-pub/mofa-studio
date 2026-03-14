@@ -5,6 +5,16 @@
    参考 slash-admin 的设计系统
    ============================================ */
 
+/* Slash Layout Variables */
+:root {
+  --layout-nav-width: 260px;
+  --layout-nav-width-mini: 88px;
+  --layout-nav-height-horizontal: 48px;
+  --layout-header-height: 56px;
+  --layout-multi-tabs-height: 40px;
+}
+
+/* Design Tokens */
 :root {
   /* ========== 颜色预设 ========== */
   /* 主色调 - 5级色阶 */
@@ -149,9 +159,9 @@
   --transition-slow: 300ms ease-in-out;
 
   /* ========== 侧边栏 ========== */
-  --sidebar-width: 260px;
-  --sidebar-collapsed-width: 80px;
-  --header-height: 64px;
+  --sidebar-width: var(--layout-nav-width);
+  --sidebar-collapsed-width: var(--layout-nav-width-mini);
+  --header-height: var(--layout-header-height);
 }
 
 /* ========== 暗色主题 ========== */

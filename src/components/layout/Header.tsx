@@ -1,8 +1,9 @@
 /**
  * 头部组件
+ * 参考 slash-admin 的 Header 设计，支持 leftSlot 插槽
  */
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Breadcrumb, Dropdown, Button, Space, Tooltip } from 'antd';
@@ -24,9 +25,11 @@ import { SearchCommand } from '../common';
 
 interface HeaderProps {
   showBreadcrumb?: boolean;
+  /** 左侧插槽 - 用于放置 Logo 或移动端导航按钮 */
+  leftSlot?: ReactNode;
 }
 
-export default function Header({ showBreadcrumb = true }: HeaderProps) {
+export default function Header({ showBreadcrumb = true, leftSlot }: HeaderProps) {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -56,6 +59,8 @@ export default function Header({ showBreadcrumb = true }: HeaderProps) {
     profile: t('nav.profile'),
     tracing: t('nav.tracing'),
     evaluation: t('nav.evaluation'),
+    menu: t('nav.menu', '菜单管理'),
+    role: t('nav.role', '角色管理'),
   };
 
   // 根据路径生成面包屑
@@ -156,6 +161,9 @@ export default function Header({ showBreadcrumb = true }: HeaderProps) {
     >
       {/* 左侧 */}
       <div className="flex items-center gap-4">
+        {/* 左侧插槽 - 用于放置 Logo 或其他内容 */}
+        {leftSlot}
+
         {/* 移动端菜单按钮 */}
         <Button
           type="text"

@@ -72,8 +72,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
     return (
       <SettingsContext.Provider value={contextValue}>
         <Layout className="min-h-screen bg-[var(--color-bg-base)]">
-          {/* 移动端头部 */}
-          <Header />
+          {/* 移动端头部 - 传入移动端导航作为左侧插槽 */}
+          <Header leftSlot={null} />
 
           {/* 内容区域 */}
           <Content className="overflow-auto bg-[var(--color-bg-base)] p-3">

@@ -28,3 +28,6 @@ export * from './system';
 
 // 通用类型
 export * from './common';
+
+// Channel 渠道类型
+export * from './channel';

@@ -5,7 +5,7 @@ import { RouteGuard } from './components/auth';
 import { ToastProvider } from './components/common';
 import Dashboard from './pages/workbench/Dashboard';
 import Conversation from './pages/workbench/Conversation';
-import { AgentListPage, PromptListPage, SkillsListPage, TestSetsListPage, ProvidersListPage, ScheduledTasksPage } from './pages/management';
+import { AgentListPage, PromptListPage, SkillsListPage, TestSetsListPage, ProvidersListPage, ScheduledTasksPage, ChannelsListPage } from './pages/management';
 import AnalyticsPage from './pages/analytics/AnalyticsPage';
 import MonitoringPage from './pages/monitoring/MonitoringPage';
 import UsersPage from './pages/organization/UsersPage';
@@ -48,6 +48,7 @@ function App() {
                   <Route path="/management/skills" element={<SkillsListPage />} />
                   <Route path="/management/test-sets" element={<TestSetsListPage />} />
                   <Route path="/management/providers" element={<ProvidersListPage />} />
+                  <Route path="/management/channels" element={<ChannelsListPage />} />
                   <Route path="/management/tasks" element={<ScheduledTasksPage />} />
 
                   {/* 监控模块 */}

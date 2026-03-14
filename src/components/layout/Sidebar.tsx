@@ -28,6 +28,7 @@ import {
   MenuOutlined,
   TeamOutlined,
   SettingOutlined,
+  LinkOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { useAppStore, useSettings } from "../../stores";
@@ -86,6 +87,11 @@ const menuItems: MenuProps["items"] = [
     key: "/management/providers",
     icon: <CloudServerOutlined />,
     label: "Provider 管理",
+  },
+  {
+    key: "/management/channels",
+    icon: <LinkOutlined />,
+    label: "渠道管理",
   },
   {
     key: "/management/tasks",

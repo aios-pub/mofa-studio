@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import type { User as UserType } from '../../services/mock/organization';
 import { organizationApi } from '../../services/mock/organization';
+import { useFrontendPagination } from '../../hooks/usePagination';
+import Pagination from '../../components/common/Pagination';
 
 const roleLabels: Record<UserType['role'], string> = {
   admin: '管理员',
@@ -83,6 +85,15 @@ export default function UsersPage() {
       user.department.toLowerCase().includes(query)
     );
   });
+
+  // 使用前端分页
+  const {
+    data: paginatedUsers,
+    page,
+    pageSize,
+    total,
+    onChange: handlePageChange,
+  } = useFrontendPagination(filteredUsers, 10);
 
   const handleSelectAll = () => {
     if (selectedUsers.size === filteredUsers.length) {
@@ -251,7 +262,7 @@ export default function UsersPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredUsers.map((user) => (
+              {paginatedUsers.map((user) => (
                 <tr
                   key={user.id}
                   className="border-b border-[var(--color-border)]/50 hover:bg-[var(--color-bg-secondary)]"
@@ -317,6 +328,16 @@ export default function UsersPage() {
               ))}
             </tbody>
           </table>
+        )}
+
+        {/* 分页 */}
+        {!loading && filteredUsers.length > 0 && (
+          <Pagination
+            current={page}
+            pageSize={pageSize}
+            total={total}
+            onChange={handlePageChange}
+          />
         )}
 
         {!loading && filteredUsers.length === 0 && (

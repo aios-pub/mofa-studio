@@ -14,5 +14,14 @@ export * from './permission';
 // 测试集相关类型
 export * from './testset';
 
+// 用户相关类型
+export * from './user';
+
+// Tracing 相关类型
+export * from './tracing';
+
+// 评估相关类型
+export * from './evaluation';
+
 // 通用类型
 export * from './common';

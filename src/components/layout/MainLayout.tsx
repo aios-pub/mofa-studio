@@ -12,6 +12,7 @@ import HorizontalNav from './HorizontalNav';
 import { useSettings, useAppStore } from '../../stores';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { SettingsDrawer } from '../settings';
+import { RouteLoadingProgress } from '../common';
 
 const { Content } = Layout;
 
@@ -71,6 +72,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
   if (isMobile) {
     return (
       <SettingsContext.Provider value={contextValue}>
+        {/* 路由加载进度条 */}
+        <RouteLoadingProgress />
         <Layout className="min-h-screen bg-[var(--color-bg-base)]">
           {/* 移动端头部 - 传入移动端导航作为左侧插槽 */}
           <Header leftSlot={null} />
@@ -106,6 +109,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
   if (isHorizontal) {
     return (
       <SettingsContext.Provider value={contextValue}>
+        {/* 路由加载进度条 */}
+        <RouteLoadingProgress />
         <Layout className="min-h-screen bg-[var(--color-bg-base)]">
           {/* 顶部导航栏 */}
           <Layout.Header className="flex items-center h-14 px-4 bg-[#001529]">
@@ -139,6 +144,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
   // 垂直/迷你布局 (桌面端)
   return (
     <SettingsContext.Provider value={contextValue}>
+      {/* 路由加载进度条 */}
+      <RouteLoadingProgress />
       <Layout className="min-h-screen bg-[var(--color-bg-base)]">
         {/* 侧边栏 */}
         <Sidebar />

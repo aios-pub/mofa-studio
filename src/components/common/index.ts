@@ -192,3 +192,6 @@ export {
   ConfirmButtons,
 } from './LoadingButton';
 export type { LoadingButtonProps } from './LoadingButton';
+
+// 路由加载进度条
+export { default as RouteLoadingProgress } from './RouteLoadingProgress';

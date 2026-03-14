@@ -1,11 +1,10 @@
 /**
  * 侧边栏导航组件
- * 参考 slash-admin 的 NavVerticalLayout 设计
  * 支持桌面端固定侧边栏和移动端抽屉模式
  */
 
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button } from 'antd';
+import { useNavigate, useLocation } from "react-router-dom";
+import { Layout, Menu, Button } from "antd";
 import {
   RobotOutlined,
   LeftOutlined,
@@ -29,10 +28,10 @@ import {
   MenuOutlined,
   TeamOutlined,
   SettingOutlined,
-} from '@ant-design/icons';
-import type { MenuProps } from 'antd';
-import { useAppStore, useSettings } from '../../stores';
-import { useTheme } from '../../hooks';
+} from "@ant-design/icons";
+import type { MenuProps } from "antd";
+import { useAppStore, useSettings } from "../../stores";
+import { useTheme } from "../../hooks";
 
 const { Sider } = Layout;
 
@@ -41,160 +40,165 @@ interface SidebarProps {
 }
 
 // 菜单配置 - 使用 Ant Design 图标组件
-const menuItems: MenuProps['items'] = [
+const menuItems: MenuProps["items"] = [
   {
-    key: 'workbench',
-    label: '工作台',
-    type: 'group',
+    key: "workbench",
+    label: "工作台",
+    type: "group",
   },
   {
-    key: '/',
+    key: "/",
     icon: <DashboardOutlined />,
-    label: '仪表盘',
+    label: "仪表盘",
   },
   {
-    key: '/conversation',
+    key: "/conversation",
     icon: <MessageOutlined />,
-    label: '对话',
+    label: "对话",
   },
-  { type: 'divider' },
+  { type: "divider" },
   {
-    key: 'management',
-    label: '管理',
-    type: 'group',
+    key: "management",
+    label: "管理",
+    type: "group",
   },
   {
-    key: '/management/agents',
+    key: "/management/agents",
     icon: <RobotOutlined />,
-    label: 'Agent 管理',
+    label: "Agent 管理",
   },
   {
-    key: '/management/prompts',
+    key: "/management/prompts",
     icon: <FileTextOutlined />,
-    label: '提示词管理',
+    label: "提示词管理",
   },
   {
-    key: '/management/skills',
+    key: "/management/skills",
     icon: <ThunderboltOutlined />,
-    label: 'Skills 管理',
+    label: "Skills 管理",
   },
   {
-    key: '/management/test-sets',
+    key: "/management/test-sets",
     icon: <ExperimentOutlined />,
-    label: '测试集管理',
+    label: "测试集管理",
   },
   {
-    key: '/management/providers',
+    key: "/management/providers",
     icon: <CloudServerOutlined />,
-    label: 'Provider 管理',
+    label: "Provider 管理",
   },
   {
-    key: '/management/tasks',
+    key: "/management/tasks",
     icon: <ClockCircleOutlined />,
-    label: '定时任务',
+    label: "定时任务",
   },
-  { type: 'divider' },
+  { type: "divider" },
   {
-    key: 'monitoring',
-    label: '监控',
-    type: 'group',
+    key: "monitoring",
+    label: "监控",
+    type: "group",
   },
   {
-    key: '/analytics',
+    key: "/analytics",
     icon: <BarChartOutlined />,
-    label: '统计分析',
+    label: "统计分析",
   },
   {
-    key: '/monitoring',
+    key: "/monitoring",
     icon: <EyeOutlined />,
-    label: '实时监控',
+    label: "实时监控",
   },
-  { type: 'divider' },
+  { type: "divider" },
   {
-    key: 'tracing',
-    label: '追踪与评估',
-    type: 'group',
+    key: "tracing",
+    label: "追踪与评估",
+    type: "group",
   },
   {
-    key: '/tracing',
+    key: "/tracing",
     icon: <ApiOutlined />,
-    label: '追踪分析',
+    label: "追踪分析",
   },
   {
-    key: '/evaluation',
+    key: "/evaluation",
     icon: <AuditOutlined />,
-    label: 'Agent 评估',
+    label: "Agent 评估",
   },
-  { type: 'divider' },
+  { type: "divider" },
   {
-    key: 'organization',
-    label: '组织',
-    type: 'group',
+    key: "organization",
+    label: "组织",
+    type: "group",
   },
   {
-    key: '/organization/users',
+    key: "/organization/users",
     icon: <UserOutlined />,
-    label: '用户管理',
+    label: "用户管理",
   },
   {
-    key: '/organization/departments',
+    key: "/organization/departments",
     icon: <ApartmentOutlined />,
-    label: '部门管理',
+    label: "部门管理",
   },
-  { type: 'divider' },
+  { type: "divider" },
   {
-    key: 'system',
-    label: '系统',
-    type: 'group',
+    key: "system",
+    label: "系统",
+    type: "group",
   },
   {
-    key: '/system/resources',
+    key: "/system/resources",
     icon: <FolderOutlined />,
-    label: '资源管理',
+    label: "资源管理",
   },
   {
-    key: '/system/audit-logs',
+    key: "/system/audit-logs",
     icon: <FileSearchOutlined />,
-    label: '审计日志',
+    label: "审计日志",
   },
   {
-    key: '/system/insight',
+    key: "/system/insight",
     icon: <PieChartOutlined />,
-    label: '洞察分析',
+    label: "洞察分析",
   },
   {
-    key: '/system/menu',
+    key: "/system/menu",
     icon: <MenuOutlined />,
-    label: '菜单管理',
+    label: "菜单管理",
   },
   {
-    key: '/system/role',
+    key: "/system/role",
     icon: <TeamOutlined />,
-    label: '角色管理',
+    label: "角色管理",
   },
   {
-    key: '/system/settings',
+    key: "/system/settings",
     icon: <SettingOutlined />,
-    label: '系统设置',
+    label: "系统设置",
   },
 ];
 
 export default function Sidebar({ isMobile = false }: SidebarProps) {
-  const { sidebarCollapsed, toggleSidebar, setSidebarCollapsed } = useAppStore();
+  const { sidebarCollapsed, toggleSidebar, setSidebarCollapsed } =
+    useAppStore();
   const settings = useSettings();
   const { isDark } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isMini = isMobile ? false : (settings.themeLayout === 'mini' || sidebarCollapsed);
-  const isHorizontal = settings.themeLayout === 'horizontal';
+  const isMini = isMobile
+    ? false
+    : settings.themeLayout === "mini" || sidebarCollapsed;
+  const isHorizontal = settings.themeLayout === "horizontal";
 
   // 主题相关样式
-  const siderBg = isDark ? '#001529' : '#ffffff';
-  const borderColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
-  const logoTextColor = isDark ? 'text-white' : 'text-[var(--color-text-primary)]';
+  const siderBg = isDark ? "#001529" : "#ffffff";
+  const borderColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)";
+  const logoTextColor = isDark
+    ? "text-white"
+    : "text-[var(--color-text-primary)]";
 
-  const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
+  const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
     navigate(key);
     // 移动端点击菜单后自动关闭抽屉
     if (isMobile) {
@@ -210,7 +214,10 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
   // 移动端模式 - 渲染为普通 div（在 Drawer 中使用）
   if (isMobile) {
     return (
-      <div className="h-full flex flex-col" style={{ backgroundColor: siderBg }}>
+      <div
+        className="h-full flex flex-col"
+        style={{ backgroundColor: siderBg }}
+      >
         {/* Logo 区域 */}
         <div
           className="flex items-center gap-2 h-[var(--layout-header-height)] px-4 border-b"
@@ -223,7 +230,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
         {/* 菜单列表 */}
         <div className="flex-1 overflow-y-auto scrollbar-thin px-2">
           <Menu
-            theme={isDark ? 'dark' : 'light'}
+            theme={isDark ? "dark" : "light"}
             mode="inline"
             selectedKeys={[location.pathname]}
             onClick={handleMenuClick}
@@ -248,19 +255,22 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     >
       {/* Logo 区域 - 参考 slash-admin 的设计 */}
       <div
-        className="relative flex items-center h-[var(--layout-header-height)] px-2 border-b transition-all duration-300"
+        className="relative flex items-center h-[var(--layout-header-height)] px-2 border-b transition-all duration-300 cursor-pointer"
         style={{ borderColor }}
+        onClick={() => navigate("/")}
       >
-        <div className={`flex items-center ${isMini ? 'justify-center w-full' : ''}`}>
+        <div
+          className={`flex items-center ${isMini ? "justify-center w-full" : ""}`}
+        >
           <RobotOutlined className="text-2xl text-[var(--color-primary)] flex-shrink-0" />
           <span
             className="text-lg font-bold transition-all duration-300 ease-in-out whitespace-nowrap"
             style={{
               opacity: isMini ? 0 : 1,
-              maxWidth: isMini ? 0 : 'auto',
-              marginLeft: isMini ? 0 : '8px',
-              overflow: 'hidden',
-              color: isDark ? '#fff' : 'var(--color-text-primary)',
+              width: isMini ? 0 : "auto",
+              marginLeft: isMini ? 0 : "8px",
+              overflow: "hidden",
+              color: isDark ? "#fff" : "var(--color-text-primary)",
             }}
           >
             AmosClaw
@@ -273,7 +283,13 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           size="small"
           onClick={toggleSidebar}
           className="!absolute !right-0 translate-x-1/2 !w-7 !h-7 !rounded-full !border !border-[var(--color-border)] !bg-[var(--color-bg-base)] hover:!bg-[var(--color-bg-secondary)] z-10 flex items-center justify-center"
-          icon={isMini ? <RightOutlined className="text-xs" /> : <LeftOutlined className="text-xs" />}
+          icon={
+            isMini ? (
+              <RightOutlined className="text-xs" />
+            ) : (
+              <LeftOutlined className="text-xs" />
+            )
+          }
         />
       </div>
 
@@ -281,11 +297,13 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       <div
         className="h-[calc(100vh-var(--layout-header-height))] overflow-y-auto scrollbar-thin px-2"
         style={{
-          scrollbarColor: isDark ? 'rgba(255,255,255,0.2) transparent' : 'rgba(0,0,0,0.2) transparent',
+          scrollbarColor: isDark
+            ? "rgba(255,255,255,0.2) transparent"
+            : "rgba(0,0,0,0.2) transparent",
         }}
       >
         <Menu
-          theme={isDark ? 'dark' : 'light'}
+          theme={isDark ? "dark" : "light"}
           mode="inline"
           inlineCollapsed={isMini}
           selectedKeys={[location.pathname]}

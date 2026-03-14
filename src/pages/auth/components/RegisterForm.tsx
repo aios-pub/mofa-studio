@@ -1,11 +1,21 @@
 /**
  * 注册表单组件
+ * 参考 slash-admin 的注册表单设计
  */
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RobotOutlined, UserOutlined, LockOutlined, MailOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import {
+  RobotOutlined,
+  UserOutlined,
+  LockOutlined,
+  MailOutlined,
+  EyeOutlined,
+  EyeInvisibleOutlined,
+  SyncOutlined,
+} from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { Button, Checkbox, Divider } from 'antd';
 import { useUserActions } from '../../../stores/useUserStore';
 import authApi from '../../../services/mock/auth';
 
@@ -59,22 +69,25 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
   return (
     <div className="w-full max-w-md mx-auto">
       {/* Logo */}
-      <div className="flex items-center justify-center gap-2 mb-8">
+      <div className="flex items-center justify-center gap-2 mb-6">
         <RobotOutlined className="text-3xl text-[var(--color-primary)]" />
         <span className="text-2xl font-bold text-[var(--color-text-primary)]">AmosClaw</span>
       </div>
 
       {/* 标题 */}
-      <h1 className="text-2xl font-bold text-center text-[var(--color-text-primary)] mb-2">
-        {t('auth.createAccount', '创建账户')}
-      </h1>
-      <p className="text-center text-[var(--color-text-secondary)] mb-8">
-        {t('auth.registerHint', '填写以下信息注册新账户')}
-      </p>
+      <div className="text-center mb-6">
+        <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-1">
+          {t('auth.createAccount', '创建账户')}
+        </h1>
+        <p className="text-sm text-[var(--color-text-secondary)]">
+          {t('auth.registerHint', '填写以下信息注册新账户')}
+        </p>
+      </div>
 
       {/* 错误提示 */}
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm">
+        <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm flex items-center gap-2">
+          <span className="i-ant-design:exclamation-circle-filled" />
           {error}
         </div>
       )}
@@ -83,7 +96,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* 用户名 */}
         <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
+          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
             {t('auth.username', '用户名')}
           </label>
           <div className="relative">
@@ -92,7 +105,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all"
               placeholder={t('auth.usernamePlaceholder', '请输入用户名')}
               required
             />
@@ -101,7 +114,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
 
         {/* 邮箱 */}
         <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
+          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
             {t('auth.email', '邮箱')}
           </label>
           <div className="relative">
@@ -110,7 +123,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all"
               placeholder={t('auth.emailPlaceholder', '请输入邮箱')}
               required
             />
@@ -119,7 +132,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
 
         {/* 密码 */}
         <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
+          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
             {t('auth.password', '密码')}
           </label>
           <div className="relative">
@@ -128,7 +141,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full pl-10 pr-12 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all"
+              className="w-full pl-10 pr-12 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all"
               placeholder={t('auth.passwordPlaceholder', '请输入密码')}
               required
               minLength={6}
@@ -145,7 +158,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
 
         {/* 确认密码 */}
         <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
+          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
             {t('auth.confirmPassword', '确认密码')}
           </label>
           <div className="relative">
@@ -154,7 +167,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
               type={showPassword ? 'text' : 'password'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all"
               placeholder={t('auth.confirmPasswordPlaceholder', '请再次输入密码')}
               required
             />
@@ -163,45 +176,54 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
 
         {/* 同意协议 */}
         <div className="flex items-start gap-2">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={agreed}
             onChange={(e) => setAgreed(e.target.checked)}
-            className="mt-1 w-4 h-4 rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-0"
-          />
-          <span className="text-sm text-[var(--color-text-secondary)]">
-            {t('auth.agreeText', '我已阅读并同意')}
-            <a href="#" className="text-[var(--color-primary)] hover:underline" onClick={(e) => e.preventDefault()}>
-              {t('auth.termsOfService', '用户协议')}
-            </a>
-            {t('auth.and', '和')}
-            <a href="#" className="text-[var(--color-primary)] hover:underline" onClick={(e) => e.preventDefault()}>
-              {t('auth.privacyPolicy', '隐私政策')}
-            </a>
-          </span>
+          >
+            <span className="text-sm text-[var(--color-text-secondary)]">
+              {t('auth.agreeText', '我已阅读并同意')}
+              <Button type="link" size="small" className="!p-0 !h-auto">
+                {t('auth.termsOfService', '用户协议')}
+              </Button>
+              {t('auth.and', '和')}
+              <Button type="link" size="small" className="!p-0 !h-auto">
+                {t('auth.privacyPolicy', '隐私政策')}
+              </Button>
+            </span>
+          </Checkbox>
         </div>
 
         {/* 注册按钮 */}
-        <button
-          type="submit"
+        <Button
+          type="primary"
+          htmlType="submit"
+          block
+          size="large"
           disabled={loading}
-          className="w-full py-2.5 rounded-lg bg-[var(--color-primary)] text-white font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          icon={loading ? <SyncOutlined spin /> : null}
+          className="h-11 font-medium"
         >
           {loading ? t('auth.registering', '注册中...') : t('auth.register', '注册')}
-        </button>
+        </Button>
       </form>
 
+      {/* 分隔线 */}
+      <Divider className="!my-6 !text-[var(--color-text-tertiary)]">
+        <span className="text-xs">{t('auth.or', '或')}</span>
+      </Divider>
+
       {/* 登录入口 */}
-      <div className="mt-6 text-center">
+      <div className="text-center text-sm">
         <span className="text-[var(--color-text-secondary)]">
           {t('auth.hasAccount', '已有账户？')}
         </span>
-        <button
+        <Button
+          type="link"
           onClick={onSwitchToLogin}
-          className="ml-1 text-[var(--color-primary)] hover:underline font-medium"
+          className="!p-0 !ml-1"
         >
           {t('auth.login', '立即登录')}
-        </button>
+        </Button>
       </div>
     </div>
   );

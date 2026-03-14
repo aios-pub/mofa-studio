@@ -104,11 +104,13 @@ export default function FloatingApp() {
     return getCurrentWindow();
   }, []);
 
-  const anchorRef = useRef<{ x: number; y: number } | null>(null);
+  const windowAnchorRef = useRef<{ x: number; y: number } | null>(null);
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const ballRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const contextMenuRef = useRef<HTMLDivElement | null>(null);
   const isDraggingRef = useRef(false);
+  const isMouseDownRef = useRef(false);
 
   useEffect(() => {
     if (!appWindow) {
@@ -226,7 +228,7 @@ export default function FloatingApp() {
     }
 
     const position = await appWindow.outerPosition();
-    anchorRef.current = { x: position.x, y: position.y };
+    windowAnchorRef.current = { x: position.x, y: position.y };
 
     const bounds = await getMonitorBounds();
     const { width, height } = getMenuWindowSize();
@@ -272,7 +274,7 @@ export default function FloatingApp() {
     setExpanded(false);
     await appWindow.setSize(new LogicalSize(BALL_SIZE, BALL_SIZE));
 
-    const anchor = anchorRef.current;
+    const anchor = windowAnchorRef.current;
     if (anchor) {
       await appWindow.setPosition(new LogicalPosition(anchor.x, anchor.y));
     }
@@ -300,22 +302,23 @@ export default function FloatingApp() {
 
     // 记录起始位置用于判断是点击还是拖动
     isDraggingRef.current = false;
-    anchorRef.current = { x: event.clientX, y: event.clientY };
+    isMouseDownRef.current = true;
+    dragStartRef.current = { x: event.clientX, y: event.clientY };
   };
 
   const handleMouseMove = (event: ReactMouseEvent) => {
-    if (!appWindow || expanded) {
+    if (!appWindow || expanded || !isMouseDownRef.current) {
       return;
     }
 
-    const anchor = anchorRef.current;
-    if (!anchor) {
+    const start = dragStartRef.current;
+    if (!start) {
       return;
     }
 
     // 判断是否开始拖动（移动超过 5px）
-    const dx = event.clientX - anchor.x;
-    const dy = event.clientY - anchor.y;
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
     if (distance > 5 && !isDraggingRef.current) {
@@ -330,7 +333,8 @@ export default function FloatingApp() {
       return;
     }
 
-    anchorRef.current = null;
+    isMouseDownRef.current = false;
+    dragStartRef.current = null;
 
     // 如果没有拖动，则展开菜单
     if (!isDraggingRef.current) {
@@ -437,7 +441,6 @@ export default function FloatingApp() {
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
         onContextMenu={handleContextMenu}
         aria-label={expanded ? "收起菜单" : "展开菜单"}
       >

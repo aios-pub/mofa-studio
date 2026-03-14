@@ -21,28 +21,27 @@ pub fn run() {
                     let _ = floating_window.set_decorations(false);
 
                     // macOS 需要额外设置才能实现真正的透明窗口
-                    // 使用 cocoa API 设置窗口背景和事件处理
+                    // 使用 objc2 API 设置窗口背景和事件处理
                     let ns_window = floating_window.ns_window().unwrap();
                     unsafe {
-                        use cocoa::appkit::{NSColor, NSWindow};
-                        use cocoa::base::{id, nil, NO, YES};
+                        use objc2::rc::Retained;
+                        use objc2_app_kit::{NSColor, NSWindow, NSWindowStyleMask};
 
-                        let ns_window = ns_window as id;
+                        let ns_window: Retained<NSWindow> = Retained::retain(ns_window as *mut NSWindow).unwrap();
 
                         // 设置透明
-                        ns_window.setOpaque_(NO);
-                        let clear_color = NSColor::clearColor(nil);
-                        ns_window.setBackgroundColor_(clear_color);
+                        ns_window.setOpaque(false);
+                        ns_window.setBackgroundColor(Some(&NSColor::clearColor()));
 
                         // 确保窗口能接收鼠标事件
-                        ns_window.setAcceptsMouseMovedEvents_(YES);
-                        ns_window.setIgnoresMouseEvents_(NO);
+                        ns_window.setAcceptsMouseMovedEvents(true);
+                        ns_window.setIgnoresMouseEvents(false);
 
                         // 设置窗口样式为无边框
-                        ns_window.setStyleMask_(cocoa::appkit::NSWindowStyleMask::NSBorderlessWindowMask);
+                        ns_window.setStyleMask(NSWindowStyleMask::Borderless);
 
                         // 设置窗口为可移动的
-                        ns_window.setMovableByWindowBackground_(YES);
+                        ns_window.setMovableByWindowBackground(true);
                     }
                 }
             }

@@ -5,7 +5,7 @@
 import { useTranslation } from 'react-i18next';
 import { Drawer, Switch, Slider, Button, Divider, Card, Tooltip } from 'antd';
 import { CheckOutlined, FullscreenOutlined, FullscreenExitOutlined } from '@ant-design/icons';
-import { Palette, Layout, Type, Sun, Moon } from 'lucide-react';
+import { Palette, Layout, Type, Sun, Moon, Monitor } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useSettings, useSettingActions, themeColorPresetsMap, type ThemeColorPresets, type ThemeLayout } from '../../stores/useSettingStore';
 import { useAppStore } from '../../stores';
@@ -101,29 +101,45 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
           <div className="flex items-center gap-2 mb-3">
             {theme === 'light' ? (
               <Sun className="w-4 h-4 text-[var(--color-text-secondary)]" />
-            ) : (
+            ) : theme === 'dark' ? (
               <Moon className="w-4 h-4 text-[var(--color-text-secondary)]" />
+            ) : (
+              <Monitor className="w-4 h-4 text-[var(--color-text-secondary)]" />
             )}
             <span className="text-sm font-medium text-[var(--color-text-primary)]">
               {t('settings.themeMode', '主题模式')}
             </span>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             <Card
               hoverable
-              className={`cursor-pointer text-center ${theme === 'light' ? 'border-primary border-2' : ''}`}
+              size="small"
+              className={`cursor-pointer text-center py-3 ${theme === 'light' ? 'border-2' : ''}`}
+              style={{ borderColor: theme === 'light' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }}
               onClick={() => setTheme('light')}
             >
-              <Sun className="w-6 h-6 mx-auto mb-2" style={{ color: theme === 'light' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }} />
-              <span className="text-sm">{t('theme.light', '浅色')}</span>
+              <Sun className="w-5 h-5 mx-auto mb-1" style={{ color: theme === 'light' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }} />
+              <span className="text-xs">{t('theme.light', '浅色')}</span>
             </Card>
             <Card
               hoverable
-              className={`cursor-pointer text-center ${theme === 'dark' ? 'border-primary border-2' : ''}`}
+              size="small"
+              className={`cursor-pointer text-center py-3 ${theme === 'dark' ? 'border-2' : ''}`}
+              style={{ borderColor: theme === 'dark' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }}
               onClick={() => setTheme('dark')}
             >
-              <Moon className="w-6 h-6 mx-auto mb-2" style={{ color: theme === 'dark' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }} />
-              <span className="text-sm">{t('theme.dark', '深色')}</span>
+              <Moon className="w-5 h-5 mx-auto mb-1" style={{ color: theme === 'dark' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }} />
+              <span className="text-xs">{t('theme.dark', '深色')}</span>
+            </Card>
+            <Card
+              hoverable
+              size="small"
+              className={`cursor-pointer text-center py-3 ${theme === 'system' ? 'border-2' : ''}`}
+              style={{ borderColor: theme === 'system' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }}
+              onClick={() => setTheme('system')}
+            >
+              <Monitor className="w-5 h-5 mx-auto mb-1" style={{ color: theme === 'system' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }} />
+              <span className="text-xs">{t('theme.system', '系统')}</span>
             </Card>
           </div>
         </div>

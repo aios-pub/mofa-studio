@@ -157,3 +157,7 @@ export type {
 // Markdown 渲染
 export { default as MarkdownRenderer } from './MarkdownRenderer';
 export type { MarkdownRendererProps } from './MarkdownRenderer';
+
+// 滚动进度条
+export { ScrollProgress } from './ScrollProgress';
+export type { ScrollProgressProps } from './ScrollProgress';

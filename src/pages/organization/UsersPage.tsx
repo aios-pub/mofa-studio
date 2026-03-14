@@ -1,26 +1,51 @@
 /**
  * 用户管理页面
+ * 使用 Ant Design 组件重构
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  Search,
-  Edit2,
-  Trash2,
-  User,
-  XCircle,
-  Loader2,
-  UserPlus,
-} from 'lucide-react';
+  Card,
+  Table,
+  Select,
+  Button,
+  Tag,
+  Space,
+  Input,
+  Modal,
+  Form,
+  Dropdown,
+  Typography,
+  Avatar,
+  Tooltip,
+  Popconfirm,
+  message,
+} from 'antd';
+import {
+  SearchOutlined,
+  UserAddOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
+import type { ColumnsType } from 'antd/es/table';
+import { PageHeader } from '@/components/common';
 import type { User as UserType } from '../../services/mock/organization';
 import { organizationApi } from '../../services/mock/organization';
-import { useFrontendPagination } from '../../hooks/usePagination';
-import Pagination from '../../components/common/Pagination';
+
+const { Text } = Typography;
 
 const roleLabels: Record<UserType['role'], string> = {
   admin: '管理员',
   manager: '经理',
   user: '普通用户',
+};
+
+const roleColors: Record<UserType['role'], string> = {
+  admin: 'purple',
+  manager: 'blue',
+  user: 'default',
 };
 
 const statusLabels: Record<UserType['status'], string> = {
@@ -30,27 +55,23 @@ const statusLabels: Record<UserType['status'], string> = {
 };
 
 const statusColors: Record<UserType['status'], string> = {
-  active: 'bg-green-500/10 text-green-500',
-  inactive: 'bg-red-500/10 text-red-500',
-  pending: 'bg-yellow-500/10 text-yellow-500',
-};
-
-const roleColors: Record<UserType['role'], string> = {
-  admin: 'bg-purple-500/10 text-purple-500',
-  manager: 'bg-blue-500/10 text-blue-500',
-  user: 'bg-gray-500/10 text-gray-500',
+  active: 'success',
+  inactive: 'error',
+  pending: 'warning',
 };
 
 export default function UsersPage() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<UserType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [filterDepartment, setFilterDepartment] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [filterRole, setFilterRole] = useState<string>('');
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
+  const [form] = Form.useForm();
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -86,44 +107,56 @@ export default function UsersPage() {
     );
   });
 
-  // 使用前端分页
-  const {
-    data: paginatedUsers,
-    page,
-    pageSize,
-    total,
-    onChange: handlePageChange,
-  } = useFrontendPagination(filteredUsers, 10);
-
-  const handleSelectAll = () => {
-    if (selectedUsers.size === filteredUsers.length) {
-      setSelectedUsers(new Set());
-    } else {
-      setSelectedUsers(new Set(filteredUsers.map((u) => u.id)));
-    }
-  };
-
-  const handleSelectUser = (id: string) => {
-    const newSelected = new Set(selectedUsers);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
-    setSelectedUsers(newSelected);
-  };
-
   const handleBatchUpdateStatus = async (status: UserType['status']) => {
-    if (selectedUsers.size === 0) return;
-    await organizationApi.batchUpdateStatus(Array.from(selectedUsers), status);
-    setSelectedUsers(new Set());
+    if (selectedRowKeys.length === 0) {
+      message.warning('请选择要操作的用户');
+      return;
+    }
+    await organizationApi.batchUpdateStatus(selectedRowKeys as string[], status);
+    setSelectedRowKeys([]);
+    message.success(`已批量${statusLabels[status]} ${selectedRowKeys.length} 个用户`);
     loadUsers();
   };
 
   const handleDeleteUser = async (id: string) => {
-    if (!confirm('确定要删除这个用户吗？')) return;
     await organizationApi.deleteUser(id);
+    message.success('用户已删除');
     loadUsers();
+  };
+
+  const handleEdit = (user: UserType) => {
+    setEditingUser(user);
+    form.setFieldsValue({
+      name: user.name,
+      email: user.email,
+      department: user.department,
+      role: user.role,
+      status: user.status,
+    });
+    setModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setEditingUser(null);
+    form.resetFields();
+  };
+
+  const handleSave = async () => {
+    try {
+      const values = await form.validateFields();
+      if (editingUser) {
+        await organizationApi.updateUser(editingUser.id, values);
+        message.success('用户已更新');
+      } else {
+        await organizationApi.createUser(values);
+        message.success('用户已创建');
+      }
+      handleModalClose();
+      loadUsers();
+    } catch (error) {
+      console.error('Failed to save user:', error);
+    }
   };
 
   const formatDate = (date: Date) => {
@@ -140,367 +173,292 @@ export default function UsersPage() {
     return num.toString();
   };
 
-  return (
-    <div className="flex flex-col h-full">
-      {/* 头部 */}
-      <div className="flex items-center justify-between p-6 border-b border-[var(--color-border)]">
-        <div>
-          <h1 className="text-xl font-semibold text-[var(--color-text-primary)]">用户管理</h1>
-          <p className="text-sm text-[var(--color-text-secondary)]">管理系统用户和权限</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)]"
+  // 表格列配置
+  const columns: ColumnsType<UserType> = [
+    {
+      title: t('user.userName', '用户'),
+      key: 'user',
+      render: (_, record) => (
+        <Space>
+          <Avatar
+            style={{ backgroundColor: 'var(--color-primary)' }}
+            icon={<UserOutlined />}
           >
-            <UserPlus className="w-4 h-4" />
-            添加用户
-          </button>
+            {record.name.charAt(0)}
+          </Avatar>
+          <div>
+            <Text strong>{record.name}</Text>
+            <br />
+            <Text type="secondary" className="text-xs">
+              {record.email}
+            </Text>
+          </div>
+        </Space>
+      ),
+    },
+    {
+      title: t('user.department', '部门'),
+      dataIndex: 'department',
+      key: 'department',
+      width: 120,
+    },
+    {
+      title: t('user.role', '角色'),
+      dataIndex: 'role',
+      key: 'role',
+      width: 100,
+      render: (role: UserType['role']) => (
+        <Tag color={roleColors[role]}>{roleLabels[role]}</Tag>
+      ),
+    },
+    {
+      title: t('user.status', '状态'),
+      dataIndex: 'status',
+      key: 'status',
+      width: 100,
+      render: (status: UserType['status']) => (
+        <Tag color={statusColors[status]}>{statusLabels[status]}</Tag>
+      ),
+    },
+    {
+      title: '使用量',
+      key: 'usage',
+      width: 140,
+      render: (_, record) => (
+        <div className="text-xs">
+          <div>{record.usage.totalConversations} 对话</div>
+          <div>{formatNumber(record.usage.totalTokens)} tokens</div>
         </div>
-      </div>
-
-      {/* 工具栏 */}
-      <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
-        <div className="flex items-center gap-3">
-          {/* 搜索 */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
-            <input
+      ),
+    },
+    {
+      title: t('user.lastLogin', '最后登录'),
+      dataIndex: 'lastLoginAt',
+      key: 'lastLoginAt',
+      width: 120,
+      render: (date: Date) => (
+        <Text type="secondary" className="text-xs">
+          {date ? formatDate(date) : '-'}
+        </Text>
+      ),
+    },
+    {
+      title: t('common.actions', '操作'),
+      key: 'actions',
+      width: 100,
+      render: (_, record) => (
+        <Space>
+          <Tooltip title="编辑">
+            <Button
               type="text"
-              placeholder="搜索用户..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-3 py-1.5 w-64 text-sm bg-[var(--color-bg-base)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEdit(record);
+              }}
             />
-          </div>
-
-          {/* 筛选 */}
-          <select
-            value={filterDepartment}
-            onChange={(e) => setFilterDepartment(e.target.value)}
-            className="px-3 py-1.5 text-sm bg-[var(--color-bg-base)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
+          </Tooltip>
+          <Popconfirm
+            title={t('user.deleteConfirm', '确定要删除这个用户吗？')}
+            onConfirm={(e) => {
+              e?.stopPropagation();
+              handleDeleteUser(record.id);
+            }}
+            okText={t('common.confirm', '确认')}
+            cancelText={t('common.cancel', '取消')}
           >
-            <option value="">全部部门</option>
-            {departments.map((dept) => (
-              <option key={dept} value={dept}>
-                {dept}
-              </option>
-            ))}
-          </select>
+            <Button
+              type="text"
+              size="small"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
 
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-1.5 text-sm bg-[var(--color-bg-base)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
+  // 批量操作菜单
+  const batchMenuItems = [
+    {
+      key: 'active',
+      label: '批量激活',
+      onClick: () => handleBatchUpdateStatus('active'),
+    },
+    {
+      key: 'inactive',
+      label: '批量禁用',
+      onClick: () => handleBatchUpdateStatus('inactive'),
+    },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <PageHeader
+        title={t('user.title', '用户管理')}
+        description="管理系统用户和权限"
+        icon={<UserOutlined className="text-xl" />}
+        actions={
+          <Button
+            type="primary"
+            icon={<UserAddOutlined />}
+            onClick={() => setModalOpen(true)}
           >
-            <option value="">全部状态</option>
-            <option value="active">正常</option>
-            <option value="inactive">禁用</option>
-            <option value="pending">待激活</option>
-          </select>
+            {t('user.createUser', '添加用户')}
+          </Button>
+        }
+      />
 
-          <select
-            value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
-            className="px-3 py-1.5 text-sm bg-[var(--color-bg-base)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-          >
-            <option value="">全部角色</option>
-            <option value="admin">管理员</option>
-            <option value="manager">经理</option>
-            <option value="user">普通用户</option>
-          </select>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {selectedUsers.size > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-[var(--color-text-secondary)]">
-                已选择 {selectedUsers.size} 个用户
-              </span>
-              <button
-                onClick={() => handleBatchUpdateStatus('active')}
-                className="px-2 py-1 text-xs bg-green-500/10 text-green-500 rounded hover:bg-green-500/20"
-              >
-                激活
-              </button>
-              <button
-                onClick={() => handleBatchUpdateStatus('inactive')}
-                className="px-2 py-1 text-xs bg-red-500/10 text-red-500 rounded hover:bg-red-500/20"
-              >
-                禁用
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 用户列表 */}
-      <div className="flex-1 overflow-y-auto">
-        {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-8 h-8 animate-spin text-[var(--color-primary)]" />
-          </div>
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)]">
-              <tr>
-                <th className="py-3 px-4 text-left">
-                  <input
-                    type="checkbox"
-                    checked={selectedUsers.size === filteredUsers.length && filteredUsers.length > 0}
-                    onChange={handleSelectAll}
-                    className="rounded border-[var(--color-border)]"
-                  />
-                </th>
-                <th className="py-3 px-4 text-left text-[var(--color-text-tertiary)] font-medium">用户</th>
-                <th className="py-3 px-4 text-left text-[var(--color-text-tertiary)] font-medium">部门</th>
-                <th className="py-3 px-4 text-left text-[var(--color-text-tertiary)] font-medium">角色</th>
-                <th className="py-3 px-4 text-left text-[var(--color-text-tertiary)] font-medium">状态</th>
-                <th className="py-3 px-4 text-left text-[var(--color-text-tertiary)] font-medium">使用量</th>
-                <th className="py-3 px-4 text-left text-[var(--color-text-tertiary)] font-medium">最后登录</th>
-                <th className="py-3 px-4 text-right text-[var(--color-text-tertiary)] font-medium">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedUsers.map((user) => (
-                <tr
-                  key={user.id}
-                  className="border-b border-[var(--color-border)]/50 hover:bg-[var(--color-bg-secondary)]"
-                >
-                  <td className="py-3 px-4">
-                    <input
-                      type="checkbox"
-                      checked={selectedUsers.has(user.id)}
-                      onChange={() => handleSelectUser(user.id)}
-                      className="rounded border-[var(--color-border)]"
-                    />
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
-                        <span className="text-sm font-medium text-[var(--color-primary)]">
-                          {user.name.charAt(0)}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-medium text-[var(--color-text-primary)]">{user.name}</p>
-                        <p className="text-xs text-[var(--color-text-tertiary)]">{user.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 text-[var(--color-text-secondary)]">{user.department}</td>
-                  <td className="py-3 px-4">
-                    <span className={`text-xs px-2 py-0.5 rounded ${roleColors[user.role]}`}>
-                      {roleLabels[user.role]}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className={`text-xs px-2 py-0.5 rounded ${statusColors[user.status]}`}>
-                      {statusLabels[user.status]}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="text-xs text-[var(--color-text-tertiary)]">
-                      <p>{user.usage.totalConversations} 对话</p>
-                      <p>{formatNumber(user.usage.totalTokens)} tokens</p>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 text-xs text-[var(--color-text-tertiary)]">
-                    {user.lastLoginAt ? formatDate(user.lastLoginAt) : '-'}
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => setEditingUser(user)}
-                        className="p-1.5 hover:bg-[var(--color-bg-tertiary)] rounded"
-                      >
-                        <Edit2 className="w-4 h-4 text-[var(--color-text-tertiary)]" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteUser(user.id)}
-                        className="p-1.5 hover:bg-red-500/10 rounded"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-
-        {/* 分页 */}
-        {!loading && filteredUsers.length > 0 && (
-          <Pagination
-            current={page}
-            pageSize={pageSize}
-            total={total}
-            onChange={handlePageChange}
+      {/* 筛选区域 */}
+      <Card size="small">
+        <Space wrap>
+          <Input
+            placeholder={t('common.search', '搜索用户...')}
+            prefix={<SearchOutlined />}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ width: 250 }}
+            allowClear
           />
-        )}
+          <Select
+            placeholder="选择部门"
+            value={filterDepartment || undefined}
+            onChange={setFilterDepartment}
+            allowClear
+            style={{ width: 140 }}
+            options={departments.map((dept) => ({
+              label: dept,
+              value: dept,
+            }))}
+          />
+          <Select
+            placeholder="选择状态"
+            value={filterStatus || undefined}
+            onChange={setFilterStatus}
+            allowClear
+            style={{ width: 120 }}
+            options={Object.entries(statusLabels).map(([value, label]) => ({
+              label,
+              value,
+            }))}
+          />
+          <Select
+            placeholder="选择角色"
+            value={filterRole || undefined}
+            onChange={setFilterRole}
+            allowClear
+            style={{ width: 120 }}
+            options={Object.entries(roleLabels).map(([value, label]) => ({
+              label,
+              value,
+            }))}
+          />
+          {selectedRowKeys.length > 0 && (
+            <Dropdown menu={{ items: batchMenuItems }} placement="bottomRight">
+              <Button>
+                批量操作 ({selectedRowKeys.length})
+              </Button>
+            </Dropdown>
+          )}
+        </Space>
+      </Card>
 
-        {!loading && filteredUsers.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 text-[var(--color-text-tertiary)]">
-            <User className="w-12 h-12 mb-2 opacity-50" />
-            <p>暂无用户数据</p>
-          </div>
-        )}
-      </div>
-
-      {/* 创建/编辑用户弹窗 */}
-      {(showCreateModal || editingUser) && (
-        <UserModal
-          user={editingUser}
-          departments={departments}
-          onClose={() => {
-            setShowCreateModal(false);
-            setEditingUser(null);
+      {/* 用户表格 */}
+      <Card>
+        <Table
+          columns={columns}
+          dataSource={filteredUsers}
+          rowKey="id"
+          loading={loading}
+          rowSelection={{
+            selectedRowKeys,
+            onChange: setSelectedRowKeys,
           }}
-          onSave={async (userData) => {
-            if (editingUser) {
-              await organizationApi.updateUser(editingUser.id, userData);
-            } else {
-              await organizationApi.createUser(userData);
-            }
-            setShowCreateModal(false);
-            setEditingUser(null);
-            loadUsers();
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total) => t('pagination.total', `共 ${total} 条`, { total }),
+            pageSizeOptions: ['10', '20', '50', '100'],
+          }}
+          locale={{
+            emptyText: t('user.noUsers', '暂无用户数据'),
           }}
         />
-      )}
-    </div>
-  );
-}
+      </Card>
 
-// 用户编辑弹窗
-function UserModal({
-  user,
-  departments,
-  onClose,
-  onSave,
-}: {
-  user: UserType | null;
-  departments: string[];
-  onClose: () => void;
-  onSave: (data: Partial<UserType>) => Promise<void>;
-}) {
-  const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    department: user?.department || '',
-    role: user?.role || 'user',
-    status: user?.status || 'active',
-  });
-  const [saving, setSaving] = useState(false);
+      {/* 创建/编辑用户弹窗 */}
+      <Modal
+        title={editingUser ? t('user.editUser', '编辑用户') : t('user.createUser', '添加用户')}
+        open={modalOpen}
+        onCancel={handleModalClose}
+        onOk={handleSave}
+        okText={t('common.save', '保存')}
+        cancelText={t('common.cancel', '取消')}
+        destroyOnClose
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={{
+            role: 'user',
+            status: 'active',
+          }}
+        >
+          <Form.Item
+            name="name"
+            label="姓名"
+            rules={[{ required: true, message: '请输入姓名' }]}
+          >
+            <Input placeholder="请输入姓名" />
+          </Form.Item>
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      await onSave(formData);
-    } finally {
-      setSaving(false);
-    }
-  };
+          <Form.Item
+            name="email"
+            label="邮箱"
+            rules={[
+              { required: true, message: '请输入邮箱' },
+              { type: 'email', message: '请输入有效的邮箱地址' },
+            ]}
+          >
+            <Input placeholder="请输入邮箱" />
+          </Form.Item>
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md bg-[var(--color-bg-base)] rounded-lg shadow-xl border border-[var(--color-border)]">
-        <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
-          <h3 className="text-lg font-medium text-[var(--color-text-primary)]">
-            {user ? '编辑用户' : '添加用户'}
-          </h3>
-          <button onClick={onClose} className="p-1 hover:bg-[var(--color-bg-tertiary)] rounded">
-            <XCircle className="w-5 h-5 text-[var(--color-text-tertiary)]" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          <div>
-            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">姓名</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-              required
+          <Form.Item name="department" label="部门">
+            <Select
+              placeholder="选择部门"
+              allowClear
+              options={departments.map((dept) => ({
+                label: dept,
+                value: dept,
+              }))}
             />
-          </div>
+          </Form.Item>
 
-          <div>
-            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">邮箱</label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-              required
+          <Form.Item name="role" label="角色">
+            <Select
+              options={Object.entries(roleLabels).map(([value, label]) => ({
+                label,
+                value,
+              }))}
             />
-          </div>
+          </Form.Item>
 
-          <div>
-            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">部门</label>
-            <select
-              value={formData.department}
-              onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-              className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-            >
-              <option value="">选择部门</option>
-              {departments.map((dept) => (
-                <option key={dept} value={dept}>
-                  {dept}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">角色</label>
-            <select
-              value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value as UserType['role'] })}
-              className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-            >
-              <option value="user">普通用户</option>
-              <option value="manager">经理</option>
-              <option value="admin">管理员</option>
-            </select>
-          </div>
-
-          {user && (
-            <div>
-              <label className="block text-sm text-[var(--color-text-secondary)] mb-1">状态</label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value as UserType['status'] })}
-                className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-              >
-                <option value="active">正常</option>
-                <option value="inactive">禁用</option>
-                <option value="pending">待激活</option>
-              </select>
-            </div>
+          {editingUser && (
+            <Form.Item name="status" label="状态">
+              <Select
+                options={Object.entries(statusLabels).map(([value, label]) => ({
+                  label,
+                  value,
+                }))}
+              />
+            </Form.Item>
           )}
-
-          <div className="flex justify-end gap-2 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)]"
-            >
-              取消
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-4 py-2 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-            >
-              {saving ? '保存中...' : '保存'}
-            </button>
-          </div>
-        </form>
-      </div>
+        </Form>
+      </Modal>
     </div>
   );
 }

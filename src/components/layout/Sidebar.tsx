@@ -24,6 +24,7 @@ import {
   Building2,
   FileBox,
   ScrollText,
+  PieChart,
 } from 'lucide-react';
 import type { MenuProps } from 'antd';
 import { useAppStore, useSettings } from '../../stores';
@@ -151,6 +152,11 @@ const menuItems: MenuProps['items'] = [
     key: '/system/audit-logs',
     icon: <ScrollText className="w-5 h-5" />,
     label: '审计日志',
+  },
+  {
+    key: '/system/insight',
+    icon: <PieChart className="w-5 h-5" />,
+    label: '洞察分析',
   },
 ];
 

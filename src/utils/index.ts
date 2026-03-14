@@ -375,6 +375,10 @@ export * from './tree';
 
 export * from './format-number';
 
+// ==================== 通用工具函数 ====================
+
+export * from './helpers';
+
 export default {
   cn,
   urlJoin,

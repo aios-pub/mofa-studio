@@ -9,3 +9,5 @@ export * from './useDebounce';
 export * from './useLifecycle';
 export * from './useEventListener';
 export * from './useRequest';
+export * from './useKeyboard';
+export * from './useText';

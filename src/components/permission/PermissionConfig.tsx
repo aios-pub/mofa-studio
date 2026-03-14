@@ -3,7 +3,12 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Shield, Save, RotateCcw, AlertCircle } from 'lucide-react';
+import {
+  SafetyOutlined,
+  SaveOutlined,
+  ReloadOutlined,
+  ExclamationCircleOutlined,
+} from '@ant-design/icons';
 import {
   permissionApi,
   featurePermissionDefinitions,
@@ -180,7 +185,7 @@ export default function PermissionConfig({ agentId, onSave }: PermissionConfigPr
       {/* 功能权限 */}
       <div className="space-y-3">
         <h3 className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-primary)]">
-          <Shield className="w-4 h-4" />
+          <SafetyOutlined />
           功能权限
         </h3>
         <div className="grid grid-cols-2 gap-2">
@@ -326,7 +331,7 @@ export default function PermissionConfig({ agentId, onSave }: PermissionConfigPr
         <div className="flex items-center gap-2 text-sm text-[var(--color-text-tertiary)]">
           {hasChanges && (
             <>
-              <AlertCircle className="w-4 h-4 text-yellow-500" />
+              <ExclamationCircleOutlined className="text-yellow-500" />
               <span>有未保存的更改</span>
             </>
           )}
@@ -337,7 +342,7 @@ export default function PermissionConfig({ agentId, onSave }: PermissionConfigPr
             disabled={!hasChanges}
             className="flex items-center gap-1 px-4 py-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <RotateCcw className="w-4 h-4" />
+            <ReloadOutlined />
             重置
           </button>
           <button
@@ -345,7 +350,7 @@ export default function PermissionConfig({ agentId, onSave }: PermissionConfigPr
             disabled={!hasChanges || saving}
             className="flex items-center gap-1 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg text-sm hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Save className="w-4 h-4" />
+            <SaveOutlined />
             {saving ? '保存中...' : '保存配置'}
           </button>
         </div>

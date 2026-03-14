@@ -6,7 +6,17 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, Row, Col, Select, Button, Space, Table, Tag, Progress, Tooltip } from 'antd';
-import { Download, RefreshCw, MessageSquare, Clock, Target, Zap, TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
+import {
+  DownloadOutlined,
+  SyncOutlined,
+  MessageOutlined,
+  ClockCircleOutlined,
+  AimOutlined,
+  ThunderboltOutlined,
+  RiseOutlined,
+  FallOutlined,
+  BarChartOutlined,
+} from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { PageHeader } from '@/components/common';
 
@@ -39,9 +49,9 @@ function StatCard({ title, value, change, changeLabel, icon, color }: StatCardPr
           <p className="text-2xl font-bold">{value}</p>
           <div className="flex items-center gap-1 text-sm">
             {isPositive ? (
-              <TrendingUp className="w-4 h-4 text-green-500" />
+              <RiseOutlined className="text-green-500" />
             ) : (
-              <TrendingDown className="w-4 h-4 text-red-500" />
+              <FallOutlined className="text-red-500" />
             )}
             <span className={isPositive ? 'text-green-500' : 'text-red-500'}>
               {isPositive ? '+' : ''}{change}%
@@ -260,7 +270,7 @@ export default function InsightPage() {
       <PageHeader
         title={t('insight.title', '洞察分析')}
         description={t('insight.subtitle', 'AI Agent 系统性能和使用数据分析')}
-        icon={<BarChart3 className="w-6 h-6" />}
+        icon={<BarChartOutlined className="text-xl" />}
         actions={
           <Space>
             <Select
@@ -269,10 +279,10 @@ export default function InsightPage() {
               options={timeOptions}
               style={{ width: 120 }}
             />
-            <Button icon={<Download className="w-4 h-4" />}>
+            <Button icon={<DownloadOutlined />}>
               {t('common.export', '导出')}
             </Button>
-            <Button type="primary" icon={<RefreshCw className="w-4 h-4" />} onClick={handleRefresh} loading={loading}>
+            <Button type="primary" icon={<SyncOutlined spin={loading} />} onClick={handleRefresh} loading={loading}>
               {t('common.refresh', '刷新')}
             </Button>
           </Space>
@@ -287,7 +297,7 @@ export default function InsightPage() {
             value={mockStats.totalConversations.toLocaleString()}
             change={mockStats.conversationsChange}
             changeLabel={t('insight.vsLastWeek', '较上周')}
-            icon={<MessageSquare className="w-6 h-6 text-white" />}
+            icon={<MessageOutlined className="text-xl text-white" />}
             color="bg-blue-500"
           />
         </Col>
@@ -297,7 +307,7 @@ export default function InsightPage() {
             value={`${mockStats.avgResponseTime}s`}
             change={mockStats.responseTimeChange}
             changeLabel={t('insight.vsLastWeek', '较上周')}
-            icon={<Clock className="w-6 h-6 text-white" />}
+            icon={<ClockCircleOutlined className="text-xl text-white" />}
             color="bg-green-500"
           />
         </Col>
@@ -307,7 +317,7 @@ export default function InsightPage() {
             value={`${mockStats.successRate}%`}
             change={mockStats.successRateChange}
             changeLabel={t('insight.vsLastWeek', '较上周')}
-            icon={<Target className="w-6 h-6 text-white" />}
+            icon={<AimOutlined className="text-xl text-white" />}
             color="bg-purple-500"
           />
         </Col>
@@ -317,7 +327,7 @@ export default function InsightPage() {
             value={(mockStats.totalTokens / 1000000).toFixed(2) + 'M'}
             change={mockStats.tokensChange}
             changeLabel={t('insight.vsLastWeek', '较上周')}
-            icon={<Zap className="w-6 h-6 text-white" />}
+            icon={<ThunderboltOutlined className="text-xl text-white" />}
             color="bg-orange-500"
           />
         </Col>

@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import './i18n'; // Initialize i18n
 import MainLayout from './components/layout/MainLayout';
 import { RouteGuard } from './components/auth';
+import { ToastProvider } from './components/common';
 import Dashboard from './pages/workbench/Dashboard';
 import Conversation from './pages/workbench/Conversation';
 import { AgentListPage, PromptListPage, SkillsListPage, TestSetsListPage, ProvidersListPage, ScheduledTasksPage } from './pages/management';
@@ -22,6 +23,7 @@ import { ThemeProvider } from './theme';
 function App() {
   return (
     <ThemeProvider>
+      <ToastProvider />
       <Routes>
         {/* 公开路由 - 登录页 */}
         <Route path="/auth/login" element={<LoginPage />} />

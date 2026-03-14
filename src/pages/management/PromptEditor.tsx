@@ -4,18 +4,18 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Save,
-  Variable,
-  FileText,
-  Calendar,
-  Hash,
-  Type,
-  List,
-  Plus,
-  Trash2,
-  Eye,
-  Sparkles,
-} from 'lucide-react';
+  SaveOutlined,
+  FunctionOutlined,
+  FileTextOutlined,
+  CalendarOutlined,
+  NumberOutlined,
+  FontSizeOutlined,
+  UnorderedListOutlined,
+  PlusOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+  BulbOutlined,
+} from '@ant-design/icons';
 import type { Prompt, PromptVariable } from '../../services/mock/prompts';
 import { promptApi } from '../../services/mock/prompts';
 
@@ -121,10 +121,10 @@ const presetTemplates = [
 
 // 变量类型映射
 const variableTypes = [
-  { value: 'string', label: '字符串', icon: Type },
-  { value: 'number', label: '数字', icon: Hash },
-  { value: 'enum', label: '枚举', icon: List },
-  { value: 'date', label: '日期', icon: Calendar },
+  { value: 'string', label: '字符串', icon: FontSizeOutlined },
+  { value: 'number', label: '数字', icon: NumberOutlined },
+  { value: 'enum', label: '枚举', icon: UnorderedListOutlined },
+  { value: 'date', label: '日期', icon: CalendarOutlined },
 ];
 
 export default function PromptEditor({ promptId, onSave, onCancel }: PromptEditorProps) {
@@ -332,7 +332,7 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
             onClick={() => setActiveTab('preview')}
             className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)]"
           >
-            <Eye className="w-4 h-4" />
+            <EyeOutlined />
             预览
           </button>
           <button
@@ -340,7 +340,7 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
             disabled={saving || !name.trim() || !content.trim()}
             className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Save className="w-4 h-4" />
+            <SaveOutlined />
             {saving ? '保存中...' : '保存'}
           </button>
         </div>
@@ -361,7 +361,7 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
                   className="w-full text-left p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-[var(--color-primary)]" />
+                    <BulbOutlined className="text-[var(--color-primary)]" />
                     <span className="text-sm text-[var(--color-text-primary)]">{template.name}</span>
                   </div>
                   <span className="text-xs text-[var(--color-text-tertiary)]">{template.category}</span>
@@ -433,9 +433,9 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
             {/* 标签栏 */}
             <div className="flex border-b border-[var(--color-border)]">
               {[
-                { key: 'content', label: '内容', icon: FileText },
-                { key: 'variables', label: '变量', icon: Variable },
-                { key: 'preview', label: '预览', icon: Eye },
+                { key: 'content', label: '内容', icon: FileTextOutlined },
+                { key: 'variables', label: '变量', icon: FunctionOutlined },
+                { key: 'preview', label: '预览', icon: EyeOutlined },
               ].map((tab) => (
                 <button
                   key={tab.key}
@@ -474,14 +474,14 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
                       onClick={addVariable}
                       className="flex items-center gap-1 px-2 py-1 text-xs bg-[var(--color-primary)] text-white rounded hover:bg-[var(--color-primary-hover)]"
                     >
-                      <Plus className="w-3 h-3" />
+                      <PlusOutlined className="text-xs" />
                       添加变量
                     </button>
                   </div>
 
                   {variables.length === 0 ? (
                     <div className="text-center py-8 text-[var(--color-text-tertiary)]">
-                      <Variable className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <FunctionOutlined className="text-2xl mx-auto mb-2 opacity-50" />
                       <p>暂无自定义变量</p>
                       <p className="text-xs">点击上方按钮添加变量</p>
                     </div>
@@ -505,7 +505,7 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
                               onClick={() => removeVariable(index)}
                               className="p-1 text-[var(--color-text-tertiary)] hover:text-red-500"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <DeleteOutlined />
                             </button>
                           </div>
                           <div className="grid grid-cols-2 gap-2">

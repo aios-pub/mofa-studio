@@ -4,7 +4,7 @@
  * 用于获取页面或容器的滚动进度
  */
 
-import { useScroll, type MotionValue } from 'motion/react';
+import { useScroll, type MotionValue } from 'framer-motion';
 import { useMemo, useRef } from 'react';
 
 export type UseScrollProgressTarget = 'document' | 'container';

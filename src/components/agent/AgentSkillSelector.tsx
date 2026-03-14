@@ -3,7 +3,16 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Search, X, ChevronDown, ChevronUp, Zap, Play, Loader2 } from 'lucide-react';
+import { Input } from 'antd';
+import {
+  SearchOutlined,
+  CloseOutlined,
+  UpOutlined,
+  DownOutlined,
+  ThunderboltOutlined,
+  PlayCircleOutlined,
+  LoadingOutlined,
+} from '@ant-design/icons';
 import { skillApi } from '../../services/mock/skills';
 import type { Skill } from '../../services/mock/skills';
 
@@ -101,13 +110,13 @@ export default function AgentSkillSelector({
                 key={skill.id}
                 className="flex items-center gap-1 px-2 py-1 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30 rounded-lg"
               >
-                <Zap className="w-3 h-3 text-[var(--color-primary)]" />
+                <ThunderboltOutlined className="text-[var(--color-primary)]" />
                 <span className="text-sm text-[var(--color-primary)]">{skill.name}</span>
                 <button
                   onClick={() => toggleSkill(skill.id)}
                   className="p-0.5 hover:bg-[var(--color-primary)]/20 rounded"
                 >
-                  <X className="w-3 h-3 text-[var(--color-primary)]" />
+                  <CloseOutlined className="text-xs text-[var(--color-primary)]" />
                 </button>
               </div>
             ))}
@@ -116,16 +125,13 @@ export default function AgentSkillSelector({
       )}
 
       {/* 搜索框 */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
-        <input
-          type="text"
-          placeholder="搜索 Skills..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-9 pr-3 py-2 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-        />
-      </div>
+      <Input
+        placeholder="搜索 Skills..."
+        prefix={<SearchOutlined />}
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        allowClear
+      />
 
       {/* Skills 列表 */}
       {loading ? (
@@ -167,7 +173,7 @@ export default function AgentSkillSelector({
                         />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <Zap className="w-4 h-4 text-[var(--color-text-tertiary)]" />
+                            <ThunderboltOutlined className="text-[var(--color-text-tertiary)]" />
                             <span className="text-sm font-medium text-[var(--color-text-primary)]">
                               {skill.name}
                             </span>
@@ -194,9 +200,9 @@ export default function AgentSkillSelector({
                           className="p-1 hover:bg-[var(--color-bg-tertiary)] rounded"
                         >
                           {isExpanded ? (
-                            <ChevronUp className="w-4 h-4 text-[var(--color-text-tertiary)]" />
+                            <UpOutlined className="text-[var(--color-text-tertiary)]" />
                           ) : (
-                            <ChevronDown className="w-4 h-4 text-[var(--color-text-tertiary)]" />
+                            <DownOutlined className="text-[var(--color-text-tertiary)]" />
                           )}
                         </button>
                       </div>
@@ -253,9 +259,9 @@ export default function AgentSkillSelector({
                               className="flex items-center gap-1 px-3 py-1.5 text-xs bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-base)] border border-[var(--color-border)] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {isTesting ? (
-                                <Loader2 className="w-3 h-3 animate-spin" />
+                                <LoadingOutlined className="animate-spin" />
                               ) : (
-                                <Play className="w-3 h-3" />
+                                <PlayCircleOutlined />
                               )}
                               {isTesting ? '测试中...' : '测试'}
                             </button>

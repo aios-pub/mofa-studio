@@ -3,7 +3,14 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Plus, Search, MoreHorizontal, MessageSquare, Trash2, Edit2 } from 'lucide-react';
+import {
+  PlusOutlined,
+  SearchOutlined,
+  MoreOutlined,
+  MessageOutlined,
+  DeleteOutlined,
+  EditOutlined,
+} from '@ant-design/icons';
 import { conversationApi } from '../../services/mock/conversations';
 import { mockAgents } from '../../services/mock/agents';
 import type { Conversation } from '../../types';
@@ -98,12 +105,12 @@ export default function ConversationList({
           onClick={handleCreateConversation}
           className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors"
         >
-          <Plus className="w-4 h-4" />
+          <PlusOutlined />
           新建对话
         </button>
 
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
+          <SearchOutlined className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-tertiary)]" />
           <input
             type="text"
             placeholder="搜索会话..."
@@ -122,7 +129,7 @@ export default function ConversationList({
           </div>
         ) : filteredConversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <MessageSquare className="w-12 h-12 text-[var(--color-text-tertiary)] mb-2" />
+            <MessageOutlined className="text-3xl text-[var(--color-text-tertiary)] mb-2" />
             <p className="text-[var(--color-text-secondary)]">暂无会话</p>
             <p className="text-sm text-[var(--color-text-tertiary)]">点击上方按钮开始新对话</p>
           </div>
@@ -151,7 +158,7 @@ export default function ConversationList({
                             : 'hover:bg-[var(--color-bg-tertiary)]'
                         }`}
                       >
-                        <MessageSquare className="w-4 h-4 flex-shrink-0 text-[var(--color-text-tertiary)]" />
+                        <MessageOutlined className="flex-shrink-0 text-[var(--color-text-tertiary)]" />
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium text-[var(--color-text-primary)] truncate">
                             {conversation.title}
@@ -168,7 +175,7 @@ export default function ConversationList({
                           }}
                           className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[var(--color-bg-base)] rounded transition-opacity"
                         >
-                          <MoreHorizontal className="w-4 h-4 text-[var(--color-text-tertiary)]" />
+                          <MoreOutlined className="text-[var(--color-text-tertiary)]" />
                         </button>
                       </div>
                     ))}
@@ -193,14 +200,14 @@ export default function ConversationList({
             }}
             className="flex items-center gap-2 w-full px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]"
           >
-            <Edit2 className="w-4 h-4" />
+            <EditOutlined />
             重命名
           </button>
           <button
             onClick={() => handleDeleteConversation(contextMenu.id)}
             className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
           >
-            <Trash2 className="w-4 h-4" />
+            <DeleteOutlined />
             删除
           </button>
         </div>

@@ -3,7 +3,15 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Search, X, Play, CheckCircle, Clock, Loader2 } from 'lucide-react';
+import { Input } from 'antd';
+import {
+  SearchOutlined,
+  CloseOutlined,
+  PlayCircleOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  LoadingOutlined,
+} from '@ant-design/icons';
 import { testSetApi } from '../../services/mock/testsets';
 import type { TestSet } from '../../types/testset';
 
@@ -87,11 +95,11 @@ export default function AgentTestSetSelector({
   const getStatusIcon = (status: TestSet['status']) => {
     switch (status) {
       case 'running':
-        return <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />;
+        return <LoadingOutlined className="text-blue-500 animate-spin" />;
       case 'completed':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircleOutlined className="text-green-500" />;
       default:
-        return <Clock className="w-4 h-4 text-[var(--color-text-tertiary)]" />;
+        return <ClockCircleOutlined className="text-[var(--color-text-tertiary)]" />;
     }
   };
 
@@ -115,7 +123,7 @@ export default function AgentTestSetSelector({
                   onClick={() => toggleTestSet(testSet.id)}
                   className="p-0.5 hover:bg-[var(--color-primary)]/20 rounded"
                 >
-                  <X className="w-3 h-3 text-[var(--color-primary)]" />
+                  <CloseOutlined className="text-xs text-[var(--color-primary)]" />
                 </button>
               </div>
             ))}
@@ -124,16 +132,13 @@ export default function AgentTestSetSelector({
       )}
 
       {/* 搜索框 */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
-        <input
-          type="text"
-          placeholder="搜索测试集..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-9 pr-3 py-2 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-        />
-      </div>
+      <Input
+        placeholder="搜索测试集..."
+        prefix={<SearchOutlined />}
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        allowClear
+      />
 
       {/* 测试集列表 */}
       {loading ? (
@@ -203,12 +208,12 @@ export default function AgentTestSetSelector({
                         >
                           {isRunning || testSet.status === 'running' ? (
                             <>
-                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <LoadingOutlined className="text-xs" spin />
                               运行中
                             </>
                           ) : (
                             <>
-                              <Play className="w-3 h-3" />
+                              <PlayCircleOutlined className="text-xs" />
                               运行
                             </>
                           )}

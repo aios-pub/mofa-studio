@@ -3,7 +3,8 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Search, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Input } from 'antd';
+import { SearchOutlined, CloseOutlined, UpOutlined, DownOutlined } from '@ant-design/icons';
 import { promptApi } from '../../services/mock/prompts';
 import type { Prompt } from '../../services/mock/prompts';
 
@@ -87,7 +88,7 @@ export default function AgentPromptSelector({
                   onClick={() => togglePrompt(prompt.id)}
                   className="p-0.5 hover:bg-[var(--color-primary)]/20 rounded"
                 >
-                  <X className="w-3 h-3 text-[var(--color-primary)]" />
+                  <CloseOutlined className="text-xs text-[var(--color-primary)]" />
                 </button>
               </div>
             ))}
@@ -96,16 +97,13 @@ export default function AgentPromptSelector({
       )}
 
       {/* 搜索框 */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
-        <input
-          type="text"
-          placeholder="搜索提示词..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-9 pr-3 py-2 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-        />
-      </div>
+      <Input
+        placeholder="搜索提示词..."
+        prefix={<SearchOutlined />}
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        allowClear
+      />
 
       {/* 提示词列表 */}
       {loading ? (
@@ -164,9 +162,9 @@ export default function AgentPromptSelector({
                           className="p-1 hover:bg-[var(--color-bg-tertiary)] rounded"
                         >
                           {isExpanded ? (
-                            <ChevronUp className="w-4 h-4 text-[var(--color-text-tertiary)]" />
+                            <UpOutlined className="text-[var(--color-text-tertiary)]" />
                           ) : (
-                            <ChevronDown className="w-4 h-4 text-[var(--color-text-tertiary)]" />
+                            <DownOutlined className="text-[var(--color-text-tertiary)]" />
                           )}
                         </button>
                       </div>

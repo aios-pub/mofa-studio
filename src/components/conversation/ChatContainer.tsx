@@ -3,7 +3,15 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2, Copy, RotateCcw, ChevronDown } from 'lucide-react';
+import {
+  SendOutlined,
+  RobotOutlined,
+  UserOutlined,
+  LoadingOutlined,
+  CopyOutlined,
+  ReloadOutlined,
+  DownOutlined,
+} from '@ant-design/icons';
 import { MarkdownRenderer } from '../common';
 import type { Message, Conversation } from '../../types';
 
@@ -58,7 +66,7 @@ export default function ChatContainer({
     return (
       <div className="flex items-center justify-center h-full bg-[var(--color-bg-base)]">
         <div className="text-center">
-          <Bot className="w-16 h-16 text-[var(--color-text-tertiary)] mx-auto mb-4" />
+          <RobotOutlined className="text-4xl text-[var(--color-text-tertiary)] mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-[var(--color-text-primary)] mb-2">
             选择或创建一个会话
           </h2>
@@ -74,7 +82,7 @@ export default function ChatContainer({
     <div className="flex flex-col h-full bg-[var(--color-bg-base)]">
       {/* 头部 - 会话信息 */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--color-border)]">
-        <Bot className="w-6 h-6 text-[var(--color-primary)]" />
+        <RobotOutlined className="text-xl text-[var(--color-primary)]" />
         <div className="flex-1">
           <h2 className="font-medium text-[var(--color-text-primary)]">{conversation.title}</h2>
           <p className="text-xs text-[var(--color-text-tertiary)]">
@@ -88,7 +96,7 @@ export default function ChatContainer({
         {conversation.messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <Bot className="w-12 h-12 text-[var(--color-text-tertiary)] mx-auto mb-3" />
+              <RobotOutlined className="text-3xl text-[var(--color-text-tertiary)] mx-auto mb-3" />
               <p className="text-[var(--color-text-secondary)]">开始新对话</p>
               <p className="text-sm text-[var(--color-text-tertiary)]">输入您的问题开始</p>
             </div>
@@ -103,7 +111,7 @@ export default function ChatContainer({
             {isLoading && (
               <div className="flex gap-3">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-bg-tertiary)] flex items-center justify-center">
-                  <Loader2 className="w-4 h-4 text-[var(--color-text-primary)] animate-spin" />
+                  <LoadingOutlined className="text-[var(--color-text-primary)]" spin />
                 </div>
                 <div className="px-4 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]">
                   <span className="text-[var(--color-text-tertiary)]">思考中...</span>
@@ -134,7 +142,7 @@ export default function ChatContainer({
             disabled={!input.trim() || isLoading}
             className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <Send className="w-5 h-5" />
+            <SendOutlined />
           </button>
         </div>
       </div>
@@ -156,9 +164,9 @@ function MessageItem({ message }: { message: Message }) {
         }`}
       >
         {isUser ? (
-          <User className="w-4 h-4 text-white" />
+          <UserOutlined className="text-white" />
         ) : (
-          <Bot className="w-4 h-4 text-[var(--color-text-primary)]" />
+          <RobotOutlined className="text-[var(--color-text-primary)]" />
         )}
       </div>
 
@@ -171,8 +179,8 @@ function MessageItem({ message }: { message: Message }) {
               onClick={() => setShowThinking(!showThinking)}
               className="flex items-center gap-1 text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
             >
-              <ChevronDown
-                className={`w-3 h-3 transition-transform ${showThinking ? 'rotate-180' : ''}`}
+              <DownOutlined
+                className={`text-xs transition-transform ${showThinking ? 'rotate-180' : ''}`}
               />
               思考过程
             </button>
@@ -236,10 +244,10 @@ function MessageItem({ message }: { message: Message }) {
           {!isUser && (
             <div className="flex items-center gap-1">
               <button className="p-0.5 hover:bg-[var(--color-bg-tertiary)] rounded">
-                <Copy className="w-3 h-3" />
+                <CopyOutlined className="text-xs" />
               </button>
               <button className="p-0.5 hover:bg-[var(--color-bg-tertiary)] rounded">
-                <RotateCcw className="w-3 h-3" />
+                <ReloadOutlined className="text-xs" />
               </button>
             </div>
           )}

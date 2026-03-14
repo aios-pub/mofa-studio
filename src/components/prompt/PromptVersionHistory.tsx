@@ -4,16 +4,16 @@
 
 import { useState, useEffect } from 'react';
 import {
-  History,
-  RotateCcw,
-  GitCompare,
-  ChevronRight,
-  Clock,
-  User,
-  MessageSquare,
-  Check,
-  X,
-} from 'lucide-react';
+  HistoryOutlined,
+  ReloadOutlined,
+  SwapOutlined,
+  RightOutlined,
+  ClockCircleOutlined,
+  UserOutlined,
+  MessageOutlined,
+  CheckOutlined,
+  CloseOutlined,
+} from '@ant-design/icons';
 import type { Prompt, PromptVersion, VersionDiff } from '../../services/mock/prompts';
 import { promptApi } from '../../services/mock/prompts';
 
@@ -91,7 +91,7 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
   if (versions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-[var(--color-text-tertiary)]">
-        <History className="w-12 h-12 mb-2 opacity-50" />
+        <HistoryOutlined className="text-3xl mb-2 opacity-50" />
         <p>暂无版本历史</p>
       </div>
     );
@@ -118,7 +118,7 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
               }`}
               title="版本对比"
             >
-              <GitCompare className="w-4 h-4" />
+              <SwapOutlined />
             </button>
           </div>
           {compareMode && (
@@ -168,11 +168,11 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
                 )}
               </div>
               <div className="flex items-center gap-1 mt-1 text-xs text-[var(--color-text-tertiary)]">
-                <Clock className="w-3 h-3" />
+                <ClockCircleOutlined className="text-xs" />
                 <span>{formatDate(version.createdAt)}</span>
               </div>
               <div className="flex items-center gap-1 mt-0.5 text-xs text-[var(--color-text-tertiary)]">
-                <User className="w-3 h-3" />
+                <UserOutlined className="text-xs" />
                 <span>{version.createdBy}</span>
               </div>
               {version.changeNote && (
@@ -202,7 +202,7 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
 
             {!compareFrom || !compareTo ? (
               <div className="text-center py-8 text-[var(--color-text-tertiary)]">
-                <GitCompare className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <SwapOutlined className="text-3xl mx-auto mb-2 opacity-50" />
                 <p>请在左侧选择两个版本进行对比</p>
                 <p className="text-xs mt-1">先选择版本 A，再选择版本 B</p>
               </div>
@@ -215,7 +215,7 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
                       v{compareFrom.version} (A)
                     </span>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-[var(--color-text-tertiary)]" />
+                  <RightOutlined className="text-[var(--color-text-tertiary)]" />
                   <div className="flex items-center gap-2">
                     <span className="w-3 h-3 bg-green-500 rounded" />
                     <span className="text-[var(--color-text-secondary)]">
@@ -332,14 +332,14 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
                         onClick={() => handleRollback(selectedVersion.id)}
                         className="flex items-center gap-1 px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600"
                       >
-                        <Check className="w-4 h-4" />
+                        <CheckOutlined />
                         确认回滚
                       </button>
                       <button
                         onClick={() => setRollbackConfirm(null)}
                         className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)]"
                       >
-                        <X className="w-4 h-4" />
+                        <CloseOutlined />
                         取消
                       </button>
                     </div>
@@ -348,7 +348,7 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
                       onClick={() => setRollbackConfirm(selectedVersion.id)}
                       className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)]"
                     >
-                      <RotateCcw className="w-4 h-4" />
+                      <ReloadOutlined />
                       回滚到此版本
                     </button>
                   )}
@@ -359,13 +359,13 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 p-3 bg-[var(--color-bg-secondary)] rounded-lg">
                 <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-[var(--color-text-tertiary)]" />
+                  <ClockCircleOutlined className="text-[var(--color-text-tertiary)]" />
                   <span className="text-sm text-[var(--color-text-secondary)]">
                     {formatDate(selectedVersion.createdAt)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-[var(--color-text-tertiary)]" />
+                  <UserOutlined className="text-[var(--color-text-tertiary)]" />
                   <span className="text-sm text-[var(--color-text-secondary)]">
                     {selectedVersion.createdBy}
                   </span>
@@ -375,7 +375,7 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
               {selectedVersion.changeNote && (
                 <div className="p-3 bg-[var(--color-bg-secondary)] rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
-                    <MessageSquare className="w-4 h-4 text-[var(--color-text-tertiary)]" />
+                    <MessageOutlined className="text-[var(--color-text-tertiary)]" />
                     <span className="text-sm font-medium text-[var(--color-text-primary)]">
                       变更说明
                     </span>
@@ -446,7 +446,7 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center text-[var(--color-text-tertiary)]">
-              <History className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <HistoryOutlined className="text-3xl mx-auto mb-2 opacity-50" />
               <p>选择一个版本查看详情</p>
             </div>
           </div>

@@ -4,16 +4,18 @@
  * 显示页面滚动进度，提升阅读体验
  */
 
-import { useSpring, m, type MotionValue, type HTMLMotionProps } from 'motion/react';
+import { useSpring, motion, type MotionValue } from 'framer-motion';
 import type { CSSProperties } from 'react';
 
-export interface ScrollProgressProps extends HTMLMotionProps<'div'> {
+export interface ScrollProgressProps {
   /** 进度条颜色 */
   color?: string;
   /** 滚动进度值 (0-1) */
   scrollYProgress: MotionValue<number>;
   /** 进度条高度 */
   height?: number;
+  /** 自定义类名 */
+  className?: string;
 }
 
 /**
@@ -31,7 +33,7 @@ export function ScrollProgress({
   scrollYProgress,
   height = 3,
   color,
-  ...other
+  className,
 }: ScrollProgressProps) {
   // 使用 spring 动画使进度条变化更平滑
   const scaleX = useSpring(scrollYProgress, {
@@ -54,7 +56,7 @@ export function ScrollProgress({
     zIndex: 9999,
   };
 
-  return <m.div style={{ scaleX, ...style }} {...other} />;
+  return <motion.div style={{ scaleX, ...style }} className={className} />;
 }
 
 export default ScrollProgress;

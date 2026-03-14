@@ -1,0 +1,225 @@
+/**
+ * 会话列表组件
+ */
+
+import { useState, useEffect } from 'react';
+import { Plus, Search, MoreHorizontal, MessageSquare, Trash2, Edit2 } from 'lucide-react';
+import { conversationApi } from '../../services/mock/conversations';
+import { mockAgents } from '../../services/mock/agents';
+import type { Conversation } from '../../types';
+
+interface ConversationListProps {
+  onSelectConversation?: (conversation: Conversation) => void;
+  selectedId?: string;
+}
+
+export default function ConversationList({
+  onSelectConversation,
+  selectedId,
+}: ConversationListProps) {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null);
+
+  // 加载会话列表
+  useEffect(() => {
+    loadConversations();
+  }, []);
+
+  const loadConversations = async () => {
+    try {
+      setLoading(true);
+      const data = await conversationApi.getAll();
+      setConversations(data);
+    } catch (error) {
+      console.error('Failed to load conversations:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 创建新会话
+  const handleCreateConversation = async () => {
+    try {
+      const newConversation = await conversationApi.create({
+        agentId: 'agent-1',
+        title: '新对话',
+      });
+      setConversations([newConversation, ...conversations]);
+      onSelectConversation?.(newConversation);
+    } catch (error) {
+      console.error('Failed to create conversation:', error);
+    }
+  };
+
+  // 删除会话
+  const handleDeleteConversation = async (id: string) => {
+    try {
+      await conversationApi.delete(id);
+      setConversations(conversations.filter((c) => c.id !== id));
+      setContextMenu(null);
+    } catch (error) {
+      console.error('Failed to delete conversation:', error);
+    }
+  };
+
+  // 过滤会话
+  const filteredConversations = conversations.filter((c) =>
+    c.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // 按 Agent 分组
+  const groupedConversations = mockAgents.map((agent) => ({
+    agent,
+    conversations: filteredConversations.filter((c) => c.agentId === agent.id),
+  }));
+
+  // 右键菜单
+  const handleContextMenu = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    setContextMenu({ id, x: e.clientX, y: e.clientY });
+  };
+
+  // 点击外部关闭菜单
+  useEffect(() => {
+    const handleClick = () => setContextMenu(null);
+    if (contextMenu) {
+      document.addEventListener('click', handleClick);
+      return () => document.removeEventListener('click', handleClick);
+    }
+  }, [contextMenu]);
+
+  return (
+    <div className="flex flex-col h-full bg-[var(--color-bg-secondary)]">
+      {/* 头部 - 新建按钮和搜索 */}
+      <div className="p-3 space-y-2">
+        <button
+          onClick={handleCreateConversation}
+          className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          新建对话
+        </button>
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
+          <input
+            type="text"
+            placeholder="搜索会话..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
+          />
+        </div>
+      </div>
+
+      {/* 会话列表 */}
+      <div className="flex-1 overflow-y-auto">
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-[var(--color-text-tertiary)]">加载中...</div>
+          </div>
+        ) : filteredConversations.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <MessageSquare className="w-12 h-12 text-[var(--color-text-tertiary)] mb-2" />
+            <p className="text-[var(--color-text-secondary)]">暂无会话</p>
+            <p className="text-sm text-[var(--color-text-tertiary)]">点击上方按钮开始新对话</p>
+          </div>
+        ) : (
+          <div className="px-2">
+            {groupedConversations.map(
+              ({ agent, conversations: groupConvs }) =>
+                groupConvs.length > 0 && (
+                  <div key={agent.id} className="mb-4">
+                    {/* Agent 分组标题 */}
+                    <div className="flex items-center gap-2 px-2 py-1 text-xs font-medium text-[var(--color-text-tertiary)]">
+                      <span>{agent.avatar || '🤖'}</span>
+                      <span>{agent.name}</span>
+                      <span className="text-[var(--color-text-tertiary)]">({groupConvs.length})</span>
+                    </div>
+
+                    {/* 会话项 */}
+                    {groupConvs.map((conversation) => (
+                      <div
+                        key={conversation.id}
+                        onClick={() => onSelectConversation?.(conversation)}
+                        onContextMenu={(e) => handleContextMenu(e, conversation.id)}
+                        className={`group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+                          selectedId === conversation.id
+                            ? 'bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30'
+                            : 'hover:bg-[var(--color-bg-tertiary)]'
+                        }`}
+                      >
+                        <MessageSquare className="w-4 h-4 flex-shrink-0 text-[var(--color-text-tertiary)]" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-[var(--color-text-primary)] truncate">
+                            {conversation.title}
+                          </div>
+                          <div className="text-xs text-[var(--color-text-tertiary)]">
+                            {conversation.messages.length} 条消息 ·{' '}
+                            {formatRelativeTime(conversation.updatedAt)}
+                          </div>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleContextMenu(e, conversation.id);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[var(--color-bg-base)] rounded transition-opacity"
+                        >
+                          <MoreHorizontal className="w-4 h-4 text-[var(--color-text-tertiary)]" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* 右键菜单 */}
+      {contextMenu && (
+        <div
+          className="fixed z-50 py-1 bg-[var(--color-bg-base)] border border-[var(--color-border)] rounded-lg shadow-lg"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={() => {
+              // TODO: 实现重命名
+              setContextMenu(null);
+            }}
+            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]"
+          >
+            <Edit2 className="w-4 h-4" />
+            重命名
+          </button>
+          <button
+            onClick={() => handleDeleteConversation(contextMenu.id)}
+            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+          >
+            <Trash2 className="w-4 h-4" />
+            删除
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// 格式化相对时间
+function formatRelativeTime(date: Date): string {
+  const now = new Date();
+  const diff = now.getTime() - new Date(date).getTime();
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+
+  if (minutes < 1) return '刚刚';
+  if (minutes < 60) return `${minutes} 分钟前`;
+  if (hours < 24) return `${hours} 小时前`;
+  if (days < 7) return `${days} 天前`;
+  return new Date(date).toLocaleDateString();
+}

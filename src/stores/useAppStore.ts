@@ -1,0 +1,62 @@
+/**
+ * 应用全局状态管理
+ */
+
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import type { ThemeMode, WindowMode } from '../types';
+
+interface AppState {
+  // 主题
+  theme: ThemeMode;
+  setTheme: (theme: ThemeMode) => void;
+
+  // 窗口模式 (悬浮球相关)
+  windowMode: WindowMode;
+  setWindowMode: (mode: WindowMode) => void;
+
+  // 侧边栏状态
+  sidebarCollapsed: boolean;
+  toggleSidebar: () => void;
+
+  // 当前选中的 Agent ID
+  currentAgentId: string | null;
+  setCurrentAgentId: (id: string | null) => void;
+
+  // 当前选中的会话 ID
+  currentConversationId: string | null;
+  setCurrentConversationId: (id: string | null) => void;
+}
+
+export const useAppStore = create<AppState>()(
+  persist(
+    (set) => ({
+      // 主题
+      theme: 'system',
+      setTheme: (theme) => set({ theme }),
+
+      // 窗口模式
+      windowMode: 'full',
+      setWindowMode: (windowMode) => set({ windowMode }),
+
+      // 侧边栏
+      sidebarCollapsed: false,
+      toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
+
+      // 当前 Agent
+      currentAgentId: null,
+      setCurrentAgentId: (currentAgentId) => set({ currentAgentId }),
+
+      // 当前会话
+      currentConversationId: null,
+      setCurrentConversationId: (currentConversationId) => set({ currentConversationId }),
+    }),
+    {
+      name: 'amos-claw-app-store',
+      partialize: (state) => ({
+        theme: state.theme,
+        sidebarCollapsed: state.sidebarCollapsed,
+      }),
+    }
+  )
+);

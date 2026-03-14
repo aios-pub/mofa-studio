@@ -1,5 +1,4 @@
 use tauri::{
-    image::Image,
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
     Manager, Runtime,
@@ -13,9 +12,9 @@ pub fn setup_tray<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<(), Box<dyn s
     let menu = Menu::with_items(app, &[&show_main, &hide_all, &quit])?;
 
     let _tray = TrayIconBuilder::new()
-        .icon(Image::from_bytes(include_bytes!("../icons/32x32.png"))?)
+        .icon(app.default_window_icon().unwrap().clone())
         .menu(&menu)
-        .menu_on_left_click(true)
+        .show_menu_on_left_click(true)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "show_main" => {
                 if let Some(main_window) = app.get_webview_window("main") {

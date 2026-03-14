@@ -5,11 +5,10 @@
 
 import React from 'react';
 import { Card as AntCard } from 'antd';
-import type { CardProps as AntCardProps } from 'antd';
 
 export type CardVariant = 'default' | 'bordered' | 'elevated' | 'ghost';
 
-export interface CardProps extends Omit<AntCardProps, 'bordered'> {
+export interface CardProps extends Omit<React.ComponentProps<typeof AntCard>, 'bordered' | 'variant'> {
   variant?: CardVariant;
   hoverable?: boolean;
 }

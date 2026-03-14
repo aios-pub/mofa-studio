@@ -1,13 +1,14 @@
 /**
  * 主布局组件
+ * 参考 slash-admin 的响应式布局设计
  */
 
-import { ReactNode, useState, createContext, useContext } from 'react';
-import { Layout } from 'antd';
+import { ReactNode, useState, createContext, useContext, useEffect } from 'react';
+import { Layout, Drawer } from 'antd';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import HorizontalNav from './HorizontalNav';
-import { useSettings } from '../../stores';
+import { useSettings, useAppStore } from '../../stores';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { SettingsDrawer } from '../settings';
 import { Bot } from 'lucide-react';
@@ -27,16 +28,36 @@ const SettingsContext = createContext<SettingsContextType>({
 
 export const useSettingsDrawer = () => useContext(SettingsContext);
 
+// 移动端断点
+const MOBILE_BREAKPOINT = 1024;
+
 interface MainLayoutProps {
   children: ReactNode;
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const settings = useSettings();
+  const { sidebarCollapsed, setSidebarCollapsed } = useAppStore();
 
   // 初始化全局快捷键
   useKeyboardShortcuts();
+
+  // 检测屏幕尺寸
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < MOBILE_BREAKPOINT;
+      setIsMobile(mobile);
+      if (mobile && !sidebarCollapsed) {
+        setSidebarCollapsed(true);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [sidebarCollapsed, setSidebarCollapsed]);
 
   const isHorizontal = settings.themeLayout === 'horizontal';
   const isStretch = settings.themeStretch;
@@ -45,6 +66,41 @@ export default function MainLayout({ children }: MainLayoutProps) {
     settingsOpen,
     setSettingsOpen,
   };
+
+  // 移动端布局
+  if (isMobile) {
+    return (
+      <SettingsContext.Provider value={contextValue}>
+        <Layout className="min-h-screen bg-[var(--color-bg-base)]">
+          {/* 移动端头部 */}
+          <Header />
+
+          {/* 内容区域 */}
+          <Content className="overflow-auto bg-[var(--color-bg-base)] p-3">
+            {children}
+          </Content>
+
+          {/* 移动端侧边栏抽屉 */}
+          <Drawer
+            placement="left"
+            open={!sidebarCollapsed}
+            onClose={() => setSidebarCollapsed(true)}
+            width={280}
+            className="p-0"
+            styles={{
+              body: { padding: 0 },
+              header: { display: 'none' },
+            }}
+          >
+            <Sidebar isMobile />
+          </Drawer>
+
+          {/* 设置抽屉 */}
+          <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+        </Layout>
+      </SettingsContext.Provider>
+    );
+  }
 
   // 水平布局
   if (isHorizontal) {
@@ -80,15 +136,21 @@ export default function MainLayout({ children }: MainLayoutProps) {
     );
   }
 
-  // 垂直/迷你布局
+  // 垂直/迷你布局 (桌面端)
   return (
     <SettingsContext.Provider value={contextValue}>
       <Layout className="min-h-screen bg-[var(--color-bg-base)]">
         {/* 侧边栏 */}
         <Sidebar />
 
-        {/* 主内容区 */}
-        <Layout className={`bg-[var(--color-bg-base)] ${isStretch ? '' : 'max-w-[1400px] mx-auto'}`}>
+        {/* 主内容区 - 添加过渡动画 */}
+        <Layout
+          className={`
+            bg-[var(--color-bg-base)]
+            transition-all duration-300 ease-in-out
+            ${isStretch ? '' : 'max-w-[1400px] mx-auto'}
+          `}
+        >
           {/* 头部 */}
           <Header />
 

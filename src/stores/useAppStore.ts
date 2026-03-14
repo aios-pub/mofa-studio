@@ -24,6 +24,7 @@ interface AppState {
   // 侧边栏状态
   sidebarCollapsed: boolean;
   toggleSidebar: () => void;
+  setSidebarCollapsed: (collapsed: boolean) => void;
 
   // 当前选中的 Agent ID
   currentAgentId: string | null;
@@ -52,6 +53,7 @@ export const useAppStore = create<AppState>()(
       // 侧边栏
       sidebarCollapsed: false,
       toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
+      setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
 
       // 当前 Agent
       currentAgentId: null,

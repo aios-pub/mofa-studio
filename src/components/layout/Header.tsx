@@ -2,6 +2,7 @@
  * 头部组件
  */
 
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Breadcrumb, Dropdown, Button, Space, Tooltip } from 'antd';
@@ -19,6 +20,7 @@ import type { MenuProps, BreadcrumbProps } from 'antd';
 import { useAppStore } from '../../stores';
 import AccountDropdown from './AccountDropdown';
 import { useSettingsDrawer } from './MainLayout';
+import { SearchCommand } from '../common';
 
 interface HeaderProps {
   showBreadcrumb?: boolean;
@@ -30,6 +32,7 @@ export default function Header({ showBreadcrumb = true }: HeaderProps) {
   const navigate = useNavigate();
   const { theme, setTheme, language, setLanguage, toggleSidebar } = useAppStore();
   const { setSettingsOpen } = useSettingsDrawer();
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // 路径映射
   const pathMap: Record<string, string> = {
@@ -168,10 +171,11 @@ export default function Header({ showBreadcrumb = true }: HeaderProps) {
       {/* 右侧工具栏 */}
       <div className="flex items-center gap-1">
         {/* 搜索按钮 */}
-        <Tooltip title={t('common.search', '搜索')}>
+        <Tooltip title={`${t('common.search', '搜索')} (Ctrl+K)`}>
           <Button
             type="text"
             icon={<SearchOutlined />}
+            onClick={() => setSearchOpen(true)}
             className="rounded-full hover:bg-[var(--color-action-hover)]"
           />
         </Tooltip>
@@ -227,6 +231,9 @@ export default function Header({ showBreadcrumb = true }: HeaderProps) {
         {/* 账户下拉 */}
         <AccountDropdown />
       </div>
+
+      {/* 搜索命令面板 */}
+      <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} />
     </header>
   );
 }

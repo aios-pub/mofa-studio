@@ -1,5 +1,6 @@
 /**
  * 侧边栏导航组件
+ * 支持桌面端固定侧边栏和移动端抽屉模式
  */
 
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -14,6 +15,10 @@ import { useAppStore, useSettings } from '../../stores';
 import AccountDropdown from './AccountDropdown';
 
 const { Sider } = Layout;
+
+interface SidebarProps {
+  isMobile?: boolean;
+}
 
 // 菜单配置
 const menuItems: MenuProps['items'] = [
@@ -139,22 +144,58 @@ const menuItems: MenuProps['items'] = [
   },
 ];
 
-export default function Sidebar() {
-  const { sidebarCollapsed, toggleSidebar } = useAppStore();
+export default function Sidebar({ isMobile = false }: SidebarProps) {
+  const { sidebarCollapsed, toggleSidebar, setSidebarCollapsed } = useAppStore();
   const settings = useSettings();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isMini = settings.themeLayout === 'mini' || sidebarCollapsed;
+  const isMini = isMobile ? false : (settings.themeLayout === 'mini' || sidebarCollapsed);
   const isHorizontal = settings.themeLayout === 'horizontal';
 
   const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
     navigate(key);
+    // 移动端点击菜单后自动关闭抽屉
+    if (isMobile) {
+      setSidebarCollapsed(true);
+    }
   };
 
-  // 水平布局时不显示侧边栏
-  if (isHorizontal) {
+  // 水平布局且非移动端时不显示侧边栏
+  if (isHorizontal && !isMobile) {
     return null;
+  }
+
+  // 移动端模式 - 渲染为普通 div（在 Drawer 中使用）
+  if (isMobile) {
+    return (
+      <div className="h-full bg-[#001529] flex flex-col">
+        {/* Logo 区域 */}
+        <div className="flex items-center gap-2 h-14 px-4 border-b border-white/10">
+          <Bot className="w-8 h-8 text-[var(--color-primary)]" />
+          <span className="text-lg font-bold text-white">AmosClaw</span>
+        </div>
+
+        {/* 菜单列表 */}
+        <div className="flex-1 overflow-y-auto">
+          <Menu
+            theme="dark"
+            mode="inline"
+            selectedKeys={[location.pathname]}
+            onClick={handleMenuClick}
+            items={menuItems}
+            className="!border-none"
+          />
+        </div>
+
+        {/* 底部用户区域 */}
+        <div className="border-t border-white/10">
+          <div className="p-2">
+            <AccountDropdown />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -164,20 +205,23 @@ export default function Sidebar() {
       onCollapse={toggleSidebar}
       width={224}
       collapsedWidth={64}
-      className="!bg-[#001529] h-screen overflow-hidden relative"
+      className="!bg-[#001529] h-screen overflow-hidden relative transition-all duration-300 ease-in-out"
       trigger={null}
     >
       {/* Logo 区域 */}
-      <div className="flex items-center justify-center h-14 border-b border-white/10">
+      <div className="flex items-center justify-center h-14 border-b border-white/10 transition-all duration-300">
         {isMini ? (
           <Bot className="w-8 h-8 text-[var(--color-primary)]" />
         ) : (
-          <span className="text-lg font-bold text-white">AmosClaw</span>
+          <div className="flex items-center gap-2">
+            <Bot className="w-8 h-8 text-[var(--color-primary)]" />
+            <span className="text-lg font-bold text-white">AmosClaw</span>
+          </div>
         )}
       </div>
 
-      {/* 菜单列表 */}
-      <div className="h-[calc(100vh-120px)] overflow-y-auto">
+      {/* 菜单列表 - 使用自定义滚动条 */}
+      <div className="h-[calc(100vh-120px)] overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/30">
         <Menu
           theme="dark"
           mode="inline"
@@ -202,7 +246,7 @@ export default function Sidebar() {
             <Button
               type="text"
               onClick={toggleSidebar}
-              className="w-full !text-white/70 hover:!bg-white/10 hover:!text-white flex items-center justify-center"
+              className="w-full !text-white/70 hover:!bg-white/10 hover:!text-white flex items-center justify-center transition-colors duration-200"
             >
               {isMini ? (
                 <ChevronRight className="w-5 h-5" />

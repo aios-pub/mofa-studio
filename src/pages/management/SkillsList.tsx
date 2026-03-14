@@ -3,25 +3,22 @@
  */
 
 import { useState, useEffect } from 'react';
+import { Input, Button, Tag, Select, message } from 'antd';
 import {
-  Plus,
-  Search,
-  Edit2,
-  Trash2,
-  Copy,
-  Zap,
-  Play,
-  Settings,
-  Code,
-  Power,
-  PowerOff,
-  ChevronDown,
-  ChevronRight,
-  Check,
-  X,
-  Loader2,
-  AlertCircle,
-} from 'lucide-react';
+  PlusOutlined,
+  SearchOutlined,
+  EditOutlined,
+  ThunderboltOutlined,
+  CaretDownOutlined,
+  CaretRightOutlined,
+  CheckOutlined,
+  CloseOutlined,
+  LoadingOutlined,
+  SettingOutlined,
+  PlayCircleOutlined,
+  CodeOutlined,
+  PoweroffOutlined,
+} from '@ant-design/icons';
 import type { Skill } from '../../services/mock/skills';
 import { skillApi } from '../../services/mock/skills';
 
@@ -32,7 +29,6 @@ export default function SkillsListPage() {
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
-  const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -51,17 +47,6 @@ export default function SkillsListPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('确定要删除这个 Skill 吗？')) return;
-    try {
-      await skillApi.delete(id);
-      setSkills(skills.filter((s) => s.id !== id));
-      setContextMenu(null);
-    } catch (error) {
-      console.error('Failed to delete skill:', error);
-    }
-  };
-
   const handleToggleEnabled = async (skill: Skill) => {
     try {
       const updated = await skillApi.update(skill.id, { enabled: !skill.enabled });
@@ -70,23 +55,11 @@ export default function SkillsListPage() {
         if (selectedSkill?.id === skill.id) {
           setSelectedSkill(updated);
         }
+        message.success(skill.enabled ? '已禁用' : '已启用');
       }
     } catch (error) {
       console.error('Failed to toggle skill:', error);
-    }
-  };
-
-  const handleDuplicate = async (skill: Skill) => {
-    try {
-      const newSkill = await skillApi.create({
-        ...skill,
-        name: `${skill.name} (副本)`,
-        type: 'custom',
-      });
-      setSkills([...skills, newSkill]);
-      setContextMenu(null);
-    } catch (error) {
-      console.error('Failed to duplicate skill:', error);
+      message.error('操作失败');
     }
   };
 
@@ -125,6 +98,15 @@ export default function SkillsListPage() {
     setExpandedCategories(newExpanded);
   };
 
+  const getTypeTag = (type: Skill['type']) => {
+    const config: Record<Skill['type'], { color: string; label: string }> = {
+      builtin: { color: 'blue', label: '内置' },
+      custom: { color: 'purple', label: '自定义' },
+      api: { color: 'orange', label: 'API' },
+    };
+    return <Tag color={config[type].color}>{config[type].label}</Tag>;
+  };
+
   return (
     <div className="flex h-full">
       {/* 左侧列表 */}
@@ -133,46 +115,42 @@ export default function SkillsListPage() {
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Skills 管理</h2>
-            <button className="p-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)]">
-              <Plus className="w-4 h-4" />
-            </button>
+            <Button type="primary" icon={<PlusOutlined />} size="small" />
           </div>
 
           {/* 搜索 */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
-            <input
-              type="text"
-              placeholder="搜索 Skills..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-            />
-          </div>
+          <Input
+            placeholder="搜索 Skills..."
+            prefix={<SearchOutlined />}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            allowClear
+          />
 
           {/* 筛选器 */}
           <div className="flex gap-2">
-            <select
+            <Select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="flex-1 px-2 py-1.5 text-sm bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-            >
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat === 'all' ? '全部分类' : cat}
-                </option>
-              ))}
-            </select>
-            <select
+              onChange={setSelectedCategory}
+              style={{ flex: 1 }}
+              size="small"
+              options={categories.map((cat) => ({
+                label: cat === 'all' ? '全部分类' : cat,
+                value: cat,
+              }))}
+            />
+            <Select
               value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="flex-1 px-2 py-1.5 text-sm bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-            >
-              <option value="all">全部类型</option>
-              <option value="builtin">内置</option>
-              <option value="custom">自定义</option>
-              <option value="api">API</option>
-            </select>
+              onChange={setSelectedType}
+              style={{ flex: 1 }}
+              size="small"
+              options={[
+                { label: '全部类型', value: 'all' },
+                { label: '内置', value: 'builtin' },
+                { label: '自定义', value: 'custom' },
+                { label: 'API', value: 'api' },
+              ]}
+            />
           </div>
         </div>
 
@@ -182,7 +160,7 @@ export default function SkillsListPage() {
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">加载中...</div>
           ) : filteredSkills.length === 0 ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">
-              <Zap className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <ThunderboltOutlined className="text-3xl mb-2 opacity-50" />
               <p>暂无 Skills</p>
             </div>
           ) : (
@@ -193,9 +171,9 @@ export default function SkillsListPage() {
                   className="flex items-center gap-1 w-full px-2 py-1 text-xs font-medium text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
                 >
                   {expandedCategories.has(category) ? (
-                    <ChevronDown className="w-3 h-3" />
+                    <CaretDownOutlined className="text-xs" />
                   ) : (
-                    <ChevronRight className="w-3 h-3" />
+                    <CaretRightOutlined className="text-xs" />
                   )}
                   {category} ({categorySkills.length})
                 </button>
@@ -205,10 +183,6 @@ export default function SkillsListPage() {
                       <div
                         key={skill.id}
                         onClick={() => setSelectedSkill(skill)}
-                        onContextMenu={(e) => {
-                          e.preventDefault();
-                          setContextMenu({ id: skill.id, x: e.clientX, y: e.clientY });
-                        }}
                         className={`group p-3 rounded-lg cursor-pointer transition-colors ${
                           selectedSkill?.id === skill.id
                             ? 'bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30'
@@ -223,24 +197,14 @@ export default function SkillsListPage() {
                                 : 'bg-gray-500/10 text-gray-500'
                             }`}
                           >
-                            <Zap className="w-4 h-4" />
+                            <ThunderboltOutlined className="text-sm" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <span className="font-medium text-[var(--color-text-primary)] truncate">
                                 {skill.name}
                               </span>
-                              <span
-                                className={`text-xs px-1.5 py-0.5 rounded ${
-                                  skill.type === 'builtin'
-                                    ? 'bg-blue-500/10 text-blue-500'
-                                    : skill.type === 'custom'
-                                      ? 'bg-purple-500/10 text-purple-500'
-                                      : 'bg-orange-500/10 text-orange-500'
-                                }`}
-                              >
-                                {skill.type === 'builtin' ? '内置' : skill.type === 'custom' ? '自定义' : 'API'}
-                              </span>
+                              {getTypeTag(skill.type)}
                             </div>
                             <p className="text-sm text-[var(--color-text-tertiary)] truncate">
                               {skill.description}
@@ -255,23 +219,16 @@ export default function SkillsListPage() {
                               </span>
                             </div>
                           </div>
-                          <button
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<PoweroffOutlined />}
+                            className={skill.enabled ? 'text-green-500' : 'text-gray-400'}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleToggleEnabled(skill);
                             }}
-                            className={`p-1 rounded ${
-                              skill.enabled
-                                ? 'text-green-500 hover:bg-green-500/10'
-                                : 'text-gray-400 hover:bg-gray-500/10'
-                            }`}
-                          >
-                            {skill.enabled ? (
-                              <Power className="w-4 h-4" />
-                            ) : (
-                              <PowerOff className="w-4 h-4" />
-                            )}
-                          </button>
+                          />
                         </div>
                       </div>
                     ))}
@@ -290,51 +247,13 @@ export default function SkillsListPage() {
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <Zap className="w-16 h-16 text-[var(--color-text-tertiary)] mx-auto mb-4" />
+              <ThunderboltOutlined className="text-5xl text-[var(--color-text-tertiary)] mb-4" />
               <h3 className="text-lg font-medium text-[var(--color-text-primary)]">选择一个 Skill</h3>
               <p className="text-[var(--color-text-secondary)]">从左侧列表中选择查看详情</p>
             </div>
           </div>
         )}
       </div>
-
-      {/* 右键菜单 */}
-      {contextMenu && (
-        <div
-          className="fixed z-50 py-1 bg-[var(--color-bg-base)] border border-[var(--color-border)] rounded-lg shadow-lg"
-          style={{ left: contextMenu.x, top: contextMenu.y }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button
-            onClick={() => {
-              const skill = skills.find((s) => s.id === contextMenu.id);
-              if (skill) setSelectedSkill(skill);
-              setContextMenu(null);
-            }}
-            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]"
-          >
-            <Edit2 className="w-4 h-4" />
-            编辑
-          </button>
-          <button
-            onClick={() => {
-              const skill = skills.find((s) => s.id === contextMenu.id);
-              if (skill) handleDuplicate(skill);
-            }}
-            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]"
-          >
-            <Copy className="w-4 h-4" />
-            复制
-          </button>
-          <button
-            onClick={() => handleDelete(contextMenu.id)}
-            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-          >
-            <Trash2 className="w-4 h-4" />
-            删除
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -415,6 +334,21 @@ function SkillDetail({
     });
   };
 
+  const getTypeTag = (type: Skill['type']) => {
+    const config: Record<Skill['type'], { color: string; label: string }> = {
+      builtin: { color: 'blue', label: '内置' },
+      custom: { color: 'purple', label: '自定义' },
+      api: { color: 'orange', label: 'API' },
+    };
+    return <Tag color={config[type].color}>{config[type].label}</Tag>;
+  };
+
+  const tabs = [
+    { key: 'params', label: '参数配置', icon: SettingOutlined },
+    { key: 'test', label: '测试执行', icon: PlayCircleOutlined },
+    { key: 'logs', label: '执行日志', icon: CodeOutlined },
+  ];
+
   return (
     <div className="flex flex-col h-full">
       {/* 头部 */}
@@ -422,36 +356,21 @@ function SkillDetail({
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">{skill.name}</h2>
-            <span
-              className={`text-xs px-1.5 py-0.5 rounded ${
-                skill.type === 'builtin'
-                  ? 'bg-blue-500/10 text-blue-500'
-                  : skill.type === 'custom'
-                    ? 'bg-purple-500/10 text-purple-500'
-                    : 'bg-orange-500/10 text-orange-500'
-              }`}
-            >
-              {skill.type === 'builtin' ? '内置' : skill.type === 'custom' ? '自定义' : 'API'}
-            </span>
+            {getTypeTag(skill.type)}
           </div>
           <p className="text-[var(--color-text-secondary)]">{skill.description}</p>
         </div>
         <div className="flex gap-2">
-          <button
+          <Button
             onClick={() => onToggleEnabled(skill)}
-            className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg ${
-              skill.enabled
-                ? 'bg-green-500/10 text-green-500 hover:bg-green-500/20'
-                : 'bg-gray-500/10 text-gray-500 hover:bg-gray-500/20'
-            }`}
+            className={skill.enabled ? 'bg-green-500/10 text-green-500 hover:bg-green-500/20' : 'bg-gray-500/10 text-gray-500 hover:bg-gray-500/20'}
           >
-            {skill.enabled ? <Power className="w-4 h-4" /> : <PowerOff className="w-4 h-4" />}
+            <PoweroffOutlined className="mr-1" />
             {skill.enabled ? '已启用' : '已禁用'}
-          </button>
-          <button className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)]">
-            <Edit2 className="w-4 h-4" />
+          </Button>
+          <Button type="primary" icon={<EditOutlined />}>
             编辑
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -479,24 +398,23 @@ function SkillDetail({
 
       {/* 标签栏 */}
       <div className="flex gap-1 px-6 border-b border-[var(--color-border)]">
-        {[
-          { key: 'params', label: '参数配置', icon: Settings },
-          { key: 'test', label: '测试执行', icon: Play },
-          { key: 'logs', label: '执行日志', icon: Code },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key as typeof activeTab)}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === tab.key
-                ? 'text-[var(--color-primary)] border-[var(--color-primary)]'
-                : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
-            }`}
-          >
-            <tab.icon className="w-4 h-4" />
-            {tab.label}
-          </button>
-        ))}
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as typeof activeTab)}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === tab.key
+                  ? 'text-[var(--color-primary)] border-[var(--color-primary)]'
+                  : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
+              }`}
+            >
+              <Icon />
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* 内容区 */}
@@ -551,9 +469,9 @@ function SkillDetail({
                         </td>
                         <td className="py-2 px-4">
                           {param.required ? (
-                            <Check className="w-4 h-4 text-green-500" />
+                            <CheckOutlined className="text-green-500" />
                           ) : (
-                            <X className="w-4 h-4 text-[var(--color-text-tertiary)]" />
+                            <CloseOutlined className="text-[var(--color-text-tertiary)]" />
                           )}
                         </td>
                       </tr>
@@ -614,70 +532,27 @@ function SkillDetail({
                         <span className="text-[var(--color-text-tertiary)]">({param.type})</span>
                         {param.required && <span className="text-red-500">*</span>}
                       </label>
-                      {param.type === 'boolean' ? (
-                        <select
-                          value={testParams[param.name] ? 'true' : 'false'}
-                          onChange={(e) =>
-                            setTestParams({
-                              ...testParams,
-                              [param.name]: e.target.value === 'true',
-                            })
-                          }
-                          className="w-full px-3 py-2 text-sm bg-[var(--color-bg-base)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-                        >
-                          <option value="true">true</option>
-                          <option value="false">false</option>
-                        </select>
-                      ) : param.type === 'object' || param.type === 'array' ? (
-                        <textarea
-                          value={
-                            typeof testParams[param.name] === 'string'
-                              ? (testParams[param.name] as string)
-                              : JSON.stringify(testParams[param.name] || (param.type === 'array' ? [] : {}), null, 2)
-                          }
-                          onChange={(e) =>
-                            setTestParams({
-                              ...testParams,
-                              [param.name]: e.target.value,
-                            })
-                          }
-                          placeholder={param.description}
-                          rows={3}
-                          className="w-full px-3 py-2 text-sm bg-[var(--color-bg-base)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)] font-mono"
-                        />
-                      ) : (
-                        <input
-                          type={param.type === 'number' ? 'number' : 'text'}
-                          value={String(testParams[param.name] ?? '')}
-                          onChange={(e) =>
-                            setTestParams({
-                              ...testParams,
-                              [param.name]: param.type === 'number' ? Number(e.target.value) : e.target.value,
-                            })
-                          }
-                          placeholder={param.description}
-                          className="w-full px-3 py-2 text-sm bg-[var(--color-bg-base)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-                        />
-                      )}
+                      <Input
+                        value={String(testParams[param.name] ?? '')}
+                        onChange={(e) =>
+                          setTestParams({
+                            ...testParams,
+                            [param.name]: param.type === 'number' ? Number(e.target.value) : e.target.value,
+                          })
+                        }
+                        placeholder={param.description}
+                      />
                     </div>
                   ))}
-                  <button
+                  <Button
+                    type="primary"
+                    icon={isTesting ? <LoadingOutlined /> : <PlayCircleOutlined />}
                     onClick={handleTest}
                     disabled={isTesting || !skill.enabled}
-                    className="flex items-center justify-center gap-2 w-full py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+                    block
                   >
-                    {isTesting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        执行中...
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-4 h-4" />
-                        执行测试
-                      </>
-                    )}
-                  </button>
+                    {isTesting ? '执行中...' : '执行测试'}
+                  </Button>
                 </div>
               </div>
 
@@ -699,9 +574,9 @@ function SkillDetail({
                   >
                     <div className="flex items-center gap-2">
                       {testResult.success ? (
-                        <Check className="w-4 h-4 text-green-500" />
+                        <CheckOutlined className="text-green-500" />
                       ) : (
-                        <AlertCircle className="w-4 h-4 text-red-500" />
+                        <CloseOutlined className="text-red-500" />
                       )}
                       <span
                         className={`text-sm font-medium ${
@@ -730,12 +605,13 @@ function SkillDetail({
                 <span className="text-sm font-medium text-[var(--color-text-primary)]">
                   执行日志
                 </span>
-                <button
+                <Button
+                  type="text"
+                  size="small"
                   onClick={() => setExecutionLogs([])}
-                  className="text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
                 >
                   清空日志
-                </button>
+                </Button>
               </div>
               <div className="flex-1 overflow-y-auto p-3 font-mono text-sm">
                 {executionLogs.length === 0 ? (

@@ -3,23 +3,23 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { Input, Button, Select, message, Modal, Form, Checkbox } from 'antd';
 import {
-  Plus,
-  Search,
-  Play,
-  Pause,
-  Edit2,
-  Trash2,
-  Clock,
-  CheckCircle,
-  XCircle,
-  Loader2,
-  RefreshCw,
-  ChevronDown,
-  ChevronRight,
-  X,
-  AlertCircle,
-} from 'lucide-react';
+  PlusOutlined,
+  SearchOutlined,
+  CaretRightOutlined,
+  PauseOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  LoadingOutlined,
+  SyncOutlined,
+  CaretDownOutlined,
+  ExclamationCircleOutlined,
+  PlayCircleOutlined,
+} from '@ant-design/icons';
 import type {
   ScheduledTask,
   TaskExecution,
@@ -84,31 +84,36 @@ export default function ScheduledTasksPage() {
   const handleToggleTask = async (id: string) => {
     try {
       await scheduledTaskApi.toggleTask(id);
+      message.success('任务状态已更新');
       loadData();
     } catch (error) {
       console.error('Failed to toggle task:', error);
+      message.error('操作失败');
     }
   };
 
   const handleExecuteTask = async (id: string) => {
     try {
       await scheduledTaskApi.executeTask(id);
+      message.success('任务已开始执行');
       loadData();
     } catch (error) {
       console.error('Failed to execute task:', error);
+      message.error('执行失败');
     }
   };
 
   const handleDeleteTask = async (id: string) => {
-    if (!confirm('确定要删除这个定时任务吗？')) return;
     try {
       await scheduledTaskApi.deleteTask(id);
       if (selectedTask?.id === id) {
         setSelectedTask(null);
       }
+      message.success('任务已删除');
       loadData();
     } catch (error) {
       console.error('Failed to delete task:', error);
+      message.error('删除失败');
     }
   };
 
@@ -125,13 +130,13 @@ export default function ScheduledTasksPage() {
   const getStatusIcon = (status: ExecutionStatus | undefined) => {
     switch (status) {
       case 'success':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircleOutlined className="text-green-500" />;
       case 'failure':
-        return <XCircle className="w-4 h-4 text-red-500" />;
+        return <CloseCircleOutlined className="text-red-500" />;
       case 'running':
-        return <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />;
+        return <LoadingOutlined className="text-blue-500" />;
       default:
-        return <Clock className="w-4 h-4 text-gray-400" />;
+        return <ClockCircleOutlined className="text-gray-400" />;
     }
   };
 
@@ -150,49 +155,48 @@ export default function ScheduledTasksPage() {
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">定时任务</h2>
-            <button
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
               onClick={() => setShowCreateModal(true)}
-              className="p-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)]"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* 搜索 */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
-            <input
-              type="text"
-              placeholder="搜索任务..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
             />
           </div>
 
+          {/* 搜索 */}
+          <Input
+            placeholder="搜索任务..."
+            prefix={<SearchOutlined />}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            allowClear
+          />
+
           {/* 筛选 */}
           <div className="flex gap-2">
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value as TaskType | '')}
-              className="flex-1 px-2 py-1.5 text-xs bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-            >
-              <option value="">全部类型</option>
-              {Object.entries(taskTypeConfig).map(([type, config]) => (
-                <option key={type} value={type}>
-                  {config.icon} {config.label}
-                </option>
-              ))}
-            </select>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value as TaskStatus | '')}
-              className="flex-1 px-2 py-1.5 text-xs bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-            >
-              <option value="">全部状态</option>
-              <option value="enabled">已启用</option>
-              <option value="disabled">已禁用</option>
-            </select>
+            <Select
+              value={filterType || undefined}
+              onChange={(v) => setFilterType(v || '')}
+              placeholder="全部类型"
+              allowClear
+              style={{ flex: 1 }}
+              size="small"
+              options={Object.entries(taskTypeConfig).map(([type, config]) => ({
+                label: `${config.icon} ${config.label}`,
+                value: type,
+              }))}
+            />
+            <Select
+              value={filterStatus || undefined}
+              onChange={(v) => setFilterStatus(v || '')}
+              placeholder="全部状态"
+              allowClear
+              style={{ flex: 1 }}
+              size="small"
+              options={[
+                { label: '已启用', value: 'enabled' },
+                { label: '已禁用', value: 'disabled' },
+              ]}
+            />
           </div>
 
           {/* 统计 */}
@@ -218,11 +222,11 @@ export default function ScheduledTasksPage() {
         <div className="flex-1 overflow-y-auto p-2">
           {loading ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">
-              <RefreshCw className="w-6 h-6 mx-auto animate-spin" />
+              <SyncOutlined spin className="text-xl" />
             </div>
           ) : tasks.length === 0 ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">
-              <Clock className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <ClockCircleOutlined className="text-3xl mb-2 opacity-50" />
               <p>暂无定时任务</p>
             </div>
           ) : (
@@ -254,11 +258,11 @@ export default function ScheduledTasksPage() {
                     </p>
                     <div className="flex items-center gap-2 mt-1 text-xs text-[var(--color-text-tertiary)]">
                       <span className="flex items-center gap-0.5">
-                        <CheckCircle className="w-3 h-3 text-green-500" />
+                        <CheckCircleOutlined className="text-green-500 text-xs" />
                         {task.successCount}
                       </span>
                       <span className="flex items-center gap-0.5">
-                        <XCircle className="w-3 h-3 text-red-500" />
+                        <CloseCircleOutlined className="text-red-500 text-xs" />
                         {task.failureCount}
                       </span>
                     </div>
@@ -287,47 +291,34 @@ export default function ScheduledTasksPage() {
                 </p>
               </div>
               <div className="flex gap-2">
-                <button
+                <Button
+                  type="primary"
+                  style={{ backgroundColor: '#22c55e' }}
+                  icon={<PlayCircleOutlined />}
                   onClick={() => handleExecuteTask(selectedTask.id)}
-                  className="flex items-center gap-1 px-3 py-1.5 text-sm bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500/20"
                 >
-                  <Play className="w-4 h-4" />
                   执行
-                </button>
-                <button
+                </Button>
+                <Button
+                  icon={selectedTask.status === 'enabled' ? <PauseOutlined /> : <PlayCircleOutlined />}
                   onClick={() => handleToggleTask(selectedTask.id)}
-                  className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg ${
-                    selectedTask.status === 'enabled'
-                      ? 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20'
-                      : 'bg-green-500/10 text-green-500 hover:bg-green-500/20'
-                  }`}
+                  className={selectedTask.status === 'enabled' ? 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20' : 'bg-green-500/10 text-green-500 hover:bg-green-500/20'}
                 >
-                  {selectedTask.status === 'enabled' ? (
-                    <>
-                      <Pause className="w-4 h-4" />
-                      禁用
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-4 h-4" />
-                      启用
-                    </>
-                  )}
-                </button>
-                <button
+                  {selectedTask.status === 'enabled' ? '禁用' : '启用'}
+                </Button>
+                <Button
+                  icon={<EditOutlined />}
                   onClick={() => setEditingTask(selectedTask)}
-                  className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)]"
                 >
-                  <Edit2 className="w-4 h-4" />
                   编辑
-                </button>
-                <button
+                </Button>
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
                   onClick={() => handleDeleteTask(selectedTask.id)}
-                  className="flex items-center gap-1 px-3 py-1.5 text-sm bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20"
                 >
-                  <Trash2 className="w-4 h-4" />
                   删除
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -397,17 +388,14 @@ export default function ScheduledTasksPage() {
             <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
               <div className="p-3 border-b border-[var(--color-border)] flex items-center justify-between">
                 <h3 className="text-sm font-medium text-[var(--color-text-primary)]">执行记录</h3>
-                <button
+                <Button
+                  type="link"
+                  size="small"
+                  icon={showExecutions ? <CaretDownOutlined /> : <CaretRightOutlined />}
                   onClick={() => setShowExecutions(!showExecutions)}
-                  className="flex items-center gap-1 text-xs text-[var(--color-primary)]"
                 >
                   {showExecutions ? '收起' : '展开'}
-                  {showExecutions ? (
-                    <ChevronDown className="w-4 h-4" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4" />
-                  )}
-                </button>
+                </Button>
               </div>
               {showExecutions && (
                 <div className="divide-y divide-[var(--color-border)]">
@@ -439,7 +427,7 @@ export default function ScheduledTasksPage() {
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <Clock className="w-16 h-16 text-[var(--color-text-tertiary)] mx-auto mb-4" />
+              <ClockCircleOutlined className="text-5xl text-[var(--color-text-tertiary)] mb-4" />
               <h3 className="text-lg font-medium text-[var(--color-text-primary)]">选择一个任务</h3>
               <p className="text-[var(--color-text-secondary)]">从左侧列表中选择查看详情</p>
             </div>
@@ -492,152 +480,107 @@ function TaskModal({
   const [saving, setSaving] = useState(false);
   const [customCron, setCustomCron] = useState(!cronPresets.some((p) => p.value === (task?.cronExpression || '0 0 * * *')));
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setSaving(true);
     try {
       await onSave(formData);
+      message.success(task ? '任务已更新' : '任务已创建');
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-lg bg-[var(--color-bg-base)] rounded-lg shadow-xl border border-[var(--color-border)]">
-        <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
-          <h3 className="text-lg font-medium text-[var(--color-text-primary)]">
-            {task ? '编辑任务' : '创建任务'}
-          </h3>
-          <button onClick={onClose} className="p-1 hover:bg-[var(--color-bg-tertiary)] rounded">
-            <X className="w-5 h-5 text-[var(--color-text-tertiary)]" />
-          </button>
-        </div>
+    <Modal
+      title={task ? '编辑任务' : '创建任务'}
+      open={true}
+      onCancel={onClose}
+      onOk={handleSubmit}
+      okText={saving ? '保存中...' : '保存'}
+      confirmLoading={saving}
+      width={500}
+    >
+      <Form layout="vertical">
+        <Form.Item label="任务名称" required>
+          <Input
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            placeholder="输入任务名称"
+          />
+        </Form.Item>
 
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          <div>
-            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">任务名称</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-              required
-            />
-          </div>
+        <Form.Item label="任务描述">
+          <Input.TextArea
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            rows={2}
+            placeholder="输入任务描述"
+          />
+        </Form.Item>
 
-          <div>
-            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">任务描述</label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={2}
-              className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)] resize-none"
-            />
-          </div>
+        <Form.Item label="任务类型">
+          <Select
+            value={formData.type}
+            onChange={(v) => setFormData({ ...formData, type: v })}
+            options={Object.entries(taskTypeConfig).map(([type, config]) => ({
+              label: `${config.icon} ${config.label} - ${config.description}`,
+              value: type,
+            }))}
+          />
+        </Form.Item>
 
-          <div>
-            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">任务类型</label>
-            <select
-              value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value as TaskType })}
-              className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-            >
-              {Object.entries(taskTypeConfig).map(([type, config]) => (
-                <option key={type} value={type}>
-                  {config.icon} {config.label} - {config.description}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">执行频率</label>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setCustomCron(false)}
-                  className={`px-3 py-1.5 text-sm rounded-lg ${
-                    !customCron
-                      ? 'bg-[var(--color-primary)] text-white'
-                      : 'bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-[var(--color-text-primary)]'
-                  }`}
-                >
-                  预设
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCustomCron(true)}
-                  className={`px-3 py-1.5 text-sm rounded-lg ${
-                    customCron
-                      ? 'bg-[var(--color-primary)] text-white'
-                      : 'bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-[var(--color-text-primary)]'
-                  }`}
-                >
-                  自定义
-                </button>
-              </div>
-              {!customCron ? (
-                <select
+        <Form.Item label="执行频率">
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <Button
+                type={!customCron ? 'primary' : 'default'}
+                onClick={() => setCustomCron(false)}
+              >
+                预设
+              </Button>
+              <Button
+                type={customCron ? 'primary' : 'default'}
+                onClick={() => setCustomCron(true)}
+              >
+                自定义
+              </Button>
+            </div>
+            {!customCron ? (
+              <Select
+                value={formData.cronExpression}
+                onChange={(v) => setFormData({ ...formData, cronExpression: v })}
+                style={{ width: '100%' }}
+                options={cronPresets.map((preset) => ({
+                  label: preset.label,
+                  value: preset.value,
+                }))}
+              />
+            ) : (
+              <div className="space-y-1">
+                <Input
                   value={formData.cronExpression}
                   onChange={(e) => setFormData({ ...formData, cronExpression: e.target.value })}
-                  className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-                >
-                  {cronPresets.map((preset) => (
-                    <option key={preset.value} value={preset.value}>
-                      {preset.label}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <div className="space-y-1">
-                  <input
-                    type="text"
-                    value={formData.cronExpression}
-                    onChange={(e) => setFormData({ ...formData, cronExpression: e.target.value })}
-                    placeholder="分 时 日 月 周 (如: 0 9 * * 1)"
-                    className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)] font-mono"
-                  />
-                  <p className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    格式: 分钟(0-59) 小时(0-23) 日(1-31) 月(1-12) 周几(0-6)
-                  </p>
-                </div>
-              )}
-            </div>
+                  placeholder="分 时 日 月 周 (如: 0 9 * * 1)"
+                  className="font-mono"
+                />
+                <p className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-1">
+                  <ExclamationCircleOutlined />
+                  格式: 分钟(0-59) 小时(0-23) 日(1-31) 月(1-12) 周几(0-6)
+                </p>
+              </div>
+            )}
           </div>
+        </Form.Item>
 
-          <div>
-            <label className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
-              <input
-                type="checkbox"
-                checked={formData.status === 'enabled'}
-                onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 'enabled' : 'disabled' })}
-                className="rounded border-[var(--color-border)]"
-              />
-              创建后立即启用
-            </label>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)]"
-            >
-              取消
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-4 py-2 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-            >
-              {saving ? '保存中...' : '保存'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <Form.Item>
+          <Checkbox
+            checked={formData.status === 'enabled'}
+            onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 'enabled' : 'disabled' })}
+          >
+            创建后立即启用
+          </Checkbox>
+        </Form.Item>
+      </Form>
+    </Modal>
   );
 }

@@ -4,22 +4,22 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Activity,
-  AlertTriangle,
-  CheckCircle,
-  Cpu,
-  HardDrive,
-  Wifi,
-  List,
-  Bell,
-  BellOff,
-  RefreshCw,
-  Zap,
-  MessageSquare,
-  Play,
-  AlertCircle,
-  FlaskConical,
-} from 'lucide-react';
+  AlertOutlined,
+  ExclamationCircleOutlined,
+  CheckCircleOutlined,
+  DashboardOutlined,
+  DatabaseOutlined,
+  WifiOutlined,
+  UnorderedListOutlined,
+  BellOutlined,
+  BellFilled,
+  SyncOutlined,
+  ThunderboltOutlined,
+  MessageOutlined,
+  PlayCircleOutlined,
+  ExperimentOutlined,
+  WarningOutlined,
+} from '@ant-design/icons';
 import type {
   AgentStatus,
   ActivityEvent,
@@ -97,7 +97,7 @@ export default function MonitoringPage() {
         <div className="flex items-center gap-2">
           {unacknowledgedAlerts.length > 0 && (
             <span className="flex items-center gap-1 px-2 py-1 text-sm bg-red-500/10 text-red-500 rounded-lg">
-              <AlertTriangle className="w-4 h-4" />
+              <ExclamationCircleOutlined />
               {unacknowledgedAlerts.length} 个未处理告警
             </span>
           )}
@@ -106,7 +106,7 @@ export default function MonitoringPage() {
             disabled={loading}
             className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] disabled:opacity-50"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <SyncOutlined spin={loading} />
             刷新
           </button>
         </div>
@@ -116,31 +116,31 @@ export default function MonitoringPage() {
       {systemMetrics && (
         <div className="grid grid-cols-5 gap-4 p-4 bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)]">
           <MetricCard
-            icon={Cpu}
+            icon={DashboardOutlined}
             label="CPU"
             value={`${systemMetrics.cpu.toFixed(1)}%`}
             color={systemMetrics.cpu > 70 ? 'red' : systemMetrics.cpu > 50 ? 'yellow' : 'green'}
           />
           <MetricCard
-            icon={HardDrive}
+            icon={DatabaseOutlined}
             label="内存"
             value={`${systemMetrics.memory.toFixed(1)}%`}
             color={systemMetrics.memory > 80 ? 'red' : systemMetrics.memory > 60 ? 'yellow' : 'green'}
           />
           <MetricCard
-            icon={Wifi}
+            icon={WifiOutlined}
             label="网络"
             value={`${systemMetrics.network.toFixed(1)}%`}
             color="blue"
           />
           <MetricCard
-            icon={Activity}
+            icon={AlertOutlined}
             label="活跃连接"
             value={systemMetrics.activeConnections.toString()}
             color="blue"
           />
           <MetricCard
-            icon={List}
+            icon={UnorderedListOutlined}
             label="队列长度"
             value={systemMetrics.queueLength.toString()}
             color={systemMetrics.queueLength > 10 ? 'yellow' : 'green'}
@@ -154,53 +154,56 @@ export default function MonitoringPage() {
           {
             key: 'agents',
             label: 'Agent 状态',
-            icon: Zap,
+            icon: ThunderboltOutlined,
             badge: agentStatuses.filter((a) => a.status === 'online').length,
           },
           {
             key: 'activity',
             label: '活动流',
-            icon: Activity,
+            icon: AlertOutlined,
           },
           {
             key: 'alerts',
             label: '告警',
-            icon: Bell,
+            icon: BellOutlined,
             badge: unacknowledgedAlerts.length,
             badgeColor: 'red',
           },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key as typeof activeTab)}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === tab.key
-                ? 'text-[var(--color-primary)] border-[var(--color-primary)]'
-                : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
-            }`}
-          >
-            <tab.icon className="w-4 h-4" />
-            {tab.label}
-            {tab.badge !== undefined && (
-              <span
-                className={`px-1.5 py-0.5 text-xs rounded ${
-                  tab.badgeColor === 'red'
-                    ? 'bg-red-500/10 text-red-500'
-                    : 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
-                }`}
-              >
-                {tab.badge}
-              </span>
-            )}
-          </button>
-        ))}
+        ].map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as typeof activeTab)}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === tab.key
+                  ? 'text-[var(--color-primary)] border-[var(--color-primary)]'
+                  : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
+              }`}
+            >
+              <Icon />
+              {tab.label}
+              {tab.badge !== undefined && (
+                <span
+                  className={`px-1.5 py-0.5 text-xs rounded ${
+                    tab.badgeColor === 'red'
+                      ? 'bg-red-500/10 text-red-500'
+                      : 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
+                  }`}
+                >
+                  {tab.badge}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* 内容区 */}
       <div className="flex-1 overflow-y-auto p-6">
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <RefreshCw className="w-8 h-8 animate-spin text-[var(--color-primary)]" />
+            <SyncOutlined spin className="text-3xl text-[var(--color-primary)]" />
           </div>
         ) : activeTab === 'agents' ? (
           <AgentsTab statuses={agentStatuses} />
@@ -315,17 +318,17 @@ function ActivityTab({ events }: { events: ActivityEvent[] }) {
   const getEventIcon = (type: ActivityEvent['type']) => {
     switch (type) {
       case 'conversation_start':
-        return <Play className="w-4 h-4 text-blue-500" />;
+        return <PlayCircleOutlined className="text-blue-500" />;
       case 'conversation_end':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircleOutlined className="text-green-500" />;
       case 'message':
-        return <MessageSquare className="w-4 h-4 text-purple-500" />;
+        return <MessageOutlined className="text-purple-500" />;
       case 'skill_call':
-        return <Zap className="w-4 h-4 text-yellow-500" />;
+        return <ThunderboltOutlined className="text-yellow-500" />;
       case 'error':
-        return <AlertCircle className="w-4 h-4 text-red-500" />;
+        return <ExclamationCircleOutlined className="text-red-500" />;
       case 'test_run':
-        return <FlaskConical className="w-4 h-4 text-cyan-500" />;
+        return <ExperimentOutlined className="text-cyan-500" />;
     }
   };
 
@@ -396,11 +399,11 @@ function AlertsTab({
   const getAlertIcon = (type: Alert['type']) => {
     switch (type) {
       case 'error':
-        return <AlertCircle className="w-5 h-5 text-red-500" />;
+        return <ExclamationCircleOutlined className="text-red-500" />;
       case 'warning':
-        return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
+        return <WarningOutlined className="text-yellow-500" />;
       case 'info':
-        return <Bell className="w-5 h-5 text-blue-500" />;
+        return <BellOutlined className="text-blue-500" />;
     }
   };
 
@@ -445,7 +448,7 @@ function AlertsTab({
                 onClick={() => onAcknowledge(alert.id)}
                 className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-base)]"
               >
-                <BellOff className="w-4 h-4" />
+                <BellFilled />
                 确认
               </button>
             )}
@@ -455,7 +458,7 @@ function AlertsTab({
 
       {alerts.length === 0 && (
         <div className="text-center py-12 text-[var(--color-text-tertiary)]">
-          <Bell className="w-12 h-12 mx-auto mb-2 opacity-50" />
+          <BellOutlined className="text-4xl mx-auto mb-2 opacity-50" />
           <p>暂无告警</p>
         </div>
       )}
@@ -470,7 +473,7 @@ function MetricCard({
   value,
   color,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType;
   label: string;
   value: string;
   color: 'green' | 'yellow' | 'red' | 'blue';
@@ -485,7 +488,7 @@ function MetricCard({
   return (
     <div className="flex items-center gap-3">
       <div className={`p-2 bg-[var(--color-bg-tertiary)] rounded-lg ${colorClasses[color]}`}>
-        <Icon className="w-4 h-4" />
+        <Icon />
       </div>
       <div>
         <p className="text-xs text-[var(--color-text-tertiary)]">{label}</p>

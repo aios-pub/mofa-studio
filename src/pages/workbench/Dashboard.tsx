@@ -4,17 +4,17 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  MessageSquare,
-  Bot,
-  Zap,
-  Clock,
-  TrendingUp,
-  ArrowRight,
-  RefreshCw,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-} from 'lucide-react';
+  MessageOutlined,
+  RobotOutlined,
+  ThunderboltOutlined,
+  ClockCircleOutlined,
+  LineChartOutlined,
+  ArrowRightOutlined,
+  SyncOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  ExclamationCircleOutlined,
+} from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import type { UsageStats, DailyStats } from '../../services/mock/analytics';
 import { analyticsApi } from '../../services/mock/analytics';
@@ -71,28 +71,28 @@ export default function Dashboard() {
           title: '今日对话',
           value: formatNumber(dailyStats[dailyStats.length - 1]?.conversations || 0),
           change: `${calculateTrend(dailyStats, 'conversations') >= 0 ? '+' : ''}${calculateTrend(dailyStats, 'conversations').toFixed(0)}%`,
-          icon: MessageSquare,
+          icon: MessageOutlined,
           color: 'bg-blue-500',
         },
         {
           title: 'Token 消耗',
           value: formatNumber(stats.totalTokens),
           change: `${calculateTrend(dailyStats, 'tokens') >= 0 ? '+' : ''}${calculateTrend(dailyStats, 'tokens').toFixed(0)}%`,
-          icon: Zap,
+          icon: ThunderboltOutlined,
           color: 'bg-purple-500',
         },
         {
           title: '平均响应',
           value: `${(stats.avgResponseTime / 1000).toFixed(1)}s`,
           change: `${calculateTrend(dailyStats, 'avgResponseTime') <= 0 ? '' : '+'}${calculateTrend(dailyStats, 'avgResponseTime').toFixed(0)}%`,
-          icon: Clock,
+          icon: ClockCircleOutlined,
           color: 'bg-orange-500',
         },
         {
           title: '成功率',
           value: `${stats.successRate.toFixed(1)}%`,
           change: `${calculateTrend(dailyStats, 'successRate') >= 0 ? '+' : ''}${calculateTrend(dailyStats, 'successRate').toFixed(1)}%`,
-          icon: TrendingUp,
+          icon: LineChartOutlined,
           color: 'bg-green-500',
         },
       ]
@@ -100,9 +100,9 @@ export default function Dashboard() {
 
   // 快捷操作
   const quickActions = [
-    { label: '新建对话', path: '/conversation', icon: MessageSquare },
-    { label: 'Agent 管理', path: '/management/agents', icon: Bot },
-    { label: '统计分析', path: '/analytics', icon: TrendingUp },
+    { label: '新建对话', path: '/conversation', icon: MessageOutlined },
+    { label: 'Agent 管理', path: '/management/agents', icon: RobotOutlined },
+    { label: '统计分析', path: '/analytics', icon: LineChartOutlined },
   ];
 
   // Agent 状态统计
@@ -125,40 +125,43 @@ export default function Dashboard() {
           disabled={loading}
           className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] disabled:opacity-50"
         >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          <SyncOutlined spin={loading} />
           刷新
         </button>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
-          <RefreshCw className="w-8 h-8 animate-spin text-[var(--color-primary)]" />
+          <SyncOutlined spin className="text-3xl text-[var(--color-primary)]" />
         </div>
       ) : (
         <>
           {/* 统计卡片 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {statCards.map((stat) => (
-              <div
-                key={stat.title}
-                className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className={`p-2 rounded-lg ${stat.color}`}>
-                    <stat.icon className="w-5 h-5 text-white" />
+            {statCards.map((stat) => {
+              const Icon = stat.icon;
+              return (
+                <div
+                  key={stat.title}
+                  className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className={`p-2 rounded-lg ${stat.color}`}>
+                      <Icon className="text-white" />
+                    </div>
+                    <span
+                      className={`text-sm font-medium ${
+                        stat.change.startsWith('+') ? 'text-green-500' : 'text-red-500'
+                      }`}
+                    >
+                      {stat.change}
+                    </span>
                   </div>
-                  <span
-                    className={`text-sm font-medium ${
-                      stat.change.startsWith('+') ? 'text-green-500' : 'text-red-500'
-                    }`}
-                  >
-                    {stat.change}
-                  </span>
+                  <h3 className="text-2xl font-bold text-[var(--color-text-primary)]">{stat.value}</h3>
+                  <p className="text-sm text-[var(--color-text-secondary)]">{stat.title}</p>
                 </div>
-                <h3 className="text-2xl font-bold text-[var(--color-text-primary)]">{stat.value}</h3>
-                <p className="text-sm text-[var(--color-text-secondary)]">{stat.title}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -197,21 +200,21 @@ export default function Dashboard() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-3 bg-green-500/5 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    <CheckCircleOutlined className="text-green-500" />
                     <span className="text-sm text-[var(--color-text-primary)]">在线</span>
                   </div>
                   <span className="text-xl font-semibold text-green-500">{agentStats.online}</span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-gray-500/5 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <XCircle className="w-5 h-5 text-gray-400" />
+                    <CloseCircleOutlined className="text-gray-400" />
                     <span className="text-sm text-[var(--color-text-primary)]">离线</span>
                   </div>
                   <span className="text-xl font-semibold text-gray-400">{agentStats.offline}</span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-red-500/5 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <AlertTriangle className="w-5 h-5 text-red-500" />
+                    <ExclamationCircleOutlined className="text-red-500" />
                     <span className="text-sm text-[var(--color-text-primary)]">错误</span>
                   </div>
                   <span className="text-xl font-semibold text-red-500">{agentStats.error}</span>
@@ -222,7 +225,7 @@ export default function Dashboard() {
                 className="flex items-center justify-center gap-1 mt-4 text-sm text-[var(--color-primary)] hover:underline"
               >
                 查看详情
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRightOutlined />
               </Link>
             </div>
           </div>
@@ -231,21 +234,24 @@ export default function Dashboard() {
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)] mb-3">快捷操作</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {quickActions.map((action) => (
-                <Link
-                  key={action.path}
-                  to={action.path}
-                  className="flex items-center gap-3 p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors group"
-                >
-                  <div className="p-2 rounded-lg bg-[var(--color-primary)]/10">
-                    <action.icon className="w-5 h-5 text-[var(--color-primary)]" />
-                  </div>
-                  <span className="font-medium text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)]">
-                    {action.label}
-                  </span>
-                  <ArrowRight className="w-4 h-4 ml-auto text-[var(--color-text-tertiary)] group-hover:text-[var(--color-primary)]" />
-                </Link>
-              ))}
+              {quickActions.map((action) => {
+                const Icon = action.icon;
+                return (
+                  <Link
+                    key={action.path}
+                    to={action.path}
+                    className="flex items-center gap-3 p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors group"
+                  >
+                    <div className="p-2 rounded-lg bg-[var(--color-primary)]/10">
+                      <Icon className="text-[var(--color-primary)]" />
+                    </div>
+                    <span className="font-medium text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)]">
+                      {action.label}
+                    </span>
+                    <ArrowRightOutlined className="ml-auto text-[var(--color-text-tertiary)] group-hover:text-[var(--color-primary)]" />
+                  </Link>
+                );
+              })}
             </div>
           </div>
 

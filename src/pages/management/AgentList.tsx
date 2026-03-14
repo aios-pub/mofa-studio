@@ -3,7 +3,18 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Plus, Search, MoreHorizontal, Edit2, Trash2, Copy, Bot, Settings, Shield } from 'lucide-react';
+import { Input, Button, Dropdown, message } from 'antd';
+import {
+  PlusOutlined,
+  SearchOutlined,
+  MoreOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  CopyOutlined,
+  RobotOutlined,
+  SettingOutlined,
+  SafetyOutlined,
+} from '@ant-design/icons';
 import { agentApi } from '../../services/mock/agents';
 import { PermissionConfig } from '../../components/permission';
 import type { Agent } from '../../types';
@@ -14,7 +25,60 @@ export default function AgentListPage() {
   const [loading, setLoading] = useState(true);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [_showCreateModal, setShowCreateModal] = useState(false);
-  const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null);
+
+  const handleDelete = async (id: string) => {
+    try {
+      await agentApi.delete(id);
+      setAgents(agents.filter((a) => a.id !== id));
+      if (selectedAgent?.id === id) {
+        setSelectedAgent(null);
+      }
+      message.success('Agent 已删除');
+    } catch (error) {
+      console.error('Failed to delete agent:', error);
+      message.error('删除失败');
+    }
+  };
+
+  const handleDuplicate = async (agent: Agent) => {
+    try {
+      const newAgent = await agentApi.create({
+        ...agent,
+        name: `${agent.name} (副本)`,
+      });
+      setAgents([...agents, newAgent]);
+      message.success('Agent 已复制');
+    } catch (error) {
+      console.error('Failed to duplicate agent:', error);
+      message.error('复制失败');
+    }
+  };
+
+  // 获取操作菜单
+  const getActionMenuItems = (agent: Agent) => [
+    {
+      key: 'edit',
+      label: '编辑',
+      icon: <EditOutlined />,
+      onClick: () => setSelectedAgent(agent),
+    },
+    {
+      key: 'copy',
+      label: '复制',
+      icon: <CopyOutlined />,
+      onClick: () => handleDuplicate(agent),
+    },
+    {
+      type: 'divider' as const,
+    },
+    {
+      key: 'delete',
+      label: '删除',
+      icon: <DeleteOutlined />,
+      danger: true,
+      onClick: () => handleDelete(agent.id),
+    },
+  ];
 
   useEffect(() => {
     loadAgents();
@@ -29,30 +93,6 @@ export default function AgentListPage() {
       console.error('Failed to load agents:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('确定要删除这个 Agent 吗？')) return;
-    try {
-      await agentApi.delete(id);
-      setAgents(agents.filter((a) => a.id !== id));
-      setContextMenu(null);
-    } catch (error) {
-      console.error('Failed to delete agent:', error);
-    }
-  };
-
-  const handleDuplicate = async (agent: Agent) => {
-    try {
-      const newAgent = await agentApi.create({
-        ...agent,
-        name: `${agent.name} (副本)`,
-      });
-      setAgents([...agents, newAgent]);
-      setContextMenu(null);
-    } catch (error) {
-      console.error('Failed to duplicate agent:', error);
     }
   };
 
@@ -80,24 +120,20 @@ export default function AgentListPage() {
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Agent 管理</h2>
-            <button
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
               onClick={() => setShowCreateModal(true)}
-              className="p-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)]"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
-            <input
-              type="text"
-              placeholder="搜索 Agent..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
             />
           </div>
+
+          <Input
+            placeholder="搜索 Agent..."
+            prefix={<SearchOutlined />}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            allowClear
+          />
         </div>
 
         {/* 列表 */}
@@ -106,7 +142,7 @@ export default function AgentListPage() {
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">加载中...</div>
           ) : filteredAgents.length === 0 ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">
-              <Bot className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <RobotOutlined className="text-3xl mb-2 opacity-50" />
               <p>暂无 Agent</p>
             </div>
           ) : (
@@ -114,10 +150,6 @@ export default function AgentListPage() {
               <div
                 key={agent.id}
                 onClick={() => setSelectedAgent(agent)}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  setContextMenu({ id: agent.id, x: e.clientX, y: e.clientY });
-                }}
                 className={`group p-3 rounded-lg cursor-pointer transition-colors ${
                   selectedAgent?.id === agent.id
                     ? 'bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30'
@@ -137,15 +169,19 @@ export default function AgentListPage() {
                       {agent.description}
                     </p>
                   </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setContextMenu({ id: agent.id, x: e.clientX, y: e.clientY });
-                    }}
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[var(--color-bg-base)] rounded"
+                  <Dropdown
+                    menu={{ items: getActionMenuItems(agent) }}
+                    trigger={['click']}
+                    placement="bottomRight"
                   >
-                    <MoreHorizontal className="w-4 h-4 text-[var(--color-text-tertiary)]" />
-                  </button>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<MoreOutlined />}
+                      className="opacity-0 group-hover:opacity-100"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </Dropdown>
                 </div>
               </div>
             ))
@@ -160,51 +196,13 @@ export default function AgentListPage() {
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <Bot className="w-16 h-16 text-[var(--color-text-tertiary)] mx-auto mb-4" />
+              <RobotOutlined className="text-5xl text-[var(--color-text-tertiary)] mb-4" />
               <h3 className="text-lg font-medium text-[var(--color-text-primary)]">选择一个 Agent</h3>
               <p className="text-[var(--color-text-secondary)]">从左侧列表中选择查看详情</p>
             </div>
           </div>
         )}
       </div>
-
-      {/* 右键菜单 */}
-      {contextMenu && (
-        <div
-          className="fixed z-50 py-1 bg-[var(--color-bg-base)] border border-[var(--color-border)] rounded-lg shadow-lg"
-          style={{ left: contextMenu.x, top: contextMenu.y }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button
-            onClick={() => {
-              const agent = agents.find((a) => a.id === contextMenu.id);
-              if (agent) setSelectedAgent(agent);
-              setContextMenu(null);
-            }}
-            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]"
-          >
-            <Edit2 className="w-4 h-4" />
-            编辑
-          </button>
-          <button
-            onClick={() => {
-              const agent = agents.find((a) => a.id === contextMenu.id);
-              if (agent) handleDuplicate(agent);
-            }}
-            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]"
-          >
-            <Copy className="w-4 h-4" />
-            复制
-          </button>
-          <button
-            onClick={() => handleDelete(contextMenu.id)}
-            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-          >
-            <Trash2 className="w-4 h-4" />
-            删除
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -214,11 +212,11 @@ function AgentDetail({ agent, onUpdate: _onUpdate }: { agent: Agent; onUpdate: (
   const [activeTab, setActiveTab] = useState<'basic' | 'permission' | 'prompts' | 'skills' | 'tests'>('basic');
 
   const tabs = [
-    { key: 'basic', label: '基本信息', icon: Bot },
-    { key: 'permission', label: '权限配置', icon: Shield },
-    { key: 'prompts', label: '关联提示词', icon: Edit2 },
-    { key: 'skills', label: '关联 Skills', icon: Settings },
-    { key: 'tests', label: '关联测试集', icon: Copy },
+    { key: 'basic', label: '基本信息', icon: RobotOutlined },
+    { key: 'permission', label: '权限配置', icon: SafetyOutlined },
+    { key: 'prompts', label: '关联提示词', icon: EditOutlined },
+    { key: 'skills', label: '关联 Skills', icon: SettingOutlined },
+    { key: 'tests', label: '关联测试集', icon: CopyOutlined },
   ];
 
   return (
@@ -271,10 +269,8 @@ function AgentBasicInfo({ agent }: { agent: Agent }) {
           <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
             名称
           </label>
-          <input
-            type="text"
+          <Input
             value={agent.name}
-            className="w-full px-3 py-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)]"
             readOnly
           />
         </div>
@@ -282,10 +278,8 @@ function AgentBasicInfo({ agent }: { agent: Agent }) {
           <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
             状态
           </label>
-          <input
-            type="text"
+          <Input
             value={agent.status}
-            className="w-full px-3 py-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)]"
             readOnly
           />
         </div>
@@ -293,10 +287,8 @@ function AgentBasicInfo({ agent }: { agent: Agent }) {
           <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
             模型
           </label>
-          <input
-            type="text"
+          <Input
             value={agent.modelId}
-            className="w-full px-3 py-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)]"
             readOnly
           />
         </div>
@@ -304,10 +296,8 @@ function AgentBasicInfo({ agent }: { agent: Agent }) {
           <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
             Provider
           </label>
-          <input
-            type="text"
+          <Input
             value={agent.providerId}
-            className="w-full px-3 py-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)]"
             readOnly
           />
         </div>
@@ -316,10 +306,9 @@ function AgentBasicInfo({ agent }: { agent: Agent }) {
         <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
           描述
         </label>
-        <textarea
+        <Input.TextArea
           value={agent.description}
           rows={3}
-          className="w-full px-3 py-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)]"
           readOnly
         />
       </div>

@@ -3,40 +3,41 @@
  */
 
 import { useState, useEffect } from 'react';
+import { Input, Button, Tag, message } from 'antd';
 import {
-  Plus,
-  Search,
-  Edit2,
-  Trash2,
-  Copy,
-  Key,
-  Server,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-  ChevronDown,
-  ChevronRight,
-  RefreshCw,
-  Eye,
-  EyeOff,
-  Zap,
-  DollarSign,
-  Clock,
-  Loader2,
-} from 'lucide-react';
+  PlusOutlined,
+  SearchOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  CopyOutlined,
+  KeyOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  WarningOutlined,
+  CaretDownOutlined,
+  CaretRightOutlined,
+  SyncOutlined,
+  EyeOutlined,
+  EyeInvisibleOutlined,
+  ThunderboltOutlined,
+  DollarOutlined,
+  ClockCircleOutlined,
+  LoadingOutlined,
+  CloudServerOutlined,
+} from '@ant-design/icons';
 import type { Provider, ProviderType } from '../../services/mock/providers';
 import { providerApi } from '../../services/mock/providers';
 
 // Provider 类型配置
 const providerTypeConfig: Record<ProviderType, { name: string; color: string; icon: string }> = {
-  openai: { name: 'OpenAI', color: 'bg-green-500/10 text-green-500', icon: '🤖' },
-  anthropic: { name: 'Anthropic', color: 'bg-orange-500/10 text-orange-500', icon: '🧠' },
-  zhipu: { name: '智谱 AI', color: 'bg-blue-500/10 text-blue-500', icon: '🔮' },
-  alibaba: { name: '阿里云', color: 'bg-orange-500/10 text-orange-500', icon: '☁️' },
-  baidu: { name: '百度', color: 'bg-blue-500/10 text-blue-500', icon: '🔵' },
-  ollama: { name: 'Ollama (本地)', color: 'bg-purple-500/10 text-purple-500', icon: '🏠' },
-  azure: { name: 'Azure OpenAI', color: 'bg-blue-500/10 text-blue-500', icon: '☁️' },
-  custom: { name: '自定义', color: 'bg-gray-500/10 text-gray-500', icon: '⚙️' },
+  openai: { name: 'OpenAI', color: 'green', icon: '🤖' },
+  anthropic: { name: 'Anthropic', color: 'orange', icon: '🧠' },
+  zhipu: { name: '智谱 AI', color: 'blue', icon: '🔮' },
+  alibaba: { name: '阿里云', color: 'orange', icon: '☁️' },
+  baidu: { name: '百度', color: 'blue', icon: '🔵' },
+  ollama: { name: 'Ollama (本地)', color: 'purple', icon: '🏠' },
+  azure: { name: 'Azure OpenAI', color: 'blue', icon: '☁️' },
+  custom: { name: '自定义', color: 'default', icon: '⚙️' },
 };
 
 export default function ProvidersListPage() {
@@ -83,15 +84,16 @@ export default function ProvidersListPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('确定要删除这个 Provider 吗？')) return;
     try {
       await providerApi.delete(id);
       setProviders(providers.filter((p) => p.id !== id));
       if (selectedProvider?.id === id) {
         setSelectedProvider(null);
       }
+      message.success('Provider 已删除');
     } catch (error) {
       console.error('Failed to delete provider:', error);
+      message.error('删除失败');
     }
   };
 
@@ -100,12 +102,13 @@ export default function ProvidersListPage() {
     try {
       const result = await providerApi.validateApiKey(id);
       if (result.valid) {
-        alert(result.message);
+        message.success(result.message);
       } else {
-        alert(`验证失败: ${result.message}`);
+        message.error(`验证失败: ${result.message}`);
       }
     } catch (error) {
       console.error('Failed to validate key:', error);
+      message.error('验证失败');
     } finally {
       setValidatingKey(null);
     }
@@ -121,8 +124,10 @@ export default function ProvidersListPage() {
       if (selectedProvider?.id === id) {
         setSelectedProvider({ ...selectedProvider, models });
       }
+      message.success('模型列表已刷新');
     } catch (error) {
       console.error('Failed to refresh models:', error);
+      message.error('刷新失败');
     } finally {
       setRefreshingModels(null);
     }
@@ -146,19 +151,10 @@ export default function ProvidersListPage() {
       if (selectedProvider?.id === providerId) {
         setSelectedProvider({ ...selectedProvider, models: updatedModels });
       }
+      message.success(enabled ? '模型已启用' : '模型已禁用');
     } catch (error) {
       console.error('Failed to toggle model:', error);
-    }
-  };
-
-  const getStatusIcon = (status: Provider['status']) => {
-    switch (status) {
-      case 'active':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'inactive':
-        return <XCircle className="w-4 h-4 text-gray-400" />;
-      case 'error':
-        return <AlertTriangle className="w-4 h-4 text-red-500" />;
+      message.error('操作失败');
     }
   };
 
@@ -170,22 +166,17 @@ export default function ProvidersListPage() {
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Provider 管理</h2>
-            <button className="p-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)]">
-              <Plus className="w-4 h-4" />
-            </button>
+            <Button type="primary" icon={<PlusOutlined />} size="small" />
           </div>
 
           {/* 搜索 */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
-            <input
-              type="text"
-              placeholder="搜索 Providers..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-            />
-          </div>
+          <Input
+            placeholder="搜索 Providers..."
+            prefix={<SearchOutlined />}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            allowClear
+          />
         </div>
 
         {/* 列表 */}
@@ -194,7 +185,7 @@ export default function ProvidersListPage() {
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">加载中...</div>
           ) : filteredProviders.length === 0 ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">
-              <Server className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <CloudServerOutlined className="text-3xl mb-2 opacity-50" />
               <p>暂无 Providers</p>
             </div>
           ) : (
@@ -209,7 +200,13 @@ export default function ProvidersListPage() {
                   }`}
                 >
                   <div className="flex items-start gap-2">
-                    <div className={`p-1.5 rounded ${providerTypeConfig[provider.type]?.color || 'bg-gray-500/10 text-gray-500'}`}>
+                    <div className={`p-1.5 rounded ${
+                      providerTypeConfig[provider.type]?.color === 'green' ? 'bg-green-500/10' :
+                      providerTypeConfig[provider.type]?.color === 'orange' ? 'bg-orange-500/10' :
+                      providerTypeConfig[provider.type]?.color === 'blue' ? 'bg-blue-500/10' :
+                      providerTypeConfig[provider.type]?.color === 'purple' ? 'bg-purple-500/10' :
+                      'bg-gray-500/10'
+                    }`}>
                       <span className="text-lg">{providerTypeConfig[provider.type]?.icon || '⚙️'}</span>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -232,19 +229,15 @@ export default function ProvidersListPage() {
                         </span>
                       </div>
                     </div>
-                    <button
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={expandedProviders.has(provider.id) ? <CaretDownOutlined /> : <CaretRightOutlined />}
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleProvider(provider.id);
                       }}
-                      className="p-1 hover:bg-[var(--color-bg-base)] rounded"
-                    >
-                      {expandedProviders.has(provider.id) ? (
-                        <ChevronDown className="w-4 h-4 text-[var(--color-text-tertiary)]" />
-                      ) : (
-                        <ChevronRight className="w-4 h-4 text-[var(--color-text-tertiary)]" />
-                      )}
-                    </button>
+                    />
                   </div>
                 </div>
 
@@ -290,7 +283,7 @@ export default function ProvidersListPage() {
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <Server className="w-16 h-16 text-[var(--color-text-tertiary)] mx-auto mb-4" />
+              <CloudServerOutlined className="text-5xl text-[var(--color-text-tertiary)] mb-4" />
               <h3 className="text-lg font-medium text-[var(--color-text-primary)]">选择一个 Provider</h3>
               <p className="text-[var(--color-text-secondary)]">从左侧列表中选择查看详情</p>
             </div>
@@ -343,6 +336,12 @@ function ProviderDetail({
     (provider.usage.totalTokens / 1000) *
     (provider.models[0]?.pricing.input || 0);
 
+  const tabs = [
+    { key: 'models', label: '模型列表', icon: ThunderboltOutlined },
+    { key: 'usage', label: '使用统计', icon: DollarOutlined },
+    { key: 'settings', label: '配置设置', icon: KeyOutlined },
+  ];
+
   return (
     <div className="flex flex-col h-full">
       {/* 头部 */}
@@ -351,26 +350,25 @@ function ProviderDetail({
           <div className="flex items-center gap-2">
             <span className="text-2xl">{typeConfig?.icon || '⚙️'}</span>
             <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">{provider.name}</h2>
-            <span className={`text-xs px-2 py-0.5 rounded ${typeConfig?.color || 'bg-gray-500/10 text-gray-500'}`}>
+            <Tag color={typeConfig?.color || 'default'}>
               {typeConfig?.name || provider.type}
-            </span>
+            </Tag>
           </div>
           <p className="text-[var(--color-text-secondary)] mt-1">
             {provider.status === 'active' ? '运行正常' : provider.status === 'inactive' ? '未激活' : '连接错误'}
           </p>
         </div>
         <div className="flex gap-2">
-          <button
+          <Button
+            danger
+            icon={<DeleteOutlined />}
             onClick={() => onDelete(provider.id)}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20"
           >
-            <Trash2 className="w-4 h-4" />
             删除
-          </button>
-          <button className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)]">
-            <Edit2 className="w-4 h-4" />
+          </Button>
+          <Button type="primary" icon={<EditOutlined />}>
             编辑
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -379,13 +377,7 @@ function ProviderDetail({
         <div className="p-3 bg-[var(--color-bg-secondary)] rounded-lg">
           <span className="text-xs text-[var(--color-text-tertiary)]">状态</span>
           <div className="flex items-center gap-1 mt-1">
-            {provider.status === 'active' ? (
-              <CheckCircle className="w-4 h-4 text-green-500" />
-            ) : provider.status === 'inactive' ? (
-              <XCircle className="w-4 h-4 text-gray-400" />
-            ) : (
-              <AlertTriangle className="w-4 h-4 text-red-500" />
-            )}
+            {getStatusIcon(provider.status)}
             <span className="text-sm text-[var(--color-text-primary)]">
               {provider.status === 'active' ? '正常' : provider.status === 'inactive' ? '未激活' : '错误'}
             </span>
@@ -407,24 +399,23 @@ function ProviderDetail({
 
       {/* 标签栏 */}
       <div className="flex gap-1 px-6 border-b border-[var(--color-border)]">
-        {[
-          { key: 'models', label: '模型列表', icon: Zap },
-          { key: 'usage', label: '使用统计', icon: DollarSign },
-          { key: 'settings', label: '配置设置', icon: Key },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key as typeof activeTab)}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === tab.key
-                ? 'text-[var(--color-primary)] border-[var(--color-primary)]'
-                : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
-            }`}
-          >
-            <tab.icon className="w-4 h-4" />
-            {tab.label}
-          </button>
-        ))}
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as typeof activeTab)}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === tab.key
+                  ? 'text-[var(--color-primary)] border-[var(--color-primary)]'
+                  : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
+              }`}
+            >
+              <Icon />
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* 内容区 */}
@@ -433,18 +424,13 @@ function ProviderDetail({
           <div className="p-6 h-full overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-[var(--color-text-primary)]">可用模型</h3>
-              <button
+              <Button
+                icon={refreshingModels ? <LoadingOutlined /> : <SyncOutlined spin={refreshingModels} />}
                 onClick={() => onRefreshModels(provider.id)}
                 disabled={refreshingModels}
-                className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] disabled:opacity-50"
               >
-                {refreshingModels ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-4 h-4" />
-                )}
                 刷新模型
-              </button>
+              </Button>
             </div>
 
             <div className="space-y-2">
@@ -479,16 +465,14 @@ function ProviderDetail({
                       </div>
                     </div>
                   </div>
-                  <button
+                  <Button
+                    size="small"
+                    type={model.enabled ? 'primary' : 'default'}
                     onClick={() => onToggleModel(provider.id, model.id, !model.enabled)}
-                    className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
-                      model.enabled
-                        ? 'bg-green-500/10 text-green-500 hover:bg-green-500/20'
-                        : 'bg-gray-500/10 text-gray-500 hover:bg-gray-500/20'
-                    }`}
+                    className={model.enabled ? 'bg-green-500 hover:bg-green-600' : ''}
                   >
                     {model.enabled ? '已启用' : '已禁用'}
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>
@@ -500,7 +484,7 @@ function ProviderDetail({
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
                 <div className="flex items-center gap-2 text-[var(--color-text-tertiary)] mb-2">
-                  <Zap className="w-4 h-4" />
+                  <ThunderboltOutlined />
                   <span className="text-sm">总调用次数</span>
                 </div>
                 <p className="text-2xl font-semibold text-[var(--color-text-primary)]">
@@ -509,7 +493,7 @@ function ProviderDetail({
               </div>
               <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
                 <div className="flex items-center gap-2 text-[var(--color-text-tertiary)] mb-2">
-                  <Clock className="w-4 h-4" />
+                  <ClockCircleOutlined />
                   <span className="text-sm">总 Tokens</span>
                 </div>
                 <p className="text-2xl font-semibold text-[var(--color-text-primary)]">
@@ -518,7 +502,7 @@ function ProviderDetail({
               </div>
               <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
                 <div className="flex items-center gap-2 text-[var(--color-text-tertiary)] mb-2">
-                  <DollarSign className="w-4 h-4" />
+                  <DollarOutlined />
                   <span className="text-sm">预估费用</span>
                 </div>
                 <p className="text-2xl font-semibold text-[var(--color-text-primary)]">
@@ -553,37 +537,37 @@ function ProviderDetail({
               <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-medium text-[var(--color-text-primary)]">API 密钥</h4>
-                  <button
+                  <Button
+                    size="small"
+                    icon={validatingKey ? <LoadingOutlined /> : <CheckCircleOutlined />}
                     onClick={() => onValidateKey(provider.id)}
                     disabled={validatingKey}
-                    className="flex items-center gap-1 px-2 py-1 text-xs bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded hover:bg-[var(--color-bg-base)] disabled:opacity-50"
                   >
-                    {validatingKey ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <CheckCircle className="w-3.5 h-3.5" />
-                    )}
                     验证
-                  </button>
+                  </Button>
                 </div>
                 {provider.apiKey ? (
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 px-3 py-2 bg-[var(--color-bg-tertiary)] rounded font-mono text-sm">
-                      {showApiKey ? provider.apiKey : '••••••••••••••••••••••••'}
-                    </div>
-                    <button
+                    <Input
+                      readOnly
+                      value={showApiKey ? provider.apiKey : '••••••••••••••••••••••••'}
+                      className="font-mono"
+                    />
+                    <Button
+                      type="text"
+                      icon={showApiKey ? <EyeInvisibleOutlined /> : <EyeOutlined />}
                       onClick={() => setShowApiKey(!showApiKey)}
-                      className="p-2 hover:bg-[var(--color-bg-tertiary)] rounded"
-                    >
-                      {showApiKey ? (
-                        <EyeOff className="w-4 h-4 text-[var(--color-text-tertiary)]" />
-                      ) : (
-                        <Eye className="w-4 h-4 text-[var(--color-text-tertiary)]" />
-                      )}
-                    </button>
-                    <button className="p-2 hover:bg-[var(--color-bg-tertiary)] rounded">
-                      <Copy className="w-4 h-4 text-[var(--color-text-tertiary)]" />
-                    </button>
+                    />
+                    <Button
+                      type="text"
+                      icon={<CopyOutlined />}
+                      onClick={() => {
+                        if (provider.apiKey) {
+                          navigator.clipboard.writeText(provider.apiKey);
+                          message.success('已复制到剪贴板');
+                        }
+                      }}
+                    />
                   </div>
                 ) : (
                   <p className="text-sm text-[var(--color-text-tertiary)]">未配置 API 密钥</p>
@@ -594,9 +578,11 @@ function ProviderDetail({
               {provider.baseUrl && (
                 <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
                   <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">Base URL</h4>
-                  <div className="px-3 py-2 bg-[var(--color-bg-tertiary)] rounded font-mono text-sm">
-                    {provider.baseUrl}
-                  </div>
+                  <Input
+                    readOnly
+                    value={provider.baseUrl}
+                    className="font-mono"
+                  />
                 </div>
               )}
 
@@ -629,4 +615,15 @@ function ProviderDetail({
       </div>
     </div>
   );
+}
+
+function getStatusIcon(status: Provider['status']) {
+  switch (status) {
+    case 'active':
+      return <CheckCircleOutlined className="text-green-500" />;
+    case 'inactive':
+      return <CloseCircleOutlined className="text-gray-400" />;
+    case 'error':
+      return <WarningOutlined className="text-red-500" />;
+  }
 }

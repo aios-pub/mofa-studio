@@ -5,20 +5,20 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Settings as SettingsIcon,
-  Globe,
-  Moon,
-  Sun,
-  Monitor,
-  Keyboard,
-  Bell,
-  Database,
-  Download,
-  Upload,
-  Info,
-  ChevronRight,
-  Check,
-} from 'lucide-react';
+  SettingOutlined,
+  GlobalOutlined,
+  MoonOutlined,
+  SunOutlined,
+  DesktopOutlined,
+  CodeOutlined,
+  BellOutlined,
+  DatabaseOutlined,
+  DownloadOutlined,
+  UploadOutlined,
+  InfoCircleOutlined,
+  RightOutlined,
+  CheckOutlined,
+} from '@ant-design/icons';
 import { useAppStore, type SupportedLanguage } from '../../stores/useAppStore';
 import { supportedLanguages } from '../../i18n';
 import { getShortcutDefinitions } from '../../hooks/useKeyboardShortcuts';
@@ -30,11 +30,11 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
 
   const tabs = [
-    { id: 'general' as const, label: t('settings.general'), icon: SettingsIcon },
-    { id: 'appearance' as const, label: t('settings.appearance'), icon: Moon },
-    { id: 'shortcuts' as const, label: t('settings.keyboardShortcuts'), icon: Keyboard },
-    { id: 'data' as const, label: t('settings.data'), icon: Database },
-    { id: 'about' as const, label: t('settings.about'), icon: Info },
+    { id: 'general' as const, label: t('settings.general'), icon: SettingOutlined },
+    { id: 'appearance' as const, label: t('settings.appearance'), icon: MoonOutlined },
+    { id: 'shortcuts' as const, label: t('settings.keyboardShortcuts'), icon: CodeOutlined },
+    { id: 'data' as const, label: t('settings.data'), icon: DatabaseOutlined },
+    { id: 'about' as const, label: t('settings.about'), icon: InfoCircleOutlined },
   ];
 
   return (
@@ -45,21 +45,24 @@ export default function SettingsPage() {
           {t('settings.title')}
         </h2>
         <nav className="space-y-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
-                  : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)]'
-              }`}
-            >
-              <tab.icon className="w-5 h-5" />
-              <span className="flex-1">{tab.label}</span>
-              <ChevronRight className={`w-4 h-4 ${activeTab === tab.id ? 'opacity-100' : 'opacity-0'}`} />
-            </button>
-          ))}
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                  activeTab === tab.id
+                    ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
+                    : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)]'
+                }`}
+              >
+                <Icon />
+                <span className="flex-1">{tab.label}</span>
+                <RightOutlined className={`${activeTab === tab.id ? 'opacity-100' : 'opacity-0'}`} />
+              </button>
+            );
+          })}
         </nav>
       </div>
 
@@ -97,7 +100,7 @@ function GeneralSettings() {
         <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-[var(--color-primary)]/10 rounded-lg">
-              <Globe className="w-5 h-5 text-[var(--color-primary)]" />
+              <GlobalOutlined className="text-[var(--color-primary)]" />
             </div>
             <div>
               <h4 className="font-medium text-[var(--color-text-primary)]">{t('settings.language')}</h4>
@@ -119,7 +122,7 @@ function GeneralSettings() {
               >
                 <span className="text-[var(--color-text-primary)]">{lang.nativeName}</span>
                 {language === lang.code && (
-                  <Check className="w-5 h-5 text-[var(--color-primary)]" />
+                  <CheckOutlined className="text-[var(--color-primary)]" />
                 )}
               </button>
             ))}
@@ -130,7 +133,7 @@ function GeneralSettings() {
         <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-[var(--color-primary)]/10 rounded-lg">
-              <Bell className="w-5 h-5 text-[var(--color-primary)]" />
+              <BellOutlined className="text-[var(--color-primary)]" />
             </div>
             <div>
               <h4 className="font-medium text-[var(--color-text-primary)]">{t('settings.notifications')}</h4>
@@ -168,9 +171,9 @@ function AppearanceSettings() {
   const { theme, setTheme } = useAppStore();
 
   const themeOptions = [
-    { id: 'light', label: t('settings.themeOptions.light'), icon: Sun, description: 'Light background' },
-    { id: 'dark', label: t('settings.themeOptions.dark'), icon: Moon, description: 'Dark background' },
-    { id: 'system', label: t('settings.themeOptions.system'), icon: Monitor, description: 'Follow system settings' },
+    { id: 'light', label: t('settings.themeOptions.light'), icon: SunOutlined, description: 'Light background' },
+    { id: 'dark', label: t('settings.themeOptions.dark'), icon: MoonOutlined, description: 'Dark background' },
+    { id: 'system', label: t('settings.themeOptions.system'), icon: DesktopOutlined, description: 'Follow system settings' },
   ];
 
   return (
@@ -184,7 +187,7 @@ function AppearanceSettings() {
         <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-[var(--color-primary)]/10 rounded-lg">
-              <Moon className="w-5 h-5 text-[var(--color-primary)]" />
+              <MoonOutlined className="text-[var(--color-primary)]" />
             </div>
             <div>
               <h4 className="font-medium text-[var(--color-text-primary)]">{t('settings.theme')}</h4>
@@ -194,21 +197,24 @@ function AppearanceSettings() {
             </div>
           </div>
           <div className="grid grid-cols-3 gap-3">
-            {themeOptions.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => setTheme(option.id as 'light' | 'dark' | 'system')}
-                className={`flex flex-col items-center p-4 rounded-lg border transition-colors ${
-                  theme === option.id
-                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
-                    : 'border-[var(--color-border)] hover:bg-[var(--color-bg-tertiary)]'
-                }`}
-              >
-                <option.icon className={`w-8 h-8 mb-2 ${theme === option.id ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-secondary)]'}`} />
-                <span className="font-medium text-[var(--color-text-primary)]">{option.label}</span>
-                <span className="text-xs text-[var(--color-text-tertiary)] mt-1">{option.description}</span>
-              </button>
-            ))}
+            {themeOptions.map((option) => {
+              const Icon = option.icon;
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => setTheme(option.id as 'light' | 'dark' | 'system')}
+                  className={`flex flex-col items-center p-4 rounded-lg border transition-colors ${
+                    theme === option.id
+                      ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
+                      : 'border-[var(--color-border)] hover:bg-[var(--color-bg-tertiary)]'
+                  }`}
+                >
+                  <Icon className={`text-2xl mb-2 ${theme === option.id ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-secondary)]'}`} />
+                  <span className="font-medium text-[var(--color-text-primary)]">{option.label}</span>
+                  <span className="text-xs text-[var(--color-text-tertiary)] mt-1">{option.description}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -331,7 +337,7 @@ function DataSettings() {
         <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-[var(--color-primary)]/10 rounded-lg">
-              <Download className="w-5 h-5 text-[var(--color-primary)]" />
+              <DownloadOutlined className="text-[var(--color-primary)]" />
             </div>
             <div>
               <h4 className="font-medium text-[var(--color-text-primary)]">{t('settings.backup')}</h4>
@@ -344,7 +350,7 @@ function DataSettings() {
             onClick={handleExport}
             className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)]"
           >
-            <Download className="w-4 h-4" />
+            <DownloadOutlined />
             Export Data
           </button>
         </div>
@@ -353,7 +359,7 @@ function DataSettings() {
         <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-orange-500/10 rounded-lg">
-              <Upload className="w-5 h-5 text-orange-500" />
+              <UploadOutlined className="text-orange-500" />
             </div>
             <div>
               <h4 className="font-medium text-[var(--color-text-primary)]">{t('settings.restore')}</h4>
@@ -366,7 +372,7 @@ function DataSettings() {
             onClick={handleImport}
             className="flex items-center gap-2 px-4 py-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-bg-base)]"
           >
-            <Upload className="w-4 h-4" />
+            <UploadOutlined />
             Import Data
           </button>
           <p className="text-xs text-[var(--color-text-tertiary)] mt-2">

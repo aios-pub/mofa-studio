@@ -3,15 +3,16 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { Input, Button } from 'antd';
 import {
-  Plus,
-  Search,
-  Edit2,
-  Trash2,
-  Building,
-  Users,
-  XCircle,
-} from 'lucide-react';
+  PlusOutlined,
+  SearchOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  HomeOutlined,
+  UserOutlined,
+  CloseCircleOutlined,
+} from '@ant-design/icons';
 import type { Department, User as UserType } from '../../services/mock/organization';
 import { organizationApi } from '../../services/mock/organization';
 
@@ -85,25 +86,21 @@ export default function DepartmentsPage() {
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">部门管理</h2>
-            <button
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
               onClick={() => setShowCreateModal(true)}
-              className="p-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)]"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
+            />
           </div>
 
           {/* 搜索 */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
-            <input
-              type="text"
-              placeholder="搜索部门..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-            />
-          </div>
+          <Input
+            placeholder="搜索部门..."
+            prefix={<SearchOutlined />}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            allowClear
+          />
 
           {/* 统计 */}
           <div className="flex items-center gap-4 text-xs text-[var(--color-text-tertiary)]">
@@ -119,7 +116,7 @@ export default function DepartmentsPage() {
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">加载中...</div>
           ) : filteredDepartments.length === 0 ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">
-              <Building className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <HomeOutlined className="text-3xl mx-auto mb-2 opacity-50" />
               <p>暂无部门</p>
             </div>
           ) : (
@@ -135,7 +132,7 @@ export default function DepartmentsPage() {
               >
                 <div className="flex items-start gap-2">
                   <div className="p-2 bg-[var(--color-bg-tertiary)] rounded-lg">
-                    <Building className="w-4 h-4 text-[var(--color-text-tertiary)]" />
+                    <HomeOutlined className="text-[var(--color-text-tertiary)]" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
@@ -174,20 +171,19 @@ export default function DepartmentsPage() {
                 <p className="text-[var(--color-text-secondary)]">{selectedDepartment.description}</p>
               </div>
               <div className="flex gap-2">
-                <button
+                <Button
+                  icon={<EditOutlined />}
                   onClick={() => setEditingDepartment(selectedDepartment)}
-                  className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)]"
                 >
-                  <Edit2 className="w-4 h-4" />
                   编辑
-                </button>
-                <button
+                </Button>
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
                   onClick={() => handleDeleteDepartment(selectedDepartment.id)}
-                  className="flex items-center gap-1 px-3 py-1.5 text-sm bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20"
                 >
-                  <Trash2 className="w-4 h-4" />
                   删除
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -224,7 +220,7 @@ export default function DepartmentsPage() {
               <div className="divide-y divide-[var(--color-border)]">
                 {departmentMembers.length === 0 ? (
                   <div className="p-8 text-center text-[var(--color-text-tertiary)]">
-                    <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <UserOutlined className="text-2xl mx-auto mb-2 opacity-50" />
                     <p>暂无成员</p>
                   </div>
                 ) : (
@@ -259,7 +255,7 @@ export default function DepartmentsPage() {
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <Building className="w-16 h-16 text-[var(--color-text-tertiary)] mx-auto mb-4" />
+              <HomeOutlined className="text-5xl text-[var(--color-text-tertiary)] mx-auto mb-4" />
               <h3 className="text-lg font-medium text-[var(--color-text-primary)]">选择一个部门</h3>
               <p className="text-[var(--color-text-secondary)]">从左侧列表中选择查看详情</p>
             </div>
@@ -326,7 +322,7 @@ function DepartmentModal({
             {department ? '编辑部门' : '添加部门'}
           </h3>
           <button onClick={onClose} className="p-1 hover:bg-[var(--color-bg-tertiary)] rounded">
-            <XCircle className="w-5 h-5 text-[var(--color-text-tertiary)]" />
+            <CloseCircleOutlined className="text-[var(--color-text-tertiary)]" />
           </button>
         </div>
 

@@ -6,26 +6,26 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Tooltip } from 'antd';
 import {
-  Bot,
-  ChevronLeft,
-  ChevronRight,
-  LayoutDashboard,
-  MessageSquare,
-  FileText,
-  Zap,
-  FlaskConical,
-  Server,
-  Clock,
-  BarChart3,
-  Eye,
-  Activity,
-  ClipboardCheck,
-  Users,
-  Building2,
-  FileBox,
-  ScrollText,
-  PieChart,
-} from 'lucide-react';
+  RobotOutlined,
+  LeftOutlined,
+  RightOutlined,
+  DashboardOutlined,
+  MessageOutlined,
+  FileTextOutlined,
+  ThunderboltOutlined,
+  ExperimentOutlined,
+  CloudServerOutlined,
+  ClockCircleOutlined,
+  BarChartOutlined,
+  EyeOutlined,
+  ApiOutlined,
+  AuditOutlined,
+  UserOutlined,
+  ApartmentOutlined,
+  FolderOutlined,
+  FileSearchOutlined,
+  PieChartOutlined,
+} from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { useAppStore, useSettings } from '../../stores';
 import { useTheme } from '../../hooks';
@@ -36,7 +36,7 @@ interface SidebarProps {
   isMobile?: boolean;
 }
 
-// 菜单配置 - 使用 Lucide React 组件
+// 菜单配置 - 使用 Ant Design 图标组件
 const menuItems: MenuProps['items'] = [
   {
     key: 'workbench',
@@ -45,12 +45,12 @@ const menuItems: MenuProps['items'] = [
   },
   {
     key: '/',
-    icon: <LayoutDashboard className="w-5 h-5" />,
+    icon: <DashboardOutlined />,
     label: '仪表盘',
   },
   {
     key: '/conversation',
-    icon: <MessageSquare className="w-5 h-5" />,
+    icon: <MessageOutlined />,
     label: '对话',
   },
   { type: 'divider' },
@@ -61,32 +61,32 @@ const menuItems: MenuProps['items'] = [
   },
   {
     key: '/management/agents',
-    icon: <Bot className="w-5 h-5" />,
+    icon: <RobotOutlined />,
     label: 'Agent 管理',
   },
   {
     key: '/management/prompts',
-    icon: <FileText className="w-5 h-5" />,
+    icon: <FileTextOutlined />,
     label: '提示词管理',
   },
   {
     key: '/management/skills',
-    icon: <Zap className="w-5 h-5" />,
+    icon: <ThunderboltOutlined />,
     label: 'Skills 管理',
   },
   {
     key: '/management/test-sets',
-    icon: <FlaskConical className="w-5 h-5" />,
+    icon: <ExperimentOutlined />,
     label: '测试集管理',
   },
   {
     key: '/management/providers',
-    icon: <Server className="w-5 h-5" />,
+    icon: <CloudServerOutlined />,
     label: 'Provider 管理',
   },
   {
     key: '/management/tasks',
-    icon: <Clock className="w-5 h-5" />,
+    icon: <ClockCircleOutlined />,
     label: '定时任务',
   },
   { type: 'divider' },
@@ -97,12 +97,12 @@ const menuItems: MenuProps['items'] = [
   },
   {
     key: '/analytics',
-    icon: <BarChart3 className="w-5 h-5" />,
+    icon: <BarChartOutlined />,
     label: '统计分析',
   },
   {
     key: '/monitoring',
-    icon: <Eye className="w-5 h-5" />,
+    icon: <EyeOutlined />,
     label: '实时监控',
   },
   { type: 'divider' },
@@ -113,12 +113,12 @@ const menuItems: MenuProps['items'] = [
   },
   {
     key: '/tracing',
-    icon: <Activity className="w-5 h-5" />,
+    icon: <ApiOutlined />,
     label: '追踪分析',
   },
   {
     key: '/evaluation',
-    icon: <ClipboardCheck className="w-5 h-5" />,
+    icon: <AuditOutlined />,
     label: 'Agent 评估',
   },
   { type: 'divider' },
@@ -129,12 +129,12 @@ const menuItems: MenuProps['items'] = [
   },
   {
     key: '/organization/users',
-    icon: <Users className="w-5 h-5" />,
+    icon: <UserOutlined />,
     label: '用户管理',
   },
   {
     key: '/organization/departments',
-    icon: <Building2 className="w-5 h-5" />,
+    icon: <ApartmentOutlined />,
     label: '部门管理',
   },
   { type: 'divider' },
@@ -145,17 +145,17 @@ const menuItems: MenuProps['items'] = [
   },
   {
     key: '/system/resources',
-    icon: <FileBox className="w-5 h-5" />,
+    icon: <FolderOutlined />,
     label: '资源管理',
   },
   {
     key: '/system/audit-logs',
-    icon: <ScrollText className="w-5 h-5" />,
+    icon: <FileSearchOutlined />,
     label: '审计日志',
   },
   {
     key: '/system/insight',
-    icon: <PieChart className="w-5 h-5" />,
+    icon: <PieChartOutlined />,
     label: '洞察分析',
   },
 ];
@@ -198,7 +198,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           className="flex items-center gap-2 h-14 px-4 border-b"
           style={{ borderColor }}
         >
-          <Bot className="w-8 h-8 text-[var(--color-primary)]" />
+          <RobotOutlined className="text-2xl text-[var(--color-primary)]" />
           <span className={`text-lg font-bold ${logoTextColor}`}>AmosClaw</span>
         </div>
 
@@ -234,10 +234,10 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
         style={{ borderColor }}
       >
         {isMini ? (
-          <Bot className="w-8 h-8 text-[var(--color-primary)]" />
+          <RobotOutlined className="text-2xl text-[var(--color-primary)]" />
         ) : (
           <div className="flex items-center gap-2">
-            <Bot className="w-8 h-8 text-[var(--color-primary)]" />
+            <RobotOutlined className="text-2xl text-[var(--color-primary)]" />
             <span className={`text-lg font-bold ${logoTextColor}`}>AmosClaw</span>
           </div>
         )}
@@ -274,10 +274,10 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
               className={`w-full flex items-center justify-center transition-colors duration-200 ${collapseBtnColor}`}
             >
               {isMini ? (
-                <ChevronRight className="w-5 h-5" />
+                <RightOutlined />
               ) : (
                 <>
-                  <ChevronLeft className="w-5 h-5" />
+                  <LeftOutlined />
                   <span className="ml-2">收起</span>
                 </>
               )}

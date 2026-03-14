@@ -4,8 +4,17 @@
 
 import { useTranslation } from 'react-i18next';
 import { Drawer, Switch, Slider, Button, Divider, Card, Tooltip } from 'antd';
-import { CheckOutlined, FullscreenOutlined, FullscreenExitOutlined } from '@ant-design/icons';
-import { Palette, Layout, Type, Sun, Moon, Monitor } from 'lucide-react';
+import {
+  CheckOutlined,
+  FullscreenOutlined,
+  FullscreenExitOutlined,
+  BgColorsOutlined,
+  LayoutOutlined,
+  FontSizeOutlined,
+  SunOutlined,
+  MoonOutlined,
+  DesktopOutlined,
+} from '@ant-design/icons';
 import { useState, useEffect } from 'react';
 import { useSettings, useSettingActions, themeColorPresetsMap, type ThemeColorPresets, type ThemeLayout } from '../../stores/useSettingStore';
 import { useAppStore } from '../../stores';
@@ -100,11 +109,11 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
         <div>
           <div className="flex items-center gap-2 mb-3">
             {theme === 'light' ? (
-              <Sun className="w-4 h-4 text-[var(--color-text-secondary)]" />
+              <SunOutlined className="text-[var(--color-text-secondary)]" />
             ) : theme === 'dark' ? (
-              <Moon className="w-4 h-4 text-[var(--color-text-secondary)]" />
+              <MoonOutlined className="text-[var(--color-text-secondary)]" />
             ) : (
-              <Monitor className="w-4 h-4 text-[var(--color-text-secondary)]" />
+              <DesktopOutlined className="text-[var(--color-text-secondary)]" />
             )}
             <span className="text-sm font-medium text-[var(--color-text-primary)]">
               {t('settings.themeMode', '主题模式')}
@@ -118,7 +127,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
               style={{ borderColor: theme === 'light' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }}
               onClick={() => setTheme('light')}
             >
-              <Sun className="w-5 h-5 mx-auto mb-1" style={{ color: theme === 'light' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }} />
+              <SunOutlined className="text-lg mx-auto mb-1" style={{ color: theme === 'light' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }} />
               <span className="text-xs">{t('theme.light', '浅色')}</span>
             </Card>
             <Card
@@ -128,7 +137,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
               style={{ borderColor: theme === 'dark' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }}
               onClick={() => setTheme('dark')}
             >
-              <Moon className="w-5 h-5 mx-auto mb-1" style={{ color: theme === 'dark' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }} />
+              <MoonOutlined className="text-lg mx-auto mb-1" style={{ color: theme === 'dark' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }} />
               <span className="text-xs">{t('theme.dark', '深色')}</span>
             </Card>
             <Card
@@ -138,7 +147,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
               style={{ borderColor: theme === 'system' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }}
               onClick={() => setTheme('system')}
             >
-              <Monitor className="w-5 h-5 mx-auto mb-1" style={{ color: theme === 'system' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }} />
+              <DesktopOutlined className="text-lg mx-auto mb-1" style={{ color: theme === 'system' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }} />
               <span className="text-xs">{t('theme.system', '系统')}</span>
             </Card>
           </div>
@@ -149,7 +158,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
         {/* 布局模式 */}
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Layout className="w-4 h-4 text-[var(--color-text-secondary)]" />
+            <LayoutOutlined className="text-[var(--color-text-secondary)]" />
             <span className="text-sm font-medium text-[var(--color-text-primary)]">
               {t('settings.layout', '布局模式')}
             </span>
@@ -231,7 +240,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
         {/* 主题颜色 */}
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Palette className="w-4 h-4 text-[var(--color-text-secondary)]" />
+            <BgColorsOutlined className="text-[var(--color-text-secondary)]" />
             <span className="text-sm font-medium text-[var(--color-text-primary)]">
               {t('settings.themeColor', '主题颜色')}
             </span>
@@ -266,7 +275,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
         {/* 字体大小 */}
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Type className="w-4 h-4 text-[var(--color-text-secondary)]" />
+            <FontSizeOutlined className="text-[var(--color-text-secondary)]" />
             <span className="text-sm font-medium text-[var(--color-text-primary)]">
               {t('settings.fontSize', '字体大小')}
             </span>
@@ -290,7 +299,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
         {/* 页面配置 */}
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Layout className="w-4 h-4 text-[var(--color-text-secondary)]" />
+            <LayoutOutlined className="text-[var(--color-text-secondary)]" />
             <span className="text-sm font-medium text-[var(--color-text-primary)]">
               {t('settings.pageConfig', '页面配置')}
             </span>

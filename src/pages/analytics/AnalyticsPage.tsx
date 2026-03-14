@@ -4,20 +4,20 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  BarChart3,
-  TrendingUp,
-  Users,
-  Zap,
-  Clock,
-  DollarSign,
-  Download,
-  RefreshCw,
-  Filter,
-  ChevronDown,
-  Calendar,
-  MessageSquare,
-  Activity,
-} from 'lucide-react';
+  BarChartOutlined,
+  UserOutlined,
+  ThunderboltOutlined,
+  ClockCircleOutlined,
+  DollarOutlined,
+  DownloadOutlined,
+  SyncOutlined,
+  FilterOutlined,
+  DownOutlined,
+  CalendarOutlined,
+  MessageOutlined,
+  ApiOutlined,
+  RiseOutlined,
+} from '@ant-design/icons';
 import type { AnalyticsFilter, UsageStats, DailyStats, AgentStats, UserStats, HourlyDistribution } from '../../services/mock/analytics';
 import { analyticsApi } from '../../services/mock/analytics';
 
@@ -179,7 +179,7 @@ export default function AnalyticsPage() {
                 : 'bg-[var(--color-bg-secondary)] border border-[var(--color-border)]'
             }`}
           >
-            <Filter className="w-4 h-4" />
+            <FilterOutlined />
             筛选
           </button>
           <button
@@ -187,14 +187,14 @@ export default function AnalyticsPage() {
             disabled={loading}
             className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] disabled:opacity-50"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <SyncOutlined spin={loading} />
             刷新
           </button>
           <div className="relative group">
             <button className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)]">
-              <Download className="w-4 h-4" />
+              <DownloadOutlined />
               导出
-              <ChevronDown className="w-3 h-3" />
+              <DownOutlined className="text-xs" />
             </button>
             <div className="absolute right-0 mt-1 w-32 py-1 bg-[var(--color-bg-base)] border border-[var(--color-border)] rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
               <button
@@ -219,7 +219,7 @@ export default function AnalyticsPage() {
         <div className="p-4 bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)]">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-[var(--color-text-tertiary)]" />
+              <CalendarOutlined className="text-[var(--color-text-tertiary)]" />
               <span className="text-sm text-[var(--color-text-secondary)]">日期范围:</span>
             </div>
             <select
@@ -258,30 +258,33 @@ export default function AnalyticsPage() {
       {/* 标签栏 */}
       <div className="flex gap-1 px-6 border-b border-[var(--color-border)]">
         {[
-          { key: 'overview', label: '使用概览', icon: BarChart3 },
-          { key: 'agents', label: 'Agent 统计', icon: Zap },
-          { key: 'users', label: '用户统计', icon: Users },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key as typeof activeTab)}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === tab.key
-                ? 'text-[var(--color-primary)] border-[var(--color-primary)]'
-                : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
-            }`}
-          >
-            <tab.icon className="w-4 h-4" />
-            {tab.label}
-          </button>
-        ))}
+          { key: 'overview', label: '使用概览', icon: BarChartOutlined },
+          { key: 'agents', label: 'Agent 统计', icon: ThunderboltOutlined },
+          { key: 'users', label: '用户统计', icon: UserOutlined },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as typeof activeTab)}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === tab.key
+                  ? 'text-[var(--color-primary)] border-[var(--color-primary)]'
+                  : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
+              }`}
+            >
+              <Icon />
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* 内容区 */}
       <div className="flex-1 overflow-y-auto p-6">
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <RefreshCw className="w-8 h-8 animate-spin text-[var(--color-primary)]" />
+            <SyncOutlined spin className="text-3xl text-[var(--color-primary)]" />
           </div>
         ) : activeTab === 'overview' ? (
           <OverviewTab
@@ -332,14 +335,14 @@ function OverviewTab({
       {/* 统计卡片 */}
       <div className="grid grid-cols-4 gap-4">
         <StatCard
-          icon={MessageSquare}
+          icon={MessageOutlined}
           label="总对话数"
           value={formatNumber(stats.totalConversations)}
           trend={conversationTrend}
           color="blue"
         />
         <StatCard
-          icon={Activity}
+          icon={ApiOutlined}
           label="总 Tokens"
           value={formatNumber(stats.totalTokens)}
           subValue={`输入 ${formatNumber(stats.inputTokens)} / 输出 ${formatNumber(stats.outputTokens)}`}
@@ -347,14 +350,14 @@ function OverviewTab({
           color="green"
         />
         <StatCard
-          icon={Clock}
+          icon={ClockCircleOutlined}
           label="平均响应时间"
           value={`${stats.avgResponseTime}ms`}
           subValue={`成功率 ${stats.successRate}%`}
           color="orange"
         />
         <StatCard
-          icon={DollarSign}
+          icon={DollarOutlined}
           label="预估费用"
           value={formatCurrency(stats.totalCost)}
           trend={costTrend}
@@ -603,7 +606,7 @@ function StatCard({
   trend,
   color,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType;
   label: string;
   value: string;
   subValue?: string;
@@ -621,7 +624,7 @@ function StatCard({
     <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
       <div className="flex items-center justify-between mb-2">
         <span className={`p-2 rounded-lg ${colorClasses[color]}`}>
-          <Icon className="w-4 h-4" />
+          <Icon />
         </span>
         {trend !== undefined && (
           <span
@@ -629,7 +632,7 @@ function StatCard({
               trend >= 0 ? 'text-green-500' : 'text-red-500'
             }`}
           >
-            <TrendingUp className={`w-3 h-3 ${trend < 0 ? 'rotate-180' : ''}`} />
+            <RiseOutlined className={trend < 0 ? 'rotate-180' : ''} />
             {Math.abs(trend).toFixed(1)}%
           </span>
         )}

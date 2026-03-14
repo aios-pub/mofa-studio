@@ -3,23 +3,24 @@
  */
 
 import { useState, useEffect } from 'react';
+import { Input, Button, Tag, Select, message } from 'antd';
 import {
-  Plus,
-  Search,
-  Edit2,
-  Trash2,
-  Copy,
-  FlaskConical,
-  Play,
-  CheckCircle,
-  XCircle,
-  Clock,
-  ChevronDown,
-  ChevronRight,
-  Loader2,
-  BarChart3,
-  FileText,
-} from 'lucide-react';
+  PlusOutlined,
+  SearchOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  CopyOutlined,
+  ExperimentOutlined,
+  CaretDownOutlined,
+  CaretRightOutlined,
+  LoadingOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  ClockCircleOutlined,
+  BarChartOutlined,
+  FileTextOutlined,
+  PlayCircleOutlined,
+} from '@ant-design/icons';
 import type { TestSet, TestCase, TestReport, TestCaseStatus } from '../../types/testset';
 import { testSetApi } from '../../services/mock/testsets';
 
@@ -82,11 +83,11 @@ export default function TestSetsListPage() {
   };
 
   const handleDelete = (id: string) => {
-    if (!confirm('确定要删除这个测试集吗？')) return;
     setTestSets(testSets.filter((t) => t.id !== id));
     if (selectedTestSet?.id === id) {
       setSelectedTestSet(null);
     }
+    message.success('测试集已删除');
   };
 
   const handleDuplicate = async (testSet: TestSet) => {
@@ -98,6 +99,7 @@ export default function TestSetsListPage() {
       updatedAt: new Date(),
     };
     setTestSets([...testSets, newTestSet]);
+    message.success('测试集已复制');
   };
 
   return (
@@ -108,35 +110,29 @@ export default function TestSetsListPage() {
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">测试集管理</h2>
-            <button className="p-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)]">
-              <Plus className="w-4 h-4" />
-            </button>
+            <Button type="primary" icon={<PlusOutlined />} size="small" />
           </div>
 
           {/* 搜索 */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
-            <input
-              type="text"
-              placeholder="搜索测试集..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-            />
-          </div>
+          <Input
+            placeholder="搜索测试集..."
+            prefix={<SearchOutlined />}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            allowClear
+          />
 
           {/* 分类筛选 */}
-          <select
+          <Select
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full px-3 py-2 text-sm bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-          >
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat === 'all' ? '全部分类' : cat}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedCategory}
+            style={{ width: '100%' }}
+            size="small"
+            options={categories.map((cat) => ({
+              label: cat === 'all' ? '全部分类' : cat,
+              value: cat,
+            }))}
+          />
         </div>
 
         {/* 列表 */}
@@ -145,7 +141,7 @@ export default function TestSetsListPage() {
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">加载中...</div>
           ) : filteredTestSets.length === 0 ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">
-              <FlaskConical className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <ExperimentOutlined className="text-3xl mb-2 opacity-50" />
               <p>暂无测试集</p>
             </div>
           ) : (
@@ -156,9 +152,9 @@ export default function TestSetsListPage() {
                   className="flex items-center gap-1 w-full px-2 py-1 text-xs font-medium text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
                 >
                   {expandedCategories.has(category) ? (
-                    <ChevronDown className="w-3 h-3" />
+                    <CaretDownOutlined className="text-xs" />
                   ) : (
-                    <ChevronRight className="w-3 h-3" />
+                    <CaretRightOutlined className="text-xs" />
                   )}
                   {category} ({categoryTestSets.length})
                 </button>
@@ -186,7 +182,7 @@ export default function TestSetsListPage() {
                                     : 'bg-gray-500/10 text-gray-500'
                             }`}
                           >
-                            <FlaskConical className="w-4 h-4" />
+                            <ExperimentOutlined className="text-sm" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
@@ -220,24 +216,25 @@ export default function TestSetsListPage() {
                             </div>
                           </div>
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                            <button
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<CopyOutlined />}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleDuplicate(testSet);
                               }}
-                              className="p-1 hover:bg-[var(--color-bg-base)] rounded"
-                            >
-                              <Copy className="w-3.5 h-3.5 text-[var(--color-text-tertiary)]" />
-                            </button>
-                            <button
+                            />
+                            <Button
+                              type="text"
+                              size="small"
+                              danger
+                              icon={<DeleteOutlined />}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleDelete(testSet.id);
                               }}
-                              className="p-1 hover:bg-red-500/10 rounded"
-                            >
-                              <Trash2 className="w-3.5 h-3.5 text-red-500" />
-                            </button>
+                            />
                           </div>
                         </div>
                       </div>
@@ -257,7 +254,7 @@ export default function TestSetsListPage() {
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <FlaskConical className="w-16 h-16 text-[var(--color-text-tertiary)] mx-auto mb-4" />
+              <ExperimentOutlined className="text-5xl text-[var(--color-text-tertiary)] mb-4" />
               <h3 className="text-lg font-medium text-[var(--color-text-primary)]">选择一个测试集</h3>
               <p className="text-[var(--color-text-secondary)]">从左侧列表中选择查看详情</p>
             </div>
@@ -338,6 +335,12 @@ function TestSetDetail({
     return 'text-red-500';
   };
 
+  const tabs = [
+    { key: 'cases', label: '测试用例', icon: FileTextOutlined },
+    { key: 'run', label: '执行详情', icon: PlayCircleOutlined },
+    { key: 'report', label: '测试报告', icon: BarChartOutlined },
+  ];
+
   return (
     <div className="flex flex-col h-full">
       {/* 头部 */}
@@ -347,27 +350,18 @@ function TestSetDetail({
           <p className="text-[var(--color-text-secondary)]">{testSet.description}</p>
         </div>
         <div className="flex gap-2">
-          <button
+          <Button
+            type="primary"
+            icon={isRunning ? <LoadingOutlined /> : <PlayCircleOutlined />}
             onClick={handleRunAll}
             disabled={isRunning}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: '#22c55e' }}
           >
-            {isRunning ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                运行中...
-              </>
-            ) : (
-              <>
-                <Play className="w-4 h-4" />
-                运行全部
-              </>
-            )}
-          </button>
-          <button className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)]">
-            <Edit2 className="w-4 h-4" />
+            {isRunning ? '运行中...' : '运行全部'}
+          </Button>
+          <Button type="primary" icon={<EditOutlined />}>
             编辑
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -397,24 +391,23 @@ function TestSetDetail({
 
       {/* 标签栏 */}
       <div className="flex gap-1 px-6 border-b border-[var(--color-border)]">
-        {[
-          { key: 'cases', label: '测试用例', icon: FileText },
-          { key: 'run', label: '执行详情', icon: Play },
-          { key: 'report', label: '测试报告', icon: BarChart3 },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key as typeof activeTab)}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === tab.key
-                ? 'text-[var(--color-primary)] border-[var(--color-primary)]'
-                : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
-            }`}
-          >
-            <tab.icon className="w-4 h-4" />
-            {tab.label}
-          </button>
-        ))}
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as typeof activeTab)}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === tab.key
+                  ? 'text-[var(--color-primary)] border-[var(--color-primary)]'
+                  : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
+              }`}
+            >
+              <Icon />
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* 内容区 */}
@@ -443,9 +436,9 @@ function TestSetDetail({
                                 }`}
                               >
                                 {result.status === 'passed' ? (
-                                  <CheckCircle className="w-3.5 h-3.5" />
+                                  <CheckCircleOutlined className="text-sm" />
                                 ) : (
-                                  <XCircle className="w-3.5 h-3.5" />
+                                  <CloseCircleOutlined className="text-sm" />
                                 )}
                                 {result.status === 'passed' ? '通过' : '失败'}
                               </span>
@@ -455,18 +448,14 @@ function TestSetDetail({
                             {testCase.description}
                           </p>
                         </div>
-                        <button
+                        <Button
+                          size="small"
+                          icon={runningCaseId === testCase.id ? <LoadingOutlined /> : <PlayCircleOutlined />}
                           onClick={() => handleRunSingle(testCase)}
                           disabled={isRunning || runningCaseId === testCase.id}
-                          className="flex items-center gap-1 px-2 py-1 text-xs bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded hover:bg-[var(--color-bg-base)] disabled:opacity-50"
                         >
-                          {runningCaseId === testCase.id ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Play className="w-3.5 h-3.5" />
-                          )}
                           运行
-                        </button>
+                        </Button>
                       </div>
 
                       <div className="mt-3 grid grid-cols-2 gap-4">
@@ -503,12 +492,9 @@ function TestSetDetail({
                         <span className="text-xs text-[var(--color-text-tertiary)]">断言 ({testCase.assertions.length})</span>
                         <div className="mt-1 flex flex-wrap gap-2">
                           {testCase.assertions.map((assertion) => (
-                            <span
-                              key={assertion.id}
-                              className="text-xs px-2 py-1 bg-[var(--color-bg-tertiary)] rounded text-[var(--color-text-secondary)]"
-                            >
+                            <Tag key={assertion.id}>
                               {assertion.type}: {assertion.value}
-                            </span>
+                            </Tag>
                           ))}
                         </div>
                       </div>
@@ -524,7 +510,7 @@ function TestSetDetail({
           <div className="p-6 h-full overflow-y-auto">
             {isRunning ? (
               <div className="flex flex-col items-center justify-center py-12">
-                <Loader2 className="w-12 h-12 animate-spin text-[var(--color-primary)] mb-4" />
+                <LoadingOutlined className="text-4xl text-[var(--color-primary)] mb-4" />
                 <p className="text-[var(--color-text-primary)] font-medium">正在执行测试...</p>
                 <p className="text-sm text-[var(--color-text-tertiary)] mt-1">
                   请稍候，测试用例正在逐一执行
@@ -535,7 +521,7 @@ function TestSetDetail({
                 <div className="grid grid-cols-3 gap-4">
                   <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
                     <div className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <CheckCircleOutlined className="text-green-500" />
                       <span className="text-sm text-[var(--color-text-secondary)]">通过</span>
                     </div>
                     <p className="text-2xl font-semibold text-green-500 mt-2">
@@ -544,7 +530,7 @@ function TestSetDetail({
                   </div>
                   <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
                     <div className="flex items-center gap-2">
-                      <XCircle className="w-5 h-5 text-red-500" />
+                      <CloseCircleOutlined className="text-red-500" />
                       <span className="text-sm text-[var(--color-text-secondary)]">失败</span>
                     </div>
                     <p className="text-2xl font-semibold text-red-500 mt-2">
@@ -553,7 +539,7 @@ function TestSetDetail({
                   </div>
                   <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
                     <div className="flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-[var(--color-text-tertiary)]" />
+                      <ClockCircleOutlined className="text-[var(--color-text-tertiary)]" />
                       <span className="text-sm text-[var(--color-text-secondary)]">总耗时</span>
                     </div>
                     <p className="text-2xl font-semibold text-[var(--color-text-primary)] mt-2">
@@ -575,11 +561,11 @@ function TestSetDetail({
                         <div key={testCase.id} className="p-3 flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             {result?.status === 'passed' ? (
-                              <CheckCircle className="w-4 h-4 text-green-500" />
+                              <CheckCircleOutlined className="text-green-500" />
                             ) : result?.status === 'failed' ? (
-                              <XCircle className="w-4 h-4 text-red-500" />
+                              <CloseCircleOutlined className="text-red-500" />
                             ) : (
-                              <Clock className="w-4 h-4 text-[var(--color-text-tertiary)]" />
+                              <ClockCircleOutlined className="text-[var(--color-text-tertiary)]" />
                             )}
                             <span className="text-sm text-[var(--color-text-primary)]">
                               {testCase.name}
@@ -598,7 +584,7 @@ function TestSetDetail({
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-[var(--color-text-tertiary)]">
-                <Play className="w-12 h-12 mb-4 opacity-50" />
+                <PlayCircleOutlined className="text-4xl mb-4 opacity-50" />
                 <p>点击"运行全部"开始执行测试</p>
               </div>
             )}
@@ -650,9 +636,9 @@ function TestSetDetail({
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             {reportCase.status === 'passed' ? (
-                              <CheckCircle className="w-4 h-4 text-green-500" />
+                              <CheckCircleOutlined className="text-green-500" />
                             ) : (
-                              <XCircle className="w-4 h-4 text-red-500" />
+                              <CloseCircleOutlined className="text-red-500" />
                             )}
                             <span className="font-medium text-[var(--color-text-primary)]">
                               {reportCase.caseName}
@@ -695,16 +681,12 @@ function TestSetDetail({
                           <span className="text-xs text-[var(--color-text-tertiary)]">断言结果:</span>
                           <div className="mt-1 flex flex-wrap gap-2">
                             {reportCase.assertions.map((assertion, index) => (
-                              <span
+                              <Tag
                                 key={index}
-                                className={`text-xs px-2 py-1 rounded ${
-                                  assertion.passed
-                                    ? 'bg-green-500/10 text-green-500'
-                                    : 'bg-red-500/10 text-red-500'
-                                }`}
+                                color={assertion.passed ? 'success' : 'error'}
                               >
                                 {assertion.passed ? '✓' : '✗'} {assertion.message}
-                              </span>
+                              </Tag>
                             ))}
                           </div>
                         </div>
@@ -715,7 +697,7 @@ function TestSetDetail({
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-[var(--color-text-tertiary)]">
-                <BarChart3 className="w-12 h-12 mb-4 opacity-50" />
+                <BarChartOutlined className="text-4xl mb-4 opacity-50" />
                 <p>运行测试后查看详细报告</p>
               </div>
             )}

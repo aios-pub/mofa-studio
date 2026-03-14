@@ -5,13 +5,13 @@
 
 import { ReactNode, useState, createContext, useContext, useEffect } from 'react';
 import { Layout, Drawer } from 'antd';
+import { RobotOutlined } from '@ant-design/icons';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import HorizontalNav from './HorizontalNav';
 import { useSettings, useAppStore } from '../../stores';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { SettingsDrawer } from '../settings';
-import { Bot } from 'lucide-react';
 
 const { Content } = Layout;
 
@@ -111,7 +111,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           <Layout.Header className="flex items-center h-14 px-4 bg-[#001529]">
             {/* Logo */}
             <div className="flex items-center gap-2 mr-6">
-              <Bot className="w-8 h-8 text-[var(--color-primary)]" />
+              <RobotOutlined className="text-2xl text-[var(--color-primary)]" />
               <span className="text-lg font-bold text-white">AmosClaw</span>
             </div>
 

@@ -7,7 +7,16 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Table, Tag, Input, Select, Button, Space, DatePicker, Card, Badge, Tooltip, Popover } from 'antd';
 import { SearchOutlined, ReloadOutlined, FilterOutlined, ExportOutlined, EyeOutlined } from '@ant-design/icons';
-import { FileText, AlertCircle, Info, AlertTriangle, Bug, Clock, User, Activity } from 'lucide-react';
+import {
+  FileTextOutlined,
+  AlertOutlined,
+  InfoCircleOutlined,
+  WarningOutlined,
+  BugOutlined,
+  ClockCircleOutlined,
+  UserOutlined,
+  CheckCircleOutlined,
+} from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { PageHeader } from '@/components/common';
@@ -120,11 +129,11 @@ const mockLogs: LogItem[] = [
 
 // 日志级别配置
 const levelConfig: Record<LogLevel, { color: string; icon: React.ReactNode; label: string }> = {
-  info: { color: 'blue', icon: <Info className="w-4 h-4" />, label: '信息' },
-  warning: { color: 'orange', icon: <AlertTriangle className="w-4 h-4" />, label: '警告' },
-  error: { color: 'red', icon: <AlertCircle className="w-4 h-4" />, label: '错误' },
-  debug: { color: 'purple', icon: <Bug className="w-4 h-4" />, label: '调试' },
-  success: { color: 'green', icon: <Activity className="w-4 h-4" />, label: '成功' },
+  info: { color: 'blue', icon: <InfoCircleOutlined />, label: '信息' },
+  warning: { color: 'orange', icon: <WarningOutlined />, label: '警告' },
+  error: { color: 'red', icon: <AlertOutlined />, label: '错误' },
+  debug: { color: 'purple', icon: <BugOutlined />, label: '调试' },
+  success: { color: 'green', icon: <CheckCircleOutlined />, label: '成功' },
 };
 
 // 模块配置
@@ -189,7 +198,7 @@ export default function LogsPage() {
       width: 180,
       render: (date: Date) => (
         <div className="flex items-center gap-1 text-[var(--color-text-secondary)]">
-          <Clock className="w-4 h-4" />
+          <ClockCircleOutlined />
           {dayjs(date).format('YYYY-MM-DD HH:mm:ss')}
         </div>
       ),
@@ -229,7 +238,7 @@ export default function LogsPage() {
       render: (user?: string) => (
         user ? (
           <div className="flex items-center gap-1">
-            <User className="w-4 h-4 text-[var(--color-text-tertiary)]" />
+            <UserOutlined className="text-[var(--color-text-tertiary)]" />
             <span>{user}</span>
           </div>
         ) : <span className="text-[var(--color-text-tertiary)]">-</span>
@@ -278,7 +287,7 @@ export default function LogsPage() {
       <PageHeader
         title={t('logs.title', '系统日志')}
         description={t('logs.subtitle', '查看系统操作日志和错误记录')}
-        icon={<FileText className="w-6 h-6" />}
+        icon={<FileTextOutlined className="text-2xl" />}
         actions={
           <Space>
             <Button icon={<ExportOutlined />}>

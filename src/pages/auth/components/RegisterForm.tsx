@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Bot, User, Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import { RobotOutlined, UserOutlined, LockOutlined, MailOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useUserActions } from '../../../stores/useUserStore';
 import authApi from '../../../services/mock/auth';
@@ -60,7 +60,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
     <div className="w-full max-w-md mx-auto">
       {/* Logo */}
       <div className="flex items-center justify-center gap-2 mb-8">
-        <Bot className="w-10 h-10 text-[var(--color-primary)]" />
+        <RobotOutlined className="text-3xl text-[var(--color-primary)]" />
         <span className="text-2xl font-bold text-[var(--color-text-primary)]">AmosClaw</span>
       </div>
 
@@ -87,7 +87,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
             {t('auth.username', '用户名')}
           </label>
           <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-tertiary)]" />
+            <UserOutlined className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
             <input
               type="text"
               value={username}
@@ -105,7 +105,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
             {t('auth.email', '邮箱')}
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-tertiary)]" />
+            <MailOutlined className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
             <input
               type="email"
               value={email}
@@ -123,7 +123,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
             {t('auth.password', '密码')}
           </label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-tertiary)]" />
+            <LockOutlined className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
             <input
               type={showPassword ? 'text' : 'password'}
               value={password}
@@ -138,7 +138,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] transition-colors"
             >
-              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
             </button>
           </div>
         </div>
@@ -149,7 +149,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
             {t('auth.confirmPassword', '确认密码')}
           </label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-tertiary)]" />
+            <LockOutlined className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
             <input
               type={showPassword ? 'text' : 'password'}
               value={confirmPassword}

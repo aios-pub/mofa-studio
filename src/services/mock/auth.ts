@@ -49,7 +49,7 @@ const MOCK_USERS: Array<{
     userInfo: {
       id: "2",
       username: "user",
-      email: "user@amos-claw.com",
+      email: "user@aios.pub",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=user",
       roles: [{ code: "user", name: "普通用户" }],
       permissions: [

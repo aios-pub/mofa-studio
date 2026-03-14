@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { User, Lock, Bell, Shield, Save } from 'lucide-react';
+import { UserOutlined, LockOutlined, BellOutlined, SafetyOutlined, SaveOutlined } from '@ant-design/icons';
 import { useUserInfo, useUserActions } from '../../stores/useUserStore';
 
 type TabKey = 'profile' | 'security' | 'notifications';
@@ -56,9 +56,9 @@ export default function ProfilePage() {
   };
 
   const tabs = [
-    { key: 'profile' as TabKey, icon: User, label: t('profile.basicInfo', '基本信息') },
-    { key: 'security' as TabKey, icon: Lock, label: t('profile.security', '安全设置') },
-    { key: 'notifications' as TabKey, icon: Bell, label: t('profile.notifications', '通知设置') },
+    { key: 'profile' as TabKey, icon: UserOutlined, label: t('profile.basicInfo', '基本信息') },
+    { key: 'security' as TabKey, icon: LockOutlined, label: t('profile.security', '安全设置') },
+    { key: 'notifications' as TabKey, icon: BellOutlined, label: t('profile.notifications', '通知设置') },
   ];
 
   return (
@@ -73,20 +73,23 @@ export default function ProfilePage() {
           {/* 左侧标签页 */}
           <div className="w-48 flex-shrink-0">
             <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-2">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors ${
-                    activeTab === tab.key
-                      ? 'bg-[var(--color-primary)] text-white'
-                      : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
-                  }`}
-                >
-                  <tab.icon className="w-4 h-4" />
-                  <span className="text-sm">{tab.label}</span>
-                </button>
-              ))}
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors ${
+                      activeTab === tab.key
+                        ? 'bg-[var(--color-primary)] text-white'
+                        : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
+                    }`}
+                  >
+                    <Icon />
+                    <span className="text-sm">{tab.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -166,7 +169,7 @@ export default function ProfilePage() {
                       onClick={handleSaveProfile}
                       className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity"
                     >
-                      <Save className="w-4 h-4" />
+                      <SaveOutlined />
                       {t('common.save', '保存')}
                     </button>
                   </div>
@@ -181,7 +184,7 @@ export default function ProfilePage() {
                   </h2>
 
                   <div className="p-4 rounded-lg bg-[var(--color-bg-tertiary)] flex items-center gap-3">
-                    <Shield className="w-5 h-5 text-green-500" />
+                    <SafetyOutlined className="text-green-500" />
                     <span className="text-sm text-[var(--color-text-secondary)]">
                       {t('profile.passwordHint', '定期修改密码可以提高账户安全性')}
                     </span>
@@ -232,7 +235,7 @@ export default function ProfilePage() {
                       onClick={handleChangePassword}
                       className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity"
                     >
-                      <Lock className="w-4 h-4" />
+                      <LockOutlined />
                       {t('profile.changePassword', '修改密码')}
                     </button>
                   </div>

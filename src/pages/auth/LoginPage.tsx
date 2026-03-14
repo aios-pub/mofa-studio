@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sun, Moon, Monitor, Languages } from 'lucide-react';
+import { SunOutlined, MoonOutlined, DesktopOutlined, GlobalOutlined } from '@ant-design/icons';
 import { useAppStore } from '../../stores';
 import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
@@ -25,7 +25,7 @@ export default function LoginPage() {
           {/* 语言切换 */}
           <div className="relative group">
             <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors">
-              <Languages className="w-5 h-5" />
+              <GlobalOutlined />
             </button>
             <div className="absolute right-0 top-full mt-1 py-1 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
               <button
@@ -51,11 +51,11 @@ export default function LoginPage() {
           <div className="relative group">
             <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors">
               {theme === 'light' ? (
-                <Sun className="w-5 h-5" />
+                <SunOutlined />
               ) : theme === 'dark' ? (
-                <Moon className="w-5 h-5" />
+                <MoonOutlined />
               ) : (
-                <Monitor className="w-5 h-5" />
+                <DesktopOutlined />
               )}
             </button>
             <div className="absolute right-0 top-full mt-1 py-1 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
@@ -65,7 +65,7 @@ export default function LoginPage() {
                   theme === 'light' ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-primary)]'
                 }`}
               >
-                <Sun className="w-4 h-4" />
+                <SunOutlined />
                 {t('theme.light', '浅色')}
               </button>
               <button
@@ -74,7 +74,7 @@ export default function LoginPage() {
                   theme === 'dark' ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-primary)]'
                 }`}
               >
-                <Moon className="w-4 h-4" />
+                <MoonOutlined />
                 {t('theme.dark', '深色')}
               </button>
               <button
@@ -83,7 +83,7 @@ export default function LoginPage() {
                   theme === 'system' ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-primary)]'
                 }`}
               >
-                <Monitor className="w-4 h-4" />
+                <DesktopOutlined />
                 {t('theme.system', '跟随系统')}
               </button>
             </div>

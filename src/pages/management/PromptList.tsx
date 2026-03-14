@@ -3,19 +3,20 @@
  */
 
 import { useState, useEffect } from 'react';
+import { Input, Button, Tag, Dropdown, message } from 'antd';
 import {
-  Plus,
-  Search,
-  MoreHorizontal,
-  Edit2,
-  Trash2,
-  Copy,
-  FileText,
-  Code,
-  History,
-  Eye,
-  Play,
-} from 'lucide-react';
+  PlusOutlined,
+  SearchOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  CopyOutlined,
+  FileTextOutlined,
+  CodeOutlined,
+  HistoryOutlined,
+  EyeOutlined,
+  PlayCircleOutlined,
+  MoreOutlined,
+} from '@ant-design/icons';
 import { promptApi, type Prompt } from '../../services/mock/prompts';
 import PromptVersionHistory from '../../components/prompt/PromptVersionHistory';
 import PromptTestPanel from '../../components/prompt/PromptTestPanel';
@@ -26,7 +27,6 @@ export default function PromptListPage() {
   const [loading, setLoading] = useState(true);
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null);
 
   useEffect(() => {
     loadPrompts();
@@ -45,13 +45,16 @@ export default function PromptListPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('确定要删除这个提示词吗？')) return;
     try {
       await promptApi.delete(id);
       setPrompts(prompts.filter((p) => p.id !== id));
-      setContextMenu(null);
+      if (selectedPrompt?.id === id) {
+        setSelectedPrompt(null);
+      }
+      message.success('提示词已删除');
     } catch (error) {
       console.error('Failed to delete prompt:', error);
+      message.error('删除失败');
     }
   };
 
@@ -62,9 +65,10 @@ export default function PromptListPage() {
         name: `${prompt.name} (副本)`,
       });
       setPrompts([...prompts, newPrompt]);
-      setContextMenu(null);
+      message.success('提示词已复制');
     } catch (error) {
       console.error('Failed to duplicate prompt:', error);
+      message.error('复制失败');
     }
   };
 
@@ -80,6 +84,32 @@ export default function PromptListPage() {
     return matchesSearch && matchesCategory;
   });
 
+  // 获取操作菜单
+  const getActionMenuItems = (prompt: Prompt) => [
+    {
+      key: 'edit',
+      label: '编辑',
+      icon: <EditOutlined />,
+      onClick: () => setSelectedPrompt(prompt),
+    },
+    {
+      key: 'copy',
+      label: '复制',
+      icon: <CopyOutlined />,
+      onClick: () => handleDuplicate(prompt),
+    },
+    {
+      type: 'divider' as const,
+    },
+    {
+      key: 'delete',
+      label: '删除',
+      icon: <DeleteOutlined />,
+      danger: true,
+      onClick: () => handleDelete(prompt.id),
+    },
+  ];
+
   return (
     <div className="flex h-full">
       {/* 左侧列表 */}
@@ -88,37 +118,29 @@ export default function PromptListPage() {
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">提示词管理</h2>
-            <button className="p-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)]">
-              <Plus className="w-4 h-4" />
-            </button>
+            <Button type="primary" icon={<PlusOutlined />} size="small" />
           </div>
 
           {/* 搜索 */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
-            <input
-              type="text"
-              placeholder="搜索提示词..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
-            />
-          </div>
+          <Input
+            placeholder="搜索提示词..."
+            prefix={<SearchOutlined />}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            allowClear
+          />
 
           {/* 分类筛选 */}
           <div className="flex gap-1 flex-wrap">
             {categories.map((cat) => (
-              <button
+              <Tag
                 key={cat}
+                color={selectedCategory === cat ? 'blue' : 'default'}
+                style={{ cursor: 'pointer' }}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-2 py-1 text-xs rounded-lg transition-colors ${
-                  selectedCategory === cat
-                    ? 'bg-[var(--color-primary)] text-white'
-                    : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-base)]'
-                }`}
               >
                 {cat === 'all' ? '全部' : cat}
-              </button>
+              </Tag>
             ))}
           </div>
         </div>
@@ -129,7 +151,7 @@ export default function PromptListPage() {
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">加载中...</div>
           ) : filteredPrompts.length === 0 ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">
-              <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <FileTextOutlined className="text-3xl mb-2 opacity-50" />
               <p>暂无提示词</p>
             </div>
           ) : (
@@ -137,10 +159,6 @@ export default function PromptListPage() {
               <div
                 key={prompt.id}
                 onClick={() => setSelectedPrompt(prompt)}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  setContextMenu({ id: prompt.id, x: e.clientX, y: e.clientY });
-                }}
                 className={`group p-3 rounded-lg cursor-pointer transition-colors ${
                   selectedPrompt?.id === prompt.id
                     ? 'bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30'
@@ -148,7 +166,7 @@ export default function PromptListPage() {
                 }`}
               >
                 <div className="flex items-start gap-2">
-                  <FileText className="w-4 h-4 flex-shrink-0 text-[var(--color-text-tertiary)] mt-0.5" />
+                  <FileTextOutlined className="flex-shrink-0 text-[var(--color-text-tertiary)] mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-[var(--color-text-primary)] truncate">
@@ -170,15 +188,19 @@ export default function PromptListPage() {
                       )}
                     </div>
                   </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setContextMenu({ id: prompt.id, x: e.clientX, y: e.clientY });
-                    }}
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[var(--color-bg-base)] rounded"
+                  <Dropdown
+                    menu={{ items: getActionMenuItems(prompt) }}
+                    trigger={['click']}
+                    placement="bottomRight"
                   >
-                    <MoreHorizontal className="w-4 h-4 text-[var(--color-text-tertiary)]" />
-                  </button>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<MoreOutlined />}
+                      className="opacity-0 group-hover:opacity-100"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </Dropdown>
                 </div>
               </div>
             ))
@@ -197,51 +219,13 @@ export default function PromptListPage() {
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <FileText className="w-16 h-16 text-[var(--color-text-tertiary)] mx-auto mb-4" />
+              <FileTextOutlined className="text-5xl text-[var(--color-text-tertiary)] mb-4" />
               <h3 className="text-lg font-medium text-[var(--color-text-primary)]">选择一个提示词</h3>
               <p className="text-[var(--color-text-secondary)]">从左侧列表中选择查看详情</p>
             </div>
           </div>
         )}
       </div>
-
-      {/* 右键菜单 */}
-      {contextMenu && (
-        <div
-          className="fixed z-50 py-1 bg-[var(--color-bg-base)] border border-[var(--color-border)] rounded-lg shadow-lg"
-          style={{ left: contextMenu.x, top: contextMenu.y }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button
-            onClick={() => {
-              const prompt = prompts.find((p) => p.id === contextMenu.id);
-              if (prompt) setSelectedPrompt(prompt);
-              setContextMenu(null);
-            }}
-            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]"
-          >
-            <Edit2 className="w-4 h-4" />
-            编辑
-          </button>
-          <button
-            onClick={() => {
-              const prompt = prompts.find((p) => p.id === contextMenu.id);
-              if (prompt) handleDuplicate(prompt);
-            }}
-            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]"
-          >
-            <Copy className="w-4 h-4" />
-            复制
-          </button>
-          <button
-            onClick={() => handleDelete(contextMenu.id)}
-            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-          >
-            <Trash2 className="w-4 h-4" />
-            删除
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -273,6 +257,13 @@ function PromptDetail({
     }
   };
 
+  const tabs = [
+    { key: 'content', label: '内容', icon: FileTextOutlined },
+    { key: 'variables', label: '变量', icon: CodeOutlined },
+    { key: 'versions', label: '版本历史', icon: HistoryOutlined },
+    { key: 'test', label: '测试', icon: PlayCircleOutlined },
+  ];
+
   return (
     <div className="flex flex-col h-full">
       {/* 头部 */}
@@ -282,17 +273,15 @@ function PromptDetail({
           <p className="text-[var(--color-text-secondary)]">{currentPrompt.description}</p>
         </div>
         <div className="flex gap-2">
-          <button
+          <Button
+            icon={<EyeOutlined />}
             onClick={onPreview}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)]"
           >
-            <Eye className="w-4 h-4" />
             预览
-          </button>
-          <button className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)]">
-            <Edit2 className="w-4 h-4" />
+          </Button>
+          <Button type="primary" icon={<EditOutlined />}>
             编辑
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -314,25 +303,23 @@ function PromptDetail({
 
       {/* 标签栏 */}
       <div className="flex gap-1 px-6 border-b border-[var(--color-border)]">
-        {[
-          { key: 'content', label: '内容', icon: FileText },
-          { key: 'variables', label: '变量', icon: Code },
-          { key: 'versions', label: '版本历史', icon: History },
-          { key: 'test', label: '测试', icon: Play },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key as typeof activeTab)}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === tab.key
-                ? 'text-[var(--color-primary)] border-[var(--color-primary)]'
-                : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
-            }`}
-          >
-            <tab.icon className="w-4 h-4" />
-            {tab.label}
-          </button>
-        ))}
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as typeof activeTab)}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === tab.key
+                  ? 'text-[var(--color-primary)] border-[var(--color-primary)]'
+                  : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
+              }`}
+            >
+              <Icon />
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* 内容区 */}

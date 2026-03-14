@@ -109,7 +109,13 @@ body.floating-body {
   color: rgba(226, 232, 240, 0.7);
 }
 
-.floating-menu-close {
+.floating-menu-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.floating-menu-action {
   background: transparent;
   border: 1px solid rgba(148, 163, 184, 0.3);
   color: rgba(226, 232, 240, 0.8);
@@ -120,10 +126,12 @@ body.floating-body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
 }
 
-.floating-menu-close:hover {
-  background: rgba(148, 163, 184, 0.15);
+.floating-menu-action:hover {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: rgba(99, 102, 241, 0.5);
 }
 
 .floating-menu-items {

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Window } from "@tauri-apps/api/window";
+import { Window, LogicalSize } from "@tauri-apps/api/window";
 import { isTauriApp } from "../utils/tauri";
 
 type NavigatePayload = {
@@ -37,6 +37,8 @@ export const useFloatingBridge = () => {
         event.preventDefault();
         const floating = await Window.getByLabel("floating");
         if (floating) {
+          // Reset floating ball to collapsed size before showing
+          await floating.setSize(new LogicalSize(64, 64));
           await floating.show();
           await floating.setFocus();
         }

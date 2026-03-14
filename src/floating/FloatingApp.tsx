@@ -17,6 +17,7 @@ import {
   Settings,
   LayoutGrid,
   X,
+  Maximize2,
 } from "lucide-react";
 import { isTauriApp } from "../utils/tauri";
 import ContextMenu from "./ContextMenu";
@@ -419,6 +420,28 @@ export default function FloatingApp() {
     await appWindow.hide();
   };
 
+  const convertToWindow = async () => {
+    if (!appWindow) return;
+
+    const position = await appWindow.outerPosition();
+    const mainWindow = await Window.getByLabel("main");
+
+    if (mainWindow) {
+      await mainWindow.setPosition(
+        new LogicalPosition(
+          Math.max(0, position.x - 350),
+          Math.max(0, position.y - 150),
+        ),
+      );
+      await mainWindow.show();
+      await mainWindow.setFocus();
+    }
+
+    setExpanded(false);
+    await appWindow.setSize(new LogicalSize(BALL_SIZE, BALL_SIZE));
+    await appWindow.hide();
+  };
+
   const exitApp = async () => {
     if (!appWindow) {
       return;
@@ -474,13 +497,22 @@ export default function FloatingApp() {
                 <div className="floating-menu-subtitle">悬浮快速入口</div>
               </div>
             </div>
-            <button
-              className="floating-menu-close"
-              onClick={() => void collapseMenu()}
-              aria-label="关闭菜单"
-            >
-              <X size={16} />
-            </button>
+            <div className="floating-menu-header-actions">
+              <button
+                className="floating-menu-action"
+                onClick={() => void convertToWindow()}
+                aria-label="窗口化"
+              >
+                <Maximize2 size={14} />
+              </button>
+              <button
+                className="floating-menu-action"
+                onClick={() => void collapseMenu()}
+                aria-label="关闭菜单"
+              >
+                <X size={14} />
+              </button>
+            </div>
           </div>
 
           <div className="floating-menu-items">

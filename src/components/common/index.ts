@@ -153,3 +153,7 @@ export type {
   MultiTabProviderProps,
   MultiTabViewProps,
 } from './MultiTab';
+
+// Markdown 渲染
+export { default as MarkdownRenderer } from './MarkdownRenderer';
+export type { MarkdownRendererProps } from './MarkdownRenderer';

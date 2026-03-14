@@ -4,6 +4,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Loader2, Copy, RotateCcw, ChevronDown } from 'lucide-react';
+import { MarkdownRenderer } from '../common';
 import type { Message, Conversation } from '../../types';
 
 interface ChatContainerProps {
@@ -191,7 +192,14 @@ function MessageItem({ message }: { message: Message }) {
               : 'bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-[var(--color-text-primary)]'
           }`}
         >
-          <div className="whitespace-pre-wrap">{message.content}</div>
+          {isUser ? (
+            <div className="whitespace-pre-wrap">{message.content}</div>
+          ) : (
+            <MarkdownRenderer
+              content={message.content}
+              showCopyButton={false}
+            />
+          )}
         </div>
 
         {/* 工具调用 */}

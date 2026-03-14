@@ -386,3 +386,77 @@ body {
   background-size: 200px 100%;
   animation: skeleton-loading 1.5s ease-in-out infinite;
 }
+
+/* ========== Markdown 样式 ========== */
+.markdown-body {
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+
+.markdown-body pre {
+  background-color: #1f2937;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.markdown-body pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.markdown-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* 代码高亮增强 */
+.markdown-body .hljs {
+  background: transparent;
+  padding: 0;
+}
+
+/* KaTeX 数学公式样式 */
+.markdown-body .katex {
+  font-size: 1.1em;
+}
+
+.markdown-body .katex-display {
+  margin: 1rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* 任务列表样式 */
+.markdown-body input[type="checkbox"] {
+  margin-right: 0.5rem;
+  accent-color: var(--color-primary);
+}
+
+/* 暗色模式代码高亮调整 */
+.dark .markdown-body pre {
+  background-color: #111827;
+}
+
+.dark .markdown-body .hljs {
+  color: #e5e7eb;
+}
+
+/* 代码块内联滚动条 */
+.markdown-body pre::-webkit-scrollbar {
+  height: 6px;
+}
+
+.markdown-body pre::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.markdown-body pre::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.markdown-body pre::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}

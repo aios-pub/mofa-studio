@@ -69,6 +69,7 @@ export const useAppStore = create<AppState>()(
         theme: state.theme,
         language: state.language,
         sidebarCollapsed: state.sidebarCollapsed,
+        windowMode: state.windowMode,
       }),
     }
   )

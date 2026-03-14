@@ -19,6 +19,8 @@ import {
   X,
 } from "lucide-react";
 import { isTauriApp } from "../utils/tauri";
+import ContextMenu from "./ContextMenu";
+import QuickInput from "./QuickInput";
 import "./floating.css";
 
 type MenuPlacement = {
@@ -43,7 +45,7 @@ type DragState = {
 
 const BALL_SIZE = 64;
 const MENU_WIDTH = 240;
-const MENU_HEIGHT = 220;
+const MENU_HEIGHT = 300;
 const MENU_GAP = 12;
 const EDGE_PEEK = 18;
 const DRAG_THRESHOLD = 4;
@@ -91,6 +93,9 @@ export default function FloatingApp() {
     vertical: "up",
   });
   const [dragging, setDragging] = useState(false);
+  const [snapping, setSnapping] = useState(false);
+  const [contextMenuVisible, setContextMenuVisible] = useState(false);
+  const [alwaysOnTop, setAlwaysOnTop] = useState(true);
 
   const appWindow = useMemo(() => {
     if (!isTauriApp()) {
@@ -106,6 +111,7 @@ export default function FloatingApp() {
   const pendingPositionRef = useRef<{ x: number; y: number } | null>(null);
   const ballRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const contextMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     document.body.classList.add("floating-body");
@@ -126,7 +132,7 @@ export default function FloatingApp() {
   }, [appWindow]);
 
   useEffect(() => {
-    if (!expanded) {
+    if (!expanded && !contextMenuVisible) {
       return;
     }
 
@@ -135,15 +141,24 @@ export default function FloatingApp() {
       if (ballRef.current?.contains(target)) {
         return;
       }
-      if (menuRef.current?.contains(target)) {
+      if (expanded && menuRef.current?.contains(target)) {
         return;
       }
-      void collapseMenu();
+      if (contextMenuVisible && contextMenuRef.current?.contains(target)) {
+        return;
+      }
+
+      if (expanded) {
+        void collapseMenu();
+      }
+      if (contextMenuVisible) {
+        setContextMenuVisible(false);
+      }
     };
 
     window.addEventListener("pointerdown", handlePointer);
     return () => window.removeEventListener("pointerdown", handlePointer);
-  }, [expanded]);
+  }, [expanded, contextMenuVisible]);
 
   const snapToEdge = async () => {
     if (!appWindow) {
@@ -174,20 +189,48 @@ export default function FloatingApp() {
       bottomDistance,
     );
 
-    let nextX = position.x;
-    let nextY = position.y;
+    let targetX = position.x;
+    let targetY = position.y;
 
     if (minDistance === leftDistance) {
-      nextX = bounds.x - (size.width - EDGE_PEEK);
+      targetX = bounds.x - (size.width - EDGE_PEEK);
     } else if (minDistance === rightDistance) {
-      nextX = bounds.x + bounds.width - EDGE_PEEK;
+      targetX = bounds.x + bounds.width - EDGE_PEEK;
     } else if (minDistance === topDistance) {
-      nextY = bounds.y - (size.height - EDGE_PEEK);
+      targetY = bounds.y - (size.height - EDGE_PEEK);
     } else {
-      nextY = bounds.y + bounds.height - EDGE_PEEK;
+      targetY = bounds.y + bounds.height - EDGE_PEEK;
     }
 
-    await appWindow.setPosition(new LogicalPosition(nextX, nextY));
+    // Trigger snap animation
+    setSnapping(true);
+
+    // Animate position with easing
+    const startX = position.x;
+    const startY = position.y;
+    const duration = 280;
+    const startTime = performance.now();
+
+    const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
+
+    const animate = async (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = easeOutCubic(progress);
+
+      const currentX = startX + (targetX - startX) * eased;
+      const currentY = startY + (targetY - startY) * eased;
+
+      await appWindow.setPosition(new LogicalPosition(currentX, currentY));
+
+      if (progress < 1) {
+        requestAnimationFrame((time) => void animate(time));
+      } else {
+        setSnapping(false);
+      }
+    };
+
+    requestAnimationFrame((time) => void animate(time));
   };
 
   const expandMenu = async () => {
@@ -343,9 +386,19 @@ export default function FloatingApp() {
 
   const handleContextMenu = async (event: ReactMouseEvent) => {
     event.preventDefault();
-    if (!expanded) {
-      await expandMenu();
+    if (expanded) {
+      return;
     }
+    setContextMenuVisible(true);
+  };
+
+  const toggleAlwaysOnTop = async () => {
+    if (!appWindow) {
+      return;
+    }
+    const newValue = !alwaysOnTop;
+    setAlwaysOnTop(newValue);
+    await appWindow.setAlwaysOnTop(newValue);
   };
 
   const openMainWindow = async (path?: string) => {
@@ -375,11 +428,27 @@ export default function FloatingApp() {
     await Promise.all(windows.map((win) => win.close()));
   };
 
+  const handleQuickInput = async (message: string) => {
+    if (!appWindow) {
+      return;
+    }
+
+    const mainWindow = await Window.getByLabel("main");
+    if (mainWindow) {
+      await mainWindow.show();
+      await mainWindow.setFocus();
+      await mainWindow.emit("floating:quick-message", { message });
+    }
+
+    await collapseMenu();
+    await appWindow.hide();
+  };
+
   return (
     <div className={`floating-root ${expanded ? "is-expanded" : ""}`}>
       <button
         ref={ballRef}
-        className={`floating-ball ${dragging ? "is-dragging" : ""}`}
+        className={`floating-ball ${dragging ? "is-dragging" : ""} ${snapping ? "is-snapping" : ""}`}
         style={getBallStyle(menuPlacement)}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -450,7 +519,22 @@ export default function FloatingApp() {
               <span>退出应用</span>
             </button>
           </div>
+
+          <QuickInput onSubmit={(msg) => void handleQuickInput(msg)} />
         </div>
+      ) : null}
+
+      {contextMenuVisible && !expanded ? (
+        <ContextMenu
+          ref={contextMenuRef}
+          placement={menuPlacement}
+          alwaysOnTop={alwaysOnTop}
+          onOpenMain={() => void openMainWindow("/")}
+          onSettings={() => void openMainWindow("/system/settings")}
+          onToggleAlwaysOnTop={() => void toggleAlwaysOnTop()}
+          onExit={() => void exitApp()}
+          onClose={() => setContextMenuVisible(false)}
+        />
       ) : null}
     </div>
   );

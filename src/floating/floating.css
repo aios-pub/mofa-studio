@@ -1,7 +1,7 @@
 :root {
   --floating-ball-size: 64px;
   --floating-menu-width: 240px;
-  --floating-menu-height: 220px;
+  --floating-menu-height: 300px;
   --floating-menu-gap: 12px;
   --floating-glass: rgba(15, 23, 42, 0.78);
   --floating-glass-border: rgba(148, 163, 184, 0.2);
@@ -21,8 +21,12 @@ body.floating-body {
   height: 100%;
   position: relative;
   background: transparent;
-  pointer-events: auto;
+  pointer-events: none;
   user-select: none;
+}
+
+.floating-root.is-expanded {
+  pointer-events: auto;
 }
 
 .floating-ball {
@@ -41,6 +45,7 @@ body.floating-body {
   padding: 0;
   appearance: none;
   outline: none;
+  pointer-events: auto;
 }
 
 .floating-ball img {
@@ -166,4 +171,132 @@ body.floating-body {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+@keyframes ball-collapse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.85);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.floating-ball.is-snapping {
+  animation: ball-collapse 280ms ease-out;
+}
+
+.floating-context-menu {
+  position: absolute;
+  width: 160px;
+  background: var(--floating-glass);
+  border: 1px solid var(--floating-glass-border);
+  border-radius: 12px;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(12px);
+  padding: 6px;
+  animation: context-menu-in 120ms ease-out;
+  z-index: 100;
+  pointer-events: auto;
+}
+
+.floating-context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: transparent;
+  color: #e2e8f0;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 120ms ease;
+  appearance: none;
+}
+
+.floating-context-menu-item:hover {
+  background: rgba(148, 163, 184, 0.2);
+}
+
+.floating-context-menu-item--danger {
+  color: #f87171;
+}
+
+.floating-context-menu-item--danger:hover {
+  background: rgba(248, 113, 113, 0.15);
+}
+
+.floating-context-menu-divider {
+  height: 1px;
+  background: var(--floating-glass-border);
+  margin: 4px 0;
+}
+
+@keyframes context-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.floating-quick-input {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  margin-top: auto;
+}
+
+.floating-quick-input-textarea {
+  flex: 1;
+  background: rgba(15, 23, 42, 0.35);
+  border: 1px solid var(--floating-glass-border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  color: #f8fafc;
+  font-size: 12px;
+  line-height: 1.4;
+  resize: none;
+  outline: none;
+  transition: border-color 120ms ease;
+}
+
+.floating-quick-input-textarea::placeholder {
+  color: rgba(226, 232, 240, 0.5);
+}
+
+.floating-quick-input-textarea:focus {
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+.floating-quick-input-send {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.floating-quick-input-send:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.floating-quick-input-send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

@@ -1,21 +1,21 @@
 /**
  * 设置抽屉组件
+ * 参考 slash-admin 的 SettingButton 设计
  */
 
 import { useTranslation } from 'react-i18next';
-import { Drawer, Switch, Slider, Button, Divider, Card, Tooltip } from 'antd';
+import { Drawer, Switch, Slider, Button, Card, Tooltip, Space } from 'antd';
 import {
   CheckOutlined,
   FullscreenOutlined,
   FullscreenExitOutlined,
-  BgColorsOutlined,
-  LayoutOutlined,
-  FontSizeOutlined,
   SunOutlined,
   MoonOutlined,
   DesktopOutlined,
+  QuestionCircleOutlined,
+  UndoOutlined,
 } from '@ant-design/icons';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type CSSProperties } from 'react';
 import { useSettings, useSettingActions, themeColorPresetsMap, type ThemeColorPresets, type ThemeLayout } from '../../stores/useSettingStore';
 import { useAppStore } from '../../stores';
 
@@ -84,275 +84,337 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
       : '#919EAB';
   };
 
+  // 主题色
+  const primaryColor = themeColorPresetsMap[settings.themeColorPresets].default;
+
+  // 抽屉内容背景样式 - 模糊效果
+  const drawerContentStyle: CSSProperties = {
+    backdropFilter: 'blur(20px)',
+  };
+
   return (
     <Drawer
-      title={t('settings.title')}
+      title={
+        <span className="text-base font-semibold">
+          {t('settings.title', '系统设置')}
+        </span>
+      }
       placement="right"
       onClose={onClose}
       open={open}
-      width={320}
+      width={340}
       className="settings-drawer"
+      styles={{
+        body: { padding: 0 },
+        header: { padding: '16px 24px', borderBottom: '1px solid var(--color-border)' },
+        footer: { padding: '16px 24px', borderTop: '1px solid var(--color-border)' },
+      }}
       footer={
-        <Button
-          block
-          onClick={toggleFullScreen}
-          icon={isFullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
-        >
-          {isFullscreen
-            ? t('settings.exitFullscreen', '退出全屏')
-            : t('settings.fullscreen', '全屏模式')}
-        </Button>
+        <div className="space-y-3">
+          <Button
+            block
+            onClick={toggleFullScreen}
+            icon={isFullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
+            className="h-10 border-dashed hover:!border-[var(--color-primary)] hover:!text-[var(--color-primary)]"
+          >
+            {isFullscreen
+              ? t('settings.exitFullscreen', '退出全屏')
+              : t('settings.fullscreen', '全屏模式')}
+          </Button>
+          <Button
+            block
+            onClick={resetSettings}
+            icon={<UndoOutlined />}
+          >
+            {t('settings.reset', '恢复默认设置')}
+          </Button>
+        </div>
       }
     >
-      <div className="space-y-6">
-        {/* 主题模式 */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            {theme === 'light' ? (
-              <SunOutlined className="text-[var(--color-text-secondary)]" />
-            ) : theme === 'dark' ? (
-              <MoonOutlined className="text-[var(--color-text-secondary)]" />
-            ) : (
-              <DesktopOutlined className="text-[var(--color-text-secondary)]" />
-            )}
-            <span className="text-sm font-medium text-[var(--color-text-primary)]">
-              {t('settings.themeMode', '主题模式')}
-            </span>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            <Card
-              hoverable
-              size="small"
-              className={`cursor-pointer text-center py-3 ${theme === 'light' ? 'border-2' : ''}`}
-              style={{ borderColor: theme === 'light' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }}
-              onClick={() => setTheme('light')}
-            >
-              <SunOutlined className="text-lg mx-auto mb-1" style={{ color: theme === 'light' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }} />
-              <span className="text-xs">{t('theme.light', '浅色')}</span>
-            </Card>
-            <Card
-              hoverable
-              size="small"
-              className={`cursor-pointer text-center py-3 ${theme === 'dark' ? 'border-2' : ''}`}
-              style={{ borderColor: theme === 'dark' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }}
-              onClick={() => setTheme('dark')}
-            >
-              <MoonOutlined className="text-lg mx-auto mb-1" style={{ color: theme === 'dark' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }} />
-              <span className="text-xs">{t('theme.dark', '深色')}</span>
-            </Card>
-            <Card
-              hoverable
-              size="small"
-              className={`cursor-pointer text-center py-3 ${theme === 'system' ? 'border-2' : ''}`}
-              style={{ borderColor: theme === 'system' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }}
-              onClick={() => setTheme('system')}
-            >
-              <DesktopOutlined className="text-lg mx-auto mb-1" style={{ color: theme === 'system' ? themeColorPresetsMap[settings.themeColorPresets].default : undefined }} />
-              <span className="text-xs">{t('theme.system', '系统')}</span>
-            </Card>
-          </div>
-        </div>
+      <div className="h-full overflow-y-auto scrollbar-thin" style={drawerContentStyle}>
+        <div className="flex flex-col gap-6 p-6">
+          {/* 主题模式 */}
+          <section className="flex flex-col gap-3">
+            <h4 className="text-sm font-semibold text-[var(--color-text-primary)] m-0">
+              {t('settings.mode', '主题模式')}
+            </h4>
+            <div className="grid grid-cols-3 gap-3">
+              <Card
+                hoverable
+                className={`
+                  cursor-pointer text-center py-4 transition-all duration-200
+                  ${theme === 'light' ? '!border-2' : '!border'}
+                `}
+                style={{
+                  borderColor: theme === 'light' ? primaryColor : undefined,
+                  boxShadow: theme === 'light' ? `0 0 0 1px ${primaryColor}` : undefined,
+                }}
+                onClick={() => setTheme('light')}
+                styles={{ body: { padding: '8px' } }}
+              >
+                <SunOutlined
+                  className="text-xl mb-2 transition-colors"
+                  style={{ color: theme === 'light' ? primaryColor : 'var(--color-text-tertiary)' }}
+                />
+                <div className="text-xs text-[var(--color-text-secondary)]">
+                  {t('theme.light', '浅色')}
+                </div>
+              </Card>
+              <Card
+                hoverable
+                className={`
+                  cursor-pointer text-center py-4 transition-all duration-200
+                  ${theme === 'dark' ? '!border-2' : '!border'}
+                `}
+                style={{
+                  borderColor: theme === 'dark' ? primaryColor : undefined,
+                  boxShadow: theme === 'dark' ? `0 0 0 1px ${primaryColor}` : undefined,
+                }}
+                onClick={() => setTheme('dark')}
+                styles={{ body: { padding: '8px' } }}
+              >
+                <MoonOutlined
+                  className="text-xl mb-2 transition-colors"
+                  style={{ color: theme === 'dark' ? primaryColor : 'var(--color-text-tertiary)' }}
+                />
+                <div className="text-xs text-[var(--color-text-secondary)]">
+                  {t('theme.dark', '深色')}
+                </div>
+              </Card>
+              <Card
+                hoverable
+                className={`
+                  cursor-pointer text-center py-4 transition-all duration-200
+                  ${theme === 'system' ? '!border-2' : '!border'}
+                `}
+                style={{
+                  borderColor: theme === 'system' ? primaryColor : undefined,
+                  boxShadow: theme === 'system' ? `0 0 0 1px ${primaryColor}` : undefined,
+                }}
+                onClick={() => setTheme('system')}
+                styles={{ body: { padding: '8px' } }}
+              >
+                <DesktopOutlined
+                  className="text-xl mb-2 transition-colors"
+                  style={{ color: theme === 'system' ? primaryColor : 'var(--color-text-tertiary)' }}
+                />
+                <div className="text-xs text-[var(--color-text-secondary)]">
+                  {t('theme.system', '系统')}
+                </div>
+              </Card>
+            </div>
+          </section>
 
-        <Divider />
-
-        {/* 布局模式 */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <LayoutOutlined className="text-[var(--color-text-secondary)]" />
-            <span className="text-sm font-medium text-[var(--color-text-primary)]">
+          {/* 布局模式 */}
+          <section className="flex flex-col gap-3">
+            <h4 className="text-sm font-semibold text-[var(--color-text-primary)] m-0">
               {t('settings.layout', '布局模式')}
-            </span>
-          </div>
+            </h4>
 
-          <div className="grid grid-cols-3 gap-3">
-            {/* 垂直布局 */}
-            <Card
-              hoverable
-              className={`cursor-pointer p-2 ${settings.themeLayout === 'vertical' ? 'border-primary border-2' : ''}`}
-              onClick={() => handleLayoutChange('vertical')}
-            >
-              <div className="flex h-12 gap-1">
-                <div className="flex flex-col w-5 gap-0.5 p-0.5">
-                  <div className="w-2 h-2 rounded-sm" style={{ background: getLayoutBg('vertical') }} />
-                  <div className="w-full h-1 rounded-sm opacity-50" style={{ background: getLayoutBg('vertical') }} />
-                  <div className="w-3 h-1 rounded-sm opacity-20" style={{ background: getLayoutBg('vertical') }} />
+            <div className="grid grid-cols-3 gap-3">
+              {/* 垂直布局 */}
+              <Card
+                hoverable
+                className={`cursor-pointer p-2 transition-all duration-200 ${
+                  settings.themeLayout === 'vertical' ? '!border-2' : '!border'
+                }`}
+                style={{
+                  borderColor: settings.themeLayout === 'vertical' ? primaryColor : undefined,
+                  boxShadow: settings.themeLayout === 'vertical' ? `0 0 0 1px ${primaryColor}` : undefined,
+                }}
+                onClick={() => handleLayoutChange('vertical')}
+              >
+                <div className="flex h-14 gap-1">
+                  <div className="flex flex-col w-5 gap-0.5 p-1">
+                    <div className="w-2 h-2 rounded-sm" style={{ background: getLayoutBg('vertical') }} />
+                    <div className="w-full h-1 rounded-sm opacity-50" style={{ background: getLayoutBg('vertical') }} />
+                    <div className="w-3 h-1 rounded-sm opacity-20" style={{ background: getLayoutBg('vertical') }} />
+                  </div>
+                  <div className="flex flex-col flex-1 gap-0.5 p-1">
+                    <div className="w-full h-1.5 rounded-sm opacity-20" style={{ background: getLayoutBg('vertical') }} />
+                    <div
+                      className={`flex-1 rounded-sm opacity-20 transition-all duration-300 ${!settings.themeStretch ? 'w-10 mx-auto' : ''}`}
+                      style={{ background: getLayoutBg('vertical') }}
+                    />
+                  </div>
                 </div>
-                <div className="flex flex-col flex-1 gap-0.5 p-0.5">
-                  <div className="w-full h-1 rounded-sm opacity-20" style={{ background: getLayoutBg('vertical') }} />
-                  <div className={`flex-1 rounded-sm opacity-20 ${!settings.themeStretch && 'w-8 mx-auto'}`} style={{ background: getLayoutBg('vertical') }} />
+              </Card>
+
+              {/* 迷你布局 */}
+              <Card
+                hoverable
+                className={`cursor-pointer p-2 transition-all duration-200 ${
+                  settings.themeLayout === 'mini' ? '!border-2' : '!border'
+                }`}
+                style={{
+                  borderColor: settings.themeLayout === 'mini' ? primaryColor : undefined,
+                  boxShadow: settings.themeLayout === 'mini' ? `0 0 0 1px ${primaryColor}` : undefined,
+                }}
+                onClick={() => handleLayoutChange('mini')}
+              >
+                <div className="flex h-14 gap-0">
+                  <div className="flex flex-col w-3 gap-0.5 p-1 items-center">
+                    <div className="w-2 h-2 rounded-sm" style={{ background: getLayoutBg('mini') }} />
+                    <div className="w-full h-1 rounded-sm opacity-50" style={{ background: getLayoutBg('mini') }} />
+                    <div className="w-full h-1 rounded-sm opacity-20" style={{ background: getLayoutBg('mini') }} />
+                  </div>
+                  <div className="flex flex-col flex-1 gap-0.5 p-1">
+                    <div className="w-full h-1.5 rounded-sm opacity-20" style={{ background: getLayoutBg('mini') }} />
+                    <div
+                      className={`flex-1 rounded-sm opacity-20 transition-all duration-300 ${!settings.themeStretch ? 'w-10 mx-auto' : ''}`}
+                      style={{ background: getLayoutBg('mini') }}
+                    />
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
 
-            {/* 迷你布局 */}
-            <Card
-              hoverable
-              className={`cursor-pointer p-2 ${settings.themeLayout === 'mini' ? 'border-primary border-2' : ''}`}
-              onClick={() => handleLayoutChange('mini')}
-            >
-              <div className="flex h-12 gap-0">
-                <div className="flex flex-col w-3 gap-0.5 p-0.5 items-center">
-                  <div className="w-2 h-2 rounded-sm" style={{ background: getLayoutBg('mini') }} />
-                  <div className="w-full h-1 rounded-sm opacity-50" style={{ background: getLayoutBg('mini') }} />
-                  <div className="w-full h-1 rounded-sm opacity-20" style={{ background: getLayoutBg('mini') }} />
+              {/* 水平布局 */}
+              <Card
+                hoverable
+                className={`cursor-pointer p-2 transition-all duration-200 ${
+                  settings.themeLayout === 'horizontal' ? '!border-2' : '!border'
+                }`}
+                style={{
+                  borderColor: settings.themeLayout === 'horizontal' ? primaryColor : undefined,
+                  boxShadow: settings.themeLayout === 'horizontal' ? `0 0 0 1px ${primaryColor}` : undefined,
+                }}
+                onClick={() => handleLayoutChange('horizontal')}
+              >
+                <div className="flex flex-col h-14 gap-0">
+                  <div className="flex items-center gap-1 p-1">
+                    <div className="w-2 h-2 rounded-sm" style={{ background: getLayoutBg('horizontal') }} />
+                    <div className="w-4 h-1 rounded-sm opacity-50" style={{ background: getLayoutBg('horizontal') }} />
+                    <div className="w-3 h-1 rounded-sm opacity-20" style={{ background: getLayoutBg('horizontal') }} />
+                  </div>
+                  <div className="w-full h-1.5 rounded-sm opacity-20 mx-1" style={{ background: getLayoutBg('horizontal') }} />
+                  <div
+                    className={`flex-1 rounded-sm opacity-20 m-1 transition-all duration-300 ${!settings.themeStretch ? 'w-10 mx-auto' : ''}`}
+                    style={{ background: getLayoutBg('horizontal') }}
+                  />
                 </div>
-                <div className="flex flex-col flex-1 gap-0.5 p-0.5">
-                  <div className="w-full h-1 rounded-sm opacity-20" style={{ background: getLayoutBg('mini') }} />
-                  <div className={`flex-1 rounded-sm opacity-20 ${!settings.themeStretch && 'w-8 mx-auto'}`} style={{ background: getLayoutBg('mini') }} />
-                </div>
-              </div>
-            </Card>
+              </Card>
+            </div>
 
-            {/* 水平布局 */}
-            <Card
-              hoverable
-              className={`cursor-pointer p-2 ${settings.themeLayout === 'horizontal' ? 'border-primary border-2' : ''}`}
-              onClick={() => handleLayoutChange('horizontal')}
-            >
-              <div className="flex flex-col h-12 gap-0">
-                <div className="flex items-center gap-1 p-0.5">
-                  <div className="w-2 h-2 rounded-sm" style={{ background: getLayoutBg('horizontal') }} />
-                  <div className="w-4 h-1 rounded-sm opacity-50" style={{ background: getLayoutBg('horizontal') }} />
-                  <div className="w-3 h-1 rounded-sm opacity-20" style={{ background: getLayoutBg('horizontal') }} />
-                </div>
-                <div className="w-full h-1 rounded-sm opacity-20 mx-1" style={{ background: getLayoutBg('horizontal') }} />
-                <div className={`flex-1 rounded-sm opacity-20 m-1 ${!settings.themeStretch && 'w-8 mx-auto'}`} style={{ background: getLayoutBg('horizontal') }} />
-              </div>
-            </Card>
-          </div>
+            {/* 内容拉伸 */}
+            <div className="flex items-center justify-between">
+              <Space size={4}>
+                <span className="text-sm text-[var(--color-text-secondary)]">
+                  {t('settings.stretch', '内容拉伸')}
+                </span>
+                <Tooltip title={t('settings.stretchTip', '拉伸内容以填充整个页面宽度')}>
+                  <QuestionCircleOutlined className="text-[var(--color-text-tertiary)] cursor-help" />
+                </Tooltip>
+              </Space>
+              <Switch
+                checked={settings.themeStretch}
+                onChange={() => handleToggle('themeStretch')}
+              />
+            </div>
+          </section>
 
-          {/* 内容拉伸 */}
-          <div className="flex items-center justify-between mt-3">
-            <Tooltip title={t('settings.stretchTip', '拉伸内容以填充整个页面宽度')}>
-              <span className="text-sm text-[var(--color-text-secondary)] cursor-help">
-                {t('settings.stretch', '内容拉伸')}
-              </span>
-            </Tooltip>
-            <Switch
-              checked={settings.themeStretch}
-              onChange={() => handleToggle('themeStretch')}
-            />
-          </div>
-        </div>
-
-        <Divider />
-
-        {/* 主题颜色 */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <BgColorsOutlined className="text-[var(--color-text-secondary)]" />
-            <span className="text-sm font-medium text-[var(--color-text-primary)]">
-              {t('settings.themeColor', '主题颜色')}
-            </span>
-          </div>
-          <div className="flex gap-1">
-            {colorOptions.map((option) => (
-              <Tooltip key={option.value} title={option.value.charAt(0).toUpperCase() + option.value.slice(1)}>
+          {/* 主题颜色 */}
+          <section className="flex flex-col gap-3">
+            <h4 className="text-sm font-semibold text-[var(--color-text-primary)] m-0">
+              {t('settings.presetThemes', '预设主题')}
+            </h4>
+            <div className="flex flex-wrap gap-1">
+              {colorOptions.map((option) => (
                 <button
+                  key={option.value}
                   onClick={() => handleColorChange(option.value)}
-                  className={`relative flex h-10 w-6 cursor-pointer items-center justify-center rounded transition-all duration-300 ${
-                    settings.themeColorPresets === option.value ? 'w-10' : ''
-                  }`}
+                  className={`
+                    relative flex cursor-pointer items-center justify-center rounded
+                    transition-all duration-300 ease-in-out
+                    ${settings.themeColorPresets === option.value ? 'w-12 h-12' : 'w-5 h-12'}
+                  `}
                   style={{ backgroundColor: option.color }}
+                  title={option.value.charAt(0).toUpperCase() + option.value.slice(1)}
                 >
                   <div
-                    className={`w-full h-full flex items-center justify-center rounded transition-all ${
-                      settings.themeColorPresets === option.value ? 'bg-white/30' : 'hover:bg-white/20'
-                    }`}
+                    className={`
+                      w-full h-full flex items-center justify-center rounded
+                      transition-all duration-300
+                      ${settings.themeColorPresets === option.value ? 'bg-white/30' : 'hover:bg-white/20'}
+                    `}
                   >
                     {settings.themeColorPresets === option.value && (
-                      <CheckOutlined className="text-white text-base" />
+                      <CheckOutlined className="text-white text-lg" />
                     )}
                   </div>
                 </button>
-              </Tooltip>
-            ))}
-          </div>
-        </div>
+              ))}
+            </div>
+          </section>
 
-        <Divider />
-
-        {/* 字体大小 */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <FontSizeOutlined className="text-[var(--color-text-secondary)]" />
-            <span className="text-sm font-medium text-[var(--color-text-primary)]">
+          {/* 字体大小 */}
+          <section className="flex flex-col gap-3">
+            <h4 className="text-sm font-semibold text-[var(--color-text-primary)] m-0">
               {t('settings.fontSize', '字体大小')}
-            </span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Slider
-              min={12}
-              max={20}
-              value={settings.fontSize}
-              onChange={(value) => setSettings({ ...settings, fontSize: value })}
-              className="flex-1"
-            />
-            <span className="text-sm text-[var(--color-text-secondary)] w-10 text-right">
-              {settings.fontSize}px
-            </span>
-          </div>
+            </h4>
+            <div className="flex items-center gap-4">
+              <Slider
+                min={12}
+                max={20}
+                value={settings.fontSize}
+                onChange={(value) => setSettings({ ...settings, fontSize: value })}
+                className="flex-1"
+                tooltip={{ formatter: (value) => `${value}px` }}
+              />
+              <span className="text-sm font-medium text-[var(--color-text-secondary)] w-12 text-right">
+                {settings.fontSize}px
+              </span>
+            </div>
+          </section>
+
+          {/* 页面配置 */}
+          <section className="flex flex-col gap-3">
+            <h4 className="text-sm font-semibold text-[var(--color-text-primary)] m-0">
+              {t('settings.page', '页面配置')}
+            </h4>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-[var(--color-text-secondary)]">
+                  {t('settings.breadcrumb', '面包屑')}
+                </span>
+                <Switch
+                  checked={settings.breadCrumb}
+                  onChange={() => handleToggle('breadCrumb')}
+                  size="small"
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-[var(--color-text-secondary)]">
+                  {t('settings.multiTab', '多标签页')}
+                </span>
+                <Switch
+                  checked={settings.multiTab}
+                  onChange={() => handleToggle('multiTab')}
+                  size="small"
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-[var(--color-text-secondary)]">
+                  {t('settings.darkSidebar', '深色侧边栏')}
+                </span>
+                <Switch
+                  checked={settings.darkSidebar}
+                  onChange={() => handleToggle('darkSidebar')}
+                  size="small"
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-[var(--color-text-secondary)]">
+                  {t('settings.accordion', '手风琴菜单')}
+                </span>
+                <Switch
+                  checked={settings.accordion}
+                  onChange={() => handleToggle('accordion')}
+                  size="small"
+                />
+              </div>
+            </div>
+          </section>
         </div>
-
-        <Divider />
-
-        {/* 页面配置 */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <LayoutOutlined className="text-[var(--color-text-secondary)]" />
-            <span className="text-sm font-medium text-[var(--color-text-primary)]">
-              {t('settings.pageConfig', '页面配置')}
-            </span>
-          </div>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-[var(--color-text-secondary)]">
-                {t('settings.breadcrumb', '面包屑')}
-              </span>
-              <Switch
-                checked={settings.breadCrumb}
-                onChange={() => handleToggle('breadCrumb')}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-[var(--color-text-secondary)]">
-                {t('settings.multiTab', '多标签页')}
-              </span>
-              <Switch
-                checked={settings.multiTab}
-                onChange={() => handleToggle('multiTab')}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-[var(--color-text-secondary)]">
-                {t('settings.darkSidebar', '深色侧边栏')}
-              </span>
-              <Switch
-                checked={settings.darkSidebar}
-                onChange={() => handleToggle('darkSidebar')}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-[var(--color-text-secondary)]">
-                {t('settings.accordion', '手风琴菜单')}
-              </span>
-              <Switch
-                checked={settings.accordion}
-                onChange={() => handleToggle('accordion')}
-              />
-            </div>
-          </div>
-        </div>
-
-        <Divider />
-
-        {/* 重置按钮 */}
-        <Button
-          block
-          onClick={resetSettings}
-        >
-          {t('settings.reset', '恢复默认设置')}
-        </Button>
       </div>
     </Drawer>
   );

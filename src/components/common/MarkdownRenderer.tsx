@@ -7,11 +7,17 @@
 import React, { useMemo, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
 import rehypeHighlight from 'rehype-highlight';
+import rehypeKatex from 'rehype-katex';
+import rehypeRaw from 'rehype-raw';
 import { CopyOutlined, CheckOutlined } from '@ant-design/icons';
 import { Button, Tooltip } from 'antd';
 import { useBoolean } from '@/hooks';
 import { copyToClipboard } from '@/utils';
+
+// KaTeX 样式
+import 'katex/dist/katex.min.css';
 
 // ==================== 类型定义 ====================
 
@@ -22,6 +28,10 @@ export interface MarkdownRendererProps {
   gfm?: boolean;
   /** 是否启用代码高亮 */
   highlight?: boolean;
+  /** 是否启用数学公式 */
+  math?: boolean;
+  /** 是否允许 HTML */
+  allowHtml?: boolean;
   /** 是否显示代码复制按钮 */
   showCopyButton?: boolean;
   /** 自定义类名 */
@@ -85,6 +95,8 @@ export function MarkdownRenderer({
   content,
   gfm = true,
   highlight = true,
+  math = true,
+  allowHtml = true,
   showCopyButton = true,
   className = '',
   onLinkClick,
@@ -95,8 +107,11 @@ export function MarkdownRenderer({
     if (gfm) {
       plugins.push(remarkGfm);
     }
+    if (math) {
+      plugins.push(remarkMath);
+    }
     return plugins;
-  }, [gfm]) as React.ComponentProps<typeof ReactMarkdown>['remarkPlugins'];
+  }, [gfm, math]) as React.ComponentProps<typeof ReactMarkdown>['remarkPlugins'];
 
   // 配置 rehype 插件
   const rehypePlugins = useMemo(() => {
@@ -104,8 +119,14 @@ export function MarkdownRenderer({
     if (highlight) {
       plugins.push(rehypeHighlight);
     }
+    if (math) {
+      plugins.push(rehypeKatex);
+    }
+    if (allowHtml) {
+      plugins.push(rehypeRaw);
+    }
     return plugins;
-  }, [highlight]) as React.ComponentProps<typeof ReactMarkdown>['rehypePlugins'];
+  }, [highlight, math, allowHtml]) as React.ComponentProps<typeof ReactMarkdown>['rehypePlugins'];
 
   // 自定义组件
   const components = useMemo(

@@ -14,11 +14,15 @@ import { themeColorPresetsMap } from '../stores/useSettingStore';
 
 interface AntdAdapterProps {
   children: React.ReactNode;
+  mode?: 'light' | 'dark' | 'system';
 }
 
-export function AntdAdapter({ children }: AntdAdapterProps) {
-  const { theme: themeMode, language } = useAppStore();
+export function AntdAdapter({ children, mode }: AntdAdapterProps) {
+  const { language } = useAppStore();
   const settings = useSettings();
+
+  // 确定实际主题模式
+  const themeMode = mode || 'light';
 
   // 配置 dayjs 语言
   dayjs.locale(language === 'zh-CN' ? 'zh-cn' : 'en');

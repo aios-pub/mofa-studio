@@ -1,6 +1,4 @@
 import { Routes, Route } from 'react-router-dom';
-import { useEffect } from 'react';
-import { useAppStore } from './stores';
 import './i18n'; // Initialize i18n
 import MainLayout from './components/layout/MainLayout';
 import { RouteGuard } from './components/auth';
@@ -18,24 +16,11 @@ import LoginPage from './pages/auth/LoginPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import TracingPage from './pages/tracing/TracingPage';
 import EvaluationPage from './pages/evaluation/EvaluationPage';
-import { AntdAdapter } from './theme/antd-adapter';
+import { ThemeProvider } from './theme';
 
 function App() {
-  const { theme } = useAppStore();
-
-  // 主题切换
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'system') {
-      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      root.classList.toggle('dark', isDark);
-    } else {
-      root.classList.toggle('dark', theme === 'dark');
-    }
-  }, [theme]);
-
   return (
-    <AntdAdapter>
+    <ThemeProvider>
       <Routes>
         {/* 公开路由 - 登录页 */}
         <Route path="/auth/login" element={<LoginPage />} />
@@ -87,7 +72,7 @@ function App() {
           }
         />
       </Routes>
-    </AntdAdapter>
+    </ThemeProvider>
   );
 }
 

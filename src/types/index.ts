@@ -31,3 +31,6 @@ export * from './common';
 
 // Channel 渠道类型
 export * from './channel';
+
+// Workflow 工作流类型
+export * from './workflow';

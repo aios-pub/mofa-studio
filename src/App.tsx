@@ -20,6 +20,9 @@ import LoginPage from './pages/auth/LoginPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import TracingPage from './pages/tracing/TracingPage';
 import EvaluationPage from './pages/evaluation/EvaluationPage';
+import WorkflowListPage from './pages/workflow/WorkflowList';
+import WorkflowEditorPage from './pages/workflow/WorkflowEditor';
+import KnowledgeBaseListPage from './pages/knowledge/KnowledgeBaseList';
 import { ThemeProvider } from './theme';
 
 function App() {
@@ -75,6 +78,13 @@ function App() {
 
                   {/* 评估 */}
                   <Route path="/evaluation" element={<EvaluationPage />} />
+
+                  {/* 工作流 */}
+                  <Route path="/workflow" element={<WorkflowListPage />} />
+                  <Route path="/workflow/editor/:id" element={<WorkflowEditorPage />} />
+
+                  {/* 知识库 */}
+                  <Route path="/knowledge" element={<KnowledgeBaseListPage />} />
                 </Routes>
               </MainLayout>
             </RouteGuard>

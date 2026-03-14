@@ -29,6 +29,8 @@ import {
   TeamOutlined,
   SettingOutlined,
   LinkOutlined,
+  BranchesOutlined,
+  DatabaseOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { useAppStore, useSettings } from "../../stores";
@@ -97,6 +99,27 @@ const menuItems: MenuProps["items"] = [
     key: "/management/tasks",
     icon: <ClockCircleOutlined />,
     label: "定时任务",
+  },
+  { type: "divider" },
+  {
+    key: "workflow",
+    label: "工作流",
+    type: "group",
+  },
+  {
+    key: "/workflow",
+    icon: <BranchesOutlined />,
+    label: "工作流编辑",
+  },
+  {
+    key: "knowledge",
+    label: "知识库",
+    type: "group",
+  },
+  {
+    key: "/knowledge",
+    icon: <DatabaseOutlined />,
+    label: "知识库管理",
   },
   { type: "divider" },
   {

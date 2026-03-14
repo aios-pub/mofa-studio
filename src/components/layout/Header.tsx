@@ -1,12 +1,11 @@
 /**
  * 头部组件
- * 参考 slash-admin 的 Header 设计，支持 leftSlot 插槽
  */
 
-import { useState, type ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Breadcrumb, Dropdown, Button, Space, Tooltip } from 'antd';
+import { useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Breadcrumb, Dropdown, Button, Space, Tooltip } from "antd";
 import {
   HomeOutlined,
   SunOutlined,
@@ -15,13 +14,14 @@ import {
   SettingOutlined,
   SearchOutlined,
   MenuOutlined,
-} from '@ant-design/icons';
-import type { MenuProps, BreadcrumbProps } from 'antd';
-import { useAppStore } from '../../stores';
-import AccountDropdown from './AccountDropdown';
-import NotificationDropdown from './NotificationDropdown';
-import { useSettingsDrawer } from './MainLayout';
-import { SearchCommand } from '../common';
+  DesktopOutlined,
+} from "@ant-design/icons";
+import type { MenuProps, BreadcrumbProps } from "antd";
+import { useAppStore } from "../../stores";
+import AccountDropdown from "./AccountDropdown";
+import NotificationDropdown from "./NotificationDropdown";
+import { useSettingsDrawer } from "./MainLayout";
+import { SearchCommand } from "../common";
 
 interface HeaderProps {
   showBreadcrumb?: boolean;
@@ -29,47 +29,51 @@ interface HeaderProps {
   leftSlot?: ReactNode;
 }
 
-export default function Header({ showBreadcrumb = true, leftSlot }: HeaderProps) {
+export default function Header({
+  showBreadcrumb = true,
+  leftSlot,
+}: HeaderProps) {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const { theme, setTheme, language, setLanguage, toggleSidebar } = useAppStore();
+  const { theme, setTheme, language, setLanguage, toggleSidebar } =
+    useAppStore();
   const { setSettingsOpen } = useSettingsDrawer();
   const [searchOpen, setSearchOpen] = useState(false);
 
   // 路径映射
   const pathMap: Record<string, string> = {
-    conversation: t('nav.conversation'),
-    management: t('nav.management'),
-    agents: t('nav.agents'),
-    prompts: t('nav.prompts'),
-    skills: t('nav.skills'),
-    'test-sets': t('nav.testSets'),
-    providers: t('nav.providers'),
-    tasks: t('nav.tasks'),
-    analytics: t('nav.analytics'),
-    monitoring: t('nav.monitoring'),
-    organization: t('nav.organization'),
-    users: t('nav.users'),
-    departments: t('nav.departments'),
-    system: t('nav.system'),
-    resources: t('nav.resources'),
-    'audit-logs': t('nav.auditLogs'),
-    settings: t('nav.settings'),
-    profile: t('nav.profile'),
-    tracing: t('nav.tracing'),
-    evaluation: t('nav.evaluation'),
-    menu: t('nav.menu', '菜单管理'),
-    role: t('nav.role', '角色管理'),
+    conversation: t("nav.conversation"),
+    management: t("nav.management"),
+    agents: t("nav.agents"),
+    prompts: t("nav.prompts"),
+    skills: t("nav.skills"),
+    "test-sets": t("nav.testSets"),
+    providers: t("nav.providers"),
+    tasks: t("nav.tasks"),
+    analytics: t("nav.analytics"),
+    monitoring: t("nav.monitoring"),
+    organization: t("nav.organization"),
+    users: t("nav.users"),
+    departments: t("nav.departments"),
+    system: t("nav.system"),
+    resources: t("nav.resources"),
+    "audit-logs": t("nav.auditLogs"),
+    settings: t("nav.settings"),
+    profile: t("nav.profile"),
+    tracing: t("nav.tracing"),
+    evaluation: t("nav.evaluation"),
+    menu: t("nav.menu", "菜单管理"),
+    role: t("nav.role", "角色管理"),
   };
 
   // 根据路径生成面包屑
   const getBreadcrumbs = () => {
-    const paths = location.pathname.split('/').filter(Boolean);
-    const breadcrumbs: BreadcrumbProps['items'] = [
+    const paths = location.pathname.split("/").filter(Boolean);
+    const breadcrumbs: BreadcrumbProps["items"] = [
       {
         title: (
-          <a onClick={() => navigate('/')}>
+          <a onClick={() => navigate("/")}>
             <HomeOutlined />
           </a>
         ),
@@ -78,9 +82,14 @@ export default function Header({ showBreadcrumb = true, leftSlot }: HeaderProps)
 
     paths.forEach((path, index) => {
       const label = pathMap[path] || path;
-      const pathStr = '/' + paths.slice(0, index + 1).join('/');
+      const pathStr = "/" + paths.slice(0, index + 1).join("/");
       breadcrumbs.push({
-        title: index === paths.length - 1 ? label : <a onClick={() => navigate(pathStr)}>{label}</a>,
+        title:
+          index === paths.length - 1 ? (
+            label
+          ) : (
+            <a onClick={() => navigate(pathStr)}>{label}</a>
+          ),
       });
     });
 
@@ -88,61 +97,61 @@ export default function Header({ showBreadcrumb = true, leftSlot }: HeaderProps)
   };
 
   // 语言切换菜单
-  const languageMenu: MenuProps['items'] = [
+  const languageMenu: MenuProps["items"] = [
     {
-      key: 'zh-CN',
-      label: '中文',
-      onClick: () => setLanguage('zh-CN'),
+      key: "zh-CN",
+      label: "中文",
+      onClick: () => setLanguage("zh-CN"),
     },
     {
-      key: 'en-US',
-      label: 'English',
-      onClick: () => setLanguage('en-US'),
+      key: "en-US",
+      label: "English",
+      onClick: () => setLanguage("en-US"),
     },
   ];
 
   // 主题切换菜单
-  const themeMenu: MenuProps['items'] = [
+  const themeMenu: MenuProps["items"] = [
     {
-      key: 'light',
+      key: "light",
       label: (
         <Space>
           <SunOutlined />
-          {t('theme.light')}
+          {t("theme.light")}
         </Space>
       ),
-      onClick: () => setTheme('light'),
+      onClick: () => setTheme("light"),
     },
     {
-      key: 'dark',
+      key: "dark",
       label: (
         <Space>
           <MoonOutlined />
-          {t('theme.dark')}
+          {t("theme.dark")}
         </Space>
       ),
-      onClick: () => setTheme('dark'),
+      onClick: () => setTheme("dark"),
     },
     {
-      key: 'system',
+      key: "system",
       label: (
         <Space>
-          <GlobalOutlined />
-          {t('theme.system', '跟随系统')}
+          <DesktopOutlined />
+          {t("theme.system", "跟随系统")}
         </Space>
       ),
-      onClick: () => setTheme('system'),
+      onClick: () => setTheme("system"),
     },
   ];
 
   const getThemeIcon = () => {
     switch (theme) {
-      case 'light':
+      case "light":
         return <SunOutlined />;
-      case 'dark':
+      case "dark":
         return <MoonOutlined />;
-      case 'system':
-        return <GlobalOutlined />;
+      case "system":
+        return <DesktopOutlined />;
       default:
         return <SunOutlined />;
     }
@@ -173,13 +182,15 @@ export default function Header({ showBreadcrumb = true, leftSlot }: HeaderProps)
         />
 
         {/* 面包屑 */}
-        {showBreadcrumb && <Breadcrumb items={getBreadcrumbs()} className="hidden md:flex" />}
+        {showBreadcrumb && (
+          <Breadcrumb items={getBreadcrumbs()} className="hidden md:flex" />
+        )}
       </div>
 
       {/* 右侧工具栏 */}
       <div className="flex items-center gap-1 pr-1">
         {/* 搜索按钮 */}
-        <Tooltip title={`${t('common.search', '搜索')} (Ctrl+K)`}>
+        <Tooltip title={`${t("common.search", "搜索")} (Ctrl+K)`}>
           <Button
             type="text"
             icon={<SearchOutlined />}
@@ -195,7 +206,10 @@ export default function Header({ showBreadcrumb = true, leftSlot }: HeaderProps)
         <div className="w-px h-5 bg-[var(--color-border)] mx-1" />
 
         {/* 语言切换 */}
-        <Dropdown menu={{ items: languageMenu, selectedKeys: [language] }} trigger={['click']}>
+        <Dropdown
+          menu={{ items: languageMenu, selectedKeys: [language] }}
+          trigger={["click"]}
+        >
           <Button
             type="text"
             icon={<GlobalOutlined />}
@@ -204,7 +218,10 @@ export default function Header({ showBreadcrumb = true, leftSlot }: HeaderProps)
         </Dropdown>
 
         {/* 主题切换 */}
-        <Dropdown menu={{ items: themeMenu, selectedKeys: [theme] }} trigger={['click']}>
+        <Dropdown
+          menu={{ items: themeMenu, selectedKeys: [theme] }}
+          trigger={["click"]}
+        >
           <Button
             type="text"
             icon={getThemeIcon()}
@@ -213,7 +230,7 @@ export default function Header({ showBreadcrumb = true, leftSlot }: HeaderProps)
         </Dropdown>
 
         {/* 设置按钮 */}
-        <Tooltip title={t('common.settings', '设置')}>
+        <Tooltip title={t("common.settings", "设置")}>
           <Button
             type="text"
             icon={<SettingOutlined />}

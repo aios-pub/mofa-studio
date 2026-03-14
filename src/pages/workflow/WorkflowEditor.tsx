@@ -7,7 +7,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   ReactFlow,
   Node,
-  Edge,
   Connection,
   addEdge,
   applyNodeChanges,
@@ -21,7 +20,7 @@ import {
   Panel,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Button, message, Tooltip, Dropdown, Modal, Input } from 'antd';
+import { Button, message, Tooltip, Dropdown } from 'antd';
 import {
   SaveOutlined,
   PlayCircleOutlined,
@@ -40,7 +39,7 @@ import { workflowApi, nodeTypeConfig } from '../../services/mock/workflows';
 import NodePanel from './panels/NodePanel';
 import ConfigPanel from './panels/ConfigPanel';
 import { useWorkflowStore } from '../../stores/useWorkflowStore';
-import type { Workflow, WorkflowNode as WfNode, WorkflowEdge as WfEdge, NodeType, NodeConfig } from '../../types/workflow';
+import type { Workflow, NodeType, NodeConfig } from '../../types/workflow';
 
 // 自定义节点组件
 import StartNode from './nodes/StartNode';
@@ -74,7 +73,6 @@ export default function WorkflowEditorPage() {
   const [workflow, setWorkflow] = useState<Workflow | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [showConfigPanel, setShowConfigPanel] = useState(true);
 
   const {
     nodes,
@@ -103,18 +101,19 @@ export default function WorkflowEditorPage() {
       if (data) {
         setWorkflow(data);
         // 转换节点格式
-        const rfNodes: Node<NodeConfig>[] = data.nodes.map((n) => ({
+        const rfNodes = data.nodes.map((n) => ({
           id: n.id,
           type: n.type,
           position: n.position,
-          data: { config: n.config, label: n.config.config.label } } as Node<NodeConfig>[]);
+          data: { config: n.config, label: (n.config.config as { label?: string })?.label || '' },
+        }));
         // 转换边格式
-        const rfEdges: Edge[] = data.edges.map((e) => ({
+        const rfEdges = data.edges.map((e) => ({
           id: e.id,
           source: e.sourceNodeId,
           target: e.targetNodeId,
-          sourceHandle: e.sourcePortId,
-          targetHandle: e.targetPortId,
+          sourceHandle: e.sourcePortId ?? undefined,
+          targetHandle: e.targetPortId ?? undefined,
           label: e.label,
           animated: true,
         }));
@@ -138,19 +137,19 @@ export default function WorkflowEditorPage() {
     try {
       setSaving(true);
       // 转换回工作流格式
-      const wfNodes: WfNode[] = nodes.map((n) => ({
+      const wfNodes = nodes.map((n) => ({
         id: n.id,
         type: n.type as NodeType,
         position: n.position,
-        config: n.data.config,
+        config: (n.data as { config: NodeConfig }).config,
       }));
-      const wfEdges: WfEdge[] = edges.map((e) => ({
+      const wfEdges = edges.map((e) => ({
         id: e.id,
         sourceNodeId: e.source,
         targetNodeId: e.target,
-        sourcePortId: e.sourceHandle,
-        targetPortId: e.targetHandle,
-        label: e.label as string,
+        sourcePortId: e.sourceHandle ?? undefined,
+        targetPortId: e.targetHandle ?? undefined,
+        label: typeof e.label === 'string' ? e.label : undefined,
       }));
       await workflowApi.update(workflow.id, {
         nodes: wfNodes,
@@ -235,7 +234,7 @@ export default function WorkflowEditorPage() {
   // 添加节点
   const handleAddNode = useCallback(
     (type: NodeType) => {
-      const newNode: Node = {
+      const newNode = {
         id: `node-${Date.now()}`,
         type,
         position: { x: 200 + Math.random() * 100, y: 200 + Math.random() * 100 },
@@ -384,7 +383,7 @@ export default function WorkflowEditorPage() {
         </div>
 
         {/* 右侧配置面板 */}
-        {showConfigPanel && selectedNode && (
+        {selectedNode && (
           <ConfigPanel
             node={selectedNode}
             onClose={() => setSelectedNodeId(null)}

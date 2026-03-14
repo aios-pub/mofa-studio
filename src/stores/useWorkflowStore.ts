@@ -5,12 +5,6 @@
 import { create } from 'zustand';
 import type { Node, Edge } from '@xyflow/react';
 
-import type { NodeType, NodeConfig } from '../types/workflow';
-
-import { nodeTypeConfig } from '../services/mock/workflows';
-
-import type { Workflow, WorkflowNode, WorkflowEdge } from '../types/workflow';
-
 interface WorkflowState {
   // 节点和边
   nodes: Node[];
@@ -27,7 +21,7 @@ interface WorkflowState {
   historyIndex: number;
 
   // 变量
-  variables: Workflow['variables'];
+  variables: { name: string; type: string; scope: string; description?: string; value?: unknown }[];
 
   // Actions
   setNodes: (nodes: Node[]) => void;
@@ -40,8 +34,8 @@ interface WorkflowState {
   saveHistory: () => void;
 
   // 变量管理
-  addVariable: (variable: Workflow['variables'][0]) => void;
-  updateVariable: (name: string, value: Partial<Workflow['variables'][0]>) => void;
+  addVariable: (variable: { name: string; type: string; scope: string; description?: string; value?: unknown }) => void;
+  updateVariable: (name: string, value: Partial<{ name: string; type: string; scope: string; description?: string; value?: unknown }>) => void;
   removeVariable: (name: string) => void;
 
   // 清空

@@ -8,7 +8,6 @@ import type {
   WorkflowEdge,
   WorkflowVersion,
   WorkflowExecution,
-  NodeExecution,
   WorkflowStats,
   NodeType,
   ExecutionStatus,

@@ -15,7 +15,6 @@ import type {
   VectorStoreTypeInfo,
   EmbeddingModelTypeInfo,
   KnowledgeBaseStats,
-  DocumentStatus,
 } from '../../types/knowledge';
 
 // 向量数据库配置信息
@@ -585,7 +584,7 @@ export const knowledgeApi = {
   },
 
   // 相似搜索
-  async searchSimilar(chunkId: string, topK: number = 5): Promise<SearchResultItem[]> {
+  async searchSimilar(_chunkId: string, topK: number = 5): Promise<SearchResultItem[]> {
     await delay(200);
     // 模拟返回相似分片
     return [
@@ -656,9 +655,9 @@ export const knowledgeApi = {
 
   // 获取所有向量库类型
   getAllVectorStoreTypes() {
-    return Object.entries(vectorStoreTypeConfig).map(([type, config]) => ({
-      type: type as VectorStoreType,
+    return Object.entries(vectorStoreTypeConfig).map(([key, config]) => ({
       ...config,
+      type: key as VectorStoreType,
     }));
   },
 
@@ -669,9 +668,9 @@ export const knowledgeApi = {
 
   // 获取所有嵌入模型类型
   getAllEmbeddingModelTypes() {
-    return Object.entries(embeddingModelTypeConfig).map(([type, config]) => ({
-      type: type as EmbeddingModelType,
+    return Object.entries(embeddingModelTypeConfig).map(([key, config]) => ({
       ...config,
+      type: key as EmbeddingModelType,
     }));
   },
 };

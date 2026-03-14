@@ -3,12 +3,10 @@
  */
 
 import { useState } from 'react';
-import { Input, Collapse, Button } from 'antd';
+import { Input, Collapse } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
-import { workflowApi, nodeTypeConfig } from '../../../services/mock/workflows';
+import { nodeTypeConfig } from '../../../services/mock/workflows';
 import type { NodeType } from '../../../types/workflow';
-
-import type { Node } from '@xyflow/react';
 
 interface NodePanelProps {
   onAddNode: (type: NodeType) => void;

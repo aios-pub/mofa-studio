@@ -21,7 +21,7 @@ import { channelApi, channelTypeConfig } from '../../services/mock/channels';
 import { agentApi } from '../../services/mock/agents';
 import ChannelConfigForm from './components/ChannelConfigForm';
 import ChannelTypeSelector from './components/ChannelTypeSelector';
-import type { Channel, ChannelType, ChannelStatus, Agent } from '../../types';
+import type { Channel, ChannelStatus, Agent } from '../../types';
 
 // 状态配置
 const statusConfig: Record<ChannelStatus, { color: string; text: string; icon: React.ReactNode }> = {
@@ -299,7 +299,7 @@ export default function ChannelsListPage() {
       <ChannelTypeSelector
         open={showTypeSelector}
         onClose={() => setShowTypeSelector(false)}
-        onSelect={(type) => {
+        onSelect={(_type) => {
           setShowTypeSelector(false);
           setShowCreateModal(true);
         }}

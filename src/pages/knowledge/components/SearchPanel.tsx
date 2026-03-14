@@ -3,7 +3,7 @@
  */
 
 import { useState } from 'react';
-import { Input, Button, List, Tag, Empty, Spin, Slider } from 'antd';
+import { Input, Button, Tag, Empty, Spin, Slider } from 'antd';
 import { SearchOutlined, FileTextOutlined } from '@ant-design/icons';
 import { knowledgeApi } from '../../../services/mock/knowledge';
 import type { SearchResponse, SearchResultItem } from '../../../types/knowledge';
@@ -104,7 +104,7 @@ export default function SearchPanel({ knowledgeBaseId }: SearchPanelProps) {
           </div>
 
           {/* 结果列表 */}
-          {results.map((item, index) => (
+          {results.map((item) => (
             <div
               key={item.id}
               className="p-4 bg-[var(--color-bg-tertiary)] rounded-lg border border-[var(--color-border)]"

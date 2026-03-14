@@ -24,8 +24,11 @@ import WorkflowListPage from './pages/workflow/WorkflowList';
 import WorkflowEditorPage from './pages/workflow/WorkflowEditor';
 import KnowledgeBaseListPage from './pages/knowledge/KnowledgeBaseList';
 import { ThemeProvider } from './theme';
+import { useFloatingBridge } from './tauri/useFloatingBridge';
 
 function App() {
+  useFloatingBridge();
+
   return (
     <ThemeProvider>
       <ToastProvider />

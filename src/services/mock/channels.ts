@@ -5,10 +5,7 @@
 import type {
   Channel,
   ChannelType,
-  ChannelStatus,
-  ChannelConfig,
   AgentChannel,
-  ChannelStats,
   ChannelTestResult,
 } from '../../types/channel';
 

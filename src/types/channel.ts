@@ -7,10 +7,15 @@ export type ChannelType =
   | 'wechat'      // 微信
   | 'wechat_work' // 企业微信
   | 'dingtalk'    // 钉钉
-  | 'feishu'      // 飞书
+  | 'feishu'      // 飞书/Lark
   | 'slack'       // Slack
   | 'telegram'    // Telegram
   | 'discord'     // Discord
+  | 'whatsapp'    // WhatsApp
+  | 'line'        // Line
+  | 'messenger'   // Facebook Messenger
+  | 'instagram'   // Instagram
+  | 'teams'       // Microsoft Teams
   | 'webhook'     // Webhook
   | 'email'       // 邮件
   | 'sms'         // 短信
@@ -88,6 +93,49 @@ export interface DiscordConfig {
   publicKey?: string;
 }
 
+/** WhatsApp 配置 */
+export interface WhatsAppConfig {
+  phoneNumberId: string;
+  businessAccountId: string;
+  accessToken: string;
+  webhookVerifyToken?: string;
+  appId?: string;
+  appSecret?: string;
+}
+
+/** Line 配置 */
+export interface LineConfig {
+  channelId: string;
+  channelSecret: string;
+  channelAccessToken: string;
+}
+
+/** Facebook Messenger 配置 */
+export interface MessengerConfig {
+  pageId: string;
+  pageAccessToken: string;
+  appId: string;
+  appSecret: string;
+  verifyToken?: string;
+}
+
+/** Instagram 配置 */
+export interface InstagramConfig {
+  accountId: string;
+  accessToken: string;
+  appId: string;
+  appSecret: string;
+}
+
+/** Microsoft Teams 配置 */
+export interface TeamsConfig {
+  tenantId: string;
+  clientId: string;
+  clientSecret: string;
+  botId?: string;
+  botPassword?: string;
+}
+
 /** Webhook 配置 */
 export interface WebhookConfig {
   url: string;
@@ -143,6 +191,11 @@ export type ChannelConfig =
   | { type: 'slack'; config: SlackConfig }
   | { type: 'telegram'; config: TelegramConfig }
   | { type: 'discord'; config: DiscordConfig }
+  | { type: 'whatsapp'; config: WhatsAppConfig }
+  | { type: 'line'; config: LineConfig }
+  | { type: 'messenger'; config: MessengerConfig }
+  | { type: 'instagram'; config: InstagramConfig }
+  | { type: 'teams'; config: TeamsConfig }
   | { type: 'webhook'; config: WebhookConfig }
   | { type: 'email'; config: EmailConfig }
   | { type: 'sms'; config: SmsConfig }

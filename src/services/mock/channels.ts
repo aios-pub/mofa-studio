@@ -27,7 +27,7 @@ export const channelTypeConfig: Record<ChannelType, { name: string; icon: string
     description: '连接钉钉机器人，实现钉钉群聊和单聊',
   },
   feishu: {
-    name: '飞书',
+    name: '飞书/Lark',
     icon: '🚀',
     description: '连接飞书机器人，实现飞书群聊和单聊',
   },
@@ -45,6 +45,31 @@ export const channelTypeConfig: Record<ChannelType, { name: string; icon: string
     name: 'Discord',
     icon: '🎮',
     description: '连接 Discord 服务器，实现社区互动',
+  },
+  whatsapp: {
+    name: 'WhatsApp',
+    icon: '📱',
+    description: '连接 WhatsApp Business API，实现客户沟通',
+  },
+  line: {
+    name: 'Line',
+    icon: '💬',
+    description: '连接 Line Messaging API，实现消息收发',
+  },
+  messenger: {
+    name: 'Messenger',
+    icon: '📘',
+    description: '连接 Facebook Messenger，实现社交互动',
+  },
+  instagram: {
+    name: 'Instagram',
+    icon: '📷',
+    description: '连接 Instagram Messaging，实现社交互动',
+  },
+  teams: {
+    name: 'Microsoft Teams',
+    icon: '👥',
+    description: '连接 Microsoft Teams，实现企业协作',
   },
   webhook: {
     name: 'Webhook',

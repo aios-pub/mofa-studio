@@ -16,7 +16,7 @@
 
 | 变量名 | 说明 | 默认值 |
 |--------|------|--------|
-| `VITE_APP_TITLE` | 应用标题 | `Amos-Claw` |
+| `VITE_APP_TITLE` | 应用标题 | `AmosClaw` |
 | `VITE_APP_VERSION` | 应用版本 | `0.1.0` |
 | `VITE_APP_DEFAULT_ROUTE` | 默认路由 | `/workbench` |
 | `VITE_APP_API_BASE_URL` | API 基础地址 | `/api` |
@@ -94,7 +94,7 @@ console.log(GLOBAL_CONFIG.apiBaseUrl);
 ## 配置文件位置
 
 ```
-amos-claw/
+AmosClaw/
 ├── .env                    # 默认环境变量
 ├── .env.development        # 开发环境变量
 ├── .env.production         # 生产环境变量

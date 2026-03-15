@@ -1,12 +1,12 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "amos-claw",
+  "productName": "AmosClaw",
   "version": "0.1.0",
-  "identifier": "com.aios.amos-claw",
+  "identifier": "com.aios.amosclaw",
   "build": {
-    "beforeDevCommand": "./scripts/dev.sh",
+    "beforeDevCommand": "deno task dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "./scripts/build.sh",
+    "beforeBuildCommand": "deno task build",
     "frontendDist": "../dist"
   },
   "app": {
@@ -14,7 +14,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "amos-claw",
+        "title": "AmosClaw",
         "width": 1200,
         "height": 800,
         "minWidth": 800,
@@ -24,7 +24,7 @@
       },
       {
         "label": "floating",
-        "title": "Amos-Claw Floating",
+        "title": "AmosClaw Floating",
         "url": "floating.html",
         "width": 64,
         "height": 64,

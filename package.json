@@ -1,5 +1,5 @@
 {
-  "name": "amos-claw",
+  "name": "amos_claw",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -8,15 +8,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri-dev": "tauri dev",
-    "tauri-build": "tauri build",
-    "tauri-dev:npm": "PKG_MANAGER=npm tauri dev",
-    "tauri-build:npm": "PKG_MANAGER=npm tauri build",
-    "tauri-dev:pnpm": "PKG_MANAGER=pnpm tauri dev",
-    "tauri-build:pnpm": "PKG_MANAGER=pnpm tauri build",
-    "tauri-dev:bun": "PKG_MANAGER=bun tauri dev",
-    "tauri-build:bun": "PKG_MANAGER=bun tauri build",
-    "tauri-dev:deno": "PKG_MANAGER=deno tauri dev",
-    "tauri-build:deno": "PKG_MANAGER=deno tauri build"
+    "tauri-build": "tauri build"
   },
   "dependencies": {
     "@ant-design/cssinjs": "^1.24.0",

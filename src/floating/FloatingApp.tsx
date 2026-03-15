@@ -1,8 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type {
-  CSSProperties,
-  MouseEvent as ReactMouseEvent,
-} from "react";
+import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
 import {
   getCurrentWindow,
   Window,
@@ -239,21 +236,29 @@ export default function FloatingApp() {
     if (bounds) {
       const spaceLeft = position.x - bounds.x;
       const spaceRight = bounds.x + bounds.width - (position.x + BALL_SIZE);
-      if (spaceLeft < MENU_WIDTH + MENU_GAP && spaceRight >= MENU_WIDTH + MENU_GAP) {
+      if (
+        spaceLeft < MENU_WIDTH + MENU_GAP &&
+        spaceRight >= MENU_WIDTH + MENU_GAP
+      ) {
         horizontal = "right";
       }
 
       const spaceTop = position.y - bounds.y;
       const spaceBottom = bounds.y + bounds.height - (position.y + BALL_SIZE);
-      if (spaceTop < MENU_HEIGHT + MENU_GAP && spaceBottom >= MENU_HEIGHT + MENU_GAP) {
+      if (
+        spaceTop < MENU_HEIGHT + MENU_GAP &&
+        spaceBottom >= MENU_HEIGHT + MENU_GAP
+      ) {
         vertical = "down";
       }
     }
 
     setMenuPlacement({ horizontal, vertical });
 
-    let nextX = horizontal === "left" ? position.x - (width - BALL_SIZE) : position.x;
-    let nextY = vertical === "up" ? position.y - (height - BALL_SIZE) : position.y;
+    let nextX =
+      horizontal === "left" ? position.x - (width - BALL_SIZE) : position.x;
+    let nextY =
+      vertical === "up" ? position.y - (height - BALL_SIZE) : position.y;
 
     if (bounds) {
       nextX = clamp(nextX, bounds.x, bounds.x + bounds.width - width);
@@ -430,7 +435,9 @@ export default function FloatingApp() {
   };
 
   // 根据展开状态获取球体样式
-  const ballStyle = expanded ? getExpandedBallStyle(menuPlacement) : getCollapsedBallStyle();
+  const ballStyle = expanded
+    ? getExpandedBallStyle(menuPlacement)
+    : getCollapsedBallStyle();
 
   return (
     <div className={`floating-root ${expanded ? "is-expanded" : ""}`}>
@@ -444,7 +451,7 @@ export default function FloatingApp() {
         onContextMenu={handleContextMenu}
         aria-label={expanded ? "收起菜单" : "展开菜单"}
       >
-        <img src="/claw512.png" alt="Amos-Claw" />
+        <img src="/claw512.png" alt="AmosClaw" />
       </button>
 
       {expanded ? (
@@ -455,9 +462,9 @@ export default function FloatingApp() {
         >
           <div className="floating-menu-header">
             <div className="floating-menu-title">
-              <img src="/claw512.png" alt="Amos-Claw" />
+              <img src="/claw512.png" alt="AmosClaw" />
               <div>
-                <div className="floating-menu-name">Amos-Claw</div>
+                <div className="floating-menu-name">AmosClaw</div>
                 <div className="floating-menu-subtitle">悬浮快速入口</div>
               </div>
             </div>

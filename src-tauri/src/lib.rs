@@ -1,52 +1,151 @@
 mod tray;
 
+use serde::Deserialize;
+use std::fs;
 use tauri::Manager;
 
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+/// 悬浮球模式配置
+#[derive(Debug, Clone, Deserialize, Default)]
+#[serde(rename_all = "lowercase")]
+pub enum FloatingMode {
+    /// 悬浮球模式 - 小球悬浮在屏幕边缘
+    Floating,
+    /// 普通窗口模式 - 使用标准桌面窗口 (默认)
+    #[default]
+    Window,
+}
+
+/// 应用配置
+#[derive(Debug, Clone, Deserialize)]
+pub struct AppConfig {
+    /// 悬浮球模式
+    #[serde(default, rename = "floatingMode")]
+    pub floating_mode: FloatingMode,
+}
+
+impl Default for AppConfig {
+    fn default() -> Self {
+        Self {
+            floating_mode: FloatingMode::default(),
+        }
+    }
+}
+
+/// 从配置文件读取配置
+fn load_app_config() -> AppConfig {
+    // 尝试多个可能的配置文件路径
+    let config_paths = get_config_paths();
+
+    for path in config_paths {
+        if path.exists() {
+            if let Ok(content) = fs::read_to_string(&path) {
+                if let Ok(config) = serde_json::from_str::<AppConfig>(&content) {
+                    println!("[Config] Loaded from: {:?}", path);
+                    return config;
+                }
+            }
+        }
+    }
+
+    println!("[Config] Using default config (window mode)");
+    AppConfig::default()
+}
+
+/// 获取可能的配置文件路径列表
+fn get_config_paths() -> Vec<std::path::PathBuf> {
+    let mut paths = Vec::new();
+
+    // 1. 当前工作目录下的 src-tauri/app-config.json (开发时)
+    if let Ok(cwd) = std::env::current_dir() {
+        paths.push(cwd.join("src-tauri").join("app-config.json"));
+        paths.push(cwd.join("app-config.json"));
+    }
+
+    // 2. 可执行文件同目录 (打包后)
+    if let Ok(exe_path) = std::env::current_exe() {
+        if let Some(exe_dir) = exe_path.parent() {
+            paths.push(exe_dir.join("app-config.json"));
+            // macOS .app 包内
+            paths.push(exe_dir.join("../Resources/app-config.json"));
+        }
+    }
+
+    paths
+}
+
 #[tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
+/// 获取当前悬浮球模式配置
+#[tauri::command]
+fn get_floating_mode() -> String {
+    let config = load_app_config();
+    match config.floating_mode {
+        FloatingMode::Floating => "floating".to_string(),
+        FloatingMode::Window => "window".to_string(),
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let config = load_app_config();
+    let is_floating = matches!(config.floating_mode, FloatingMode::Floating);
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet])
-        .setup(|app| {
-            // 配置悬浮窗口的透明效果和鼠标事件
-            #[cfg(target_os = "macos")]
-            {
-                if let Some(floating_window) = app.get_webview_window("floating") {
-                    let _ = floating_window.set_decorations(false);
+        .invoke_handler(tauri::generate_handler![greet, get_floating_mode])
+        .setup(move |app| {
+            // 获取窗口
+            let main_window = app.get_webview_window("main");
+            let floating_window = app.get_webview_window("floating");
 
-                    // macOS 需要额外设置才能实现真正的透明窗口
-                    // 使用 objc2 API 设置窗口背景和事件处理
-                    let ns_window = floating_window.ns_window().unwrap();
-                    unsafe {
-                        use objc2::rc::Retained;
-                        use objc2_app_kit::{NSColor, NSWindow, NSWindowStyleMask};
+            if is_floating {
+                // 悬浮球模式：隐藏主窗口，显示悬浮球
+                if let Some(main) = &main_window {
+                    let _ = main.hide();
+                }
+                if let Some(floating) = &floating_window {
+                    let _ = floating.show();
+                }
 
-                        let ns_window: Retained<NSWindow> = Retained::retain(ns_window as *mut NSWindow).unwrap();
+                // 配置悬浮窗口的透明效果和鼠标事件
+                #[cfg(target_os = "macos")]
+                {
+                    if let Some(floating) = &floating_window {
+                        let _ = floating.set_decorations(false);
 
-                        // 设置透明
-                        ns_window.setOpaque(false);
-                        ns_window.setBackgroundColor(Some(&NSColor::clearColor()));
+                        let ns_window = floating.ns_window().unwrap();
+                        unsafe {
+                            use objc2::rc::Retained;
+                            use objc2_app_kit::{NSColor, NSWindow, NSWindowStyleMask};
 
-                        // 确保窗口能接收鼠标事件
-                        ns_window.setAcceptsMouseMovedEvents(true);
-                        ns_window.setIgnoresMouseEvents(false);
+                            let ns_window: Retained<NSWindow> =
+                                Retained::retain(ns_window as *mut NSWindow).unwrap();
 
-                        // 设置窗口样式为无边框
-                        ns_window.setStyleMask(NSWindowStyleMask::Borderless);
-
-                        // 设置窗口为可移动的
-                        ns_window.setMovableByWindowBackground(true);
+                            ns_window.setOpaque(false);
+                            ns_window.setBackgroundColor(Some(&NSColor::clearColor()));
+                            ns_window.setAcceptsMouseMovedEvents(true);
+                            ns_window.setIgnoresMouseEvents(false);
+                            ns_window.setStyleMask(NSWindowStyleMask::Borderless);
+                            ns_window.setMovableByWindowBackground(true);
+                        }
                     }
+                }
+            } else {
+                // 普通窗口模式：显示主窗口，隐藏悬浮球
+                println!("[Config] Window mode - showing main window");
+                if let Some(main) = &main_window {
+                    let _ = main.show();
+                    let _ = main.set_focus();
+                }
+                if let Some(floating) = &floating_window {
+                    let _ = floating.hide();
                 }
             }
 
-            tray::setup_tray(app.handle())?;
+            tray::setup_tray(app.handle(), is_floating)?;
             Ok(())
         })
         .run(tauri::generate_context!())

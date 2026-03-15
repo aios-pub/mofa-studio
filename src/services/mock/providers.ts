@@ -2,33 +2,18 @@
  * Provider Mock 数据
  */
 
-// Provider 类型
-export interface Provider {
-  id: string;
-  name: string;
-  type: ProviderType;
-  apiKey?: string;
-  baseUrl?: string;
-  models: Model[];
-  status: 'active' | 'inactive' | 'error';
-  usage: {
-    totalCalls: number;
-    totalTokens: number;
-    lastUsed: Date;
-  };
-  createdAt: Date;
-  updatedAt: Date;
-}
+// 重新导出类型以便其他模块使用
+export type { Provider, ProviderType, ProviderModel } from '../../types/provider';
+import type { Provider, ProviderModel, CreateProviderFormData } from '../../types/provider';
 
-export type ProviderType = 'openai' | 'anthropic' | 'zhipu' | 'alibaba' | 'baidu' | 'ollama' | 'azure' | 'custom';
-
+// 兼容旧类型
 export interface Model {
   id: string;
   name: string;
   providerId: string;
   maxTokens: number;
   pricing: {
-    input: number; // 每 1K tokens 价格（美元）
+    input: number;
     output: number;
   };
   enabled: boolean;
@@ -41,12 +26,14 @@ export const mockProviders: Provider[] = [
     name: 'OpenAI',
     type: 'openai',
     apiKey: 'sk-****...****abcd',
+    baseUrl: 'https://api.openai.com/v1',
     models: [
-      { id: 'gpt-4', name: 'GPT-4', providerId: 'provider-1', maxTokens: 8192, pricing: { input: 0.03, output: 0.06 }, enabled: true },
-      { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', providerId: 'provider-1', maxTokens: 128000, pricing: { input: 0.01, output: 0.03 }, enabled: true },
-      { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', providerId: 'provider-1', maxTokens: 16384, pricing: { input: 0.0005, output: 0.0015 }, enabled: true },
+      { id: 'gpt-4', name: 'GPT-4', maxTokens: 8192, pricing: { input: 0.03, output: 0.06 }, enabled: true },
+      { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', maxTokens: 128000, pricing: { input: 0.01, output: 0.03 }, enabled: true },
+      { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', maxTokens: 16384, pricing: { input: 0.0005, output: 0.0015 }, enabled: true },
     ],
     status: 'active',
+    config: {},
     usage: {
       totalCalls: 1234,
       totalTokens: 2500000,
@@ -60,12 +47,14 @@ export const mockProviders: Provider[] = [
     name: 'Claude (Anthropic)',
     type: 'anthropic',
     apiKey: 'sk-ant-****...****efgh',
+    baseUrl: 'https://api.anthropic.com/v1',
     models: [
-      { id: 'claude-3-opus', name: 'Claude 3 Opus', providerId: 'provider-2', maxTokens: 200000, pricing: { input: 0.015, output: 0.075 }, enabled: true },
-      { id: 'claude-3-sonnet', name: 'Claude 3 Sonnet', providerId: 'provider-2', maxTokens: 200000, pricing: { input: 0.003, output: 0.015 }, enabled: true },
-      { id: 'claude-3-haiku', name: 'Claude 3 Haiku', providerId: 'provider-2', maxTokens: 200000, pricing: { input: 0.00025, output: 0.00125 }, enabled: true },
+      { id: 'claude-3-opus', name: 'Claude 3 Opus', maxTokens: 200000, pricing: { input: 0.015, output: 0.075 }, enabled: true },
+      { id: 'claude-3-sonnet', name: 'Claude 3 Sonnet', maxTokens: 200000, pricing: { input: 0.003, output: 0.015 }, enabled: true },
+      { id: 'claude-3-haiku', name: 'Claude 3 Haiku', maxTokens: 200000, pricing: { input: 0.00025, output: 0.00125 }, enabled: true },
     ],
     status: 'active',
+    config: {},
     usage: {
       totalCalls: 567,
       totalTokens: 890000,
@@ -79,11 +68,13 @@ export const mockProviders: Provider[] = [
     name: '智谱 AI',
     type: 'zhipu',
     apiKey: '****...****ijkl',
+    baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
     models: [
-      { id: 'glm-4', name: 'GLM-4', providerId: 'provider-3', maxTokens: 128000, pricing: { input: 0.014, output: 0.014 }, enabled: true },
-      { id: 'glm-3-turbo', name: 'GLM-3 Turbo', providerId: 'provider-3', maxTokens: 4096, pricing: { input: 0.001, output: 0.001 }, enabled: true },
+      { id: 'glm-4', name: 'GLM-4', maxTokens: 128000, pricing: { input: 0.014, output: 0.014 }, enabled: true },
+      { id: 'glm-3-turbo', name: 'GLM-3 Turbo', maxTokens: 4096, pricing: { input: 0.001, output: 0.001 }, enabled: true },
     ],
     status: 'active',
+    config: {},
     usage: {
       totalCalls: 89,
       totalTokens: 120000,
@@ -96,13 +87,14 @@ export const mockProviders: Provider[] = [
     id: 'provider-4',
     name: 'Ollama (本地)',
     type: 'ollama',
-    baseUrl: 'http://localhost:11434',
+    baseUrl: 'http://localhost:11434/v1',
     models: [
-      { id: 'llama2', name: 'Llama 2', providerId: 'provider-4', maxTokens: 4096, pricing: { input: 0, output: 0 }, enabled: true },
-      { id: 'mistral', name: 'Mistral', providerId: 'provider-4', maxTokens: 8192, pricing: { input: 0, output: 0 }, enabled: true },
-      { id: 'codellama', name: 'Code Llama', providerId: 'provider-4', maxTokens: 16384, pricing: { input: 0, output: 0 }, enabled: false },
+      { id: 'llama2', name: 'Llama 2', maxTokens: 4096, pricing: { input: 0, output: 0 }, enabled: true },
+      { id: 'mistral', name: 'Mistral', maxTokens: 8192, pricing: { input: 0, output: 0 }, enabled: true },
+      { id: 'codellama', name: 'Code Llama', maxTokens: 16384, pricing: { input: 0, output: 0 }, enabled: false },
     ],
     status: 'active',
+    config: {},
     usage: {
       totalCalls: 45,
       totalTokens: 0,
@@ -130,7 +122,7 @@ export const providerApi = {
     return mockProviders.find((p) => p.id === id);
   },
 
-  // 创建 Provider
+  // 创建 Provider（兼容旧接口）
   async create(data: Partial<Provider>): Promise<Provider> {
     await delay(500);
     const newProvider: Provider = {
@@ -140,6 +132,40 @@ export const providerApi = {
       apiKey: data.apiKey,
       baseUrl: data.baseUrl,
       models: data.models || [],
+      config: data.config || {},
+      status: 'active',
+      usage: {
+        totalCalls: 0,
+        totalTokens: 0,
+        lastUsed: new Date(),
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    mockProviders.push(newProvider);
+    return newProvider;
+  },
+
+  // 从表单数据创建 Provider
+  async createFromFormData(formData: CreateProviderFormData): Promise<Provider> {
+    await delay(500);
+    const { getProviderConfig } = await import('../provider/providerConfigs');
+    const config = getProviderConfig(formData.type);
+
+    // 根据选中的模型 ID 过滤模型
+    const selectedModels = formData.selectedModels || [];
+    const models = config?.defaultModels
+      .filter(m => selectedModels.includes(m.id))
+      .map(m => ({ ...m, enabled: true })) || [];
+
+    const newProvider: Provider = {
+      id: `provider-${Date.now()}`,
+      name: formData.name || config?.name || '新 Provider',
+      type: formData.type,
+      apiKey: formData.apiKey,
+      baseUrl: formData.baseUrl || config?.api.defaultBaseUrl,
+      models,
+      config: formData.config || {},
       status: 'active',
       usage: {
         totalCalls: 0,
@@ -182,14 +208,14 @@ export const providerApi = {
   },
 
   // 获取模型列表
-  async getModels(id: string): Promise<Model[]> {
+  async getModels(id: string): Promise<ProviderModel[]> {
     await delay(200);
     const provider = mockProviders.find((p) => p.id === id);
     return provider?.models || [];
   },
 
   // 刷新模型列表
-  async refreshModels(id: string): Promise<Model[]> {
+  async refreshModels(id: string): Promise<ProviderModel[]> {
     await delay(1500);
     const provider = mockProviders.find((p) => p.id === id);
     return provider?.models || [];

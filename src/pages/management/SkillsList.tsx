@@ -3,14 +3,12 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Input, Button, Tag, Select, message } from 'antd';
+import { Input, Button, Tag, Select, message, Tabs, Collapse, Typography, Card, Statistic } from 'antd';
 import {
   PlusOutlined,
   SearchOutlined,
   EditOutlined,
   ThunderboltOutlined,
-  CaretDownOutlined,
-  CaretRightOutlined,
   CheckOutlined,
   CloseOutlined,
   LoadingOutlined,
@@ -18,9 +16,12 @@ import {
   PlayCircleOutlined,
   CodeOutlined,
   PoweroffOutlined,
+  FolderOutlined,
 } from '@ant-design/icons';
 import type { Skill } from '../../services/mock/skills';
 import { skillApi } from '../../services/mock/skills';
+
+const { Text, Title } = Typography;
 
 export default function SkillsListPage() {
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -29,7 +30,7 @@ export default function SkillsListPage() {
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
   useEffect(() => {
     loadSkills();
@@ -88,14 +89,8 @@ export default function SkillsListPage() {
     {} as Record<string, Skill[]>
   );
 
-  const toggleCategory = (category: string) => {
-    const newExpanded = new Set(expandedCategories);
-    if (newExpanded.has(category)) {
-      newExpanded.delete(category);
-    } else {
-      newExpanded.add(category);
-    }
-    setExpandedCategories(newExpanded);
+  const handleCategoryChange = (keys: string | string[]) => {
+    setExpandedCategories(Array.isArray(keys) ? keys : [keys]);
   };
 
   const getTypeTag = (type: Skill['type']) => {
@@ -112,9 +107,9 @@ export default function SkillsListPage() {
       {/* 左侧列表 */}
       <div className="w-80 border-r border-[var(--color-border)] flex flex-col bg-[var(--color-bg-secondary)]">
         {/* 头部 */}
-        <div className="p-4 space-y-3">
+        <div className="p-4 space-y-3 border-b border-[var(--color-border)]">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Skills 管理</h2>
+            <Title level={5} style={{ margin: 0 }}>Skills 管理</Title>
             <Button type="primary" icon={<PlusOutlined />} size="small" />
           </div>
 
@@ -155,87 +150,78 @@ export default function SkillsListPage() {
         </div>
 
         {/* 列表 */}
-        <div className="flex-1 overflow-y-auto p-2">
+        <div className="flex-1 overflow-y-auto">
           {loading ? (
-            <div className="text-center py-8 text-[var(--color-text-tertiary)]">加载中...</div>
+            <div className="text-center py-8">
+              <Text type="secondary">加载中...</Text>
+            </div>
           ) : filteredSkills.length === 0 ? (
-            <div className="text-center py-8 text-[var(--color-text-tertiary)]">
-              <ThunderboltOutlined className="text-3xl mb-2 opacity-50" />
-              <p>暂无 Skills</p>
+            <div className="text-center py-8">
+              <ThunderboltOutlined style={{ fontSize: 24, opacity: 0.5, marginBottom: 8, display: 'block' }} />
+              <Text type="secondary">暂无 Skills</Text>
             </div>
           ) : (
-            Object.entries(groupedSkills).map(([category, categorySkills]) => (
-              <div key={category} className="mb-2">
-                <button
-                  onClick={() => toggleCategory(category)}
-                  className="flex items-center gap-1 w-full px-2 py-1 text-xs font-medium text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
-                >
-                  {expandedCategories.has(category) ? (
-                    <CaretDownOutlined className="text-xs" />
-                  ) : (
-                    <CaretRightOutlined className="text-xs" />
-                  )}
-                  {category} ({categorySkills.length})
-                </button>
-                {expandedCategories.has(category) && (
-                  <div className="space-y-1 mt-1">
+            <Collapse
+              activeKey={expandedCategories}
+              onChange={handleCategoryChange}
+              expandIconPosition="start"
+              bordered={false}
+              style={{ background: 'transparent' }}
+              items={Object.entries(groupedSkills).map(([category, categorySkills]) => ({
+                key: category,
+                label: (
+                  <div className="flex items-center gap-2">
+                    <FolderOutlined style={{ fontSize: 12 }} />
+                    <Text strong style={{ fontSize: 13 }}>{category}</Text>
+                    <Tag style={{ marginLeft: 4, fontSize: 11 }}>{categorySkills.length}</Tag>
+                  </div>
+                ),
+                children: (
+                  <div className="space-y-1">
                     {categorySkills.map((skill) => (
                       <div
                         key={skill.id}
                         onClick={() => setSelectedSkill(skill)}
-                        className={`group p-3 rounded-lg cursor-pointer transition-colors ${
+                        className={`group flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all ${
                           selectedSkill?.id === skill.id
                             ? 'bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30'
-                            : 'hover:bg-[var(--color-bg-tertiary)]'
+                            : 'hover:bg-[var(--color-bg-tertiary)] border border-transparent'
                         }`}
                       >
-                        <div className="flex items-start gap-2">
-                          <div
-                            className={`p-1.5 rounded ${
-                              skill.enabled
-                                ? 'bg-green-500/10 text-green-500'
-                                : 'bg-gray-500/10 text-gray-500'
-                            }`}
-                          >
-                            <ThunderboltOutlined className="text-sm" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-[var(--color-text-primary)] truncate">
-                                {skill.name}
-                              </span>
-                              {getTypeTag(skill.type)}
-                            </div>
-                            <p className="text-sm text-[var(--color-text-tertiary)] truncate">
-                              {skill.description}
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-xs text-[var(--color-text-tertiary)]">
-                                {skill.parameters.length} 个参数
-                              </span>
-                              <span className="text-xs text-[var(--color-text-tertiary)]">•</span>
-                              <span className="text-xs text-[var(--color-text-tertiary)]">
-                                {skill.timeout / 1000}s 超时
-                              </span>
-                            </div>
-                          </div>
-                          <Button
-                            type="text"
-                            size="small"
-                            icon={<PoweroffOutlined />}
-                            className={skill.enabled ? 'text-green-500' : 'text-gray-400'}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleEnabled(skill);
-                            }}
-                          />
+                        <div
+                          className={`flex-shrink-0 p-1.5 rounded ${
+                            skill.enabled
+                              ? 'bg-green-500/10 text-green-500'
+                              : 'bg-gray-500/10 text-gray-500'
+                          }`}
+                        >
+                          <ThunderboltOutlined style={{ fontSize: 12 }} />
                         </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Text strong ellipsis style={{ fontSize: 13 }}>{skill.name}</Text>
+                            {getTypeTag(skill.type)}
+                          </div>
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            {skill.parameters.length} 个参数 · {skill.timeout / 1000}s 超时
+                          </Text>
+                        </div>
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<PoweroffOutlined />}
+                          className={`flex-shrink-0 ${skill.enabled ? 'text-green-500' : 'text-gray-400'}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleEnabled(skill);
+                          }}
+                        />
                       </div>
                     ))}
                   </div>
-                )}
-              </div>
-            ))
+                ),
+              }))}
+            />
           )}
         </div>
       </div>
@@ -247,9 +233,9 @@ export default function SkillsListPage() {
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <ThunderboltOutlined className="text-5xl text-[var(--color-text-tertiary)] mb-4" />
-              <h3 className="text-lg font-medium text-[var(--color-text-primary)]">选择一个 Skill</h3>
-              <p className="text-[var(--color-text-secondary)]">从左侧列表中选择查看详情</p>
+              <ThunderboltOutlined style={{ fontSize: 48, color: 'var(--color-text-tertiary)', marginBottom: 16 }} />
+              <Title level={5} type="secondary">选择一个 Skill</Title>
+              <Text type="secondary">从左侧列表中选择查看详情</Text>
             </div>
           </div>
         )}
@@ -355,10 +341,10 @@ function SkillDetail({
       <div className="flex items-start justify-between p-6 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">{skill.name}</h2>
+            <Title level={4} style={{ margin: 0 }}>{skill.name}</Title>
             {getTypeTag(skill.type)}
           </div>
-          <p className="text-[var(--color-text-secondary)]">{skill.description}</p>
+          <Text type="secondary">{skill.description}</Text>
         </div>
         <div className="flex gap-2">
           <Button
@@ -376,46 +362,39 @@ function SkillDetail({
 
       {/* 元信息 */}
       <div className="grid grid-cols-4 gap-4 px-6 pb-4">
-        <div className="p-3 bg-[var(--color-bg-secondary)] rounded-lg">
-          <span className="text-xs text-[var(--color-text-tertiary)]">分类</span>
-          <p className="text-sm text-[var(--color-text-primary)]">{skill.category}</p>
-        </div>
-        <div className="p-3 bg-[var(--color-bg-secondary)] rounded-lg">
-          <span className="text-xs text-[var(--color-text-tertiary)]">超时时间</span>
-          <p className="text-sm text-[var(--color-text-primary)]">{skill.timeout / 1000}s</p>
-        </div>
-        <div className="p-3 bg-[var(--color-bg-secondary)] rounded-lg">
-          <span className="text-xs text-[var(--color-text-tertiary)]">参数数量</span>
-          <p className="text-sm text-[var(--color-text-primary)]">{skill.parameters.length}</p>
-        </div>
-        <div className="p-3 bg-[var(--color-bg-secondary)] rounded-lg">
-          <span className="text-xs text-[var(--color-text-tertiary)]">创建时间</span>
-          <p className="text-sm text-[var(--color-text-primary)]">
-            {new Date(skill.createdAt).toLocaleDateString('zh-CN')}
-          </p>
-        </div>
+        <Card size="small" bordered={false} style={{ background: 'var(--color-bg-secondary)' }}>
+          <Statistic title={<Text type="secondary" style={{ fontSize: 12 }}>分类</Text>} value={skill.category} valueStyle={{ fontSize: 14 }} />
+        </Card>
+        <Card size="small" bordered={false} style={{ background: 'var(--color-bg-secondary)' }}>
+          <Statistic title={<Text type="secondary" style={{ fontSize: 12 }}>超时时间</Text>} value={skill.timeout / 1000} suffix="s" valueStyle={{ fontSize: 14 }} />
+        </Card>
+        <Card size="small" bordered={false} style={{ background: 'var(--color-bg-secondary)' }}>
+          <Statistic title={<Text type="secondary" style={{ fontSize: 12 }}>参数数量</Text>} value={skill.parameters.length} valueStyle={{ fontSize: 14 }} />
+        </Card>
+        <Card size="small" bordered={false} style={{ background: 'var(--color-bg-secondary)' }}>
+          <Statistic
+            title={<Text type="secondary" style={{ fontSize: 12 }}>创建时间</Text>}
+            value={new Date(skill.createdAt).toLocaleDateString('zh-CN')}
+            valueStyle={{ fontSize: 14 }}
+          />
+        </Card>
       </div>
 
       {/* 标签栏 */}
-      <div className="flex gap-1 px-6 border-b border-[var(--color-border)]">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key as typeof activeTab)}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.key
-                  ? 'text-[var(--color-primary)] border-[var(--color-primary)]'
-                  : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
-              }`}
-            >
-              <Icon />
+      <Tabs
+        activeKey={activeTab}
+        onChange={(key) => setActiveTab(key as typeof activeTab)}
+        items={tabs.map((tab) => ({
+          key: tab.key,
+          label: (
+            <span className="flex items-center gap-2">
+              <tab.icon />
               {tab.label}
-            </button>
-          );
-        })}
-      </div>
+            </span>
+          ),
+        }))}
+        className="px-6"
+      />
 
       {/* 内容区 */}
       <div className="flex-1 overflow-hidden">

@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Input, Button, Dropdown, message } from 'antd';
+import { Input, Button, Dropdown, message, Tabs } from 'antd';
 import {
   PlusOutlined,
   SearchOutlined,
@@ -231,22 +231,19 @@ function AgentDetail({ agent, onUpdate: _onUpdate }: { agent: Agent; onUpdate: (
       </div>
 
       {/* 标签栏 */}
-      <div className="flex gap-1 mb-6 border-b border-[var(--color-border)]">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key as typeof activeTab)}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === tab.key
-                ? 'text-[var(--color-primary)] border-[var(--color-primary)]'
-                : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
-            }`}
-          >
-            <tab.icon className="w-4 h-4" />
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        activeKey={activeTab}
+        onChange={(key) => setActiveTab(key as typeof activeTab)}
+        items={tabs.map((tab) => ({
+          key: tab.key,
+          label: (
+            <span className="flex items-center gap-2">
+              <tab.icon className="w-4 h-4" />
+              {tab.label}
+            </span>
+          ),
+        }))}
+      />
 
       {/* 内容区 */}
       <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">

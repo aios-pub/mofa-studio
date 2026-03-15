@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Input, Button, Tag, Select, message } from 'antd';
+import { Input, Button, Tag, Select, message, Tabs, Collapse, Typography, Card, Statistic } from 'antd';
 import {
   PlusOutlined,
   SearchOutlined,
@@ -11,8 +11,6 @@ import {
   DeleteOutlined,
   CopyOutlined,
   ExperimentOutlined,
-  CaretDownOutlined,
-  CaretRightOutlined,
   LoadingOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -20,9 +18,12 @@ import {
   BarChartOutlined,
   FileTextOutlined,
   PlayCircleOutlined,
+  FolderOutlined,
 } from '@ant-design/icons';
 import type { TestSet, TestCase, TestReport, TestCaseStatus } from '../../types/testset';
 import { testSetApi } from '../../services/mock/testsets';
+
+const { Text, Title } = Typography;
 
 export default function TestSetsListPage() {
   const [testSets, setTestSets] = useState<TestSet[]>([]);
@@ -30,7 +31,7 @@ export default function TestSetsListPage() {
   const [loading, setLoading] = useState(true);
   const [selectedTestSet, setSelectedTestSet] = useState<TestSet | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
   useEffect(() => {
     loadTestSets();
@@ -72,14 +73,8 @@ export default function TestSetsListPage() {
     {} as Record<string, TestSet[]>
   );
 
-  const toggleCategory = (category: string) => {
-    const newExpanded = new Set(expandedCategories);
-    if (newExpanded.has(category)) {
-      newExpanded.delete(category);
-    } else {
-      newExpanded.add(category);
-    }
-    setExpandedCategories(newExpanded);
+  const handleCategoryChange = (keys: string | string[]) => {
+    setExpandedCategories(Array.isArray(keys) ? keys : [keys]);
   };
 
   const handleDelete = (id: string) => {
@@ -107,9 +102,9 @@ export default function TestSetsListPage() {
       {/* 左侧列表 */}
       <div className="w-80 border-r border-[var(--color-border)] flex flex-col bg-[var(--color-bg-secondary)]">
         {/* 头部 */}
-        <div className="p-4 space-y-3">
+        <div className="p-4 space-y-3 border-b border-[var(--color-border)]">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">测试集管理</h2>
+            <Title level={5} style={{ margin: 0 }}>测试集管理</Title>
             <Button type="primary" icon={<PlusOutlined />} size="small" />
           </div>
 
@@ -136,113 +131,103 @@ export default function TestSetsListPage() {
         </div>
 
         {/* 列表 */}
-        <div className="flex-1 overflow-y-auto p-2">
+        <div className="flex-1 overflow-y-auto">
           {loading ? (
-            <div className="text-center py-8 text-[var(--color-text-tertiary)]">加载中...</div>
+            <div className="text-center py-8">
+              <Text type="secondary">加载中...</Text>
+            </div>
           ) : filteredTestSets.length === 0 ? (
-            <div className="text-center py-8 text-[var(--color-text-tertiary)]">
-              <ExperimentOutlined className="text-3xl mb-2 opacity-50" />
-              <p>暂无测试集</p>
+            <div className="text-center py-8">
+              <ExperimentOutlined style={{ fontSize: 24, opacity: 0.5, marginBottom: 8, display: 'block' }} />
+              <Text type="secondary">暂无测试集</Text>
             </div>
           ) : (
-            Object.entries(groupedTestSets).map(([category, categoryTestSets]) => (
-              <div key={category} className="mb-2">
-                <button
-                  onClick={() => toggleCategory(category)}
-                  className="flex items-center gap-1 w-full px-2 py-1 text-xs font-medium text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
-                >
-                  {expandedCategories.has(category) ? (
-                    <CaretDownOutlined className="text-xs" />
-                  ) : (
-                    <CaretRightOutlined className="text-xs" />
-                  )}
-                  {category} ({categoryTestSets.length})
-                </button>
-                {expandedCategories.has(category) && (
-                  <div className="space-y-1 mt-1">
+            <Collapse
+              activeKey={expandedCategories}
+              onChange={handleCategoryChange}
+              expandIconPosition="start"
+              bordered={false}
+              style={{ background: 'transparent' }}
+              items={Object.entries(groupedTestSets).map(([category, categoryTestSets]) => ({
+                key: category,
+                label: (
+                  <div className="flex items-center gap-2">
+                    <FolderOutlined style={{ fontSize: 12 }} />
+                    <Text strong style={{ fontSize: 13 }}>{category}</Text>
+                    <Tag style={{ marginLeft: 4, fontSize: 11 }}>{categoryTestSets.length}</Tag>
+                  </div>
+                ),
+                children: (
+                  <div className="space-y-1">
                     {categoryTestSets.map((testSet) => (
                       <div
                         key={testSet.id}
                         onClick={() => setSelectedTestSet(testSet)}
-                        className={`group p-3 rounded-lg cursor-pointer transition-colors ${
+                        className={`group flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all ${
                           selectedTestSet?.id === testSet.id
                             ? 'bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30'
-                            : 'hover:bg-[var(--color-bg-tertiary)]'
+                            : 'hover:bg-[var(--color-bg-tertiary)] border border-transparent'
                         }`}
                       >
-                        <div className="flex items-start gap-2">
-                          <div
-                            className={`p-1.5 rounded ${
-                              testSet.status === 'running'
-                                ? 'bg-blue-500/10 text-blue-500'
-                                : testSet.passRate !== undefined && testSet.passRate >= 80
-                                  ? 'bg-green-500/10 text-green-500'
-                                  : testSet.passRate !== undefined && testSet.passRate < 80
-                                    ? 'bg-red-500/10 text-red-500'
-                                    : 'bg-gray-500/10 text-gray-500'
-                            }`}
-                          >
-                            <ExperimentOutlined className="text-sm" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-[var(--color-text-primary)] truncate">
-                                {testSet.name}
-                              </span>
-                            </div>
-                            <p className="text-sm text-[var(--color-text-tertiary)] truncate">
-                              {testSet.description}
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-xs text-[var(--color-text-tertiary)]">
-                                {testSet.cases.length} 个用例
-                              </span>
-                              {testSet.passRate !== undefined && (
-                                <>
-                                  <span className="text-xs text-[var(--color-text-tertiary)]">•</span>
-                                  <span
-                                    className={`text-xs ${
-                                      testSet.passRate >= 80
-                                        ? 'text-green-500'
-                                        : testSet.passRate >= 60
-                                          ? 'text-yellow-500'
-                                          : 'text-red-500'
-                                    }`}
-                                  >
-                                    {testSet.passRate.toFixed(0)}% 通过
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                            <Button
-                              type="text"
-                              size="small"
-                              icon={<CopyOutlined />}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDuplicate(testSet);
-                              }}
-                            />
-                            <Button
-                              type="text"
-                              size="small"
-                              danger
-                              icon={<DeleteOutlined />}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(testSet.id);
-                              }}
-                            />
-                          </div>
+                        <div
+                          className={`flex-shrink-0 p-1.5 rounded ${
+                            testSet.status === 'running'
+                              ? 'bg-blue-500/10 text-blue-500'
+                              : testSet.passRate !== undefined && testSet.passRate >= 80
+                                ? 'bg-green-500/10 text-green-500'
+                                : testSet.passRate !== undefined && testSet.passRate < 80
+                                  ? 'bg-red-500/10 text-red-500'
+                                  : 'bg-gray-500/10 text-gray-500'
+                          }`}
+                        >
+                          <ExperimentOutlined style={{ fontSize: 12 }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <Text strong ellipsis style={{ display: 'block', fontSize: 13 }}>
+                            {testSet.name}
+                          </Text>
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            {testSet.cases.length} 个用例
+                            {testSet.passRate !== undefined && (
+                              <Tag
+                                color={
+                                  testSet.passRate >= 80 ? 'success' :
+                                  testSet.passRate >= 60 ? 'warning' : 'error'
+                                }
+                                style={{ marginLeft: 8, fontSize: 11 }}
+                              >
+                                {testSet.passRate.toFixed(0)}% 通过
+                              </Tag>
+                            )}
+                          </Text>
+                        </div>
+                        <div className="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<CopyOutlined />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDuplicate(testSet);
+                            }}
+                          />
+                          <Button
+                            type="text"
+                            size="small"
+                            danger
+                            icon={<DeleteOutlined />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(testSet.id);
+                            }}
+                          />
                         </div>
                       </div>
                     ))}
                   </div>
-                )}
-              </div>
-            ))
+                ),
+              }))}
+            />
           )}
         </div>
       </div>
@@ -254,9 +239,9 @@ export default function TestSetsListPage() {
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <ExperimentOutlined className="text-5xl text-[var(--color-text-tertiary)] mb-4" />
-              <h3 className="text-lg font-medium text-[var(--color-text-primary)]">选择一个测试集</h3>
-              <p className="text-[var(--color-text-secondary)]">从左侧列表中选择查看详情</p>
+              <ExperimentOutlined style={{ fontSize: 48, color: 'var(--color-text-tertiary)', marginBottom: 16 }} />
+              <Title level={5} type="secondary">选择一个测试集</Title>
+              <Text type="secondary">从左侧列表中选择查看详情</Text>
             </div>
           </div>
         )}
@@ -346,8 +331,8 @@ function TestSetDetail({
       {/* 头部 */}
       <div className="flex items-start justify-between p-6 pb-4">
         <div>
-          <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">{testSet.name}</h2>
-          <p className="text-[var(--color-text-secondary)]">{testSet.description}</p>
+          <Title level={4} style={{ margin: 0 }}>{testSet.name}</Title>
+          <Text type="secondary">{testSet.description}</Text>
         </div>
         <div className="flex gap-2">
           <Button
@@ -367,48 +352,50 @@ function TestSetDetail({
 
       {/* 元信息 */}
       <div className="grid grid-cols-4 gap-4 px-6 pb-4">
-        <div className="p-3 bg-[var(--color-bg-secondary)] rounded-lg">
-          <span className="text-xs text-[var(--color-text-tertiary)]">分类</span>
-          <p className="text-sm text-[var(--color-text-primary)]">{testSet.category}</p>
-        </div>
-        <div className="p-3 bg-[var(--color-bg-secondary)] rounded-lg">
-          <span className="text-xs text-[var(--color-text-tertiary)]">用例数</span>
-          <p className="text-sm text-[var(--color-text-primary)]">{testSet.cases.length}</p>
-        </div>
-        <div className="p-3 bg-[var(--color-bg-secondary)] rounded-lg">
-          <span className="text-xs text-[var(--color-text-tertiary)]">通过率</span>
-          <p className={`text-sm font-medium ${testSet.passRate !== undefined ? getPassRateColor(testSet.passRate) : ''}`}>
-            {testSet.passRate !== undefined ? `${testSet.passRate.toFixed(0)}%` : '-'}
-          </p>
-        </div>
-        <div className="p-3 bg-[var(--color-bg-secondary)] rounded-lg">
-          <span className="text-xs text-[var(--color-text-tertiary)]">总耗时</span>
-          <p className="text-sm text-[var(--color-text-primary)]">
-            {testSet.totalDuration ? `${(testSet.totalDuration / 1000).toFixed(1)}s` : '-'}
-          </p>
-        </div>
+        <Card size="small" bordered={false} style={{ background: 'var(--color-bg-secondary)' }}>
+          <Statistic title={<Text type="secondary" style={{ fontSize: 12 }}>分类</Text>} value={testSet.category} valueStyle={{ fontSize: 14 }} />
+        </Card>
+        <Card size="small" bordered={false} style={{ background: 'var(--color-bg-secondary)' }}>
+          <Statistic title={<Text type="secondary" style={{ fontSize: 12 }}>用例数</Text>} value={testSet.cases.length} valueStyle={{ fontSize: 14 }} />
+        </Card>
+        <Card size="small" bordered={false} style={{ background: 'var(--color-bg-secondary)' }}>
+          <Statistic
+            title={<Text type="secondary" style={{ fontSize: 12 }}>通过率</Text>}
+            value={testSet.passRate !== undefined ? testSet.passRate.toFixed(0) : '-'}
+            suffix={testSet.passRate !== undefined ? '%' : ''}
+            valueStyle={{
+              fontSize: 14,
+              color: testSet.passRate !== undefined
+                ? (testSet.passRate >= 80 ? '#22c55e' : testSet.passRate >= 60 ? '#eab308' : '#ef4444')
+                : undefined
+            }}
+          />
+        </Card>
+        <Card size="small" bordered={false} style={{ background: 'var(--color-bg-secondary)' }}>
+          <Statistic
+            title={<Text type="secondary" style={{ fontSize: 12 }}>总耗时</Text>}
+            value={testSet.totalDuration ? (testSet.totalDuration / 1000).toFixed(1) : '-'}
+            suffix={testSet.totalDuration ? 's' : ''}
+            valueStyle={{ fontSize: 14 }}
+          />
+        </Card>
       </div>
 
       {/* 标签栏 */}
-      <div className="flex gap-1 px-6 border-b border-[var(--color-border)]">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key as typeof activeTab)}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.key
-                  ? 'text-[var(--color-primary)] border-[var(--color-primary)]'
-                  : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
-              }`}
-            >
-              <Icon />
+      <Tabs
+        activeKey={activeTab}
+        onChange={(key) => setActiveTab(key as typeof activeTab)}
+        items={tabs.map((tab) => ({
+          key: tab.key,
+          label: (
+            <span className="flex items-center gap-2">
+              <tab.icon />
               {tab.label}
-            </button>
-          );
-        })}
-      </div>
+            </span>
+          ),
+        }))}
+        className="px-6"
+      />
 
       {/* 内容区 */}
       <div className="flex-1 overflow-hidden">

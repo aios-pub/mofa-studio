@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "identifier": "com.aios.amos-claw",
   "build": {
-    "beforeDevCommand": "deno task dev",
+    "beforeDevCommand": "./scripts/dev.sh",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "deno task build",
+    "beforeBuildCommand": "./scripts/build.sh",
     "frontendDist": "../dist"
   },
   "app": {

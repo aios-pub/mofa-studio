@@ -16,12 +16,27 @@ import {
   DownloadOutlined,
   UploadOutlined,
   InfoCircleOutlined,
-  RightOutlined,
-  CheckOutlined,
 } from '@ant-design/icons';
+import {
+  Card,
+  Radio,
+  Switch,
+  Button,
+  Divider,
+  Typography,
+  Space,
+  Tag,
+  Alert,
+  Avatar,
+  Descriptions,
+  Menu,
+} from 'antd';
+import type { MenuProps } from 'antd';
 import { useAppStore, type SupportedLanguage } from '../../stores/useAppStore';
 import { supportedLanguages } from '../../i18n';
 import { getShortcutDefinitions } from '../../hooks/useKeyboardShortcuts';
+
+const { Title, Text, Paragraph } = Typography;
 
 type SettingsTab = 'general' | 'appearance' | 'shortcuts' | 'data' | 'about';
 
@@ -29,41 +44,48 @@ export default function SettingsPage() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
 
-  const tabs = [
-    { id: 'general' as const, label: t('settings.general'), icon: SettingOutlined },
-    { id: 'appearance' as const, label: t('settings.appearance'), icon: MoonOutlined },
-    { id: 'shortcuts' as const, label: t('settings.keyboardShortcuts'), icon: CodeOutlined },
-    { id: 'data' as const, label: t('settings.data'), icon: DatabaseOutlined },
-    { id: 'about' as const, label: t('settings.about'), icon: InfoCircleOutlined },
+  const menuItems: MenuProps['items'] = [
+    {
+      key: 'general',
+      icon: <SettingOutlined />,
+      label: t('settings.general'),
+    },
+    {
+      key: 'appearance',
+      icon: <MoonOutlined />,
+      label: t('settings.appearance'),
+    },
+    {
+      key: 'shortcuts',
+      icon: <CodeOutlined />,
+      label: t('settings.keyboardShortcuts'),
+    },
+    {
+      key: 'data',
+      icon: <DatabaseOutlined />,
+      label: t('settings.data'),
+    },
+    {
+      key: 'about',
+      icon: <InfoCircleOutlined />,
+      label: t('settings.about'),
+    },
   ];
 
   return (
     <div className="h-full flex">
       {/* 左侧导航 */}
-      <div className="w-64 border-r border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-4">
-        <h2 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4">
-          {t('settings.title')}
-        </h2>
-        <nav className="space-y-1">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                  activeTab === tab.id
-                    ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
-                    : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)]'
-                }`}
-              >
-                <Icon />
-                <span className="flex-1">{tab.label}</span>
-                <RightOutlined className={`${activeTab === tab.id ? 'opacity-100' : 'opacity-0'}`} />
-              </button>
-            );
-          })}
-        </nav>
+      <div className="w-64 border-r border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
+        <div className="p-4">
+          <Title level={5} style={{ marginBottom: 16 }}>{t('settings.title')}</Title>
+        </div>
+        <Menu
+          mode="inline"
+          selectedKeys={[activeTab]}
+          onClick={(e) => setActiveTab(e.key as SettingsTab)}
+          items={menuItems}
+          style={{ borderRight: 0 }}
+        />
       </div>
 
       {/* 右侧内容 */}
@@ -90,77 +112,71 @@ function GeneralSettings() {
   };
 
   return (
-    <div>
-      <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-6">
-        {t('settings.general')}
-      </h3>
+    <div className="space-y-6">
+      <Title level={4}>{t('settings.general')}</Title>
 
-      <div className="space-y-6">
-        {/* 语言设置 */}
-        <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-[var(--color-primary)]/10 rounded-lg">
-              <GlobalOutlined className="text-[var(--color-primary)]" />
-            </div>
-            <div>
-              <h4 className="font-medium text-[var(--color-text-primary)]">{t('settings.language')}</h4>
-              <p className="text-sm text-[var(--color-text-secondary)]">
-                Choose your preferred language
-              </p>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
+      {/* 语言设置 */}
+      <Card
+        title={
+          <Space>
+            <Avatar size="small" style={{ backgroundColor: 'var(--color-primary)' }} icon={<GlobalOutlined />} />
+            <span>{t('settings.language')}</span>
+          </Space>
+        }
+        extra={<Text type="secondary">Choose your preferred language</Text>}
+      >
+        <Radio.Group
+          value={language}
+          onChange={(e) => handleLanguageChange(e.target.value)}
+          style={{ width: '100%' }}
+        >
+          <Space direction="vertical" style={{ width: '100%' }} size="small">
             {supportedLanguages.map((lang) => (
-              <button
+              <Radio
                 key={lang.code}
-                onClick={() => handleLanguageChange(lang.code as SupportedLanguage)}
-                className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                  language === lang.code
-                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
-                    : 'border-[var(--color-border)] hover:bg-[var(--color-bg-tertiary)]'
-                }`}
+                value={lang.code}
+                style={{ width: '100%' }}
               >
-                <span className="text-[var(--color-text-primary)]">{lang.nativeName}</span>
-                {language === lang.code && (
-                  <CheckOutlined className="text-[var(--color-primary)]" />
-                )}
-              </button>
+                <Space>
+                  <Text>{lang.nativeName}</Text>
+                  <Text type="secondary">({lang.name})</Text>
+                </Space>
+              </Radio>
             ))}
-          </div>
-        </div>
+          </Space>
+        </Radio.Group>
+      </Card>
 
-        {/* 通知设置 */}
-        <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-[var(--color-primary)]/10 rounded-lg">
-              <BellOutlined className="text-[var(--color-primary)]" />
-            </div>
-            <div>
-              <h4 className="font-medium text-[var(--color-text-primary)]">{t('settings.notifications')}</h4>
-              <p className="text-sm text-[var(--color-text-secondary)]">
-                Configure notification preferences
-              </p>
-            </div>
-          </div>
-          <div className="space-y-3">
-            <NotificationToggle
-              label="Desktop notifications"
-              description="Show desktop notifications for important events"
-              defaultChecked
-            />
-            <NotificationToggle
-              label="Sound effects"
-              description="Play sound when receiving messages"
-              defaultChecked={false}
-            />
-            <NotificationToggle
-              label="Email notifications"
-              description="Receive email notifications for critical alerts"
-              defaultChecked={false}
-            />
-          </div>
-        </div>
-      </div>
+      {/* 通知设置 */}
+      <Card
+        title={
+          <Space>
+            <Avatar size="small" style={{ backgroundColor: 'var(--color-primary)' }} icon={<BellOutlined />} />
+            <span>{t('settings.notifications')}</span>
+          </Space>
+        }
+        extra={<Text type="secondary">Configure notification preferences</Text>}
+      >
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <NotificationToggle
+            label="Desktop notifications"
+            description="Show desktop notifications for important events"
+            defaultChecked
+          />
+          <Divider style={{ margin: '8px 0' }} />
+          <NotificationToggle
+            label="Sound effects"
+            description="Play sound when receiving messages"
+            defaultChecked={false}
+          />
+          <Divider style={{ margin: '8px 0' }} />
+          <NotificationToggle
+            label="Email notifications"
+            description="Receive email notifications for critical alerts"
+            defaultChecked={false}
+          />
+        </Space>
+      </Card>
     </div>
   );
 }
@@ -177,47 +193,43 @@ function AppearanceSettings() {
   ];
 
   return (
-    <div>
-      <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-6">
-        {t('settings.appearance')}
-      </h3>
+    <div className="space-y-6">
+      <Title level={4}>{t('settings.appearance')}</Title>
 
-      <div className="space-y-6">
-        {/* 主题设置 */}
-        <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-[var(--color-primary)]/10 rounded-lg">
-              <MoonOutlined className="text-[var(--color-primary)]" />
-            </div>
-            <div>
-              <h4 className="font-medium text-[var(--color-text-primary)]">{t('settings.theme')}</h4>
-              <p className="text-sm text-[var(--color-text-secondary)]">
-                Choose your preferred theme
-              </p>
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
+      <Card
+        title={
+          <Space>
+            <Avatar size="small" style={{ backgroundColor: 'var(--color-primary)' }} icon={<MoonOutlined />} />
+            <span>{t('settings.theme')}</span>
+          </Space>
+        }
+        extra={<Text type="secondary">Choose your preferred theme</Text>}
+      >
+        <Radio.Group
+          value={theme}
+          onChange={(e) => setTheme(e.target.value)}
+          style={{ width: '100%' }}
+        >
+          <Space size="middle" wrap>
             {themeOptions.map((option) => {
               const Icon = option.icon;
               return (
-                <button
+                <Radio.Button
                   key={option.id}
-                  onClick={() => setTheme(option.id as 'light' | 'dark' | 'system')}
-                  className={`flex flex-col items-center p-4 rounded-lg border transition-colors ${
-                    theme === option.id
-                      ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
-                      : 'border-[var(--color-border)] hover:bg-[var(--color-bg-tertiary)]'
-                  }`}
+                  value={option.id}
+                  style={{ height: 'auto', padding: '16px 24px' }}
                 >
-                  <Icon className={`text-2xl mb-2 ${theme === option.id ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-secondary)]'}`} />
-                  <span className="font-medium text-[var(--color-text-primary)]">{option.label}</span>
-                  <span className="text-xs text-[var(--color-text-tertiary)] mt-1">{option.description}</span>
-                </button>
+                  <Space direction="vertical" align="center" size={4}>
+                    <Icon style={{ fontSize: 24 }} />
+                    <Text strong>{option.label}</Text>
+                    <Text type="secondary" style={{ fontSize: 12 }}>{option.description}</Text>
+                  </Space>
+                </Radio.Button>
               );
             })}
-          </div>
-        </div>
-      </div>
+          </Space>
+        </Radio.Group>
+      </Card>
     </div>
   );
 }
@@ -228,43 +240,47 @@ function ShortcutsSettings() {
   const shortcuts = getShortcutDefinitions();
 
   return (
-    <div>
-      <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-6">
-        {t('settings.keyboardShortcuts')}
-      </h3>
+    <div className="space-y-6">
+      <Title level={4}>{t('settings.keyboardShortcuts')}</Title>
 
-      <div className="space-y-4">
+      <Space direction="vertical" style={{ width: '100%' }} size="middle">
         {shortcuts.map((category) => (
-          <div
+          <Card
             key={category.category}
-            className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]"
+            title={
+              <Space>
+                <Tag color="blue">{category.category}</Tag>
+              </Space>
+            }
+            size="small"
           >
-            <h4 className="text-sm font-medium text-[var(--color-text-secondary)] mb-3">
-              {category.category}
-            </h4>
-            <div className="space-y-2">
+            <Descriptions column={1} size="small">
               {category.shortcuts.map((shortcut, index) => (
-                <div
+                <Descriptions.Item
                   key={index}
-                  className="flex items-center justify-between py-1.5"
+                  label={shortcut.description}
                 >
-                  <span className="text-[var(--color-text-primary)]">{shortcut.description}</span>
-                  <div className="flex items-center gap-0.5">
+                  <Space size={2}>
                     {shortcut.keys.map((key, keyIndex) => (
-                      <kbd
+                      <Tag
                         key={keyIndex}
-                        className="px-2 py-1 text-xs font-mono bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded"
+                        style={{
+                          fontFamily: 'monospace',
+                          margin: 0,
+                          background: 'var(--color-bg-tertiary)',
+                          border: '1px solid var(--color-border)',
+                        }}
                       >
                         {key}
-                      </kbd>
+                      </Tag>
                     ))}
-                  </div>
-                </div>
+                  </Space>
+                </Descriptions.Item>
               ))}
-            </div>
-          </div>
+            </Descriptions>
+          </Card>
         ))}
-      </div>
+      </Space>
     </div>
   );
 }
@@ -327,59 +343,64 @@ function DataSettings() {
   };
 
   return (
-    <div>
-      <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-6">
-        {t('settings.data')}
-      </h3>
+    <div className="space-y-6">
+      <Title level={4}>{t('settings.data')}</Title>
 
-      <div className="space-y-4">
+      <Space direction="vertical" style={{ width: '100%' }} size="middle">
         {/* 备份数据 */}
-        <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-[var(--color-primary)]/10 rounded-lg">
-              <DownloadOutlined className="text-[var(--color-primary)]" />
-            </div>
-            <div>
-              <h4 className="font-medium text-[var(--color-text-primary)]">{t('settings.backup')}</h4>
-              <p className="text-sm text-[var(--color-text-secondary)]">
-                Export all your data to a JSON file
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)]"
-          >
-            <DownloadOutlined />
-            Export Data
-          </button>
-        </div>
+        <Card
+          title={
+            <Space>
+              <Avatar size="small" style={{ backgroundColor: 'var(--color-primary)' }} icon={<DownloadOutlined />} />
+              <span>{t('settings.backup')}</span>
+            </Space>
+          }
+          extra={<Text type="secondary">Export all your data to a JSON file</Text>}
+        >
+          <Space direction="vertical" style={{ width: '100%' }}>
+            <Paragraph type="secondary">
+              Export all your conversations, agents, prompts, and settings to a JSON file for backup.
+            </Paragraph>
+            <Button
+              type="primary"
+              icon={<DownloadOutlined />}
+              onClick={handleExport}
+            >
+              Export Data
+            </Button>
+          </Space>
+        </Card>
 
         {/* 恢复数据 */}
-        <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-orange-500/10 rounded-lg">
-              <UploadOutlined className="text-orange-500" />
-            </div>
-            <div>
-              <h4 className="font-medium text-[var(--color-text-primary)]">{t('settings.restore')}</h4>
-              <p className="text-sm text-[var(--color-text-secondary)]">
-                Import data from a backup file
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={handleImport}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-bg-base)]"
-          >
-            <UploadOutlined />
-            Import Data
-          </button>
-          <p className="text-xs text-[var(--color-text-tertiary)] mt-2">
-            Warning: Importing data will overwrite existing data
-          </p>
-        </div>
-      </div>
+        <Card
+          title={
+            <Space>
+              <Avatar size="small" style={{ backgroundColor: '#fa8c16' }} icon={<UploadOutlined />} />
+              <span>{t('settings.restore')}</span>
+            </Space>
+          }
+          extra={<Text type="secondary">Import data from a backup file</Text>}
+        >
+          <Space direction="vertical" style={{ width: '100%' }}>
+            <Paragraph type="secondary">
+              Import your data from a previously exported backup file.
+            </Paragraph>
+            <Alert
+              message="Warning"
+              description="Importing data will overwrite existing data. Please make sure to backup your current data first."
+              type="warning"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+            <Button
+              icon={<UploadOutlined />}
+              onClick={handleImport}
+            >
+              Import Data
+            </Button>
+          </Space>
+        </Card>
+      </Space>
     </div>
   );
 }
@@ -389,36 +410,52 @@ function AboutSettings() {
   const { t } = useTranslation();
 
   return (
-    <div>
-      <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-6">
-        {t('settings.about')}
-      </h3>
+    <div className="space-y-6">
+      <Title level={4}>{t('settings.about')}</Title>
 
-      <div className="p-6 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-        <div className="text-center">
-          <div className="w-20 h-20 mx-auto mb-4 bg-[var(--color-primary)] rounded-2xl flex items-center justify-center">
-            <span className="text-3xl">🤖</span>
-          </div>
-          <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">Amos-Claw</h2>
-          <p className="text-[var(--color-text-secondary)] mt-1">AI Dialogue Platform</p>
+      <Card>
+        <div style={{ textAlign: 'center', padding: '24px 0' }}>
+          <Avatar
+            size={80}
+            style={{ backgroundColor: 'var(--color-primary)', marginBottom: 16 }}
+          >
+            <span style={{ fontSize: 40 }}>🤖</span>
+          </Avatar>
+          <Title level={3} style={{ marginBottom: 8 }}>Amos-Claw</Title>
+          <Text type="secondary">AI Dialogue Platform</Text>
 
-          <div className="mt-4 py-2 px-4 bg-[var(--color-bg-tertiary)] rounded-lg inline-block">
-            <span className="text-sm text-[var(--color-text-secondary)]">{t('settings.version')}: </span>
-            <span className="text-sm font-medium text-[var(--color-text-primary)]">0.1.0</span>
-          </div>
+          <Divider />
 
-          <p className="mt-6 text-sm text-[var(--color-text-tertiary)] max-w-md mx-auto">
-            A powerful AI dialogue platform desktop client built with Tauri, React, and TypeScript.
-            Manage agents, prompts, skills, and more with an intuitive interface.
-          </p>
+          <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            <Tag color="blue" style={{ padding: '4px 12px', fontSize: 14 }}>
+              {t('settings.version')}: 0.1.0
+            </Tag>
 
-          <div className="mt-6 pt-6 border-t border-[var(--color-border)]">
-            <p className="text-xs text-[var(--color-text-tertiary)]">
+            <Paragraph type="secondary" style={{ maxWidth: 400, margin: '0 auto' }}>
+              A powerful AI dialogue platform desktop client built with Tauri, React, and TypeScript.
+              Manage agents, prompts, skills, and more with an intuitive interface.
+            </Paragraph>
+
+            <Descriptions
+              column={1}
+              size="small"
+              bordered
+              style={{ maxWidth: 400, margin: '0 auto', textAlign: 'left' }}
+            >
+              <Descriptions.Item label="Framework">Tauri + React</Descriptions.Item>
+              <Descriptions.Item label="Language">TypeScript</Descriptions.Item>
+              <Descriptions.Item label="UI Library">Ant Design</Descriptions.Item>
+              <Descriptions.Item label="State">Zustand</Descriptions.Item>
+            </Descriptions>
+
+            <Divider style={{ margin: '16px 0' }} />
+
+            <Text type="secondary" style={{ fontSize: 12 }}>
               Built with ❤️ using Tauri + React + TypeScript
-            </p>
-          </div>
+            </Text>
+          </Space>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
@@ -436,23 +473,13 @@ function NotificationToggle({
   const [enabled, setEnabled] = useState(defaultChecked);
 
   return (
-    <div className="flex items-center justify-between">
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
       <div>
-        <p className="text-sm font-medium text-[var(--color-text-primary)]">{label}</p>
-        <p className="text-xs text-[var(--color-text-tertiary)]">{description}</p>
+        <Text strong>{label}</Text>
+        <br />
+        <Text type="secondary" style={{ fontSize: 12 }}>{description}</Text>
       </div>
-      <button
-        onClick={() => setEnabled(!enabled)}
-        className={`relative w-11 h-6 rounded-full transition-colors ${
-          enabled ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-bg-tertiary)]'
-        }`}
-      >
-        <span
-          className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-            enabled ? 'translate-x-5' : 'translate-x-0'
-          }`}
-        />
-      </button>
+      <Switch checked={enabled} onChange={setEnabled} />
     </div>
   );
 }

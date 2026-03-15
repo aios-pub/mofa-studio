@@ -1,6 +1,6 @@
 /**
  * 登录表单组件
- * 参考 slash-admin 的登录表单设计
+ * 使用 AntDesign 组件保持风格一致
  */
 
 import { useState } from 'react';
@@ -9,15 +9,13 @@ import {
   RobotOutlined,
   UserOutlined,
   LockOutlined,
-  EyeOutlined,
-  EyeInvisibleOutlined,
   GithubOutlined,
   WechatOutlined,
   GoogleOutlined,
   SyncOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { Button, Checkbox, Divider } from 'antd';
+import { Button, Checkbox, Divider, Form, Input, Alert } from 'antd';
 import { useUserActions } from '../../../stores/useUserStore';
 import authApi from '../../../services/mock/auth';
 
@@ -25,25 +23,28 @@ interface LoginFormProps {
   onSwitchToRegister?: () => void;
 }
 
+interface FormValues {
+  username: string;
+  password: string;
+  rememberMe: boolean;
+}
+
 export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { setUserToken, setUserInfo } = useUserActions();
+  const [form] = Form.useForm<FormValues>();
 
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (values: FormValues) => {
     setError('');
     setLoading(true);
 
     try {
-      const res = await authApi.signin({ username, password });
+      const res = await authApi.signin({ username: values.username, password: values.password });
       setUserToken({ accessToken: res.accessToken, refreshToken: res.refreshToken });
       setUserInfo(res.user);
       navigate('/');
@@ -80,59 +81,51 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
 
       {/* 错误提示 */}
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm flex items-center gap-2">
-          <span className="i-ant-design:exclamation-circle-filled" />
-          {error}
-        </div>
+        <Alert
+          message={error}
+          type="error"
+          showIcon
+          className="mb-4"
+        />
       )}
 
       {/* 表单 */}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <Form
+        form={form}
+        onFinish={handleSubmit}
+        layout="vertical"
+        requiredMark={false}
+        initialValues={{ rememberMe: true }}
+      >
         {/* 用户名 */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
-            {t('auth.username', '用户名')}
-          </label>
-          <div className="relative">
-            <UserOutlined className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all"
-              placeholder={t('auth.usernamePlaceholder', '请输入用户名')}
-              required
-            />
-          </div>
-        </div>
+        <Form.Item
+          name="username"
+          label={t('auth.username', '用户名')}
+          rules={[{ required: true, message: t('auth.usernameRequired', '请输入用户名') }]}
+        >
+          <Input
+            prefix={<UserOutlined className="text-[var(--color-text-tertiary)]" />}
+            placeholder={t('auth.usernamePlaceholder', '请输入用户名')}
+            size="large"
+          />
+        </Form.Item>
 
         {/* 密码 */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
-            {t('auth.password', '密码')}
-          </label>
-          <div className="relative">
-            <LockOutlined className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full pl-10 pr-12 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all"
-              placeholder={t('auth.passwordPlaceholder', '请输入密码')}
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] transition-colors"
-            >
-              {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-            </button>
-          </div>
-        </div>
+        <Form.Item
+          name="password"
+          label={t('auth.password', '密码')}
+          rules={[{ required: true, message: t('auth.passwordRequired', '请输入密码') }]}
+        >
+          <Input.Password
+            prefix={<LockOutlined className="text-[var(--color-text-tertiary)]" />}
+            placeholder={t('auth.passwordPlaceholder', '请输入密码')}
+            size="large"
+            iconRender={(visible) => visible ? <LockOutlined /> : <LockOutlined />}
+          />
+        </Form.Item>
 
         {/* 记住我 & 忘记密码 */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <Checkbox
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
@@ -147,18 +140,20 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         </div>
 
         {/* 登录按钮 */}
-        <Button
-          type="primary"
-          htmlType="submit"
-          block
-          size="large"
-          disabled={loading}
-          icon={loading ? <SyncOutlined spin /> : null}
-          className="h-11 font-medium"
-        >
-          {loading ? t('auth.loggingIn', '登录中...') : t('auth.login', '登录')}
-        </Button>
-      </form>
+        <Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            block
+            size="large"
+            disabled={loading}
+            icon={loading ? <SyncOutlined spin /> : null}
+            className="h-11 font-medium"
+          >
+            {loading ? t('auth.loggingIn', '登录中...') : t('auth.login', '登录')}
+          </Button>
+        </Form.Item>
+      </Form>
 
       {/* 分隔线 */}
       <Divider className="!my-6 !text-[var(--color-text-tertiary)]">

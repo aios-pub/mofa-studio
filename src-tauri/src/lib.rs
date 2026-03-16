@@ -148,44 +148,13 @@ pub fn run() {
                     }
                 }
 
-                // Windows 平台悬浮球支持
+                // Windows 平台 - 依赖 Tauri 配置，不做额外的原生窗口处理
+                // tauri.conf.json 中已配置 alwaysOnTop: true, skipTaskbar: true, transparent: true
                 #[cfg(target_os = "windows")]
                 {
                     if let Some(floating) = &floating_window {
                         let _ = floating.set_decorations(false);
-
-                        // 获取 HWND
-                        if let Ok(hwnd) = floating.hwnd() {
-                            unsafe {
-                                use winapi::shared::windef::HWND;
-                                use winapi::um::winuser::*;
-
-                                // 从 isize 转换为 HWND
-                                let hwnd: HWND = std::mem::transmute(hwnd);
-
-                                // 设置窗口置顶
-                                SetWindowPos(
-                                    hwnd,
-                                    HWND_TOPMOST,
-                                    0,
-                                    0,
-                                    0,
-                                    0,
-                                    SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW,
-                                );
-
-                                // 获取当前扩展样式
-                                let ex_style = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
-
-                                // 只添加工具窗口样式(隐藏任务栏)，不添加 WS_EX_LAYERED
-                                // Tauri 的 transparent: true 已经处理了透明效果
-                                SetWindowLongPtrW(
-                                    hwnd,
-                                    GWL_EXSTYLE,
-                                    ex_style | (WS_EX_TOOLWINDOW as isize),
-                                );
-                            }
-                        }
+                        // 不修改 Windows 原生窗口样式，避免干扰 Tauri 的窗口管理
                     }
                 }
             } else {

@@ -132,6 +132,7 @@ export default function FloatingApp() {
   const [contextMenuVisible, setContextMenuVisible] = useState(false);
   const [alwaysOnTop, setAlwaysOnTop] = useState(true);
   const [petState, setPetState] = useState<PetState>("idle");
+  const [isSpinning, setIsSpinning] = useState(false);
   const [showBubble, setShowBubble] = useState(false);
   const [bubbleText, setBubbleText] = useState("");
   const [bubbleOnLeft, setBubbleOnLeft] = useState(false);
@@ -437,9 +438,12 @@ export default function FloatingApp() {
   const handlePlay = useCallback(() => {
     clearStateTimeout();
     setPetState("happy");
+    setIsSpinning(true);
     spawnParticles("✨", 6);
     spawnParticles("💖", 4);
     showBubbleMessage("太开心啦! 🎉", 2500);
+    // 旋转动画持续 0.6s，动画结束后移除旋转状态
+    setTimeout(() => setIsSpinning(false), 600);
     stateTimeoutRef.current = setTimeout(() => setPetState("idle"), 2500);
   }, [spawnParticles, showBubbleMessage, clearStateTimeout]);
 
@@ -733,6 +737,7 @@ export default function FloatingApp() {
     if (petState === "dragging") classes.push("is-dragging");
     if (petState === "happy") classes.push("is-happy");
     if (petState === "sleepy") classes.push("is-sleepy");
+    if (isSpinning) classes.push("is-spinning");
     return classes.join(" ");
   };
 

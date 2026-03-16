@@ -302,49 +302,28 @@ export default function FloatingApp() {
   }, [appWindow]);
 
   const expandMenu = useCallback(async () => {
-    console.log("[FloatingApp] expandMenu called, appWindow:", !!appWindow);
     if (!appWindow) {
-      console.log("[FloatingApp] No appWindow, setting expanded=true directly");
       setExpandedWithTrace(true);
       return;
     }
-
-    console.log("[FloatingApp] Getting current position...");
-    const position = await appWindow.outerPosition();
-    console.log("[FloatingApp] Current position:", position.x, position.y);
-    windowAnchorRef.current = { x: position.x, y: position.y };
-
     const bounds = await getMonitorBounds();
+    const s = bounds?.scaleFactor ?? 1;
+    const physPos = await appWindow.outerPosition();
+
+    // ✅ 存储逻辑坐标
+    const logicalPos = { x: physPos.x / s, y: physPos.y / s };
+    windowAnchorRef.current = logicalPos;
     const { width, height } = getMenuWindowSize();
-    console.log(
-      "[FloatingApp] Menu window size:",
-      width,
-      height,
-      "bounds:",
-      bounds,
-    );
-
-    // 计算宠物可见部分的位置（考虑吸附边缘的情况）
-    let visibleX = position.x;
-    let visibleY = position.y;
-
+    // 计算宠物可见部分的位置
+    let visibleX = logicalPos.x;
+    let visibleY = logicalPos.y;
     if (bounds) {
-      // 如果宠物在左边缘外，计算可见位置
-      if (position.x < bounds.x) {
-        visibleX = bounds.x;
-      }
-      // 如果宠物在右边缘外
-      if (position.x + BALL_SIZE > bounds.x + bounds.width) {
+      if (logicalPos.x < bounds.x) visibleX = bounds.x;
+      if (logicalPos.x + BALL_SIZE > bounds.x + bounds.width)
         visibleX = bounds.x + bounds.width - BALL_SIZE;
-      }
-      // 如果宠物在上边缘外
-      if (position.y < bounds.y) {
-        visibleY = bounds.y;
-      }
-      // 如果宠物在下边缘外
-      if (position.y + BALL_SIZE > bounds.y + bounds.height) {
+      if (logicalPos.y < bounds.y) visibleY = bounds.y;
+      if (logicalPos.y + BALL_SIZE > bounds.y + bounds.height)
         visibleY = bounds.y + bounds.height - BALL_SIZE;
-      }
     }
 
     // 计算四个方向展开后的窗口位置
@@ -358,11 +337,10 @@ export default function FloatingApp() {
       vertical: "up" | "down";
       x: number;
       y: number;
-      overflow: number; // 超出屏幕的像素数
+      overflow: number;
     };
 
     const candidates: CandidatePlacement[] = [];
-
     const combinations: Array<{ h: "left" | "right"; v: "up" | "down" }> = [
       { h: "right", v: "down" },
       { h: "right", v: "up" },
@@ -371,26 +349,9 @@ export default function FloatingApp() {
     ];
 
     for (const { h, v } of combinations) {
-      let x: number;
-      let y: number;
+      let x = h === "right" ? visibleX : visibleX - MENU_WIDTH - MENU_GAP;
+      let y = v === "down" ? visibleY : visibleY - MENU_HEIGHT - MENU_GAP;
 
-      if (h === "right") {
-        // 菜单在右边，宠物在左边角落
-        x = visibleX;
-      } else {
-        // 菜单在左边，宠物在右边角落
-        x = visibleX - MENU_WIDTH - MENU_GAP;
-      }
-
-      if (v === "down") {
-        // 菜单在下边，宠物在上边角落
-        y = visibleY;
-      } else {
-        // 菜单在上边，宠物在下边角落
-        y = visibleY - MENU_HEIGHT - MENU_GAP;
-      }
-
-      // 计算超出屏幕的像素数
       let overflow = 0;
       if (bounds) {
         if (x < bounds.x) overflow += bounds.x - x;
@@ -400,96 +361,55 @@ export default function FloatingApp() {
         if (y + height > bounds.y + bounds.height)
           overflow += y + height - (bounds.y + bounds.height);
       }
-
       candidates.push({ horizontal: h, vertical: v, x, y, overflow });
     }
 
     // 选择超出最少的方向，优先选择向下向右（更自然的展开方向）
     candidates.sort((a, b) => {
-      if (a.overflow !== b.overflow) {
-        return a.overflow - b.overflow;
-      }
-      // 优先级：右下 > 右上 > 左下 > 左上
+      if (a.overflow !== b.overflow) return a.overflow - b.overflow;
       const order = (c: CandidatePlacement) => {
         let score = 0;
         if (c.horizontal === "right") score += 2;
         if (c.vertical === "down") score += 1;
-        return -score; // 负数使得高优先级排在前面
+        return -score;
       };
       return order(a) - order(b);
     });
 
     const best = candidates[0];
-    console.log(
-      "[FloatingApp] Candidates:",
-      candidates.map(
-        (c) => `${c.horizontal}-${c.vertical}: overflow=${c.overflow}`,
-      ),
-    );
-    console.log(
-      "[FloatingApp] Best placement:",
-      best.horizontal,
-      best.vertical,
-    );
 
     setMenuPlacement({ horizontal: best.horizontal, vertical: best.vertical });
 
-    // 使用最佳位置
-    let nextX = best.x;
-    let nextY = best.y;
+    let nextX = Number.isFinite(best.x) ? best.x : visibleX;
+    let nextY = Number.isFinite(best.y) ? best.y : visibleY;
 
-    // 确保 position 是有效的数字
-    if (!Number.isFinite(nextX)) nextX = visibleX;
-    if (!Number.isFinite(nextY)) nextY = visibleY;
-
-    // Clamp to screen bounds - 确保窗口完全在屏幕内
     if (bounds) {
       nextX = clamp(nextX, bounds.x, bounds.x + bounds.width - width);
       nextY = clamp(nextY, bounds.y, bounds.y + bounds.height - height);
     }
 
-    console.log("[FloatingApp] Calculated position:", nextX, nextY);
-
-    // 先调整窗口大小和位置
     try {
-      console.log("[FloatingApp] Setting window size to:", width, height);
       await appWindow.setSize(new LogicalSize(width, height));
-
-      // 验证窗口大小是否改变
-      const newSize = await appWindow.outerSize();
-      console.log(
-        "[FloatingApp] Window size after setSize:",
-        newSize.width,
-        newSize.height,
-      );
-
-      console.log("[FloatingApp] Setting window position to:", nextX, nextY);
       await appWindow.setPosition(new LogicalPosition(nextX, nextY));
-
-      // 然后设置 expanded，让 React 开始渲染菜单
-      console.log("[FloatingApp] About to setExpanded(true)");
-      setExpandedWithTrace(true);
-
-      console.log("[FloatingApp] expandMenu complete");
+      setExpanded(true);
     } catch (e) {
-      console.error("[FloatingApp] Error resizing/positioning window:", e);
+      console.error("[FloatingApp] Error in expandMenu:", e);
     }
   }, [appWindow]);
 
   const collapseMenu = useCallback(async () => {
     if (!appWindow) {
-      setExpandedWithTrace(false);
+      setExpanded(false);
       return;
     }
 
-    setExpandedWithTrace(false);
+    setExpanded(false);
     await appWindow.setSize(new LogicalSize(BALL_SIZE, BALL_SIZE));
 
     const anchor = windowAnchorRef.current;
     if (anchor) {
       await appWindow.setPosition(new LogicalPosition(anchor.x, anchor.y));
     }
-    // 不再调用 snapToEdge，直接恢复到展开前的位置即可
   }, [appWindow]);
 
   const toggleMenu = useCallback(async () => {
@@ -702,6 +622,12 @@ export default function FloatingApp() {
       }
     }
 
+    // ✅ 先收起菜单再隐藏，记录位置以便恢复
+    const bounds = await getMonitorBounds();
+    const s = bounds?.scaleFactor ?? 1;
+    const pos = await appWindow.outerPosition();
+    windowAnchorRef.current = { x: pos.x / s, y: pos.y / s };
+
     await collapseMenu();
     await appWindow.hide();
   };
@@ -709,21 +635,24 @@ export default function FloatingApp() {
   const convertToWindow = async () => {
     if (!appWindow) return;
 
+    const bounds = await getMonitorBounds();
+    const s = bounds?.scaleFactor ?? 1;
     const position = await appWindow.outerPosition();
-    const mainWindow = await Window.getByLabel("main");
 
+    const mainWindow = await Window.getByLabel("main");
     if (mainWindow) {
+      // 使用逻辑坐标
       await mainWindow.setPosition(
         new LogicalPosition(
-          Math.max(0, position.x - 350),
-          Math.max(0, position.y - 150),
+          Math.max(0, position.x / s - 350),
+          Math.max(0, position.y / s - 150),
         ),
       );
       await mainWindow.show();
       await mainWindow.setFocus();
     }
 
-    setExpandedWithTrace(false);
+    setExpanded(false);
     await appWindow.setSize(new LogicalSize(BALL_SIZE, BALL_SIZE));
     await appWindow.hide();
   };
@@ -749,100 +678,54 @@ export default function FloatingApp() {
   };
 
   // ========== Effects ==========
+  const EDGE_PEEK = 32;
 
-  // 组件首次挂载日志
-  useEffect(() => {
-    console.log("[FloatingApp] Component mounted, initial expanded:", expanded);
-  }, []);
-
-  useEffect(() => {
-    if (!appWindow) return;
-    void appWindow.setAlwaysOnTop(true);
-    void appWindow.setSkipTaskbar(true);
-  }, [appWindow]);
-
-  // 监听窗口显示事件，重置状态
   useEffect(() => {
     if (!appWindow) return;
 
     let unlisten: (() => void) | undefined;
 
     const setup = async () => {
-      // 监听托盘发送的重置事件
-      unlisten = await appWindow.listen("tray:reset-pet", () => {
-        console.log(
-          "[FloatingApp] Received tray:reset-pet event, resetting state",
-        );
+      unlisten = await appWindow.listen("tray:reset-pet", async () => {
+        console.log("[FloatingApp] Received tray:reset-pet, resetting");
         setExpanded(false);
         setPetState("idle");
         setContextMenuVisible(false);
+
+        // ✅ 确保窗口可见并恢复到合理大小
+        await appWindow.setSize(new LogicalSize(BALL_SIZE, BALL_SIZE));
+        await appWindow.show();
+        await appWindow.setFocus();
+
+        // ✅ 确保位置在屏幕内
+        const bounds = await getMonitorBounds();
+        if (bounds) {
+          const s = bounds.scaleFactor;
+          const pos = await appWindow.outerPosition();
+          const logX = pos.x / s;
+          const logY = pos.y / s;
+
+          // 如果窗口在屏幕外，移到屏幕中央偏右下
+          const isOffScreen =
+            logX < bounds.x - BALL_SIZE ||
+            logX > bounds.x + bounds.width ||
+            logY < bounds.y - BALL_SIZE ||
+            logY > bounds.y + bounds.height;
+
+          if (isOffScreen) {
+            await appWindow.setPosition(
+              new LogicalPosition(
+                bounds.x + bounds.width - BALL_SIZE - 50,
+                bounds.y + bounds.height / 2,
+              ),
+            );
+          }
+        }
       });
     };
 
     void setup();
-
-    return () => {
-      unlisten?.();
-    };
-  }, [appWindow]);
-
-  useEffect(() => {
-    if (!expanded && !contextMenuVisible) return;
-
-    let cleanup: (() => void) | null = null;
-    const initTimer = setTimeout(() => {
-      const handlePointer = (event: PointerEvent) => {
-        const target = event.target as HTMLElement;
-        if (ballRef.current?.contains(target)) return;
-        if (expanded && menuRef.current?.contains(target)) return;
-        if (contextMenuVisible && contextMenuRef.current?.contains(target))
-          return;
-
-        if (expanded) void collapseMenu();
-        if (contextMenuVisible) setContextMenuVisible(false);
-      };
-
-      window.addEventListener("pointerdown", handlePointer);
-      cleanup = () => window.removeEventListener("pointerdown", handlePointer);
-    }, 100);
-
-    return () => {
-      clearTimeout(initTimer);
-      cleanup?.();
-    };
-  }, [expanded, contextMenuVisible, collapseMenu]);
-
-  useEffect(() => {
-    if (petState !== "idle" || expanded) return;
-
-    const timer = setInterval(() => {
-      if (
-        petState === "idle" &&
-        !expanded &&
-        !showBubble &&
-        Math.random() < 0.5
-      ) {
-        showBubbleMessage(getRandomMessage(petState));
-      }
-    }, 10000);
-
-    return () => clearInterval(timer);
-  }, [petState, expanded, showBubble, showBubbleMessage]);
-
-  useEffect(() => {
-    if (!appWindow) return;
-    const updateBubblePosition = async () => {
-      try {
-        const position = await appWindow.outerPosition();
-        const bounds = await getMonitorBounds();
-        if (bounds) {
-          setBubbleOnLeft(position.x > bounds.x + bounds.width - 200);
-        }
-      } catch {
-        // 忽略
-      }
-    };
-    void updateBubblePosition();
+    return () => unlisten?.();
   }, [appWindow]);
 
   // ========== 渲染 ==========

@@ -119,17 +119,74 @@ pub fn run() {
                         let ns_window = floating.ns_window().unwrap();
                         unsafe {
                             use objc2::rc::Retained;
-                            use objc2_app_kit::{NSColor, NSWindow, NSWindowStyleMask};
+                            use objc2_app_kit::{
+                                NSColor, NSFloatingWindowLevel, NSWindow, NSWindowStyleMask,
+                                NSWindowCollectionBehavior,
+                            };
 
                             let ns_window: Retained<NSWindow> =
                                 Retained::retain(ns_window as *mut NSWindow).unwrap();
 
+                            // 基础透明设置
                             ns_window.setOpaque(false);
                             ns_window.setBackgroundColor(Some(&NSColor::clearColor()));
                             ns_window.setAcceptsMouseMovedEvents(true);
                             ns_window.setIgnoresMouseEvents(false);
                             ns_window.setStyleMask(NSWindowStyleMask::Borderless);
                             ns_window.setMovableByWindowBackground(true);
+
+                            // 设置窗口层级为悬浮级别 (在其他窗口之上)
+                            ns_window.setLevel(NSFloatingWindowLevel);
+
+                            // 设置窗口行为: 在所有工作空间显示 + 支持全屏应用
+                            ns_window.setCollectionBehavior(
+                                NSWindowCollectionBehavior::CanJoinAllSpaces
+                                    | NSWindowCollectionBehavior::Stationary
+                                    | NSWindowCollectionBehavior::FullScreenAuxiliary,
+                            );
+                        }
+                    }
+                }
+
+                // Windows 平台悬浮球支持
+                #[cfg(target_os = "windows")]
+                {
+                    if let Some(floating) = &floating_window {
+                        let _ = floating.set_decorations(false);
+
+                        use tauri::WebviewWindow;
+                        // 获取 HWND
+                        if let Ok(hwnd) = floating.hwnd() {
+                            unsafe {
+                                use winapi::shared::windef::HWND;
+                                use winapi::um::winuser::*;
+
+                                let hwnd = hwnd as HWND;
+
+                                // 设置窗口置顶
+                                SetWindowPos(
+                                    hwnd,
+                                    HWND_TOPMOST,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW,
+                                );
+
+                                // 获取当前扩展样式
+                                let ex_style = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+
+                                // 设置扩展样式: 分层窗口 + 工具窗口(隐藏任务栏)
+                                SetWindowLongPtrW(
+                                    hwnd,
+                                    GWL_EXSTYLE,
+                                    ex_style | WS_EX_LAYERED | WS_EX_TOOLWINDOW,
+                                );
+
+                                // 设置透明度 (255 = 完全不透明)
+                                SetLayeredWindowAttributes(hwnd, 0, 255, LWA_ALPHA);
+                            }
                         }
                     }
                 }

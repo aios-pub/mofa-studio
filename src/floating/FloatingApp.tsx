@@ -52,7 +52,11 @@ const BALL_SIZE = 64;
 const MENU_WIDTH = 240;
 const MENU_HEIGHT = 380;
 const MENU_GAP = 12;
-const EDGE_PEEK = 18;
+const EDGE_PEEK = 32;
+
+// ✅ 闲置气泡的触发间隔范围（毫秒）
+const IDLE_BUBBLE_MIN_INTERVAL = 15000;
+const IDLE_BUBBLE_MAX_INTERVAL = 45000;
 
 const BUBBLE_MESSAGES: Record<PetState, string[]> = {
   idle: [
@@ -120,7 +124,6 @@ const getRandomMessage = (state: PetState): string => {
 export default function FloatingApp() {
   const [expanded, setExpanded] = useState(false);
 
-  // 包装 setExpanded 以追踪调用来源
   const setExpandedWithTrace = useCallback(
     (value: boolean | ((prev: boolean) => boolean)) => {
       const actualValue = typeof value === "function" ? value(expanded) : value;
@@ -131,10 +134,10 @@ export default function FloatingApp() {
     [expanded],
   );
 
-  // 追踪 expanded 状态变化
   useEffect(() => {
     console.log("[FloatingApp] expanded state changed to:", expanded);
   }, [expanded]);
+
   const [menuPlacement, setMenuPlacement] = useState<MenuPlacement>({
     horizontal: "left",
     vertical: "up",
@@ -165,17 +168,42 @@ export default function FloatingApp() {
   const particleIdRef = useRef(0);
   const bubbleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // ✅ 新增：闲置气泡定时器
+  const idleBubbleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ========== 辅助函数 ==========
 
-  const showBubbleMessage = useCallback((message: string, duration = 4000) => {
-    if (bubbleTimeoutRef.current) {
-      clearTimeout(bubbleTimeoutRef.current);
+  // ✅ 新增：根据宠物在屏幕位置更新气泡方向
+  const updateBubblePlacement = useCallback(async () => {
+    if (!appWindow) return;
+    try {
+      const bounds = await getMonitorBounds();
+      if (!bounds) return;
+      const s = bounds.scaleFactor;
+      const pos = await appWindow.outerPosition();
+      const logX = pos.x / s;
+      setBubbleOnLeft(logX > bounds.x + bounds.width / 2);
+    } catch {
+      // 忽略错误
     }
-    setBubbleText(message);
-    setShowBubble(true);
-    bubbleTimeoutRef.current = setTimeout(() => setShowBubble(false), duration);
-  }, []);
+  }, [appWindow]);
+
+  const showBubbleMessage = useCallback(
+    (message: string, duration = 4000) => {
+      if (bubbleTimeoutRef.current) {
+        clearTimeout(bubbleTimeoutRef.current);
+      }
+      // ✅ 显示气泡前更新方向
+      void updateBubblePlacement();
+      setBubbleText(message);
+      setShowBubble(true);
+      bubbleTimeoutRef.current = setTimeout(
+        () => setShowBubble(false),
+        duration,
+      );
+    },
+    [updateBubblePlacement],
+  );
 
   const spawnParticles = useCallback((emoji: string, count: number) => {
     const newParticles: Particle[] = [];
@@ -204,6 +232,42 @@ export default function FloatingApp() {
     }
   }, []);
 
+  // ========== ✅ 闲置气泡定时器 ==========
+
+  useEffect(() => {
+    // 清理旧定时器
+    if (idleBubbleTimerRef.current) {
+      clearTimeout(idleBubbleTimerRef.current);
+      idleBubbleTimerRef.current = null;
+    }
+
+    // 仅在未展开菜单、且处于 idle 状态时，定期弹出闲置气泡
+    if (expanded || petState !== "idle") return;
+
+    const scheduleNextBubble = () => {
+      const delay =
+        IDLE_BUBBLE_MIN_INTERVAL +
+        Math.random() * (IDLE_BUBBLE_MAX_INTERVAL - IDLE_BUBBLE_MIN_INTERVAL);
+
+      idleBubbleTimerRef.current = setTimeout(() => {
+        // ✅ 使用 getRandomMessage 触发闲置气泡
+        const message = getRandomMessage("idle");
+        showBubbleMessage(message, 4000);
+        // 递归调度下一次
+        scheduleNextBubble();
+      }, delay);
+    };
+
+    scheduleNextBubble();
+
+    return () => {
+      if (idleBubbleTimerRef.current) {
+        clearTimeout(idleBubbleTimerRef.current);
+        idleBubbleTimerRef.current = null;
+      }
+    };
+  }, [expanded, petState, showBubbleMessage]);
+
   // ========== 窗口操作 ==========
 
   const snapToEdge = useCallback(async () => {
@@ -217,20 +281,6 @@ export default function FloatingApp() {
 
     const position = { x: physPos.x / s, y: physPos.y / s };
     const size = { width: physSize.width / s, height: physSize.height / s };
-
-    console.log(
-      "[FloatingApp] snapToEdge - position:",
-      position.x,
-      position.y,
-      "size:",
-      size.width,
-      size.height,
-      "bounds:",
-      bounds.x,
-      bounds.y,
-      bounds.width,
-      bounds.height,
-    );
 
     const leftDistance = Math.abs(position.x - bounds.x);
     const rightDistance = Math.abs(
@@ -261,7 +311,6 @@ export default function FloatingApp() {
       targetY = bounds.y + bounds.height - EDGE_PEEK;
     }
 
-    // 边界检查：确保窗口至少有 EDGE_PEEK 像素在屏幕内
     const minX = bounds.x - size.width + EDGE_PEEK;
     const maxX = bounds.x + bounds.width - EDGE_PEEK;
     const minY = bounds.y - size.height + EDGE_PEEK;
@@ -269,8 +318,6 @@ export default function FloatingApp() {
 
     targetX = clamp(targetX, minX, maxX);
     targetY = clamp(targetY, minY, maxY);
-
-    console.log("[FloatingApp] snapToEdge - target:", targetX, targetY);
 
     setSnapping(true);
 
@@ -310,11 +357,10 @@ export default function FloatingApp() {
     const s = bounds?.scaleFactor ?? 1;
     const physPos = await appWindow.outerPosition();
 
-    // ✅ 存储逻辑坐标
     const logicalPos = { x: physPos.x / s, y: physPos.y / s };
     windowAnchorRef.current = logicalPos;
     const { width, height } = getMenuWindowSize();
-    // 计算宠物可见部分的位置
+
     let visibleX = logicalPos.x;
     let visibleY = logicalPos.y;
     if (bounds) {
@@ -325,12 +371,6 @@ export default function FloatingApp() {
       if (logicalPos.y + BALL_SIZE > bounds.y + bounds.height)
         visibleY = bounds.y + bounds.height - BALL_SIZE;
     }
-
-    // 计算四个方向展开后的窗口位置
-    // horizontal: "right" 表示菜单在宠物右边（宠物在窗口左上角）
-    // horizontal: "left" 表示菜单在宠物左边（宠物在窗口右上角）
-    // vertical: "down" 表示菜单在宠物下边（宠物在窗口左上角）
-    // vertical: "up" 表示菜单在宠物上边（宠物在窗口左下角）
 
     type CandidatePlacement = {
       horizontal: "left" | "right";
@@ -364,7 +404,6 @@ export default function FloatingApp() {
       candidates.push({ horizontal: h, vertical: v, x, y, overflow });
     }
 
-    // 选择超出最少的方向，优先选择向下向右（更自然的展开方向）
     candidates.sort((a, b) => {
       if (a.overflow !== b.overflow) return a.overflow - b.overflow;
       const order = (c: CandidatePlacement) => {
@@ -413,7 +452,6 @@ export default function FloatingApp() {
   }, [appWindow]);
 
   const toggleMenu = useCallback(async () => {
-    console.log("[FloatingApp] toggleMenu called, current expanded:", expanded);
     if (expanded) {
       await collapseMenu();
     } else {
@@ -429,8 +467,8 @@ export default function FloatingApp() {
     setIsSpinning(true);
     spawnParticles("✨", 6);
     spawnParticles("💖", 4);
-    showBubbleMessage("太开心啦! 🎉", 2500);
-    // 旋转动画持续 0.6s，动画结束后移除旋转状态
+    // ✅ 使用 getRandomMessage 而非硬编码
+    showBubbleMessage(getRandomMessage("happy"), 2500);
     setTimeout(() => setIsSpinning(false), 600);
     stateTimeoutRef.current = setTimeout(() => setPetState("idle"), 2500);
   }, [spawnParticles, showBubbleMessage, clearStateTimeout]);
@@ -438,7 +476,8 @@ export default function FloatingApp() {
   const handleSleep = useCallback(() => {
     clearStateTimeout();
     setPetState("sleepy");
-    showBubbleMessage("晚安… 💤", 4000);
+    // ✅ 使用 getRandomMessage
+    showBubbleMessage(getRandomMessage("sleepy"), 4000);
     stateTimeoutRef.current = setTimeout(() => {
       setPetState("idle");
       setShowBubble(false);
@@ -450,39 +489,26 @@ export default function FloatingApp() {
     spawnParticles("🍎", 4);
     spawnParticles("💕", 3);
     setPetState("happy");
-    showBubbleMessage("好好吃! 😋", 2500);
+    // ✅ 使用 getRandomMessage
+    showBubbleMessage(getRandomMessage("happy"), 2500);
     stateTimeoutRef.current = setTimeout(() => setPetState("idle"), 2500);
   }, [spawnParticles, showBubbleMessage, clearStateTimeout]);
 
   // ========== 事件处理 ==========
 
   const handlePointerDown = (event: ReactPointerEvent) => {
-    console.log(
-      "[FloatingApp] handlePointerDown triggered, button:",
-      event.button,
-      "expanded:",
-      expanded,
-    );
     if (!appWindow || expanded || event.button !== 0) return;
 
     isDraggingRef.current = false;
     isMouseDownRef.current = true;
     dragStartRef.current = { x: event.clientX, y: event.clientY };
-    console.log(
-      "[FloatingApp] handlePointerDown: set isDragging to false, isMouseDown to true",
-    );
 
-    // 不使用 setPointerCapture，避免干扰点击事件
     dragTimerRef.current = setTimeout(() => {
-      console.log(
-        "[FloatingApp] dragTimer fired, isMouseDown:",
-        isMouseDownRef.current,
-        "isDragging:",
-        isDraggingRef.current,
-      );
       if (isMouseDownRef.current && !isDraggingRef.current) {
         isDraggingRef.current = true;
         setPetState("dragging");
+        // ✅ 拖拽时显示 dragging 消息
+        showBubbleMessage(getRandomMessage("dragging"), 3000);
         void appWindow.startDragging();
       }
     }, 300);
@@ -499,28 +525,19 @@ export default function FloatingApp() {
     const distance = Math.sqrt(dx * dx + dy * dy);
 
     if (distance > 15 && !isDraggingRef.current) {
-      console.log(
-        "[FloatingApp] handlePointerMove: distance >",
-        15,
-        ", setting isDragging to true",
-      );
       if (dragTimerRef.current) {
         clearTimeout(dragTimerRef.current);
         dragTimerRef.current = null;
       }
       isDraggingRef.current = true;
       setPetState("dragging");
+      // ✅ 拖拽时显示 dragging 消息
+      showBubbleMessage(getRandomMessage("dragging"), 3000);
       void appWindow.startDragging();
     }
   };
 
   const handlePointerUp = async () => {
-    console.log(
-      "[FloatingApp] handlePointerUp triggered, isDragging:",
-      isDraggingRef.current,
-      "isMouseDown:",
-      isMouseDownRef.current,
-    );
     if (!appWindow || expanded) return;
 
     if (dragTimerRef.current) {
@@ -532,56 +549,18 @@ export default function FloatingApp() {
     isMouseDownRef.current = false;
     dragStartRef.current = null;
     isDraggingRef.current = false;
-    console.log(
-      "[FloatingApp] handlePointerUp: reset isDragging to false, wasDragging:",
-      wasDragging,
-    );
 
     if (wasDragging) {
       setPetState("idle");
+      setShowBubble(false);
       await snapToEdge();
     }
-    // 不在这里 toggle，让 onClick 处理
   };
 
-  // 使用 onClick 作为主要的点击处理方式
   const handleClick = async () => {
-    console.log(
-      "[FloatingApp] handleClick triggered, expanded:",
-      expanded,
-      "isDragging:",
-      isDraggingRef.current,
-    );
-    console.log(
-      "[FloatingApp] handleClick - appWindow:",
-      !!appWindow,
-      "menuRef:",
-      !!menuRef.current,
-    );
-    if (expanded) {
-      console.log(
-        "[FloatingApp] handleClick: expanded is true, returning early",
-      );
-      console.log("[FloatingApp] Current window size should be checked here");
-      if (appWindow) {
-        const size = await appWindow.outerSize();
-        console.log(
-          "[FloatingApp] Actual window size:",
-          size.width,
-          size.height,
-        );
-      }
-      return;
-    }
-    if (isDraggingRef.current) {
-      console.log(
-        "[FloatingApp] handleClick: isDragging is true, returning early",
-      );
-      return;
-    }
-    console.log("[FloatingApp] Calling toggleMenu...");
+    if (expanded) return;
+    if (isDraggingRef.current) return;
     await toggleMenu();
-    console.log("[FloatingApp] toggleMenu done, expanded is now:", expanded);
   };
 
   const handleDoubleClick = async () => {
@@ -622,7 +601,6 @@ export default function FloatingApp() {
       }
     }
 
-    // ✅ 先收起菜单再隐藏，记录位置以便恢复
     const bounds = await getMonitorBounds();
     const s = bounds?.scaleFactor ?? 1;
     const pos = await appWindow.outerPosition();
@@ -641,7 +619,6 @@ export default function FloatingApp() {
 
     const mainWindow = await Window.getByLabel("main");
     if (mainWindow) {
-      // 使用逻辑坐标
       await mainWindow.setPosition(
         new LogicalPosition(
           Math.max(0, position.x / s - 350),
@@ -678,7 +655,6 @@ export default function FloatingApp() {
   };
 
   // ========== Effects ==========
-  const EDGE_PEEK = 32;
 
   useEffect(() => {
     if (!appWindow) return;
@@ -687,17 +663,14 @@ export default function FloatingApp() {
 
     const setup = async () => {
       unlisten = await appWindow.listen("tray:reset-pet", async () => {
-        console.log("[FloatingApp] Received tray:reset-pet, resetting");
         setExpanded(false);
         setPetState("idle");
         setContextMenuVisible(false);
 
-        // ✅ 确保窗口可见并恢复到合理大小
         await appWindow.setSize(new LogicalSize(BALL_SIZE, BALL_SIZE));
         await appWindow.show();
         await appWindow.setFocus();
 
-        // ✅ 确保位置在屏幕内
         const bounds = await getMonitorBounds();
         if (bounds) {
           const s = bounds.scaleFactor;
@@ -705,7 +678,6 @@ export default function FloatingApp() {
           const logX = pos.x / s;
           const logY = pos.y / s;
 
-          // 如果窗口在屏幕外，移到屏幕中央偏右下
           const isOffScreen =
             logX < bounds.x - BALL_SIZE ||
             logX > bounds.x + bounds.width ||
@@ -728,6 +700,24 @@ export default function FloatingApp() {
     return () => unlisten?.();
   }, [appWindow]);
 
+  // ✅ 新增：首次加载时显示欢迎气泡
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      showBubbleMessage("你好呀! 👋", 3000);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [showBubbleMessage]);
+
+  // ✅ 清理所有定时器
+  useEffect(() => {
+    return () => {
+      if (bubbleTimeoutRef.current) clearTimeout(bubbleTimeoutRef.current);
+      if (stateTimeoutRef.current) clearTimeout(stateTimeoutRef.current);
+      if (idleBubbleTimerRef.current) clearTimeout(idleBubbleTimerRef.current);
+      if (dragTimerRef.current) clearTimeout(dragTimerRef.current);
+    };
+  }, []);
+
   // ========== 渲染 ==========
 
   const ballStyle = expanded
@@ -743,56 +733,6 @@ export default function FloatingApp() {
     if (isSpinning) classes.push("is-spinning");
     return classes.join(" ");
   };
-
-  console.log(
-    "[FloatingApp] Rendering, expanded:",
-    expanded,
-    "menuPlacement:",
-    menuPlacement,
-  );
-
-  // 检查窗口实际大小
-  useEffect(() => {
-    console.log(
-      "[FloatingApp] useEffect for window size triggered, expanded:",
-      expanded,
-      "appWindow:",
-      !!appWindow,
-    );
-    if (expanded && appWindow) {
-      appWindow.outerSize().then((size) => {
-        console.log(
-          "[FloatingApp] Window size after expanded:",
-          size.width,
-          size.height,
-        );
-      });
-    }
-  }, [expanded, appWindow]);
-
-  // 检查菜单元素渲染
-  useEffect(() => {
-    console.log(
-      "[FloatingApp] useEffect for menu element triggered, expanded:",
-      expanded,
-      "menuRef:",
-      !!menuRef.current,
-    );
-    if (expanded && menuRef.current) {
-      const rect = menuRef.current.getBoundingClientRect();
-      console.log(
-        "[FloatingApp] Menu element rect:",
-        rect.width,
-        rect.height,
-        rect.left,
-        rect.top,
-      );
-      console.log(
-        "[FloatingApp] Menu computed style:",
-        window.getComputedStyle(menuRef.current).display,
-      );
-    }
-  }, [expanded]);
 
   return (
     <div className={`floating-root ${expanded ? "is-expanded" : ""}`}>

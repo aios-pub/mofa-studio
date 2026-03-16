@@ -269,42 +269,83 @@ export default function FloatingApp() {
     const { width, height } = getMenuWindowSize();
     console.log("[FloatingApp] Menu window size:", width, height, "bounds:", bounds);
 
-    let horizontal: MenuPlacement["horizontal"] = "left";
-    let vertical: MenuPlacement["vertical"] = "up";
+    // 计算宠物可见部分的位置（考虑吸附边缘的情况）
+    let visibleX = position.x;
+    let visibleY = position.y;
 
     if (bounds) {
-      const spaceLeft = position.x - bounds.x;
-      const spaceRight = bounds.x + bounds.width - (position.x + BALL_SIZE);
+      // 如果宠物在左边缘外，计算可见位置
+      if (position.x < bounds.x) {
+        visibleX = bounds.x;
+      }
+      // 如果宠物在右边缘外
+      if (position.x + BALL_SIZE > bounds.x + bounds.width) {
+        visibleX = bounds.x + bounds.width - BALL_SIZE;
+      }
+      // 如果宠物在上边缘外
+      if (position.y < bounds.y) {
+        visibleY = bounds.y;
+      }
+      // 如果宠物在下边缘外
+      if (position.y + BALL_SIZE > bounds.y + bounds.height) {
+        visibleY = bounds.y + bounds.height - BALL_SIZE;
+      }
+    }
+
+    // 计算宠物可见中心位置
+    const ballCenterX = visibleX + BALL_SIZE / 2;
+    const ballCenterY = visibleY + BALL_SIZE / 2;
+
+    let horizontal: MenuPlacement["horizontal"] = "right";
+    let vertical: MenuPlacement["vertical"] = "down";
+
+    if (bounds) {
+      // 根据宠物可见中心位置决定菜单展开方向
+      const spaceRight = bounds.x + bounds.width - ballCenterX;
+      const spaceLeft = ballCenterX - bounds.x;
       console.log("[FloatingApp] spaceLeft:", spaceLeft, "spaceRight:", spaceRight);
-      if (spaceLeft < MENU_WIDTH + MENU_GAP && spaceRight >= MENU_WIDTH + MENU_GAP) {
-        horizontal = "right";
+
+      // 优先向右展开，除非右边空间不够
+      if (spaceRight < MENU_WIDTH + MENU_GAP + BALL_SIZE / 2) {
+        horizontal = "left";
       }
 
-      const spaceTop = position.y - bounds.y;
-      const spaceBottom = bounds.y + bounds.height - (position.y + BALL_SIZE);
+      // 优先向下展开，除非下边空间不够
+      const spaceBottom = bounds.y + bounds.height - ballCenterY;
+      const spaceTop = ballCenterY - bounds.y;
       console.log("[FloatingApp] spaceTop:", spaceTop, "spaceBottom:", spaceBottom);
-      if (spaceTop < MENU_HEIGHT + MENU_GAP && spaceBottom >= MENU_HEIGHT + MENU_GAP) {
-        vertical = "down";
+
+      if (spaceBottom < MENU_HEIGHT + MENU_GAP + BALL_SIZE / 2) {
+        vertical = "up";
       }
     }
 
     console.log("[FloatingApp] Placement:", horizontal, vertical);
     setMenuPlacement({ horizontal, vertical });
 
-    // 计算新位置 - 确保在屏幕内
-    let nextX = position.x;
-    let nextY = position.y;
+    // 计算新位置 - 从可见位置展开，让宠物出现在窗口角落
+    let nextX: number;
+    let nextY: number;
 
-    if (horizontal === "left") {
-      nextX = position.x - (width - BALL_SIZE);
+    if (horizontal === "right") {
+      // 菜单在右边，宠物在左边角落
+      nextX = visibleX;
+    } else {
+      // 菜单在左边，宠物在右边角落
+      nextX = visibleX - MENU_WIDTH - MENU_GAP;
     }
-    if (vertical === "up") {
-      nextY = position.y - (height - BALL_SIZE);
+
+    if (vertical === "down") {
+      // 菜单在下边，宠物在上边角落
+      nextY = visibleY;
+    } else {
+      // 菜单在上边，宠物在下边角落
+      nextY = visibleY - MENU_HEIGHT - MENU_GAP;
     }
 
     // 确保 position 是有效的数字
-    if (!Number.isFinite(nextX)) nextX = position.x;
-    if (!Number.isFinite(nextY)) nextY = position.y;
+    if (!Number.isFinite(nextX)) nextX = visibleX;
+    if (!Number.isFinite(nextY)) nextY = visibleY;
 
     // Clamp to screen bounds
     if (bounds) {
@@ -314,11 +355,7 @@ export default function FloatingApp() {
 
     console.log("[FloatingApp] Calculated position:", nextX, nextY);
 
-    // 先设置 expanded，让 React 开始渲染菜单
-    console.log("[FloatingApp] About to setExpanded(true)");
-    setExpandedWithTrace(true);
-
-    // 然后调整窗口大小和位置
+    // 先调整窗口大小和位置
     try {
       console.log("[FloatingApp] Setting window size to:", width, height);
       await appWindow.setSize(new LogicalSize(width, height));
@@ -329,6 +366,10 @@ export default function FloatingApp() {
 
       console.log("[FloatingApp] Setting window position to:", nextX, nextY);
       await appWindow.setPosition(new LogicalPosition(nextX, nextY));
+
+      // 然后设置 expanded，让 React 开始渲染菜单
+      console.log("[FloatingApp] About to setExpanded(true)");
+      setExpandedWithTrace(true);
 
       console.log("[FloatingApp] expandMenu complete");
     } catch (e) {
@@ -577,6 +618,29 @@ export default function FloatingApp() {
     void appWindow.setSkipTaskbar(true);
   }, [appWindow]);
 
+  // 监听窗口显示事件，重置状态
+  useEffect(() => {
+    if (!appWindow) return;
+
+    let unlisten: (() => void) | undefined;
+
+    const setup = async () => {
+      // 监听托盘发送的重置事件
+      unlisten = await appWindow.listen("tray:reset-pet", () => {
+        console.log("[FloatingApp] Received tray:reset-pet event, resetting state");
+        setExpanded(false);
+        setPetState("idle");
+        setContextMenuVisible(false);
+      });
+    };
+
+    void setup();
+
+    return () => {
+      unlisten?.();
+    };
+  }, [appWindow]);
+
   useEffect(() => {
     if (!expanded && !contextMenuVisible) return;
 
@@ -729,13 +793,13 @@ export default function FloatingApp() {
           </div>
 
           <div className="floating-menu-items">
-            <button className="floating-menu-item floating-menu-item--pet-action" onClick={() => { void collapseMenu(); setTimeout(() => handleFeed(), 100); }}>
+            <button className="floating-menu-item floating-menu-item--pet-action" onClick={() => handleFeed()}>
               <span>🍎</span><span>喂食</span>
             </button>
-            <button className="floating-menu-item floating-menu-item--pet-action" onClick={() => { void collapseMenu(); setTimeout(() => handlePlay(), 100); }}>
+            <button className="floating-menu-item floating-menu-item--pet-action" onClick={() => handlePlay()}>
               <span>🎾</span><span>玩耍</span>
             </button>
-            <button className="floating-menu-item floating-menu-item--pet-action" onClick={() => { void collapseMenu(); setTimeout(() => handleSleep(), 100); }}>
+            <button className="floating-menu-item floating-menu-item--pet-action" onClick={() => handleSleep()}>
               <span>💤</span><span>睡觉</span>
             </button>
 

@@ -177,15 +177,13 @@ pub fn run() {
                                 // 获取当前扩展样式
                                 let ex_style = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
 
-                                // 设置扩展样式: 分层窗口 + 工具窗口(隐藏任务栏)
+                                // 只添加工具窗口样式(隐藏任务栏)，不添加 WS_EX_LAYERED
+                                // Tauri 的 transparent: true 已经处理了透明效果
                                 SetWindowLongPtrW(
                                     hwnd,
                                     GWL_EXSTYLE,
-                                    ex_style | (WS_EX_LAYERED as isize) | (WS_EX_TOOLWINDOW as isize),
+                                    ex_style | (WS_EX_TOOLWINDOW as isize),
                                 );
-
-                                // 设置透明度 (255 = 完全不透明)
-                                SetLayeredWindowAttributes(hwnd, 0, 255, LWA_ALPHA);
                             }
                         }
                     }

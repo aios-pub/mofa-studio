@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import type { CSSProperties, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from "react";
+import type {
+  CSSProperties,
+  MouseEvent as ReactMouseEvent,
+  PointerEvent as ReactPointerEvent,
+} from "react";
 import {
   getCurrentWindow,
   Window,
@@ -67,14 +71,18 @@ const BUBBLE_MESSAGES: Record<PetState, string[]> = {
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
 
-const getMonitorBounds = async (): Promise<MonitorBounds | null> => {
+const getMonitorBounds = async (): Promise<
+  (MonitorBounds & { scaleFactor: number }) | null
+> => {
   const monitor = (await currentMonitor()) ?? (await primaryMonitor());
   if (!monitor) return null;
+  const s = monitor.scaleFactor;
   return {
-    x: monitor.position.x,
-    y: monitor.position.y,
-    width: monitor.size.width,
-    height: monitor.size.height,
+    x: monitor.position.x / s,
+    y: monitor.position.y / s,
+    width: monitor.size.width / s,
+    height: monitor.size.height / s,
+    scaleFactor: s,
   };
 };
 
@@ -113,12 +121,15 @@ export default function FloatingApp() {
   const [expanded, setExpanded] = useState(false);
 
   // 包装 setExpanded 以追踪调用来源
-  const setExpandedWithTrace = useCallback((value: boolean | ((prev: boolean) => boolean)) => {
-    const actualValue = typeof value === 'function' ? value(expanded) : value;
-    console.log(`[FloatingApp] setExpanded called with: ${actualValue}`);
-    console.trace("[FloatingApp] setExpanded call stack");
-    setExpanded(value);
-  }, [expanded]);
+  const setExpandedWithTrace = useCallback(
+    (value: boolean | ((prev: boolean) => boolean)) => {
+      const actualValue = typeof value === "function" ? value(expanded) : value;
+      console.log(`[FloatingApp] setExpanded called with: ${actualValue}`);
+      console.trace("[FloatingApp] setExpanded call stack");
+      setExpanded(value);
+    },
+    [expanded],
+  );
 
   // 追踪 expanded 状态变化
   useEffect(() => {
@@ -181,7 +192,7 @@ export default function FloatingApp() {
     setParticles((prev) => [...prev, ...newParticles]);
     setTimeout(() => {
       setParticles((prev) =>
-        prev.filter((p) => !newParticles.find((np) => np.id === p.id))
+        prev.filter((p) => !newParticles.find((np) => np.id === p.id)),
       );
     }, 1000);
   }, []);
@@ -200,16 +211,42 @@ export default function FloatingApp() {
 
     const bounds = await getMonitorBounds();
     if (!bounds) return;
+    const physPos = await appWindow.outerPosition();
+    const physSize = await appWindow.outerSize();
+    const s = bounds?.scaleFactor ?? 1;
 
-    const position = await appWindow.outerPosition();
-    const size = await appWindow.outerSize();
+    const position = { x: physPos.x / s, y: physPos.y / s };
+    const size = { width: physSize.width / s, height: physSize.height / s };
+
+    console.log(
+      "[FloatingApp] snapToEdge - position:",
+      position.x,
+      position.y,
+      "size:",
+      size.width,
+      size.height,
+      "bounds:",
+      bounds.x,
+      bounds.y,
+      bounds.width,
+      bounds.height,
+    );
 
     const leftDistance = Math.abs(position.x - bounds.x);
-    const rightDistance = Math.abs(bounds.x + bounds.width - (position.x + size.width));
+    const rightDistance = Math.abs(
+      bounds.x + bounds.width - (position.x + size.width),
+    );
     const topDistance = Math.abs(position.y - bounds.y);
-    const bottomDistance = Math.abs(bounds.y + bounds.height - (position.y + size.height));
+    const bottomDistance = Math.abs(
+      bounds.y + bounds.height - (position.y + size.height),
+    );
 
-    const minDistance = Math.min(leftDistance, rightDistance, topDistance, bottomDistance);
+    const minDistance = Math.min(
+      leftDistance,
+      rightDistance,
+      topDistance,
+      bottomDistance,
+    );
 
     let targetX = position.x;
     let targetY = position.y;
@@ -223,6 +260,17 @@ export default function FloatingApp() {
     } else {
       targetY = bounds.y + bounds.height - EDGE_PEEK;
     }
+
+    // 边界检查：确保窗口至少有 EDGE_PEEK 像素在屏幕内
+    const minX = bounds.x - size.width + EDGE_PEEK;
+    const maxX = bounds.x + bounds.width - EDGE_PEEK;
+    const minY = bounds.y - size.height + EDGE_PEEK;
+    const maxY = bounds.y + bounds.height - EDGE_PEEK;
+
+    targetX = clamp(targetX, minX, maxX);
+    targetY = clamp(targetY, minY, maxY);
+
+    console.log("[FloatingApp] snapToEdge - target:", targetX, targetY);
 
     setSnapping(true);
 
@@ -268,7 +316,13 @@ export default function FloatingApp() {
 
     const bounds = await getMonitorBounds();
     const { width, height } = getMenuWindowSize();
-    console.log("[FloatingApp] Menu window size:", width, height, "bounds:", bounds);
+    console.log(
+      "[FloatingApp] Menu window size:",
+      width,
+      height,
+      "bounds:",
+      bounds,
+    );
 
     // 计算宠物可见部分的位置（考虑吸附边缘的情况）
     let visibleX = position.x;
@@ -340,9 +394,11 @@ export default function FloatingApp() {
       let overflow = 0;
       if (bounds) {
         if (x < bounds.x) overflow += bounds.x - x;
-        if (x + width > bounds.x + bounds.width) overflow += x + width - (bounds.x + bounds.width);
+        if (x + width > bounds.x + bounds.width)
+          overflow += x + width - (bounds.x + bounds.width);
         if (y < bounds.y) overflow += bounds.y - y;
-        if (y + height > bounds.y + bounds.height) overflow += y + height - (bounds.y + bounds.height);
+        if (y + height > bounds.y + bounds.height)
+          overflow += y + height - (bounds.y + bounds.height);
       }
 
       candidates.push({ horizontal: h, vertical: v, x, y, overflow });
@@ -364,8 +420,17 @@ export default function FloatingApp() {
     });
 
     const best = candidates[0];
-    console.log("[FloatingApp] Candidates:", candidates.map(c => `${c.horizontal}-${c.vertical}: overflow=${c.overflow}`));
-    console.log("[FloatingApp] Best placement:", best.horizontal, best.vertical);
+    console.log(
+      "[FloatingApp] Candidates:",
+      candidates.map(
+        (c) => `${c.horizontal}-${c.vertical}: overflow=${c.overflow}`,
+      ),
+    );
+    console.log(
+      "[FloatingApp] Best placement:",
+      best.horizontal,
+      best.vertical,
+    );
 
     setMenuPlacement({ horizontal: best.horizontal, vertical: best.vertical });
 
@@ -392,7 +457,11 @@ export default function FloatingApp() {
 
       // 验证窗口大小是否改变
       const newSize = await appWindow.outerSize();
-      console.log("[FloatingApp] Window size after setSize:", newSize.width, newSize.height);
+      console.log(
+        "[FloatingApp] Window size after setSize:",
+        newSize.width,
+        newSize.height,
+      );
 
       console.log("[FloatingApp] Setting window position to:", nextX, nextY);
       await appWindow.setPosition(new LogicalPosition(nextX, nextY));
@@ -468,17 +537,29 @@ export default function FloatingApp() {
   // ========== 事件处理 ==========
 
   const handlePointerDown = (event: ReactPointerEvent) => {
-    console.log("[FloatingApp] handlePointerDown triggered, button:", event.button, "expanded:", expanded);
+    console.log(
+      "[FloatingApp] handlePointerDown triggered, button:",
+      event.button,
+      "expanded:",
+      expanded,
+    );
     if (!appWindow || expanded || event.button !== 0) return;
 
     isDraggingRef.current = false;
     isMouseDownRef.current = true;
     dragStartRef.current = { x: event.clientX, y: event.clientY };
-    console.log("[FloatingApp] handlePointerDown: set isDragging to false, isMouseDown to true");
+    console.log(
+      "[FloatingApp] handlePointerDown: set isDragging to false, isMouseDown to true",
+    );
 
     // 不使用 setPointerCapture，避免干扰点击事件
     dragTimerRef.current = setTimeout(() => {
-      console.log("[FloatingApp] dragTimer fired, isMouseDown:", isMouseDownRef.current, "isDragging:", isDraggingRef.current);
+      console.log(
+        "[FloatingApp] dragTimer fired, isMouseDown:",
+        isMouseDownRef.current,
+        "isDragging:",
+        isDraggingRef.current,
+      );
       if (isMouseDownRef.current && !isDraggingRef.current) {
         isDraggingRef.current = true;
         setPetState("dragging");
@@ -498,7 +579,11 @@ export default function FloatingApp() {
     const distance = Math.sqrt(dx * dx + dy * dy);
 
     if (distance > 15 && !isDraggingRef.current) {
-      console.log("[FloatingApp] handlePointerMove: distance >", 15, ", setting isDragging to true");
+      console.log(
+        "[FloatingApp] handlePointerMove: distance >",
+        15,
+        ", setting isDragging to true",
+      );
       if (dragTimerRef.current) {
         clearTimeout(dragTimerRef.current);
         dragTimerRef.current = null;
@@ -510,7 +595,12 @@ export default function FloatingApp() {
   };
 
   const handlePointerUp = async () => {
-    console.log("[FloatingApp] handlePointerUp triggered, isDragging:", isDraggingRef.current, "isMouseDown:", isMouseDownRef.current);
+    console.log(
+      "[FloatingApp] handlePointerUp triggered, isDragging:",
+      isDraggingRef.current,
+      "isMouseDown:",
+      isMouseDownRef.current,
+    );
     if (!appWindow || expanded) return;
 
     if (dragTimerRef.current) {
@@ -522,7 +612,10 @@ export default function FloatingApp() {
     isMouseDownRef.current = false;
     dragStartRef.current = null;
     isDraggingRef.current = false;
-    console.log("[FloatingApp] handlePointerUp: reset isDragging to false, wasDragging:", wasDragging);
+    console.log(
+      "[FloatingApp] handlePointerUp: reset isDragging to false, wasDragging:",
+      wasDragging,
+    );
 
     if (wasDragging) {
       setPetState("idle");
@@ -533,19 +626,37 @@ export default function FloatingApp() {
 
   // 使用 onClick 作为主要的点击处理方式
   const handleClick = async () => {
-    console.log("[FloatingApp] handleClick triggered, expanded:", expanded, "isDragging:", isDraggingRef.current);
-    console.log("[FloatingApp] handleClick - appWindow:", !!appWindow, "menuRef:", !!menuRef.current);
+    console.log(
+      "[FloatingApp] handleClick triggered, expanded:",
+      expanded,
+      "isDragging:",
+      isDraggingRef.current,
+    );
+    console.log(
+      "[FloatingApp] handleClick - appWindow:",
+      !!appWindow,
+      "menuRef:",
+      !!menuRef.current,
+    );
     if (expanded) {
-      console.log("[FloatingApp] handleClick: expanded is true, returning early");
+      console.log(
+        "[FloatingApp] handleClick: expanded is true, returning early",
+      );
       console.log("[FloatingApp] Current window size should be checked here");
       if (appWindow) {
         const size = await appWindow.outerSize();
-        console.log("[FloatingApp] Actual window size:", size.width, size.height);
+        console.log(
+          "[FloatingApp] Actual window size:",
+          size.width,
+          size.height,
+        );
       }
       return;
     }
     if (isDraggingRef.current) {
-      console.log("[FloatingApp] handleClick: isDragging is true, returning early");
+      console.log(
+        "[FloatingApp] handleClick: isDragging is true, returning early",
+      );
       return;
     }
     console.log("[FloatingApp] Calling toggleMenu...");
@@ -659,7 +770,9 @@ export default function FloatingApp() {
     const setup = async () => {
       // 监听托盘发送的重置事件
       unlisten = await appWindow.listen("tray:reset-pet", () => {
-        console.log("[FloatingApp] Received tray:reset-pet event, resetting state");
+        console.log(
+          "[FloatingApp] Received tray:reset-pet event, resetting state",
+        );
         setExpanded(false);
         setPetState("idle");
         setContextMenuVisible(false);
@@ -682,7 +795,8 @@ export default function FloatingApp() {
         const target = event.target as HTMLElement;
         if (ballRef.current?.contains(target)) return;
         if (expanded && menuRef.current?.contains(target)) return;
-        if (contextMenuVisible && contextMenuRef.current?.contains(target)) return;
+        if (contextMenuVisible && contextMenuRef.current?.contains(target))
+          return;
 
         if (expanded) void collapseMenu();
         if (contextMenuVisible) setContextMenuVisible(false);
@@ -702,7 +816,12 @@ export default function FloatingApp() {
     if (petState !== "idle" || expanded) return;
 
     const timer = setInterval(() => {
-      if (petState === "idle" && !expanded && !showBubble && Math.random() < 0.5) {
+      if (
+        petState === "idle" &&
+        !expanded &&
+        !showBubble &&
+        Math.random() < 0.5
+      ) {
         showBubbleMessage(getRandomMessage(petState));
       }
     }, 10000);
@@ -728,7 +847,9 @@ export default function FloatingApp() {
 
   // ========== 渲染 ==========
 
-  const ballStyle = expanded ? getExpandedBallStyle(menuPlacement) : getCollapsedBallStyle();
+  const ballStyle = expanded
+    ? getExpandedBallStyle(menuPlacement)
+    : getCollapsedBallStyle();
 
   const getPetStateClassName = () => {
     const classes: string[] = [];
@@ -740,25 +861,53 @@ export default function FloatingApp() {
     return classes.join(" ");
   };
 
-  console.log("[FloatingApp] Rendering, expanded:", expanded, "menuPlacement:", menuPlacement);
+  console.log(
+    "[FloatingApp] Rendering, expanded:",
+    expanded,
+    "menuPlacement:",
+    menuPlacement,
+  );
 
   // 检查窗口实际大小
   useEffect(() => {
-    console.log("[FloatingApp] useEffect for window size triggered, expanded:", expanded, "appWindow:", !!appWindow);
+    console.log(
+      "[FloatingApp] useEffect for window size triggered, expanded:",
+      expanded,
+      "appWindow:",
+      !!appWindow,
+    );
     if (expanded && appWindow) {
-      appWindow.outerSize().then(size => {
-        console.log("[FloatingApp] Window size after expanded:", size.width, size.height);
+      appWindow.outerSize().then((size) => {
+        console.log(
+          "[FloatingApp] Window size after expanded:",
+          size.width,
+          size.height,
+        );
       });
     }
   }, [expanded, appWindow]);
 
   // 检查菜单元素渲染
   useEffect(() => {
-    console.log("[FloatingApp] useEffect for menu element triggered, expanded:", expanded, "menuRef:", !!menuRef.current);
+    console.log(
+      "[FloatingApp] useEffect for menu element triggered, expanded:",
+      expanded,
+      "menuRef:",
+      !!menuRef.current,
+    );
     if (expanded && menuRef.current) {
       const rect = menuRef.current.getBoundingClientRect();
-      console.log("[FloatingApp] Menu element rect:", rect.width, rect.height, rect.left, rect.top);
-      console.log("[FloatingApp] Menu computed style:", window.getComputedStyle(menuRef.current).display);
+      console.log(
+        "[FloatingApp] Menu element rect:",
+        rect.width,
+        rect.height,
+        rect.left,
+        rect.top,
+      );
+      console.log(
+        "[FloatingApp] Menu computed style:",
+        window.getComputedStyle(menuRef.current).display,
+      );
     }
   }, [expanded]);
 
@@ -790,12 +939,14 @@ export default function FloatingApp() {
             <span
               key={p.id}
               className="particle"
-              style={{
-                left: p.x,
-                top: p.y,
-                "--tx": `${p.tx}px`,
-                "--ty": `${p.ty}px`,
-              } as CSSProperties}
+              style={
+                {
+                  left: p.x,
+                  top: p.y,
+                  "--tx": `${p.tx}px`,
+                  "--ty": `${p.ty}px`,
+                } as CSSProperties
+              }
             >
               {p.emoji}
             </span>
@@ -806,7 +957,11 @@ export default function FloatingApp() {
       </button>
 
       {expanded && (
-        <div ref={menuRef} className="floating-menu" style={getMenuStyle(menuPlacement)}>
+        <div
+          ref={menuRef}
+          className="floating-menu"
+          style={getMenuStyle(menuPlacement)}
+        >
           <div className="floating-menu-header">
             <div className="floating-menu-title">
               <img src="/claw512.png" alt="AmosClaw" />
@@ -816,44 +971,89 @@ export default function FloatingApp() {
               </div>
             </div>
             <div className="floating-menu-header-actions">
-              <button className="floating-menu-action" onClick={() => void convertToWindow()} aria-label="窗口化">
+              <button
+                className="floating-menu-action"
+                onClick={() => void convertToWindow()}
+                aria-label="窗口化"
+              >
                 <Maximize2 size={14} />
               </button>
-              <button className="floating-menu-action" onClick={() => void collapseMenu()} aria-label="关闭菜单">
+              <button
+                className="floating-menu-action"
+                onClick={() => void collapseMenu()}
+                aria-label="关闭菜单"
+              >
                 <X size={14} />
               </button>
             </div>
           </div>
 
           <div className="floating-menu-items">
-            <button className="floating-menu-item floating-menu-item--pet-action" onClick={() => handleFeed()}>
-              <span>🍎</span><span>喂食</span>
+            <button
+              className="floating-menu-item floating-menu-item--pet-action"
+              onClick={() => handleFeed()}
+            >
+              <span>🍎</span>
+              <span>喂食</span>
             </button>
-            <button className="floating-menu-item floating-menu-item--pet-action" onClick={() => handlePlay()}>
-              <span>🎾</span><span>玩耍</span>
+            <button
+              className="floating-menu-item floating-menu-item--pet-action"
+              onClick={() => handlePlay()}
+            >
+              <span>🎾</span>
+              <span>玩耍</span>
             </button>
-            <button className="floating-menu-item floating-menu-item--pet-action" onClick={() => handleSleep()}>
-              <span>💤</span><span>睡觉</span>
+            <button
+              className="floating-menu-item floating-menu-item--pet-action"
+              onClick={() => handleSleep()}
+            >
+              <span>💤</span>
+              <span>睡觉</span>
             </button>
 
-            <div style={{ height: 1, background: "rgba(148, 163, 184, 0.2)", margin: "4px 0" }} />
+            <div
+              style={{
+                height: 1,
+                background: "rgba(148, 163, 184, 0.2)",
+                margin: "4px 0",
+              }}
+            />
 
-            <button className="floating-menu-item" onClick={() => void openMainWindow("/conversation")}>
-              <MessageCircle size={18} /><span>新对话</span>
+            <button
+              className="floating-menu-item"
+              onClick={() => void openMainWindow("/conversation")}
+            >
+              <MessageCircle size={18} />
+              <span>新对话</span>
             </button>
-            <button className="floating-menu-item" onClick={() => void openMainWindow("/conversation")}>
-              <History size={18} /><span>历史记录</span>
+            <button
+              className="floating-menu-item"
+              onClick={() => void openMainWindow("/conversation")}
+            >
+              <History size={18} />
+              <span>历史记录</span>
             </button>
-            <button className="floating-menu-item" onClick={() => void openMainWindow("/system/settings")}>
-              <Settings size={18} /><span>设置</span>
+            <button
+              className="floating-menu-item"
+              onClick={() => void openMainWindow("/system/settings")}
+            >
+              <Settings size={18} />
+              <span>设置</span>
             </button>
-            <button className="floating-menu-item" onClick={() => void openMainWindow("/")}>
-              <LayoutGrid size={18} /><span>打开主界面</span>
+            <button
+              className="floating-menu-item"
+              onClick={() => void openMainWindow("/")}
+            >
+              <LayoutGrid size={18} />
+              <span>打开主界面</span>
             </button>
           </div>
 
           <div className="floating-menu-footer">
-            <button className="floating-menu-item" onClick={() => void exitApp()}>
+            <button
+              className="floating-menu-item"
+              onClick={() => void exitApp()}
+            >
               <span>👋 退出应用</span>
             </button>
           </div>

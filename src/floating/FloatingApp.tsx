@@ -420,9 +420,8 @@ export default function FloatingApp() {
     if (anchor) {
       await appWindow.setPosition(new LogicalPosition(anchor.x, anchor.y));
     }
-
-    await snapToEdge();
-  }, [appWindow, snapToEdge]);
+    // 不再调用 snapToEdge，直接恢复到展开前的位置即可
+  }, [appWindow]);
 
   const toggleMenu = useCallback(async () => {
     console.log("[FloatingApp] toggleMenu called, current expanded:", expanded);

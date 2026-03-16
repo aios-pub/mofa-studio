@@ -236,4 +236,85 @@ export const skillApi = {
       result: `执行 ${skill.name} 成功，参数: ${JSON.stringify(params)}`,
     };
   },
+
+  // 从 Hub 安装 Skill
+  async installFromHub(hubSkill: {
+    hubId: string;
+    name: string;
+    description: string;
+    type: 'builtin' | 'custom' | 'api';
+    category: string;
+    parameters: SkillParameter[];
+    timeout: number;
+    version: string;
+  }): Promise<Skill> {
+    await delay(500);
+
+    // 检查是否已安装
+    const existing = mockSkills.find((s) => (s as any).hubId === hubSkill.hubId);
+    if (existing) {
+      throw new Error('Skill already installed');
+    }
+
+    const newSkill: Skill = {
+      id: `skill-hub-${Date.now()}`,
+      name: hubSkill.name,
+      description: hubSkill.description,
+      type: hubSkill.type,
+      category: hubSkill.category,
+      parameters: hubSkill.parameters,
+      timeout: hubSkill.timeout,
+      enabled: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      // Hub 相关扩展字段
+      ...(hubSkill as any),
+    };
+
+    mockSkills.push(newSkill);
+    return newSkill;
+  },
+
+  // 从 Hub 更新 Skill
+  async updateFromHub(skillId: string, hubSkill: {
+    hubId: string;
+    name: string;
+    description: string;
+    type: 'builtin' | 'custom' | 'api';
+    category: string;
+    parameters: SkillParameter[];
+    timeout: number;
+    version: string;
+  }): Promise<Skill | undefined> {
+    await delay(500);
+
+    const index = mockSkills.findIndex((s) => s.id === skillId);
+    if (index === -1) return undefined;
+
+    mockSkills[index] = {
+      ...mockSkills[index],
+      name: hubSkill.name,
+      description: hubSkill.description,
+      type: hubSkill.type,
+      category: hubSkill.category,
+      parameters: hubSkill.parameters,
+      timeout: hubSkill.timeout,
+      updatedAt: new Date(),
+      // 更新版本信息
+      ...(hubSkill as any),
+    };
+
+    return mockSkills[index];
+  },
+
+  // 卸载从 Hub 安装的 Skill
+  async uninstallFromHub(skillId: string): Promise<boolean> {
+    await delay(300);
+
+    const index = mockSkills.findIndex((s) => s.id === skillId && (s as any).hubId);
+    if (index === -1) return false;
+
+    mockSkills.splice(index, 1);
+    return true;
+  },
 };

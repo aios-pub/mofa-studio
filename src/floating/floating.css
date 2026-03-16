@@ -8,7 +8,7 @@
 :root {
   --floating-ball-size: 64px;
   --floating-menu-width: 240px;
-  --floating-menu-height: 300px;
+  --floating-menu-height: 380px;
   --floating-menu-gap: 12px;
   --floating-glass: rgba(15, 23, 42, 0.78);
   --floating-glass-border: rgba(148, 163, 184, 0.2);
@@ -44,19 +44,21 @@ body.floating-body {
   pointer-events: auto;
 }
 
+/* ====== 桌宠样式 ====== */
+
 .floating-ball {
   position: absolute;
   width: var(--floating-ball-size);
   height: var(--floating-ball-size);
+  /* 移除圆形球体背景，改为透明 */
+  background: transparent;
+  border: none;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  background: radial-gradient(circle at 30% 30%, #f8fafc 0%, #cbd5f5 45%, #64748b 100%);
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.3), inset 0 0 18px rgba(255, 255, 255, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: grab;
-  transition: transform 180ms ease, box-shadow 180ms ease;
+  transition: transform 180ms ease;
   padding: 0;
   appearance: none;
   outline: none;
@@ -64,23 +66,221 @@ body.floating-body {
   -webkit-user-select: none;
   user-select: none;
   touch-action: none;
+  /* 待机动画组合 - 默认状态 */
+  animation: idle-float 3s ease-in-out infinite, gentle-sway 4s ease-in-out infinite, breathing 2.5s ease-in-out infinite;
 }
 
 .floating-ball img {
-  width: 40px;
-  height: 40px;
-  filter: drop-shadow(0 4px 6px rgba(15, 23, 42, 0.35));
+  width: 56px;
+  height: 56px;
+  filter: drop-shadow(0 4px 8px rgba(15, 23, 42, 0.4));
+  transition: transform 200ms ease;
 }
 
-.floating-ball:hover {
-  transform: translateY(-1px) scale(1.01);
-  box-shadow: 0 16px 28px rgba(15, 23, 42, 0.35), inset 0 0 18px rgba(255, 255, 255, 0.35);
+.floating-ball:hover img {
+  transform: scale(1.08);
 }
 
 .floating-ball:active {
   cursor: grabbing;
-  transform: scale(0.98);
 }
+
+/* ====== 待机动画 ====== */
+
+@keyframes idle-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes gentle-sway {
+  0%, 100% {
+    rotate: 0deg;
+  }
+  25% {
+    rotate: 2deg;
+  }
+  75% {
+    rotate: -2deg;
+  }
+}
+
+@keyframes breathing {
+  0%, 100% {
+    scale: 1;
+  }
+  50% {
+    scale: 1.03;
+  }
+}
+
+/* ====== 状态动画 - 必须在待机动画之后定义以确保覆盖 ====== */
+
+/* 拖动状态 - 暂停动画 */
+.floating-ball.is-dragging {
+  animation: none !important;
+}
+
+/* 吸附动画 */
+.floating-ball.is-snapping {
+  animation: ball-collapse 280ms ease-out !important;
+}
+
+/* 开心状态 - 蹦跳 */
+.floating-ball.is-happy {
+  animation: happy-bounce 0.5s ease-in-out infinite !important;
+}
+
+@keyframes happy-bounce {
+  0%, 100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-12px) scale(1.08) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(0) scale(0.95) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-6px) scale(1.04) rotate(5deg);
+  }
+}
+
+/* 困倦状态 - 缓慢呼吸 */
+.floating-ball.is-sleepy {
+  animation: sleepy-breathe 3s ease-in-out infinite !important;
+}
+
+.floating-ball.is-sleepy img {
+  filter: drop-shadow(0 4px 8px rgba(15, 23, 42, 0.4)) brightness(0.8);
+}
+
+@keyframes sleepy-breathe {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-3px) scale(1.02);
+  }
+}
+
+/* ====== 睡觉特效 💤 ====== */
+
+.pet-zzz {
+  position: absolute;
+  top: -12px;
+  right: -8px;
+  font-size: 18px;
+  animation: zzz-float 2s ease-in-out infinite;
+  pointer-events: none;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes zzz-float {
+  0%, 100% {
+    opacity: 0.7;
+    transform: translateY(0) translateX(0) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-10px) translateX(4px) scale(1.2);
+  }
+}
+
+/* ====== 对话气泡 ====== */
+
+.pet-bubble {
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--floating-glass);
+  border: 1px solid var(--floating-glass-border);
+  border-radius: 12px;
+  padding: 8px 12px;
+  max-width: 160px;
+  color: #f8fafc;
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: bubble-in 200ms ease-out forwards;
+  pointer-events: none;
+  z-index: 100;
+  white-space: nowrap;
+}
+
+.pet-bubble::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-right-color: var(--floating-glass);
+}
+
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-8px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0) scale(1);
+  }
+}
+
+/* 气泡在左侧时的样式 */
+.pet-bubble.is-left {
+  left: auto;
+  right: calc(100% + 8px);
+}
+
+.pet-bubble.is-left::before {
+  left: auto;
+  right: -6px;
+  border-right-color: transparent;
+  border-left-color: var(--floating-glass);
+}
+
+/* ====== 粒子特效 ====== */
+
+.pet-effects {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 50;
+}
+
+.particle {
+  position: absolute;
+  font-size: 16px;
+  pointer-events: none;
+  animation: particle-float 1s ease-out forwards;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes particle-float {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx, 0), var(--ty, -40px)) scale(0.6);
+  }
+}
+
+/* ====== 菜单样式 ====== */
 
 .floating-menu {
   position: absolute;
@@ -91,11 +291,12 @@ body.floating-body {
   border-radius: 16px;
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.35);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: #f8fafc;
   display: flex;
   flex-direction: column;
   padding: 12px;
-  gap: 12px;
+  gap: 8px;
   animation: float-in 160ms ease-out;
 }
 
@@ -155,7 +356,9 @@ body.floating-body {
 .floating-menu-items {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .floating-menu-item {
@@ -177,6 +380,15 @@ body.floating-body {
 .floating-menu-item:hover {
   background: rgba(148, 163, 184, 0.2);
   transform: translateX(2px);
+}
+
+/* 桌宠特殊菜单项 */
+.floating-menu-item--pet-action {
+  background: rgba(99, 102, 241, 0.15);
+}
+
+.floating-menu-item--pet-action:hover {
+  background: rgba(99, 102, 241, 0.25);
 }
 
 .floating-menu-footer {
@@ -211,9 +423,7 @@ body.floating-body {
   }
 }
 
-.floating-ball.is-snapping {
-  animation: ball-collapse 280ms ease-out;
-}
+/* ====== 右键菜单 ====== */
 
 .floating-context-menu {
   position: absolute;
@@ -223,6 +433,7 @@ body.floating-body {
   border-radius: 12px;
   box-shadow: 0 16px 32px rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   padding: 6px;
   animation: context-menu-in 120ms ease-out;
   z-index: 100;
@@ -274,11 +485,12 @@ body.floating-body {
   }
 }
 
+/* ====== 快速输入 ====== */
+
 .floating-quick-input {
   display: flex;
   gap: 8px;
   align-items: flex-end;
-  margin-top: auto;
 }
 
 .floating-quick-input-textarea {

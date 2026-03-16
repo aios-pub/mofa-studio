@@ -5,7 +5,8 @@ export const isTauriApp = () => {
     return false;
   }
 
-  return "__TAURI__" in window;
+  // Tauri v2 使用 __TAURI_INTERNALS__
+  return "__TAURI__" in window || "__TAURI_INTERNALS__" in window;
 };
 
 /**

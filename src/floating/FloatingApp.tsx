@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import type { CSSProperties, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from "react";
 import {
   getCurrentWindow,
   Window,
@@ -33,21 +33,43 @@ type MonitorBounds = {
   height: number;
 };
 
+type PetState = "idle" | "happy" | "sleepy" | "dragging";
+
+type Particle = {
+  id: number;
+  emoji: string;
+  x: number;
+  y: number;
+  tx: number;
+  ty: number;
+};
+
 const BALL_SIZE = 64;
 const MENU_WIDTH = 240;
-const MENU_HEIGHT = 300;
+const MENU_HEIGHT = 380;
 const MENU_GAP = 12;
 const EDGE_PEEK = 18;
+
+const BUBBLE_MESSAGES: Record<PetState, string[]> = {
+  idle: [
+    "有什么可以帮你的吗? 🤔",
+    "今天心情怎么样? 😊",
+    "需要我帮你做些什么?",
+    "休息一下吧~ ☕",
+    "工作辛苦了! 💪",
+    "你好呀! 👋",
+  ],
+  happy: ["太开心啦! 🎉", "嘻嘻~ 🥰", "再来一次! ✨"],
+  sleepy: ["晚安… 💤", "好困啊… 😴", "zzz..."],
+  dragging: ["我们要去哪里呀?", "放开我~ 😆"],
+};
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
 
 const getMonitorBounds = async (): Promise<MonitorBounds | null> => {
   const monitor = (await currentMonitor()) ?? (await primaryMonitor());
-  if (!monitor) {
-    return null;
-  }
-
+  if (!monitor) return null;
   return {
     x: monitor.position.x,
     y: monitor.position.y,
@@ -61,7 +83,6 @@ const getMenuWindowSize = () => ({
   height: MENU_HEIGHT + BALL_SIZE + MENU_GAP,
 });
 
-// 收起状态下的球体样式 - 填满整个窗口
 const getCollapsedBallStyle = (): CSSProperties => ({
   left: 0,
   top: 0,
@@ -69,7 +90,6 @@ const getCollapsedBallStyle = (): CSSProperties => ({
   bottom: "auto",
 });
 
-// 展开状态下的球体样式 - 根据菜单位置定位
 const getExpandedBallStyle = (placement: MenuPlacement): CSSProperties => ({
   left: placement.horizontal === "right" ? 0 : "auto",
   right: placement.horizontal === "left" ? 0 : "auto",
@@ -84,8 +104,26 @@ const getMenuStyle = (placement: MenuPlacement): CSSProperties => ({
   bottom: placement.vertical === "up" ? BALL_SIZE + MENU_GAP : "auto",
 });
 
+const getRandomMessage = (state: PetState): string => {
+  const messages = BUBBLE_MESSAGES[state] || BUBBLE_MESSAGES.idle;
+  return messages[Math.floor(Math.random() * messages.length)];
+};
+
 export default function FloatingApp() {
   const [expanded, setExpanded] = useState(false);
+
+  // 包装 setExpanded 以追踪调用来源
+  const setExpandedWithTrace = useCallback((value: boolean | ((prev: boolean) => boolean)) => {
+    const actualValue = typeof value === 'function' ? value(expanded) : value;
+    console.log(`[FloatingApp] setExpanded called with: ${actualValue}`);
+    console.trace("[FloatingApp] setExpanded call stack");
+    setExpanded(value);
+  }, [expanded]);
+
+  // 追踪 expanded 状态变化
+  useEffect(() => {
+    console.log("[FloatingApp] expanded state changed to:", expanded);
+  }, [expanded]);
   const [menuPlacement, setMenuPlacement] = useState<MenuPlacement>({
     horizontal: "left",
     vertical: "up",
@@ -93,11 +131,14 @@ export default function FloatingApp() {
   const [snapping, setSnapping] = useState(false);
   const [contextMenuVisible, setContextMenuVisible] = useState(false);
   const [alwaysOnTop, setAlwaysOnTop] = useState(true);
+  const [petState, setPetState] = useState<PetState>("idle");
+  const [showBubble, setShowBubble] = useState(false);
+  const [bubbleText, setBubbleText] = useState("");
+  const [bubbleOnLeft, setBubbleOnLeft] = useState(false);
+  const [particles, setParticles] = useState<Particle[]>([]);
 
   const appWindow = useMemo(() => {
-    if (!isTauriApp()) {
-      return null;
-    }
+    if (!isTauriApp()) return null;
     return getCurrentWindow();
   }, []);
 
@@ -108,73 +149,66 @@ export default function FloatingApp() {
   const contextMenuRef = useRef<HTMLDivElement | null>(null);
   const isDraggingRef = useRef(false);
   const isMouseDownRef = useRef(false);
+  const dragTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const particleIdRef = useRef(0);
+  const bubbleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    if (!appWindow) {
-      return;
+  // ========== 辅助函数 ==========
+
+  const showBubbleMessage = useCallback((message: string, duration = 4000) => {
+    if (bubbleTimeoutRef.current) {
+      clearTimeout(bubbleTimeoutRef.current);
     }
+    setBubbleText(message);
+    setShowBubble(true);
+    bubbleTimeoutRef.current = setTimeout(() => setShowBubble(false), duration);
+  }, []);
 
-    void appWindow.setAlwaysOnTop(true);
-    void appWindow.setSkipTaskbar(true);
-  }, [appWindow]);
-
-  useEffect(() => {
-    if (!expanded && !contextMenuVisible) {
-      return;
+  const spawnParticles = useCallback((emoji: string, count: number) => {
+    const newParticles: Particle[] = [];
+    for (let i = 0; i < count; i++) {
+      newParticles.push({
+        id: particleIdRef.current++,
+        emoji,
+        x: 20 + Math.random() * 24,
+        y: 20 + Math.random() * 24,
+        tx: (Math.random() - 0.5) * 80,
+        ty: -40 - Math.random() * 40,
+      });
     }
+    setParticles((prev) => [...prev, ...newParticles]);
+    setTimeout(() => {
+      setParticles((prev) =>
+        prev.filter((p) => !newParticles.find((np) => np.id === p.id))
+      );
+    }, 1000);
+  }, []);
 
-    const handlePointer = (event: PointerEvent) => {
-      const target = event.target as Node;
-      if (ballRef.current?.contains(target)) {
-        return;
-      }
-      if (expanded && menuRef.current?.contains(target)) {
-        return;
-      }
-      if (contextMenuVisible && contextMenuRef.current?.contains(target)) {
-        return;
-      }
-
-      if (expanded) {
-        void collapseMenu();
-      }
-      if (contextMenuVisible) {
-        setContextMenuVisible(false);
-      }
-    };
-
-    window.addEventListener("pointerdown", handlePointer);
-    return () => window.removeEventListener("pointerdown", handlePointer);
-  }, [expanded, contextMenuVisible]);
-
-  const snapToEdge = async () => {
-    if (!appWindow) {
-      return;
+  const clearStateTimeout = useCallback(() => {
+    if (stateTimeoutRef.current) {
+      clearTimeout(stateTimeoutRef.current);
+      stateTimeoutRef.current = null;
     }
+  }, []);
+
+  // ========== 窗口操作 ==========
+
+  const snapToEdge = useCallback(async () => {
+    if (!appWindow) return;
 
     const bounds = await getMonitorBounds();
-    if (!bounds) {
-      return;
-    }
+    if (!bounds) return;
 
     const position = await appWindow.outerPosition();
     const size = await appWindow.outerSize();
 
     const leftDistance = Math.abs(position.x - bounds.x);
-    const rightDistance = Math.abs(
-      bounds.x + bounds.width - (position.x + size.width),
-    );
+    const rightDistance = Math.abs(bounds.x + bounds.width - (position.x + size.width));
     const topDistance = Math.abs(position.y - bounds.y);
-    const bottomDistance = Math.abs(
-      bounds.y + bounds.height - (position.y + size.height),
-    );
+    const bottomDistance = Math.abs(bounds.y + bounds.height - (position.y + size.height));
 
-    const minDistance = Math.min(
-      leftDistance,
-      rightDistance,
-      topDistance,
-      bottomDistance,
-    );
+    const minDistance = Math.min(leftDistance, rightDistance, topDistance, bottomDistance);
 
     let targetX = position.x;
     let targetY = position.y;
@@ -216,19 +250,24 @@ export default function FloatingApp() {
     };
 
     requestAnimationFrame((time) => void animate(time));
-  };
+  }, [appWindow]);
 
-  const expandMenu = async () => {
+  const expandMenu = useCallback(async () => {
+    console.log("[FloatingApp] expandMenu called, appWindow:", !!appWindow);
     if (!appWindow) {
-      setExpanded(true);
+      console.log("[FloatingApp] No appWindow, setting expanded=true directly");
+      setExpandedWithTrace(true);
       return;
     }
 
+    console.log("[FloatingApp] Getting current position...");
     const position = await appWindow.outerPosition();
+    console.log("[FloatingApp] Current position:", position.x, position.y);
     windowAnchorRef.current = { x: position.x, y: position.y };
 
     const bounds = await getMonitorBounds();
     const { width, height } = getMenuWindowSize();
+    console.log("[FloatingApp] Menu window size:", width, height, "bounds:", bounds);
 
     let horizontal: MenuPlacement["horizontal"] = "left";
     let vertical: MenuPlacement["vertical"] = "up";
@@ -236,47 +275,74 @@ export default function FloatingApp() {
     if (bounds) {
       const spaceLeft = position.x - bounds.x;
       const spaceRight = bounds.x + bounds.width - (position.x + BALL_SIZE);
-      if (
-        spaceLeft < MENU_WIDTH + MENU_GAP &&
-        spaceRight >= MENU_WIDTH + MENU_GAP
-      ) {
+      console.log("[FloatingApp] spaceLeft:", spaceLeft, "spaceRight:", spaceRight);
+      if (spaceLeft < MENU_WIDTH + MENU_GAP && spaceRight >= MENU_WIDTH + MENU_GAP) {
         horizontal = "right";
       }
 
       const spaceTop = position.y - bounds.y;
       const spaceBottom = bounds.y + bounds.height - (position.y + BALL_SIZE);
-      if (
-        spaceTop < MENU_HEIGHT + MENU_GAP &&
-        spaceBottom >= MENU_HEIGHT + MENU_GAP
-      ) {
+      console.log("[FloatingApp] spaceTop:", spaceTop, "spaceBottom:", spaceBottom);
+      if (spaceTop < MENU_HEIGHT + MENU_GAP && spaceBottom >= MENU_HEIGHT + MENU_GAP) {
         vertical = "down";
       }
     }
 
+    console.log("[FloatingApp] Placement:", horizontal, vertical);
     setMenuPlacement({ horizontal, vertical });
 
-    let nextX =
-      horizontal === "left" ? position.x - (width - BALL_SIZE) : position.x;
-    let nextY =
-      vertical === "up" ? position.y - (height - BALL_SIZE) : position.y;
+    // 计算新位置 - 确保在屏幕内
+    let nextX = position.x;
+    let nextY = position.y;
 
+    if (horizontal === "left") {
+      nextX = position.x - (width - BALL_SIZE);
+    }
+    if (vertical === "up") {
+      nextY = position.y - (height - BALL_SIZE);
+    }
+
+    // 确保 position 是有效的数字
+    if (!Number.isFinite(nextX)) nextX = position.x;
+    if (!Number.isFinite(nextY)) nextY = position.y;
+
+    // Clamp to screen bounds
     if (bounds) {
       nextX = clamp(nextX, bounds.x, bounds.x + bounds.width - width);
       nextY = clamp(nextY, bounds.y, bounds.y + bounds.height - height);
     }
 
-    await appWindow.setSize(new LogicalSize(width, height));
-    await appWindow.setPosition(new LogicalPosition(nextX, nextY));
-    setExpanded(true);
-  };
+    console.log("[FloatingApp] Calculated position:", nextX, nextY);
 
-  const collapseMenu = async () => {
+    // 先设置 expanded，让 React 开始渲染菜单
+    console.log("[FloatingApp] About to setExpanded(true)");
+    setExpandedWithTrace(true);
+
+    // 然后调整窗口大小和位置
+    try {
+      console.log("[FloatingApp] Setting window size to:", width, height);
+      await appWindow.setSize(new LogicalSize(width, height));
+
+      // 验证窗口大小是否改变
+      const newSize = await appWindow.outerSize();
+      console.log("[FloatingApp] Window size after setSize:", newSize.width, newSize.height);
+
+      console.log("[FloatingApp] Setting window position to:", nextX, nextY);
+      await appWindow.setPosition(new LogicalPosition(nextX, nextY));
+
+      console.log("[FloatingApp] expandMenu complete");
+    } catch (e) {
+      console.error("[FloatingApp] Error resizing/positioning window:", e);
+    }
+  }, [appWindow]);
+
+  const collapseMenu = useCallback(async () => {
     if (!appWindow) {
-      setExpanded(false);
+      setExpandedWithTrace(false);
       return;
     }
 
-    setExpanded(false);
+    setExpandedWithTrace(false);
     await appWindow.setSize(new LogicalSize(BALL_SIZE, BALL_SIZE));
 
     const anchor = windowAnchorRef.current;
@@ -285,94 +351,163 @@ export default function FloatingApp() {
     }
 
     await snapToEdge();
-  };
+  }, [appWindow, snapToEdge]);
 
-  const toggleMenu = async () => {
+  const toggleMenu = useCallback(async () => {
+    console.log("[FloatingApp] toggleMenu called, current expanded:", expanded);
     if (expanded) {
       await collapseMenu();
     } else {
       await expandMenu();
     }
-  };
+  }, [expanded, collapseMenu, expandMenu]);
 
-  // 使用 Tauri 的 startDragging 进行窗口拖动
-  const handleMouseDown = async (event: ReactMouseEvent) => {
-    if (!appWindow || expanded) {
-      return;
-    }
+  // ========== 桌宠交互 ==========
 
-    if (event.button !== 0) {
-      return;
-    }
+  const handlePlay = useCallback(() => {
+    clearStateTimeout();
+    setPetState("happy");
+    spawnParticles("✨", 6);
+    spawnParticles("💖", 4);
+    showBubbleMessage("太开心啦! 🎉", 2500);
+    stateTimeoutRef.current = setTimeout(() => setPetState("idle"), 2500);
+  }, [spawnParticles, showBubbleMessage, clearStateTimeout]);
 
-    // 记录起始位置用于判断是点击还是拖动
+  const handleSleep = useCallback(() => {
+    clearStateTimeout();
+    setPetState("sleepy");
+    showBubbleMessage("晚安… 💤", 4000);
+    stateTimeoutRef.current = setTimeout(() => {
+      setPetState("idle");
+      setShowBubble(false);
+    }, 5000);
+  }, [showBubbleMessage, clearStateTimeout]);
+
+  const handleFeed = useCallback(() => {
+    clearStateTimeout();
+    spawnParticles("🍎", 4);
+    spawnParticles("💕", 3);
+    setPetState("happy");
+    showBubbleMessage("好好吃! 😋", 2500);
+    stateTimeoutRef.current = setTimeout(() => setPetState("idle"), 2500);
+  }, [spawnParticles, showBubbleMessage, clearStateTimeout]);
+
+  // ========== 事件处理 ==========
+
+  const handlePointerDown = (event: ReactPointerEvent) => {
+    console.log("[FloatingApp] handlePointerDown triggered, button:", event.button, "expanded:", expanded);
+    if (!appWindow || expanded || event.button !== 0) return;
+
     isDraggingRef.current = false;
     isMouseDownRef.current = true;
     dragStartRef.current = { x: event.clientX, y: event.clientY };
+    console.log("[FloatingApp] handlePointerDown: set isDragging to false, isMouseDown to true");
+
+    // 不使用 setPointerCapture，避免干扰点击事件
+    dragTimerRef.current = setTimeout(() => {
+      console.log("[FloatingApp] dragTimer fired, isMouseDown:", isMouseDownRef.current, "isDragging:", isDraggingRef.current);
+      if (isMouseDownRef.current && !isDraggingRef.current) {
+        isDraggingRef.current = true;
+        setPetState("dragging");
+        void appWindow.startDragging();
+      }
+    }, 300);
   };
 
-  const handleMouseMove = (event: ReactMouseEvent) => {
-    if (!appWindow || expanded || !isMouseDownRef.current) {
-      return;
-    }
+  const handlePointerMove = (event: ReactPointerEvent) => {
+    if (!appWindow || expanded || !isMouseDownRef.current) return;
 
     const start = dragStartRef.current;
-    if (!start) {
-      return;
-    }
+    if (!start) return;
 
-    // 判断是否开始拖动（移动超过 5px）
     const dx = event.clientX - start.x;
     const dy = event.clientY - start.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    if (distance > 5 && !isDraggingRef.current) {
+    if (distance > 15 && !isDraggingRef.current) {
+      console.log("[FloatingApp] handlePointerMove: distance >", 15, ", setting isDragging to true");
+      if (dragTimerRef.current) {
+        clearTimeout(dragTimerRef.current);
+        dragTimerRef.current = null;
+      }
       isDraggingRef.current = true;
-      // 使用 Tauri 的 startDragging 方法
+      setPetState("dragging");
       void appWindow.startDragging();
     }
   };
 
-  const handleMouseUp = async () => {
-    if (!appWindow || expanded) {
-      return;
+  const handlePointerUp = async () => {
+    console.log("[FloatingApp] handlePointerUp triggered, isDragging:", isDraggingRef.current, "isMouseDown:", isMouseDownRef.current);
+    if (!appWindow || expanded) return;
+
+    if (dragTimerRef.current) {
+      clearTimeout(dragTimerRef.current);
+      dragTimerRef.current = null;
     }
 
+    const wasDragging = isDraggingRef.current;
     isMouseDownRef.current = false;
     dragStartRef.current = null;
+    isDraggingRef.current = false;
+    console.log("[FloatingApp] handlePointerUp: reset isDragging to false, wasDragging:", wasDragging);
 
-    // 如果没有拖动，则展开菜单
-    if (!isDraggingRef.current) {
-      await toggleMenu();
-    } else {
-      // 拖动结束后吸附到边缘
+    if (wasDragging) {
+      setPetState("idle");
       await snapToEdge();
     }
-
-    isDraggingRef.current = false;
+    // 不在这里 toggle，让 onClick 处理
   };
 
-  const handleContextMenu = async (event: ReactMouseEvent) => {
-    event.preventDefault();
+  // 使用 onClick 作为主要的点击处理方式
+  const handleClick = async () => {
+    console.log("[FloatingApp] handleClick triggered, expanded:", expanded, "isDragging:", isDraggingRef.current);
+    console.log("[FloatingApp] handleClick - appWindow:", !!appWindow, "menuRef:", !!menuRef.current);
     if (expanded) {
+      console.log("[FloatingApp] handleClick: expanded is true, returning early");
+      console.log("[FloatingApp] Current window size should be checked here");
+      if (appWindow) {
+        const size = await appWindow.outerSize();
+        console.log("[FloatingApp] Actual window size:", size.width, size.height);
+      }
       return;
     }
+    if (isDraggingRef.current) {
+      console.log("[FloatingApp] handleClick: isDragging is true, returning early");
+      return;
+    }
+    console.log("[FloatingApp] Calling toggleMenu...");
+    await toggleMenu();
+    console.log("[FloatingApp] toggleMenu done, expanded is now:", expanded);
+  };
+
+  const handleDoubleClick = async () => {
+    if (expanded) return;
+    if (dragTimerRef.current) {
+      clearTimeout(dragTimerRef.current);
+      dragTimerRef.current = null;
+    }
+    isDraggingRef.current = false;
+    isMouseDownRef.current = false;
+    await toggleMenu();
+  };
+
+  const handleContextMenu = (event: ReactMouseEvent) => {
+    event.preventDefault();
+    if (expanded) return;
     setContextMenuVisible(true);
   };
 
+  // ========== 其他操作 ==========
+
   const toggleAlwaysOnTop = async () => {
-    if (!appWindow) {
-      return;
-    }
+    if (!appWindow) return;
     const newValue = !alwaysOnTop;
     setAlwaysOnTop(newValue);
     await appWindow.setAlwaysOnTop(newValue);
   };
 
   const openMainWindow = async (path?: string) => {
-    if (!appWindow) {
-      return;
-    }
+    if (!appWindow) return;
 
     const mainWindow = await Window.getByLabel("main");
     if (mainWindow) {
@@ -404,24 +539,19 @@ export default function FloatingApp() {
       await mainWindow.setFocus();
     }
 
-    setExpanded(false);
+    setExpandedWithTrace(false);
     await appWindow.setSize(new LogicalSize(BALL_SIZE, BALL_SIZE));
     await appWindow.hide();
   };
 
   const exitApp = async () => {
-    if (!appWindow) {
-      return;
-    }
-
+    if (!appWindow) return;
     const windows = await Window.getAll();
     await Promise.all(windows.map((win) => win.close()));
   };
 
   const handleQuickInput = async (message: string) => {
-    if (!appWindow) {
-      return;
-    }
+    if (!appWindow) return;
 
     const mainWindow = await Window.getByLabel("main");
     if (mainWindow) {
@@ -434,100 +564,208 @@ export default function FloatingApp() {
     await appWindow.hide();
   };
 
-  // 根据展开状态获取球体样式
-  const ballStyle = expanded
-    ? getExpandedBallStyle(menuPlacement)
-    : getCollapsedBallStyle();
+  // ========== Effects ==========
+
+  // 组件首次挂载日志
+  useEffect(() => {
+    console.log("[FloatingApp] Component mounted, initial expanded:", expanded);
+  }, []);
+
+  useEffect(() => {
+    if (!appWindow) return;
+    void appWindow.setAlwaysOnTop(true);
+    void appWindow.setSkipTaskbar(true);
+  }, [appWindow]);
+
+  useEffect(() => {
+    if (!expanded && !contextMenuVisible) return;
+
+    let cleanup: (() => void) | null = null;
+    const initTimer = setTimeout(() => {
+      const handlePointer = (event: PointerEvent) => {
+        const target = event.target as HTMLElement;
+        if (ballRef.current?.contains(target)) return;
+        if (expanded && menuRef.current?.contains(target)) return;
+        if (contextMenuVisible && contextMenuRef.current?.contains(target)) return;
+
+        if (expanded) void collapseMenu();
+        if (contextMenuVisible) setContextMenuVisible(false);
+      };
+
+      window.addEventListener("pointerdown", handlePointer);
+      cleanup = () => window.removeEventListener("pointerdown", handlePointer);
+    }, 100);
+
+    return () => {
+      clearTimeout(initTimer);
+      cleanup?.();
+    };
+  }, [expanded, contextMenuVisible, collapseMenu]);
+
+  useEffect(() => {
+    if (petState !== "idle" || expanded) return;
+
+    const timer = setInterval(() => {
+      if (petState === "idle" && !expanded && !showBubble && Math.random() < 0.5) {
+        showBubbleMessage(getRandomMessage(petState));
+      }
+    }, 10000);
+
+    return () => clearInterval(timer);
+  }, [petState, expanded, showBubble, showBubbleMessage]);
+
+  useEffect(() => {
+    if (!appWindow) return;
+    const updateBubblePosition = async () => {
+      try {
+        const position = await appWindow.outerPosition();
+        const bounds = await getMonitorBounds();
+        if (bounds) {
+          setBubbleOnLeft(position.x > bounds.x + bounds.width - 200);
+        }
+      } catch {
+        // 忽略
+      }
+    };
+    void updateBubblePosition();
+  }, [appWindow]);
+
+  // ========== 渲染 ==========
+
+  const ballStyle = expanded ? getExpandedBallStyle(menuPlacement) : getCollapsedBallStyle();
+
+  const getPetStateClassName = () => {
+    const classes: string[] = [];
+    if (snapping) classes.push("is-snapping");
+    if (petState === "dragging") classes.push("is-dragging");
+    if (petState === "happy") classes.push("is-happy");
+    if (petState === "sleepy") classes.push("is-sleepy");
+    return classes.join(" ");
+  };
+
+  console.log("[FloatingApp] Rendering, expanded:", expanded, "menuPlacement:", menuPlacement);
+
+  // 检查窗口实际大小
+  useEffect(() => {
+    console.log("[FloatingApp] useEffect for window size triggered, expanded:", expanded, "appWindow:", !!appWindow);
+    if (expanded && appWindow) {
+      appWindow.outerSize().then(size => {
+        console.log("[FloatingApp] Window size after expanded:", size.width, size.height);
+      });
+    }
+  }, [expanded, appWindow]);
+
+  // 检查菜单元素渲染
+  useEffect(() => {
+    console.log("[FloatingApp] useEffect for menu element triggered, expanded:", expanded, "menuRef:", !!menuRef.current);
+    if (expanded && menuRef.current) {
+      const rect = menuRef.current.getBoundingClientRect();
+      console.log("[FloatingApp] Menu element rect:", rect.width, rect.height, rect.left, rect.top);
+      console.log("[FloatingApp] Menu computed style:", window.getComputedStyle(menuRef.current).display);
+    }
+  }, [expanded]);
 
   return (
     <div className={`floating-root ${expanded ? "is-expanded" : ""}`}>
+      {showBubble && !expanded && (
+        <div className={`pet-bubble ${bubbleOnLeft ? "is-left" : ""}`}>
+          {bubbleText}
+        </div>
+      )}
+
       <button
         ref={ballRef}
-        className={`floating-ball ${snapping ? "is-snapping" : ""}`}
+        className={`floating-ball ${getPetStateClassName()}`}
         style={ballStyle}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onClick={handleClick}
+        onDoubleClick={handleDoubleClick}
         onContextMenu={handleContextMenu}
         aria-label={expanded ? "收起菜单" : "展开菜单"}
       >
         <img src="/claw512.png" alt="AmosClaw" />
+
+        <div className="pet-effects">
+          {particles.map((p) => (
+            <span
+              key={p.id}
+              className="particle"
+              style={{
+                left: p.x,
+                top: p.y,
+                "--tx": `${p.tx}px`,
+                "--ty": `${p.ty}px`,
+              } as CSSProperties}
+            >
+              {p.emoji}
+            </span>
+          ))}
+        </div>
+
+        {petState === "sleepy" && <span className="pet-zzz">💤</span>}
       </button>
 
-      {expanded ? (
-        <div
-          ref={menuRef}
-          className="floating-menu"
-          style={getMenuStyle(menuPlacement)}
-        >
+      {expanded && (
+        <div ref={menuRef} className="floating-menu" style={getMenuStyle(menuPlacement)}>
           <div className="floating-menu-header">
             <div className="floating-menu-title">
               <img src="/claw512.png" alt="AmosClaw" />
               <div>
                 <div className="floating-menu-name">AmosClaw</div>
-                <div className="floating-menu-subtitle">悬浮快速入口</div>
+                <div className="floating-menu-subtitle">你的桌面伙伴</div>
               </div>
             </div>
             <div className="floating-menu-header-actions">
-              <button
-                className="floating-menu-action"
-                onClick={() => void convertToWindow()}
-                aria-label="窗口化"
-              >
+              <button className="floating-menu-action" onClick={() => void convertToWindow()} aria-label="窗口化">
                 <Maximize2 size={14} />
               </button>
-              <button
-                className="floating-menu-action"
-                onClick={() => void collapseMenu()}
-                aria-label="关闭菜单"
-              >
+              <button className="floating-menu-action" onClick={() => void collapseMenu()} aria-label="关闭菜单">
                 <X size={14} />
               </button>
             </div>
           </div>
 
           <div className="floating-menu-items">
-            <button
-              className="floating-menu-item"
-              onClick={() => void openMainWindow("/conversation")}
-            >
-              <MessageCircle size={18} />
-              <span>新对话</span>
+            <button className="floating-menu-item floating-menu-item--pet-action" onClick={() => { void collapseMenu(); setTimeout(() => handleFeed(), 100); }}>
+              <span>🍎</span><span>喂食</span>
             </button>
-            <button
-              className="floating-menu-item"
-              onClick={() => void openMainWindow("/conversation")}
-            >
-              <History size={18} />
-              <span>历史记录</span>
+            <button className="floating-menu-item floating-menu-item--pet-action" onClick={() => { void collapseMenu(); setTimeout(() => handlePlay(), 100); }}>
+              <span>🎾</span><span>玩耍</span>
             </button>
-            <button
-              className="floating-menu-item"
-              onClick={() => void openMainWindow("/system/settings")}
-            >
-              <Settings size={18} />
-              <span>设置</span>
+            <button className="floating-menu-item floating-menu-item--pet-action" onClick={() => { void collapseMenu(); setTimeout(() => handleSleep(), 100); }}>
+              <span>💤</span><span>睡觉</span>
             </button>
-            <button
-              className="floating-menu-item"
-              onClick={() => void openMainWindow("/")}
-            >
-              <LayoutGrid size={18} />
-              <span>打开主界面</span>
+
+            <div style={{ height: 1, background: "rgba(148, 163, 184, 0.2)", margin: "4px 0" }} />
+
+            <button className="floating-menu-item" onClick={() => void openMainWindow("/conversation")}>
+              <MessageCircle size={18} /><span>新对话</span>
+            </button>
+            <button className="floating-menu-item" onClick={() => void openMainWindow("/conversation")}>
+              <History size={18} /><span>历史记录</span>
+            </button>
+            <button className="floating-menu-item" onClick={() => void openMainWindow("/system/settings")}>
+              <Settings size={18} /><span>设置</span>
+            </button>
+            <button className="floating-menu-item" onClick={() => void openMainWindow("/")}>
+              <LayoutGrid size={18} /><span>打开主界面</span>
             </button>
           </div>
 
           <div className="floating-menu-footer">
-            <button className="floating-menu-item" onClick={exitApp}>
-              <span>退出应用</span>
+            <button className="floating-menu-item" onClick={() => void exitApp()}>
+              <span>👋 退出应用</span>
             </button>
           </div>
 
           <QuickInput onSubmit={(msg) => void handleQuickInput(msg)} />
         </div>
-      ) : null}
+      )}
 
-      {contextMenuVisible && !expanded ? (
+      {contextMenuVisible && !expanded && (
         <ContextMenu
           ref={contextMenuRef}
           placement={menuPlacement}
@@ -538,7 +776,7 @@ export default function FloatingApp() {
           onExit={() => void exitApp()}
           onClose={() => setContextMenuVisible(false)}
         />
-      ) : null}
+      )}
     </div>
   );
 }

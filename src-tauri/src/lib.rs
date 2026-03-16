@@ -154,18 +154,19 @@ pub fn run() {
                     if let Some(floating) = &floating_window {
                         let _ = floating.set_decorations(false);
 
-                        use tauri::WebviewWindow;
                         // 获取 HWND
                         if let Ok(hwnd) = floating.hwnd() {
                             unsafe {
+                                use std::ptr::NonNull;
                                 use winapi::shared::windef::HWND;
                                 use winapi::um::winuser::*;
 
-                                let hwnd = hwnd as HWND;
+                                // 从 isize 转换为 HWND (*mut c_void)
+                                let hwnd = NonNull::new(hwnd as *mut std::ffi::c_void).unwrap();
 
                                 // 设置窗口置顶
                                 SetWindowPos(
-                                    hwnd,
+                                    hwnd.as_ptr(),
                                     HWND_TOPMOST,
                                     0,
                                     0,
@@ -175,17 +176,17 @@ pub fn run() {
                                 );
 
                                 // 获取当前扩展样式
-                                let ex_style = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+                                let ex_style = GetWindowLongPtrW(hwnd.as_ptr(), GWL_EXSTYLE);
 
                                 // 设置扩展样式: 分层窗口 + 工具窗口(隐藏任务栏)
                                 SetWindowLongPtrW(
-                                    hwnd,
+                                    hwnd.as_ptr(),
                                     GWL_EXSTYLE,
                                     ex_style | WS_EX_LAYERED | WS_EX_TOOLWINDOW,
                                 );
 
                                 // 设置透明度 (255 = 完全不透明)
-                                SetLayeredWindowAttributes(hwnd, 0, 255, LWA_ALPHA);
+                                SetLayeredWindowAttributes(hwnd.as_ptr(), 0, 255, LWA_ALPHA);
                             }
                         }
                     }

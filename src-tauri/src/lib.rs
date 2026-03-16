@@ -181,7 +181,7 @@ pub fn run() {
                                 SetWindowLongPtrW(
                                     hwnd,
                                     GWL_EXSTYLE,
-                                    ex_style | WS_EX_LAYERED | WS_EX_TOOLWINDOW,
+                                    ex_style | (WS_EX_LAYERED as isize) | (WS_EX_TOOLWINDOW as isize),
                                 );
 
                                 // 设置透明度 (255 = 完全不透明)

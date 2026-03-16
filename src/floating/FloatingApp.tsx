@@ -292,62 +292,91 @@ export default function FloatingApp() {
       }
     }
 
-    // 计算宠物可见中心位置
-    const ballCenterX = visibleX + BALL_SIZE / 2;
-    const ballCenterY = visibleY + BALL_SIZE / 2;
+    // 计算四个方向展开后的窗口位置
+    // horizontal: "right" 表示菜单在宠物右边（宠物在窗口左上角）
+    // horizontal: "left" 表示菜单在宠物左边（宠物在窗口右上角）
+    // vertical: "down" 表示菜单在宠物下边（宠物在窗口左上角）
+    // vertical: "up" 表示菜单在宠物上边（宠物在窗口左下角）
 
-    let horizontal: MenuPlacement["horizontal"] = "right";
-    let vertical: MenuPlacement["vertical"] = "down";
+    type CandidatePlacement = {
+      horizontal: "left" | "right";
+      vertical: "up" | "down";
+      x: number;
+      y: number;
+      overflow: number; // 超出屏幕的像素数
+    };
 
-    if (bounds) {
-      // 根据宠物可见中心位置决定菜单展开方向
-      const spaceRight = bounds.x + bounds.width - ballCenterX;
-      const spaceLeft = ballCenterX - bounds.x;
-      console.log("[FloatingApp] spaceLeft:", spaceLeft, "spaceRight:", spaceRight);
+    const candidates: CandidatePlacement[] = [];
 
-      // 优先向右展开，除非右边空间不够
-      if (spaceRight < MENU_WIDTH + MENU_GAP + BALL_SIZE / 2) {
-        horizontal = "left";
+    const combinations: Array<{ h: "left" | "right"; v: "up" | "down" }> = [
+      { h: "right", v: "down" },
+      { h: "right", v: "up" },
+      { h: "left", v: "down" },
+      { h: "left", v: "up" },
+    ];
+
+    for (const { h, v } of combinations) {
+      let x: number;
+      let y: number;
+
+      if (h === "right") {
+        // 菜单在右边，宠物在左边角落
+        x = visibleX;
+      } else {
+        // 菜单在左边，宠物在右边角落
+        x = visibleX - MENU_WIDTH - MENU_GAP;
       }
 
-      // 优先向下展开，除非下边空间不够
-      const spaceBottom = bounds.y + bounds.height - ballCenterY;
-      const spaceTop = ballCenterY - bounds.y;
-      console.log("[FloatingApp] spaceTop:", spaceTop, "spaceBottom:", spaceBottom);
-
-      if (spaceBottom < MENU_HEIGHT + MENU_GAP + BALL_SIZE / 2) {
-        vertical = "up";
+      if (v === "down") {
+        // 菜单在下边，宠物在上边角落
+        y = visibleY;
+      } else {
+        // 菜单在上边，宠物在下边角落
+        y = visibleY - MENU_HEIGHT - MENU_GAP;
       }
+
+      // 计算超出屏幕的像素数
+      let overflow = 0;
+      if (bounds) {
+        if (x < bounds.x) overflow += bounds.x - x;
+        if (x + width > bounds.x + bounds.width) overflow += x + width - (bounds.x + bounds.width);
+        if (y < bounds.y) overflow += bounds.y - y;
+        if (y + height > bounds.y + bounds.height) overflow += y + height - (bounds.y + bounds.height);
+      }
+
+      candidates.push({ horizontal: h, vertical: v, x, y, overflow });
     }
 
-    console.log("[FloatingApp] Placement:", horizontal, vertical);
-    setMenuPlacement({ horizontal, vertical });
+    // 选择超出最少的方向，优先选择向下向右（更自然的展开方向）
+    candidates.sort((a, b) => {
+      if (a.overflow !== b.overflow) {
+        return a.overflow - b.overflow;
+      }
+      // 优先级：右下 > 右上 > 左下 > 左上
+      const order = (c: CandidatePlacement) => {
+        let score = 0;
+        if (c.horizontal === "right") score += 2;
+        if (c.vertical === "down") score += 1;
+        return -score; // 负数使得高优先级排在前面
+      };
+      return order(a) - order(b);
+    });
 
-    // 计算新位置 - 从可见位置展开，让宠物出现在窗口角落
-    let nextX: number;
-    let nextY: number;
+    const best = candidates[0];
+    console.log("[FloatingApp] Candidates:", candidates.map(c => `${c.horizontal}-${c.vertical}: overflow=${c.overflow}`));
+    console.log("[FloatingApp] Best placement:", best.horizontal, best.vertical);
 
-    if (horizontal === "right") {
-      // 菜单在右边，宠物在左边角落
-      nextX = visibleX;
-    } else {
-      // 菜单在左边，宠物在右边角落
-      nextX = visibleX - MENU_WIDTH - MENU_GAP;
-    }
+    setMenuPlacement({ horizontal: best.horizontal, vertical: best.vertical });
 
-    if (vertical === "down") {
-      // 菜单在下边，宠物在上边角落
-      nextY = visibleY;
-    } else {
-      // 菜单在上边，宠物在下边角落
-      nextY = visibleY - MENU_HEIGHT - MENU_GAP;
-    }
+    // 使用最佳位置
+    let nextX = best.x;
+    let nextY = best.y;
 
     // 确保 position 是有效的数字
     if (!Number.isFinite(nextX)) nextX = visibleX;
     if (!Number.isFinite(nextY)) nextY = visibleY;
 
-    // Clamp to screen bounds
+    // Clamp to screen bounds - 确保窗口完全在屏幕内
     if (bounds) {
       nextX = clamp(nextX, bounds.x, bounds.x + bounds.width - width);
       nextY = clamp(nextY, bounds.y, bounds.y + bounds.height - height);

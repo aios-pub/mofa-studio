@@ -168,12 +168,16 @@ export default function FloatingApp() {
   const particleIdRef = useRef(0);
   const bubbleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // ✅ 新增：闲置气泡定时器
   const idleBubbleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ✅ 用 ref 追踪 expanded 状态，避免 showBubbleMessage 依赖 expanded 导致连锁重建
+  const expandedRef = useRef(expanded);
+  useEffect(() => {
+    expandedRef.current = expanded;
+  }, [expanded]);
 
   // ========== 辅助函数 ==========
 
-  // ✅ 新增：根据宠物在屏幕位置更新气泡方向
   const updateBubblePlacement = useCallback(async () => {
     if (!appWindow) return;
     try {
@@ -193,8 +197,10 @@ export default function FloatingApp() {
       if (bubbleTimeoutRef.current) {
         clearTimeout(bubbleTimeoutRef.current);
       }
-      // ✅ 显示气泡前更新方向
-      void updateBubblePlacement();
+      // ✅ 仅在收起状态下根据屏幕位置更新方向；展开时由 menuPlacement 决定
+      if (!expandedRef.current) {
+        void updateBubblePlacement();
+      }
       setBubbleText(message);
       setShowBubble(true);
       bubbleTimeoutRef.current = setTimeout(
@@ -440,6 +446,13 @@ export default function FloatingApp() {
     if (!appWindow) {
       setExpanded(false);
       return;
+    }
+
+    // ✅ 收起时清除正在显示的气泡，防止切换到收起布局时位置突变
+    setShowBubble(false);
+    if (bubbleTimeoutRef.current) {
+      clearTimeout(bubbleTimeoutRef.current);
+      bubbleTimeoutRef.current = null;
     }
 
     setExpanded(false);
@@ -734,10 +747,39 @@ export default function FloatingApp() {
     return classes.join(" ");
   };
 
+  // ✅ 展开时根据菜单方位决定气泡方向；收起时用屏幕位置
+  // 气泡必须朝向菜单一侧（窗口内有空间的方向），否则超出窗口会被裁剪
+  const effectiveBubbleOnLeft = expanded
+    ? menuPlacement.horizontal === "left"
+    : bubbleOnLeft;
+
+  // ✅ 展开时用内联样式精确定位气泡到球旁、菜单上方，避免遮挡菜单操作区
+  const bubblePositionStyle: CSSProperties | undefined = expanded
+    ? {
+        position: "absolute",
+        zIndex: 100,
+        pointerEvents: "none",
+        // 垂直方向：与球对齐
+        ...(menuPlacement.vertical === "down"
+          ? { top: 14 }
+          : { bottom: 14, top: "auto" }),
+        // 水平方向：紧贴球的菜单侧
+        ...(menuPlacement.horizontal === "right"
+          ? { left: BALL_SIZE + 8, right: "auto" }
+          : { right: BALL_SIZE + 8, left: "auto" }),
+      }
+    : undefined;
+
   return (
     <div className={`floating-root ${expanded ? "is-expanded" : ""}`}>
-      {showBubble && !expanded && (
-        <div className={`pet-bubble ${bubbleOnLeft ? "is-left" : ""}`}>
+      {/* ✅ 移除 !expanded 条件，展开时也能显示气泡 */}
+      {showBubble && (
+        <div
+          className={`pet-bubble ${effectiveBubbleOnLeft ? "is-left" : ""} ${
+            expanded ? "is-expanded-bubble" : ""
+          }`}
+          style={bubblePositionStyle}
+        >
           {bubbleText}
         </div>
       )}

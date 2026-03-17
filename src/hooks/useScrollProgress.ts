@@ -1,13 +1,12 @@
 /**
  * 滚动进度 Hook
- * 参考 slash-admin 实现
  * 用于获取页面或容器的滚动进度
  */
 
-import { useScroll, type MotionValue } from 'framer-motion';
-import { useMemo, useRef } from 'react';
+import { useScroll, type MotionValue } from "framer-motion";
+import { useMemo, useRef } from "react";
 
-export type UseScrollProgressTarget = 'document' | 'container';
+export type UseScrollProgressTarget = "document" | "container";
 
 export interface UseScrollProgressReturn {
   /** 水平滚动进度值 (0-1) */
@@ -34,17 +33,18 @@ export interface UseScrollProgressReturn {
  * // 将 elementRef 绑定到容器元素
  */
 export function useScrollProgress(
-  target: UseScrollProgressTarget = 'document'
+  target: UseScrollProgressTarget = "document",
 ): UseScrollProgressReturn {
   const elementRef = useRef<HTMLDivElement>(null);
 
-  const options = target === 'container' ? { container: elementRef } : undefined;
+  const options =
+    target === "container" ? { container: elementRef } : undefined;
 
   const { scrollYProgress, scrollXProgress } = useScroll(options);
 
   const memoizedValue = useMemo(
     () => ({ elementRef, scrollXProgress, scrollYProgress }),
-    [scrollXProgress, scrollYProgress]
+    [scrollXProgress, scrollYProgress],
   );
 
   return memoizedValue;

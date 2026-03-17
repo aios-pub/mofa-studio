@@ -1,10 +1,9 @@
 /**
  * 工具函数库
- * 参考 slash-admin 的实现
  */
 
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 // ==================== 类名工具 ====================
 
@@ -28,14 +27,14 @@ export function urlJoin(...parts: string[]): string {
   return parts
     .map((part, index) => {
       if (index === 0) {
-        return part.replace(/\/+$/, '');
+        return part.replace(/\/+$/, "");
       }
       if (index === parts.length - 1) {
-        return part.replace(/^\/+/, '');
+        return part.replace(/^\/+/, "");
       }
-      return part.replace(/^\/+/, '').replace(/\/+$/, '');
+      return part.replace(/^\/+/, "").replace(/\/+$/, "");
     })
-    .join('/');
+    .join("/");
 }
 
 // ==================== 数组检查工具 ====================
@@ -46,7 +45,10 @@ export function urlJoin(...parts: string[]): string {
  * @param predicate 条件函数
  * @returns 是否有满足条件的元素
  */
-export function checkAny<T>(arr: T[], predicate: (item: T) => boolean): boolean {
+export function checkAny<T>(
+  arr: T[],
+  predicate: (item: T) => boolean,
+): boolean {
   return arr.some(predicate);
 }
 
@@ -56,7 +58,10 @@ export function checkAny<T>(arr: T[], predicate: (item: T) => boolean): boolean 
  * @param predicate 条件函数
  * @returns 是否所有元素都满足条件
  */
-export function checkAll<T>(arr: T[], predicate: (item: T) => boolean): boolean {
+export function checkAll<T>(
+  arr: T[],
+  predicate: (item: T) => boolean,
+): boolean {
   return arr.every(predicate);
 }
 
@@ -102,7 +107,7 @@ export const storage = {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
-      console.error('Failed to save to localStorage:', error);
+      console.error("Failed to save to localStorage:", error);
     }
   },
 
@@ -142,7 +147,7 @@ export const storage = {
         keysToRemove.push(key);
       }
     }
-    keysToRemove.forEach(key => localStorage.removeItem(key));
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
   },
 };
 
@@ -166,7 +171,7 @@ export const sessionStorage = {
     try {
       window.sessionStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
-      console.error('Failed to save to sessionStorage:', error);
+      console.error("Failed to save to sessionStorage:", error);
     }
   },
 
@@ -194,21 +199,21 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     }
 
     // 回退方案：使用 document.execCommand
-    const textArea = document.createElement('textarea');
+    const textArea = document.createElement("textarea");
     textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    textArea.style.top = '-999999px';
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
     document.body.appendChild(textArea);
     textArea.focus();
     textArea.select();
 
-    const successful = document.execCommand('copy');
+    const successful = document.execCommand("copy");
     document.body.removeChild(textArea);
 
     return successful;
   } catch (error) {
-    console.error('Failed to copy to clipboard:', error);
+    console.error("Failed to copy to clipboard:", error);
     return false;
   }
 }
@@ -250,7 +255,7 @@ export function capitalize(str: string): string {
  * @param prefix 前缀
  * @returns 唯一 ID
  */
-export function generateId(prefix = 'id'): string {
+export function generateId(prefix = "id"): string {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
@@ -260,10 +265,10 @@ export function generateId(prefix = 'id'): string {
  * @returns 格式化后的字符串
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B';
+  if (bytes === 0) return "0 B";
 
   const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
@@ -289,7 +294,7 @@ export function formatRelativeTime(date: Date | string | number): string {
   const months = Math.floor(days / 30);
   const years = Math.floor(days / 365);
 
-  if (seconds < 60) return '刚刚';
+  if (seconds < 60) return "刚刚";
   if (minutes < 60) return `${minutes} 分钟前`;
   if (hours < 24) return `${hours} 小时前`;
   if (days < 7) return `${days} 天前`;
@@ -308,7 +313,7 @@ export function formatRelativeTime(date: Date | string | number): string {
  */
 export function debounce<T extends (...args: any[]) => any>(
   fn: T,
-  delay: number
+  delay: number,
 ): (...args: Parameters<T>) => void {
   let timer: ReturnType<typeof setTimeout>;
 
@@ -326,7 +331,7 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function throttle<T extends (...args: any[]) => any>(
   fn: T,
-  delay: number
+  delay: number,
 ): (...args: Parameters<T>) => void {
   let lastCall = 0;
 
@@ -369,15 +374,15 @@ export function isValidUrl(url: string): boolean {
 
 // ==================== 树形数据工具 ====================
 
-export * from './tree';
+export * from "./tree";
 
 // ==================== 数字格式化工具 ====================
 
-export * from './format-number';
+export * from "./format-number";
 
 // ==================== 通用工具函数 ====================
 
-export * from './helpers';
+export * from "./helpers";
 
 export default {
   cn,

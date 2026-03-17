@@ -1,10 +1,9 @@
 /**
  * 媒体查询 Hook
- * 参考 slash-admin 的实现
  * 支持 SSR 安全的媒体查询
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export type MediaQueryValues = {
   isMobile: boolean;
@@ -30,7 +29,7 @@ export function useMediaQuery(query: string): boolean {
 
   useEffect(() => {
     // SSR 检查
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
 
@@ -44,10 +43,10 @@ export function useMediaQuery(query: string): boolean {
       setMatches(event.matches);
     };
 
-    mediaQuery.addEventListener('change', handler);
+    mediaQuery.addEventListener("change", handler);
 
     return () => {
-      mediaQuery.removeEventListener('change', handler);
+      mediaQuery.removeEventListener("change", handler);
     };
   }, [query]);
 
@@ -63,7 +62,7 @@ export const breakpoints = {
   md: 768,
   lg: 992,
   xl: 1200,
-  '2xl': 1400,
+  "2xl": 1400,
 } as const;
 
 /**
@@ -90,9 +89,12 @@ export function useBreakpointDown(breakpoint: number): boolean {
  * @param maxBreakpoint 最大断点
  * @returns 是否在两个断点之间
  */
-export function useBreakpointBetween(minBreakpoint: number, maxBreakpoint: number): boolean {
+export function useBreakpointBetween(
+  minBreakpoint: number,
+  maxBreakpoint: number,
+): boolean {
   return useMediaQuery(
-    `(min-width: ${minBreakpoint}px) and (max-width: ${maxBreakpoint - 1}px)`
+    `(min-width: ${minBreakpoint}px) and (max-width: ${maxBreakpoint - 1}px)`,
   );
 }
 
@@ -103,35 +105,34 @@ export function useBreakpointBetween(minBreakpoint: number, maxBreakpoint: numbe
 export function useMediaQueries(): MediaQueryValues {
   const isMobile = useMediaQuery(`(max-width: ${breakpoints.md - 1}px)`);
   const isTablet = useMediaQuery(
-    `(min-width: ${breakpoints.md}px) and (max-width: ${breakpoints.lg - 1}px)`
+    `(min-width: ${breakpoints.md}px) and (max-width: ${breakpoints.lg - 1}px)`,
   );
   const isDesktop = useMediaQuery(`(min-width: ${breakpoints.lg}px)`);
   const isLargeDesktop = useMediaQuery(`(min-width: ${breakpoints.xl}px)`);
 
-  const isDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const isLightMode = useMediaQuery('(prefers-color-scheme: light)');
-  const isReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
-  const isPortrait = useMediaQuery('(orientation: portrait)');
-  const isLandscape = useMediaQuery('(orientation: landscape)');
+  const isDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+  const isLightMode = useMediaQuery("(prefers-color-scheme: light)");
+  const isReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const isPortrait = useMediaQuery("(orientation: portrait)");
+  const isLandscape = useMediaQuery("(orientation: landscape)");
 
   // 触摸设备检测
   const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     const checkTouch = () => {
       setIsTouchDevice(
-        'ontouchstart' in window ||
-        navigator.maxTouchPoints > 0
+        "ontouchstart" in window || navigator.maxTouchPoints > 0,
       );
     };
 
     checkTouch();
-    window.addEventListener('touchstart', checkTouch, { once: true });
+    window.addEventListener("touchstart", checkTouch, { once: true });
 
     return () => {
-      window.removeEventListener('touchstart', checkTouch);
+      window.removeEventListener("touchstart", checkTouch);
     };
   }, []);
 
@@ -139,7 +140,7 @@ export function useMediaQueries(): MediaQueryValues {
   const [isHighDPI, setIsHighDPI] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     setIsHighDPI(window.devicePixelRatio > 1);
 
@@ -147,10 +148,10 @@ export function useMediaQueries(): MediaQueryValues {
       setIsHighDPI(window.devicePixelRatio > 1);
     };
 
-    window.addEventListener('resize', handler);
+    window.addEventListener("resize", handler);
 
     return () => {
-      window.removeEventListener('resize', handler);
+      window.removeEventListener("resize", handler);
     };
   }, []);
 
@@ -190,7 +191,7 @@ export function useIsDesktop(): boolean {
  * @returns 系统是否偏好暗黑模式
  */
 export function usePrefersDarkMode(): boolean {
-  return useMediaQuery('(prefers-color-scheme: dark)');
+  return useMediaQuery("(prefers-color-scheme: dark)");
 }
 
 /**
@@ -198,16 +199,16 @@ export function usePrefersDarkMode(): boolean {
  * @returns 系统是否偏好减少动画
  */
 export function usePrefersReducedMotion(): boolean {
-  return useMediaQuery('(prefers-reduced-motion: reduce)');
+  return useMediaQuery("(prefers-reduced-motion: reduce)");
 }
 
 /**
  * 设备方向检测 Hook
  * @returns 设备方向
  */
-export function useOrientation(): 'portrait' | 'landscape' {
-  const isPortrait = useMediaQuery('(orientation: portrait)');
-  return isPortrait ? 'portrait' : 'landscape';
+export function useOrientation(): "portrait" | "landscape" {
+  const isPortrait = useMediaQuery("(orientation: portrait)");
+  return isPortrait ? "portrait" : "landscape";
 }
 
 export default useMediaQuery;

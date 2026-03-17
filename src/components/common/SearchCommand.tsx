@@ -1,11 +1,10 @@
 /**
  * 搜索命令面板组件
- * 参考 slash-admin 的 SearchBar 设计
  * 支持全局搜索和快捷导航 (Cmd/Ctrl + K)
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Modal, Input, List, Tag, Space } from 'antd';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { Modal, Input, List, Tag, Space } from "antd";
 import {
   SearchOutlined,
   HistoryOutlined,
@@ -18,35 +17,161 @@ import {
   BarChartOutlined,
   TeamOutlined,
   SafetyOutlined,
-} from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+} from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 
 // 搜索项目配置
 const searchItems = [
   // 工作台
-  { id: 'dashboard', title: '仪表盘', icon: <DashboardOutlined />, path: '/', category: '工作台', keywords: ['dashboard', 'home'] },
-  { id: 'conversation', title: '对话', icon: <RobotOutlined />, path: '/conversation', category: '工作台', keywords: ['chat', 'conversation'] },
+  {
+    id: "dashboard",
+    title: "仪表盘",
+    icon: <DashboardOutlined />,
+    path: "/",
+    category: "工作台",
+    keywords: ["dashboard", "home"],
+  },
+  {
+    id: "conversation",
+    title: "对话",
+    icon: <RobotOutlined />,
+    path: "/conversation",
+    category: "工作台",
+    keywords: ["chat", "conversation"],
+  },
   // 管理
-  { id: 'agents', title: 'Agent 管理', icon: <RobotOutlined />, path: '/management/agents', category: '管理', keywords: ['agent', 'bot'] },
-  { id: 'prompts', title: '提示词管理', icon: <FileTextOutlined />, path: '/management/prompts', category: '管理', keywords: ['prompt', 'template'] },
-  { id: 'skills', title: 'Skills 管理', icon: <ApiOutlined />, path: '/management/skills', category: '管理', keywords: ['skill', 'tool'] },
-  { id: 'test-sets', title: '测试集管理', icon: <FileTextOutlined />, path: '/management/test-sets', category: '管理', keywords: ['test', 'dataset'] },
-  { id: 'providers', title: 'Provider 管理', icon: <ApiOutlined />, path: '/management/providers', category: '管理', keywords: ['provider', 'api'] },
-  { id: 'tasks', title: '定时任务', icon: <SettingOutlined />, path: '/management/tasks', category: '管理', keywords: ['task', 'schedule'] },
+  {
+    id: "agents",
+    title: "Agent 管理",
+    icon: <RobotOutlined />,
+    path: "/management/agents",
+    category: "管理",
+    keywords: ["agent", "bot"],
+  },
+  {
+    id: "prompts",
+    title: "提示词管理",
+    icon: <FileTextOutlined />,
+    path: "/management/prompts",
+    category: "管理",
+    keywords: ["prompt", "template"],
+  },
+  {
+    id: "skills",
+    title: "Skills 管理",
+    icon: <ApiOutlined />,
+    path: "/management/skills",
+    category: "管理",
+    keywords: ["skill", "tool"],
+  },
+  {
+    id: "test-sets",
+    title: "测试集管理",
+    icon: <FileTextOutlined />,
+    path: "/management/test-sets",
+    category: "管理",
+    keywords: ["test", "dataset"],
+  },
+  {
+    id: "providers",
+    title: "Provider 管理",
+    icon: <ApiOutlined />,
+    path: "/management/providers",
+    category: "管理",
+    keywords: ["provider", "api"],
+  },
+  {
+    id: "tasks",
+    title: "定时任务",
+    icon: <SettingOutlined />,
+    path: "/management/tasks",
+    category: "管理",
+    keywords: ["task", "schedule"],
+  },
   // 监控
-  { id: 'analytics', title: '统计分析', icon: <BarChartOutlined />, path: '/analytics', category: '监控', keywords: ['analytics', 'stats'] },
-  { id: 'monitoring', title: '实时监控', icon: <ApiOutlined />, path: '/monitoring', category: '监控', keywords: ['monitoring', 'realtime'] },
+  {
+    id: "analytics",
+    title: "统计分析",
+    icon: <BarChartOutlined />,
+    path: "/analytics",
+    category: "监控",
+    keywords: ["analytics", "stats"],
+  },
+  {
+    id: "monitoring",
+    title: "实时监控",
+    icon: <ApiOutlined />,
+    path: "/monitoring",
+    category: "监控",
+    keywords: ["monitoring", "realtime"],
+  },
   // 追踪与评估
-  { id: 'tracing', title: '追踪分析', icon: <ApiOutlined />, path: '/tracing', category: '追踪与评估', keywords: ['tracing', 'trace'] },
-  { id: 'evaluation', title: 'Agent 评估', icon: <BarChartOutlined />, path: '/evaluation', category: '追踪与评估', keywords: ['evaluation', 'score'] },
+  {
+    id: "tracing",
+    title: "追踪分析",
+    icon: <ApiOutlined />,
+    path: "/tracing",
+    category: "追踪与评估",
+    keywords: ["tracing", "trace"],
+  },
+  {
+    id: "evaluation",
+    title: "Agent 评估",
+    icon: <BarChartOutlined />,
+    path: "/evaluation",
+    category: "追踪与评估",
+    keywords: ["evaluation", "score"],
+  },
   // 组织
-  { id: 'users', title: '用户管理', icon: <TeamOutlined />, path: '/organization/users', category: '组织', keywords: ['user', 'member'] },
-  { id: 'departments', title: '部门管理', icon: <TeamOutlined />, path: '/organization/departments', category: '组织', keywords: ['department', 'team'] },
+  {
+    id: "users",
+    title: "用户管理",
+    icon: <TeamOutlined />,
+    path: "/organization/users",
+    category: "组织",
+    keywords: ["user", "member"],
+  },
+  {
+    id: "departments",
+    title: "部门管理",
+    icon: <TeamOutlined />,
+    path: "/organization/departments",
+    category: "组织",
+    keywords: ["department", "team"],
+  },
   // 系统
-  { id: 'resources', title: '资源管理', icon: <ApiOutlined />, path: '/system/resources', category: '系统', keywords: ['resource', 'api key'] },
-  { id: 'audit-logs', title: '审计日志', icon: <SafetyOutlined />, path: '/system/audit-logs', category: '系统', keywords: ['audit', 'log'] },
-  { id: 'settings', title: '设置', icon: <SettingOutlined />, path: '/system/settings', category: '系统', keywords: ['settings', 'config'] },
-  { id: 'profile', title: '个人中心', icon: <UserOutlined />, path: '/profile', category: '系统', keywords: ['profile', 'account'] },
+  {
+    id: "resources",
+    title: "资源管理",
+    icon: <ApiOutlined />,
+    path: "/system/resources",
+    category: "系统",
+    keywords: ["resource", "api key"],
+  },
+  {
+    id: "audit-logs",
+    title: "审计日志",
+    icon: <SafetyOutlined />,
+    path: "/system/audit-logs",
+    category: "系统",
+    keywords: ["audit", "log"],
+  },
+  {
+    id: "settings",
+    title: "设置",
+    icon: <SettingOutlined />,
+    path: "/system/settings",
+    category: "系统",
+    keywords: ["settings", "config"],
+  },
+  {
+    id: "profile",
+    title: "个人中心",
+    icon: <UserOutlined />,
+    path: "/profile",
+    category: "系统",
+    keywords: ["profile", "account"],
+  },
 ];
 
 interface SearchItem {
@@ -68,42 +193,45 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
   onOpenChange,
 }) => {
   const [internalOpen, setInternalOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
+  const [searchValue, setSearchValue] = useState("");
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const navigate = useNavigate();
 
   // 使用受控或非受控模式
   const isOpen = controlledOpen ?? internalOpen;
-  const setIsOpen = useCallback((value: boolean) => {
-    if (onOpenChange) {
-      onOpenChange(value);
-    } else {
-      setInternalOpen(value);
-    }
-  }, [onOpenChange]);
+  const setIsOpen = useCallback(
+    (value: boolean) => {
+      if (onOpenChange) {
+        onOpenChange(value);
+      } else {
+        setInternalOpen(value);
+      }
+    },
+    [onOpenChange],
+  );
 
   // 快捷键监听
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Cmd/Ctrl + K 打开
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         setIsOpen(true);
       }
       // ESC 关闭
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === "Escape" && isOpen) {
         setIsOpen(false);
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, setIsOpen]);
 
   // 重置搜索值
   useEffect(() => {
     if (!isOpen) {
-      setSearchValue('');
+      setSearchValue("");
     }
   }, [isOpen]);
 
@@ -112,10 +240,11 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
     if (!searchValue.trim()) return searchItems;
 
     const lowerSearch = searchValue.toLowerCase();
-    return searchItems.filter((item: SearchItem) =>
-      item.title.toLowerCase().includes(lowerSearch) ||
-      item.category.toLowerCase().includes(lowerSearch) ||
-      item.keywords?.some(kw => kw.includes(lowerSearch))
+    return searchItems.filter(
+      (item: SearchItem) =>
+        item.title.toLowerCase().includes(lowerSearch) ||
+        item.category.toLowerCase().includes(lowerSearch) ||
+        item.keywords?.some((kw) => kw.includes(lowerSearch)),
     );
   }, [searchValue]);
 
@@ -132,23 +261,29 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
   }, [filteredItems]);
 
   // 选择项目
-  const handleSelect = useCallback((item: SearchItem) => {
-    // 添加到最近搜索
-    setRecentSearches(prev => {
-      const newSearches = [item.id, ...prev.filter(id => id !== item.id)].slice(0, 5);
-      return newSearches;
-    });
+  const handleSelect = useCallback(
+    (item: SearchItem) => {
+      // 添加到最近搜索
+      setRecentSearches((prev) => {
+        const newSearches = [
+          item.id,
+          ...prev.filter((id) => id !== item.id),
+        ].slice(0, 5);
+        return newSearches;
+      });
 
-    setIsOpen(false);
-    if (item.path) {
-      navigate(item.path);
-    }
-  }, [navigate, setIsOpen]);
+      setIsOpen(false);
+      if (item.path) {
+        navigate(item.path);
+      }
+    },
+    [navigate, setIsOpen],
+  );
 
   // 获取最近搜索的项目
   const recentItems = useMemo(() => {
     return recentSearches
-      .map(id => searchItems.find((item: SearchItem) => item.id === id))
+      .map((id) => searchItems.find((item: SearchItem) => item.id === id))
       .filter(Boolean) as SearchItem[];
   }, [recentSearches]);
 
@@ -168,7 +303,9 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
       {/* 搜索输入框 */}
       <div className="p-3 border-b border-[var(--color-border)]">
         <Input
-          prefix={<SearchOutlined className="text-[var(--color-text-tertiary)]" />}
+          prefix={
+            <SearchOutlined className="text-[var(--color-text-tertiary)]" />
+          }
           placeholder="搜索菜单、页面... (Ctrl+K)"
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}
@@ -216,12 +353,18 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
                     onClick={() => handleSelect(item)}
                   >
                     <List.Item.Meta
-                      avatar={<span className="text-lg text-[var(--color-text-secondary)]">{item.icon}</span>}
+                      avatar={
+                        <span className="text-lg text-[var(--color-text-secondary)]">
+                          {item.icon}
+                        </span>
+                      }
                       title={
                         <Space>
                           <span>{item.title}</span>
-                          {item.keywords?.slice(0, 2).map(kw => (
-                            <Tag key={kw} className="text-xs opacity-60">{kw}</Tag>
+                          {item.keywords?.slice(0, 2).map((kw) => (
+                            <Tag key={kw} className="text-xs opacity-60">
+                              {kw}
+                            </Tag>
                           ))}
                         </Space>
                       }
@@ -245,16 +388,24 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
       {/* 底部提示 */}
       <div className="px-4 py-2 border-t border-[var(--color-border)] flex items-center justify-between text-xs text-[var(--color-text-tertiary)]">
         <Space>
-          <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-bg-tertiary)]">↑</kbd>
-          <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-bg-tertiary)]">↓</kbd>
+          <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-bg-tertiary)]">
+            ↑
+          </kbd>
+          <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-bg-tertiary)]">
+            ↓
+          </kbd>
           <span>导航</span>
         </Space>
         <Space>
-          <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-bg-tertiary)]">Enter</kbd>
+          <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-bg-tertiary)]">
+            Enter
+          </kbd>
           <span>选择</span>
         </Space>
         <Space>
-          <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-bg-tertiary)]">Esc</kbd>
+          <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-bg-tertiary)]">
+            Esc
+          </kbd>
           <span>关闭</span>
         </Space>
       </div>

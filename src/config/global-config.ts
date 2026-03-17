@@ -1,12 +1,11 @@
 /**
  * 全局应用配置
- * 参考 slash-admin 的配置模式
  */
 
-import pkg from '../../package.json';
+import pkg from "../../package.json";
 
 /** 悬浮球模式类型 */
-export type FloatingMode = 'floating' | 'window';
+export type FloatingMode = "floating" | "window";
 
 /**
  * 全局配置类型定义
@@ -25,7 +24,7 @@ export type GlobalConfig = {
   /** API 请求超时时间 (ms) */
   apiTimeout: number;
   /** 路由模式 */
-  routerMode: 'frontend' | 'backend';
+  routerMode: "frontend" | "backend";
   /** 应用标题 */
   appTitle: string;
   /** 悬浮球模式 */
@@ -41,9 +40,12 @@ export type GlobalConfig = {
 /**
  * 解析布尔值环境变量
  */
-function parseBoolean(value: string | undefined, defaultValue: boolean): boolean {
+function parseBoolean(
+  value: string | undefined,
+  defaultValue: boolean,
+): boolean {
   if (value === undefined) return defaultValue;
-  return value === 'true' || value === '1';
+  return value === "true" || value === "1";
 }
 
 /**
@@ -60,10 +62,10 @@ function parseNumber(value: string | undefined, defaultValue: number): number {
  */
 function getFloatingMode(): FloatingMode {
   const mode = import.meta.env.VITE_APP_FLOATING_MODE;
-  if (mode === 'floating' || mode === 'window') {
+  if (mode === "floating" || mode === "window") {
     return mode;
   }
-  return 'window'; // 默认使用窗口模式
+  return "window"; // 默认使用窗口模式
 }
 
 /**
@@ -71,18 +73,26 @@ function getFloatingMode(): FloatingMode {
  * 从环境变量和 package.json 读取配置
  */
 export const GLOBAL_CONFIG: GlobalConfig = {
-  appName: 'Amos Claw',
+  appName: "Amos Claw",
   appVersion: pkg.version,
-  defaultRoute: import.meta.env.VITE_APP_DEFAULT_ROUTE || '/workbench',
-  publicPath: import.meta.env.VITE_APP_PUBLIC_PATH || '/',
-  apiBaseUrl: import.meta.env.VITE_APP_API_BASE_URL || '/api',
+  defaultRoute: import.meta.env.VITE_APP_DEFAULT_ROUTE || "/workbench",
+  publicPath: import.meta.env.VITE_APP_PUBLIC_PATH || "/",
+  apiBaseUrl: import.meta.env.VITE_APP_API_BASE_URL || "/api",
   apiTimeout: parseNumber(import.meta.env.VITE_APP_API_TIMEOUT, 30000),
-  routerMode: (import.meta.env.VITE_APP_ROUTER_MODE as 'frontend' | 'backend') || 'frontend',
-  appTitle: import.meta.env.VITE_APP_TITLE || 'Amos Claw - AI Agent Management',
+  routerMode:
+    (import.meta.env.VITE_APP_ROUTER_MODE as "frontend" | "backend") ||
+    "frontend",
+  appTitle: import.meta.env.VITE_APP_TITLE || "Amos Claw - AI Agent Management",
   floatingMode: getFloatingMode(),
-  isFloatingMode: getFloatingMode() === 'floating',
-  enableAnalytics: parseBoolean(import.meta.env.VITE_APP_ENABLE_ANALYTICS, false),
-  enableDebug: parseBoolean(import.meta.env.VITE_APP_ENABLE_DEBUG, import.meta.env.DEV),
+  isFloatingMode: getFloatingMode() === "floating",
+  enableAnalytics: parseBoolean(
+    import.meta.env.VITE_APP_ENABLE_ANALYTICS,
+    false,
+  ),
+  enableDebug: parseBoolean(
+    import.meta.env.VITE_APP_ENABLE_DEBUG,
+    import.meta.env.DEV,
+  ),
 };
 
 /**
@@ -105,20 +115,20 @@ export const LAYOUT_CONFIG = {
  * 存储键名枚举
  */
 export const StorageEnum = {
-  ThemeMode: 'amos-claw-theme-mode',
-  Settings: 'amos-claw-settings',
-  Token: 'amos-claw-token',
-  User: 'amos-claw-user',
-  Language: 'amos-claw-language',
+  ThemeMode: "amos-claw-theme-mode",
+  Settings: "amos-claw-settings",
+  Token: "amos-claw-token",
+  User: "amos-claw-user",
+  Language: "amos-claw-language",
 } as const;
 
 /**
  * 主题模式枚举
  */
 export const ThemeMode = {
-  Light: 'light',
-  Dark: 'dark',
-  System: 'system',
+  Light: "light",
+  Dark: "dark",
+  System: "system",
 } as const;
 
 export type ThemeModeType = (typeof ThemeMode)[keyof typeof ThemeMode];
@@ -127,9 +137,9 @@ export type ThemeModeType = (typeof ThemeMode)[keyof typeof ThemeMode];
  * 主题布局枚举
  */
 export const ThemeLayout = {
-  Vertical: 'vertical',
-  Horizontal: 'horizontal',
-  Mini: 'mini',
+  Vertical: "vertical",
+  Horizontal: "horizontal",
+  Mini: "mini",
 } as const;
 
 export type ThemeLayoutType = (typeof ThemeLayout)[keyof typeof ThemeLayout];
@@ -138,20 +148,21 @@ export type ThemeLayoutType = (typeof ThemeLayout)[keyof typeof ThemeLayout];
  * 主题颜色预设枚举
  */
 export const ThemeColorPresets = {
-  Default: 'default',
-  Cyan: 'cyan',
-  Purple: 'purple',
-  Blue: 'blue',
-  Orange: 'orange',
-  Red: 'red',
+  Default: "default",
+  Cyan: "cyan",
+  Purple: "purple",
+  Blue: "blue",
+  Orange: "orange",
+  Red: "red",
 } as const;
 
-export type ThemeColorPresetsType = (typeof ThemeColorPresets)[keyof typeof ThemeColorPresets];
+export type ThemeColorPresetsType =
+  (typeof ThemeColorPresets)[keyof typeof ThemeColorPresets];
 
 /**
  * HTML data 属性
  */
 export const HtmlDataAttribute = {
-  ThemeMode: 'data-theme-mode',
-  ColorPalette: 'data-color-palette',
+  ThemeMode: "data-theme-mode",
+  ColorPalette: "data-color-palette",
 } as const;

@@ -1,19 +1,24 @@
 /**
  * 多标签页管理组件
- * 参考 slash-admin 的多标签页功能
  */
 
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
-import { Dropdown, Button } from 'antd';
-import type { TabsProps } from 'antd';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
+import { Dropdown, Button } from "antd";
+import type { TabsProps } from "antd";
 import {
   CloseOutlined,
   ReloadOutlined,
   CloseCircleOutlined,
   VerticalLeftOutlined,
   VerticalRightOutlined,
-} from '@ant-design/icons';
-import type { MenuProps } from 'antd';
+} from "@ant-design/icons";
+import type { MenuProps } from "antd";
 
 // ==================== 类型定义 ====================
 
@@ -60,7 +65,7 @@ const MultiTabContext = createContext<MultiTabContextType | null>(null);
 export const useMultiTab = () => {
   const context = useContext(MultiTabContext);
   if (!context) {
-    throw new Error('useMultiTab must be used within MultiTabProvider');
+    throw new Error("useMultiTab must be used within MultiTabProvider");
   }
   return context;
 };
@@ -93,7 +98,7 @@ export const MultiTabProvider: React.FC<MultiTabProviderProps> = ({
   onRefresh,
 }) => {
   const [tabs, setTabs] = useState<TabItem[]>(initialTabs);
-  const [activeKey, setActiveKey] = useState<string>(defaultActiveKey || '');
+  const [activeKey, setActiveKey] = useState<string>(defaultActiveKey || "");
 
   const addTab = useCallback(
     (tab: TabItem) => {
@@ -107,7 +112,9 @@ export const MultiTabProvider: React.FC<MultiTabProviderProps> = ({
         // 检查是否超过最大数量
         if (prev.length >= maxTabs) {
           // 移除第一个可关闭的标签
-          const closableIndex = prev.findIndex((t) => t.closable !== false && !t.fixed);
+          const closableIndex = prev.findIndex(
+            (t) => t.closable !== false && !t.fixed,
+          );
           if (closableIndex > -1) {
             const newTabs = [...prev];
             newTabs.splice(closableIndex, 1);
@@ -120,7 +127,7 @@ export const MultiTabProvider: React.FC<MultiTabProviderProps> = ({
 
       setActiveKey(tab.key);
     },
-    [maxTabs]
+    [maxTabs],
   );
 
   const closeTab = useCallback(
@@ -147,48 +154,45 @@ export const MultiTabProvider: React.FC<MultiTabProviderProps> = ({
 
       onClose?.(key);
     },
-    [activeKey, onClose]
+    [activeKey, onClose],
   );
 
-  const closeOthersTab = useCallback(
-    (key: string) => {
-      setTabs((prev) => {
-        return prev.filter((t) => t.key === key || t.closable === false || t.fixed);
-      });
-      setActiveKey(key);
-    },
-    []
-  );
+  const closeOthersTab = useCallback((key: string) => {
+    setTabs((prev) => {
+      return prev.filter(
+        (t) => t.key === key || t.closable === false || t.fixed,
+      );
+    });
+    setActiveKey(key);
+  }, []);
 
   const closeAll = useCallback(() => {
     setTabs((prev) => prev.filter((t) => t.closable === false || t.fixed));
   }, []);
 
-  const closeLeft = useCallback(
-    (key: string) => {
-      setTabs((prev) => {
-        const index = prev.findIndex((t) => t.key === key);
-        return prev.filter((t, i) => i >= index || t.closable === false || t.fixed);
-      });
-    },
-    []
-  );
+  const closeLeft = useCallback((key: string) => {
+    setTabs((prev) => {
+      const index = prev.findIndex((t) => t.key === key);
+      return prev.filter(
+        (t, i) => i >= index || t.closable === false || t.fixed,
+      );
+    });
+  }, []);
 
-  const closeRight = useCallback(
-    (key: string) => {
-      setTabs((prev) => {
-        const index = prev.findIndex((t) => t.key === key);
-        return prev.filter((t, i) => i <= index || t.closable === false || t.fixed);
-      });
-    },
-    []
-  );
+  const closeRight = useCallback((key: string) => {
+    setTabs((prev) => {
+      const index = prev.findIndex((t) => t.key === key);
+      return prev.filter(
+        (t, i) => i <= index || t.closable === false || t.fixed,
+      );
+    });
+  }, []);
 
   const refreshTab = useCallback(
     (key: string) => {
       onRefresh?.(key);
     },
-    [onRefresh]
+    [onRefresh],
   );
 
   const contextValue = useMemo(
@@ -204,7 +208,17 @@ export const MultiTabProvider: React.FC<MultiTabProviderProps> = ({
       refreshTab,
       setActiveKey,
     }),
-    [tabs, activeKey, addTab, closeTab, closeOthersTab, closeAll, closeLeft, closeRight, refreshTab]
+    [
+      tabs,
+      activeKey,
+      addTab,
+      closeTab,
+      closeOthersTab,
+      closeAll,
+      closeLeft,
+      closeRight,
+      refreshTab,
+    ],
   );
 
   // 触发变化回调
@@ -223,7 +237,7 @@ export const MultiTabProvider: React.FC<MultiTabProviderProps> = ({
 
 export interface MultiTabViewProps {
   /** 标签页样式 */
-  tabStyle?: 'card' | 'line';
+  tabStyle?: "card" | "line";
   /** 是否显示刷新按钮 */
   showRefresh?: boolean;
   /** 是否显示关闭按钮 */
@@ -238,7 +252,7 @@ export const MultiTabView: React.FC<MultiTabViewProps> = ({
   showRefresh = true,
   showClose = true,
   extra,
-  className = '',
+  className = "",
 }) => {
   const {
     tabs,
@@ -253,61 +267,63 @@ export const MultiTabView: React.FC<MultiTabViewProps> = ({
   } = useMultiTab();
 
   // 右键菜单
-  const getContextMenu = (key: string): MenuProps['items'] => {
+  const getContextMenu = (key: string): MenuProps["items"] => {
     return [
       {
-        key: 'refresh',
+        key: "refresh",
         icon: <ReloadOutlined />,
-        label: '刷新',
+        label: "刷新",
         onClick: () => refreshTab(key),
       },
-      { type: 'divider' },
+      { type: "divider" },
       {
-        key: 'close',
+        key: "close",
         icon: <CloseOutlined />,
-        label: '关闭',
+        label: "关闭",
         disabled: tabs.find((t) => t.key === key)?.closable === false,
         onClick: () => closeTab(key),
       },
       {
-        key: 'closeOthers',
+        key: "closeOthers",
         icon: <CloseCircleOutlined />,
-        label: '关闭其他',
+        label: "关闭其他",
         onClick: () => closeOthersTab(key),
       },
-      { type: 'divider' },
+      { type: "divider" },
       {
-        key: 'closeLeft',
+        key: "closeLeft",
         icon: <VerticalLeftOutlined />,
-        label: '关闭左侧',
+        label: "关闭左侧",
         onClick: () => closeLeft(key),
       },
       {
-        key: 'closeRight',
+        key: "closeRight",
         icon: <VerticalRightOutlined />,
-        label: '关闭右侧',
+        label: "关闭右侧",
         onClick: () => closeRight(key),
       },
-      { type: 'divider' },
+      { type: "divider" },
       {
-        key: 'closeAll',
+        key: "closeAll",
         icon: <CloseCircleOutlined />,
-        label: '关闭所有',
+        label: "关闭所有",
         onClick: () => closeAll(),
       },
     ];
   };
 
   // 渲染标签
-  const renderTab: TabsProps['renderTabBar'] = () => (
-    <div className={`flex items-center gap-1 px-4 py-2 bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)] ${className}`}>
+  const renderTab: TabsProps["renderTabBar"] = () => (
+    <div
+      className={`flex items-center gap-1 px-4 py-2 bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)] ${className}`}
+    >
       <div className="flex-1 overflow-x-auto scrollbar-hide">
         <div className="flex items-center gap-1">
           {tabs.map((tab) => (
             <Dropdown
               key={tab.key}
               menu={{ items: getContextMenu(tab.key) }}
-              trigger={['contextMenu']}
+              trigger={["contextMenu"]}
             >
               <div
                 className={`
@@ -315,8 +331,8 @@ export const MultiTabView: React.FC<MultiTabViewProps> = ({
                   transition-colors duration-200
                   ${
                     activeKey === tab.key
-                      ? 'bg-[var(--color-primary)] text-white'
-                      : 'bg-[var(--color-bg-paper)] hover:bg-[var(--color-action-hover)] text-[var(--color-text-primary)]'
+                      ? "bg-[var(--color-primary)] text-white"
+                      : "bg-[var(--color-bg-paper)] hover:bg-[var(--color-action-hover)] text-[var(--color-text-primary)]"
                   }
                 `}
                 onClick={() => setActiveKey(tab.key)}

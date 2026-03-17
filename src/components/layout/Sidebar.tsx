@@ -282,7 +282,6 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       style={{ backgroundColor: siderBg, borderColor: borderColor }}
       trigger={null}
     >
-      {/* Logo 区域 - 参考 slash-admin 的设计 */}
       <div
         className="relative flex items-center h-[var(--layout-header-height)] px-2 border-b transition-all duration-300 cursor-pointer"
         style={{ borderColor }}
@@ -306,7 +305,6 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           </span>
         </div>
 
-        {/* 折叠按钮 - 参考 slash-admin 的边缘定位 */}
         <Button
           type="text"
           size="small"

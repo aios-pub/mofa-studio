@@ -1,11 +1,10 @@
 /**
  * 滚动进度条组件
- * 参考 slash-admin 实现
  * 显示页面滚动进度，提升阅读体验
  */
 
-import { useSpring, motion, type MotionValue } from 'framer-motion';
-import type { CSSProperties } from 'react';
+import { useSpring, motion, type MotionValue } from "framer-motion";
+import type { CSSProperties } from "react";
 
 export interface ScrollProgressProps {
   /** 进度条颜色 */
@@ -43,13 +42,13 @@ export function ScrollProgress({
   });
 
   // 设置进度条颜色，默认使用主题色
-  const backgroundColor = color || 'var(--color-primary)';
+  const backgroundColor = color || "var(--color-primary)";
 
   const style: CSSProperties = {
-    transformOrigin: '0%',
+    transformOrigin: "0%",
     height,
     backgroundColor,
-    position: 'fixed',
+    position: "fixed",
     top: 0,
     left: 0,
     right: 0,

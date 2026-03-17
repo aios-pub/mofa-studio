@@ -1,6 +1,5 @@
 /**
  * 通用工具函数
- * 参考 slash-admin 的实现
  */
 
 // ==================== UUID 生成 ====================
@@ -10,9 +9,9 @@
  * @returns UUID 字符串
  */
 export function uuid(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
@@ -23,8 +22,9 @@ export function uuid(): string {
  * @returns 短 ID 字符串
  */
 export function shortId(length = 8): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
@@ -36,7 +36,7 @@ export function shortId(length = 8): string {
  * @param prefix 前缀
  * @returns 唯一 ID
  */
-export function uniqueId(prefix = 'id'): string {
+export function uniqueId(prefix = "id"): string {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
@@ -61,7 +61,7 @@ export function sleep(ms: number): Promise<void> {
 export function timeout<T>(
   promise: Promise<T>,
   ms: number,
-  error = 'Timeout'
+  error = "Timeout",
 ): Promise<T> {
   const timer = new Promise<never>((_, reject) => {
     setTimeout(() => reject(new Error(error)), ms);
@@ -79,7 +79,7 @@ export function timeout<T>(
 export async function retry<T>(
   fn: () => Promise<T>,
   retries = 3,
-  delay = 1000
+  delay = 1000,
 ): Promise<T> {
   let lastError: Error | null = null;
 
@@ -109,7 +109,7 @@ export function isEmpty(value: unknown): boolean {
     return true;
   }
 
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value.trim().length === 0;
   }
 
@@ -117,7 +117,7 @@ export function isEmpty(value: unknown): boolean {
     return value.length === 0;
   }
 
-  if (typeof value === 'object') {
+  if (typeof value === "object") {
     return Object.keys(value).length === 0;
   }
 
@@ -161,7 +161,7 @@ export function isNotNil<T>(value: T | null | undefined): value is T {
  */
 export function omit<T extends object, K extends keyof T>(
   obj: T,
-  keys: K[]
+  keys: K[],
 ): Omit<T, K> {
   const result = { ...obj };
   for (const key of keys) {
@@ -178,7 +178,7 @@ export function omit<T extends object, K extends keyof T>(
  */
 export function pick<T extends object, K extends keyof T>(
   obj: T,
-  keys: K[]
+  keys: K[],
 ): Pick<T, K> {
   const result = {} as Pick<T, K>;
   for (const key of keys) {
@@ -211,16 +211,16 @@ export function deepMerge<T extends object>(
       const targetValue = (target as Record<string, unknown>)[key];
 
       if (
-        typeof sourceValue === 'object' &&
+        typeof sourceValue === "object" &&
         sourceValue !== null &&
         !Array.isArray(sourceValue) &&
-        typeof targetValue === 'object' &&
+        typeof targetValue === "object" &&
         targetValue !== null &&
         !Array.isArray(targetValue)
       ) {
         (target as Record<string, unknown>)[key] = deepMerge(
           targetValue as object,
-          sourceValue as object
+          sourceValue as object,
         );
       } else {
         (target as Record<string, unknown>)[key] = sourceValue;
@@ -264,7 +264,7 @@ export function isEqual(a: unknown, b: unknown): boolean {
   }
 
   // 对象比较
-  if (typeof a === 'object' && typeof b === 'object') {
+  if (typeof a === "object" && typeof b === "object") {
     const keysA = Object.keys(a as object);
     const keysB = Object.keys(b as object);
 
@@ -277,7 +277,7 @@ export function isEqual(a: unknown, b: unknown): boolean {
         Object.prototype.hasOwnProperty.call(b, key) &&
         isEqual(
           (a as Record<string, unknown>)[key],
-          (b as Record<string, unknown>)[key]
+          (b as Record<string, unknown>)[key],
         )
       );
     });
@@ -297,7 +297,12 @@ export function shallowEqual(a: unknown, b: unknown): boolean {
     return true;
   }
 
-  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
+  if (
+    typeof a !== "object" ||
+    a === null ||
+    typeof b !== "object" ||
+    b === null
+  ) {
     return false;
   }
 
@@ -311,7 +316,8 @@ export function shallowEqual(a: unknown, b: unknown): boolean {
   return keysA.every((key) => {
     return (
       Object.prototype.hasOwnProperty.call(b, key) &&
-      (a as Record<string, unknown>)[key] === (b as Record<string, unknown>)[key]
+      (a as Record<string, unknown>)[key] ===
+        (b as Record<string, unknown>)[key]
     );
   });
 }
@@ -347,19 +353,18 @@ export function unique<T>(arr: T[], key?: keyof T): T[] {
  */
 export function groupBy<T, K extends string | number>(
   arr: T[],
-  key: keyof T | ((item: T) => K)
+  key: keyof T | ((item: T) => K),
 ): Record<K, T[]> {
   return arr.reduce(
     (result, item) => {
-      const groupKey =
-        typeof key === 'function' ? key(item) : (item[key] as K);
+      const groupKey = typeof key === "function" ? key(item) : (item[key] as K);
       if (!result[groupKey]) {
         result[groupKey] = [];
       }
       result[groupKey].push(item);
       return result;
     },
-    {} as Record<K, T[]>
+    {} as Record<K, T[]>,
   );
 }
 
@@ -373,14 +378,14 @@ export function groupBy<T, K extends string | number>(
 export function sortBy<T>(
   arr: T[],
   key: keyof T | ((item: T) => number | string),
-  order: 'asc' | 'desc' = 'asc'
+  order: "asc" | "desc" = "asc",
 ): T[] {
   return [...arr].sort((a, b) => {
-    const valueA = typeof key === 'function' ? key(a) : a[key];
-    const valueB = typeof key === 'function' ? key(b) : b[key];
+    const valueA = typeof key === "function" ? key(a) : a[key];
+    const valueB = typeof key === "function" ? key(b) : b[key];
 
-    if (valueA < valueB) return order === 'asc' ? -1 : 1;
-    if (valueA > valueB) return order === 'asc' ? 1 : -1;
+    if (valueA < valueB) return order === "asc" ? -1 : 1;
+    if (valueA > valueB) return order === "asc" ? 1 : -1;
     return 0;
   });
 }

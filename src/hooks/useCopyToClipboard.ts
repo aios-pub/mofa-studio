@@ -1,11 +1,10 @@
 /**
  * 复制到剪贴板 Hook
- * 参考 slash-admin 的实现
  */
 
-import { useState, useCallback } from 'react';
-import { message } from 'antd';
-import { copyToClipboard } from '@/utils';
+import { useState, useCallback } from "react";
+import { message } from "antd";
+import { copyToClipboard } from "@/utils";
 
 export interface UseCopyToClipboardOptions {
   /** 成功提示文字 */
@@ -37,11 +36,11 @@ export interface UseCopyToClipboardReturn {
  * @returns 复制函数和状态
  */
 export function useCopyToClipboard(
-  options: UseCopyToClipboardOptions = {}
+  options: UseCopyToClipboardOptions = {},
 ): UseCopyToClipboardReturn {
   const {
-    successText = '复制成功',
-    errorText = '复制失败',
+    successText = "复制成功",
+    errorText = "复制失败",
     showMessage = true,
     onSuccess,
     onError,
@@ -83,7 +82,7 @@ export function useCopyToClipboard(
         setCopying(false);
       }
     },
-    [successText, errorText, showMessage, onSuccess, onError]
+    [successText, errorText, showMessage, onSuccess, onError],
   );
 
   const reset = useCallback(() => {

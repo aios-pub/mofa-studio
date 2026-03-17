@@ -1,6 +1,5 @@
 /**
  * 树形数据处理工具
- * 参考 slash-admin 的实现
  */
 
 /**
@@ -8,7 +7,9 @@
  * @param trees 树结构数组
  * @returns 扁平化后的数组
  */
-export function flattenTrees<T extends { children?: T[] }>(trees: T[] = []): T[] {
+export function flattenTrees<T extends { children?: T[] }>(
+  trees: T[] = [],
+): T[] {
   const result: T[] = [];
 
   for (const node of trees) {
@@ -39,9 +40,12 @@ export function convertToTree<T extends { children?: T[] }>(items: T[]): T[] {
  * @returns 树结构（包含 children 属性）
  */
 export function convertFlatToTree<T extends { id: string; parentId: string }>(
-  items: T[]
+  items: T[],
 ): (T & { children: (T & { children: T[] })[] })[] {
-  const itemMap = new Map<string, T & { children: (T & { children: T[] })[] }>();
+  const itemMap = new Map<
+    string,
+    T & { children: (T & { children: T[] })[] }
+  >();
   const result: (T & { children: (T & { children: T[] })[] })[] = [];
 
   // 第一遍：创建所有节点的映射
@@ -54,7 +58,7 @@ export function convertFlatToTree<T extends { id: string; parentId: string }>(
     const node = itemMap.get(item.id);
     if (!node) continue;
 
-    if (!item.parentId || item.parentId === '') {
+    if (!item.parentId || item.parentId === "") {
       // 根节点
       result.push(node);
     } else {
@@ -77,7 +81,7 @@ export function convertFlatToTree<T extends { id: string; parentId: string }>(
  */
 export function findInTree<T extends { children?: T[] }>(
   trees: T[],
-  predicate: (node: T) => boolean
+  predicate: (node: T) => boolean,
 ): T | undefined {
   for (const node of trees) {
     if (predicate(node)) {
@@ -99,7 +103,7 @@ export function findInTree<T extends { children?: T[] }>(
  */
 export function findAllInTree<T extends { children?: T[] }>(
   trees: T[],
-  predicate: (node: T) => boolean
+  predicate: (node: T) => boolean,
 ): T[] {
   const result: T[] = [];
 
@@ -124,7 +128,7 @@ export function traverseTree<T extends { children?: T[] }>(
   trees: T[],
   callback: (node: T, depth: number, parent: T | null) => void,
   depth = 0,
-  parent: T | null = null
+  parent: T | null = null,
 ): void {
   for (const node of trees) {
     callback(node, depth, parent);
@@ -142,7 +146,7 @@ export function traverseTree<T extends { children?: T[] }>(
  */
 export function filterTree<T extends { children?: T[] }>(
   trees: T[],
-  predicate: (node: T) => boolean
+  predicate: (node: T) => boolean,
 ): T[] {
   const result: T[] = [];
 
@@ -150,7 +154,9 @@ export function filterTree<T extends { children?: T[] }>(
     if (predicate(node)) {
       result.push({
         ...node,
-        children: node.children ? filterTree(node.children, predicate) : undefined,
+        children: node.children
+          ? filterTree(node.children, predicate)
+          : undefined,
       } as T);
     } else if (node.children) {
       const filteredChildren = filterTree(node.children, predicate);
@@ -176,7 +182,7 @@ export function filterTree<T extends { children?: T[] }>(
 export function getTreePath<T extends { children?: T[] }>(
   trees: T[],
   targetId: string,
-  idKey: keyof T = 'id' as keyof T
+  idKey: keyof T = "id" as keyof T,
 ): T[] {
   const path: T[] = [];
 

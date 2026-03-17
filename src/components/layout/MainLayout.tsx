@@ -1,18 +1,23 @@
 /**
  * 主布局组件
- * 参考 slash-admin 的响应式布局设计
  */
 
-import { ReactNode, useState, createContext, useContext, useEffect } from 'react';
-import { Layout, Drawer } from 'antd';
-import { RobotOutlined } from '@ant-design/icons';
-import Sidebar from './Sidebar';
-import Header from './Header';
-import HorizontalNav from './HorizontalNav';
-import { useSettings, useAppStore } from '../../stores';
-import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
-import { SettingsDrawer } from '../settings';
-import { RouteLoadingProgress } from '../common';
+import {
+  ReactNode,
+  useState,
+  createContext,
+  useContext,
+  useEffect,
+} from "react";
+import { Layout, Drawer } from "antd";
+import { RobotOutlined } from "@ant-design/icons";
+import Sidebar from "./Sidebar";
+import Header from "./Header";
+import HorizontalNav from "./HorizontalNav";
+import { useSettings, useAppStore } from "../../stores";
+import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
+import { SettingsDrawer } from "../settings";
+import { RouteLoadingProgress } from "../common";
 
 const { Content } = Layout;
 
@@ -56,11 +61,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
     };
 
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, [sidebarCollapsed, setSidebarCollapsed]);
 
-  const isHorizontal = settings.themeLayout === 'horizontal';
+  const isHorizontal = settings.themeLayout === "horizontal";
   const isStretch = settings.themeStretch;
 
   const contextValue: SettingsContextType = {
@@ -92,14 +97,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
             className="p-0"
             styles={{
               body: { padding: 0 },
-              header: { display: 'none' },
+              header: { display: "none" },
             }}
           >
             <Sidebar isMobile />
           </Drawer>
 
           {/* 设置抽屉 */}
-          <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+          <SettingsDrawer
+            open={settingsOpen}
+            onClose={() => setSettingsOpen(false)}
+          />
         </Layout>
       </SettingsContext.Provider>
     );
@@ -128,14 +136,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
           </Layout.Header>
 
           {/* 内容区域 */}
-          <Layout className={`bg-[var(--color-bg-base)] ${isStretch ? '' : 'max-w-[1400px] mx-auto'}`}>
+          <Layout
+            className={`bg-[var(--color-bg-base)] ${isStretch ? "" : "max-w-[1400px] mx-auto"}`}
+          >
             <Content className="overflow-auto bg-[var(--color-bg-base)] p-4">
               {children}
             </Content>
           </Layout>
 
           {/* 设置抽屉 */}
-          <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+          <SettingsDrawer
+            open={settingsOpen}
+            onClose={() => setSettingsOpen(false)}
+          />
         </Layout>
       </SettingsContext.Provider>
     );
@@ -155,7 +168,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           className={`
             bg-[var(--color-bg-base)]
             transition-all duration-300 ease-in-out
-            ${isStretch ? '' : 'max-w-[1400px] mx-auto'}
+            ${isStretch ? "" : "max-w-[1400px] mx-auto"}
           `}
         >
           {/* 头部 */}
@@ -168,7 +181,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
         </Layout>
 
         {/* 设置抽屉 */}
-        <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+        <SettingsDrawer
+          open={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+        />
       </Layout>
     </SettingsContext.Provider>
   );

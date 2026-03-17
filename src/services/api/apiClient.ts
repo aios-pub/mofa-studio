@@ -1,7 +1,6 @@
 /**
  * API 客户端封装
  * 基于 axios 的 HTTP 客户端
- * 参考 slash-admin 的实现
  */
 
 import axios, {
@@ -9,8 +8,8 @@ import axios, {
   type AxiosResponse,
   type AxiosError,
   type InternalAxiosRequestConfig,
-} from 'axios';
-import { message } from 'antd';
+} from "axios";
+import { message } from "antd";
 
 // ==================== 类型定义 ====================
 
@@ -34,10 +33,10 @@ export type RequestConfig = AxiosRequestConfig & {
 // ==================== 配置 ====================
 
 const DEFAULT_CONFIG: AxiosRequestConfig = {
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
   timeout: 50000,
   headers: {
-    'Content-Type': 'application/json;charset=utf-8',
+    "Content-Type": "application/json;charset=utf-8",
   },
 };
 
@@ -50,20 +49,20 @@ const axiosInstance = axios.create(DEFAULT_CONFIG);
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // 添加 Token
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
     // 添加语言
-    const language = localStorage.getItem('language') || 'zh-CN';
-    config.headers['Accept-Language'] = language;
+    const language = localStorage.getItem("language") || "zh-CN";
+    config.headers["Accept-Language"] = language;
 
     return config;
   },
   (error: AxiosError) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // ==================== 响应拦截器 ====================
@@ -78,13 +77,13 @@ axiosInstance.interceptors.response.use(
     }
 
     // 如果有 code 字段，检查业务状态码
-    if ('code' in data) {
+    if ("code" in data) {
       if (data.code === 0 || data.code === 200) {
         return data.data;
       }
 
       // 业务错误
-      const errorMsg = data.message || '请求失败';
+      const errorMsg = data.message || "请求失败";
       message.error(errorMsg);
       return Promise.reject(new Error(errorMsg));
     }
@@ -95,49 +94,50 @@ axiosInstance.interceptors.response.use(
   (error: AxiosError<ApiResponse>) => {
     const { response } = error;
 
-    let errorMessage = '网络请求失败';
+    let errorMessage = "网络请求失败";
 
     if (response) {
       switch (response.status) {
         case 400:
-          errorMessage = '请求参数错误';
+          errorMessage = "请求参数错误";
           break;
         case 401:
-          errorMessage = '未授权，请重新登录';
+          errorMessage = "未授权，请重新登录";
           // 清除 token 并跳转登录页
-          localStorage.removeItem('token');
-          window.location.href = '/login';
+          localStorage.removeItem("token");
+          window.location.href = "/login";
           break;
         case 403:
-          errorMessage = '拒绝访问';
+          errorMessage = "拒绝访问";
           break;
         case 404:
-          errorMessage = '请求的资源不存在';
+          errorMessage = "请求的资源不存在";
           break;
         case 500:
-          errorMessage = '服务器内部错误';
+          errorMessage = "服务器内部错误";
           break;
         case 502:
-          errorMessage = '网关错误';
+          errorMessage = "网关错误";
           break;
         case 503:
-          errorMessage = '服务不可用';
+          errorMessage = "服务不可用";
           break;
         case 504:
-          errorMessage = '网关超时';
+          errorMessage = "网关超时";
           break;
         default:
-          errorMessage = response.data?.message || `请求失败 (${response.status})`;
+          errorMessage =
+            response.data?.message || `请求失败 (${response.status})`;
       }
-    } else if (error.code === 'ECONNABORTED') {
-      errorMessage = '请求超时';
-    } else if (error.message === 'Network Error') {
-      errorMessage = '网络连接失败';
+    } else if (error.code === "ECONNABORTED") {
+      errorMessage = "请求超时";
+    } else if (error.message === "Network Error") {
+      errorMessage = "网络连接失败";
     }
 
     message.error(errorMessage);
     return Promise.reject(error);
-  }
+  },
 );
 
 // ==================== API 客户端类 ====================
@@ -147,35 +147,47 @@ class ApiClient {
    * GET 请求
    */
   get<T = unknown>(url: string, config?: RequestConfig): Promise<T> {
-    return this.request<T>({ ...config, method: 'GET', url });
+    return this.request<T>({ ...config, method: "GET", url });
   }
 
   /**
    * POST 请求
    */
-  post<T = unknown>(url: string, data?: unknown, config?: RequestConfig): Promise<T> {
-    return this.request<T>({ ...config, method: 'POST', url, data });
+  post<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: RequestConfig,
+  ): Promise<T> {
+    return this.request<T>({ ...config, method: "POST", url, data });
   }
 
   /**
    * PUT 请求
    */
-  put<T = unknown>(url: string, data?: unknown, config?: RequestConfig): Promise<T> {
-    return this.request<T>({ ...config, method: 'PUT', url, data });
+  put<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: RequestConfig,
+  ): Promise<T> {
+    return this.request<T>({ ...config, method: "PUT", url, data });
   }
 
   /**
    * PATCH 请求
    */
-  patch<T = unknown>(url: string, data?: unknown, config?: RequestConfig): Promise<T> {
-    return this.request<T>({ ...config, method: 'PATCH', url, data });
+  patch<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: RequestConfig,
+  ): Promise<T> {
+    return this.request<T>({ ...config, method: "PATCH", url, data });
   }
 
   /**
    * DELETE 请求
    */
   delete<T = unknown>(url: string, config?: RequestConfig): Promise<T> {
-    return this.request<T>({ ...config, method: 'DELETE', url });
+    return this.request<T>({ ...config, method: "DELETE", url });
   }
 
   /**
@@ -192,24 +204,26 @@ class ApiClient {
     url: string,
     file: File | FormData,
     onProgress?: (percent: number) => void,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<T> {
     const formData = file instanceof FormData ? file : new FormData();
     if (file instanceof File) {
-      formData.append('file', file);
+      formData.append("file", file);
     }
 
     return this.request<T>({
       ...config,
-      method: 'POST',
+      method: "POST",
       url,
       data: formData,
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
       onUploadProgress: (progressEvent: { loaded: number; total?: number }) => {
         if (onProgress && progressEvent.total) {
-          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          const percent = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total,
+          );
           onProgress(percent);
         }
       },
@@ -222,18 +236,18 @@ class ApiClient {
   download(
     url: string,
     filename?: string,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<void> {
     return this.request<Blob>({
       ...config,
-      method: 'GET',
+      method: "GET",
       url,
-      responseType: 'blob',
+      responseType: "blob",
     }).then((blob) => {
       const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = filename || 'download';
+      link.download = filename || "download";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

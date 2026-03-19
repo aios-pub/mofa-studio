@@ -4,14 +4,51 @@
  */
 
 import { apiClient } from "../api/apiClient";
-import type { SignInReq, SignUpReq, SignInRes, UserToken, UserInfo } from "../../types/user";
+import type {
+  SignInReq,
+  SignUpReq,
+  SignInRes,
+  UserToken,
+  UserInfo,
+} from "../../types/user";
+
+// 后端返回的原始数据格式
+interface BackendSignInResponse {
+  access_token: string;
+  refresh_token: string;
+  user: {
+    avatar: string | null;
+    email: string;
+    email_verified: boolean;
+    username: string;
+  };
+}
+
+// 转换后端数据为前端格式
+function transformSignInResponse(data: BackendSignInResponse): SignInRes {
+  return {
+    accessToken: data.access_token,
+    refreshToken: data.refresh_token,
+    user: {
+      username: data.user.username,
+      email: data.user.email,
+      avatar: data.user.avatar,
+      emailVerified: data.user.email_verified,
+    },
+  };
+}
 
 const authRealApi = {
   /**
    * 登录
    */
-  signin: (data: SignInReq): Promise<SignInRes> =>
-    apiClient.post<SignInRes>("/api/auth/login", data),
+  signin: async (data: SignInReq): Promise<SignInRes> => {
+    const res = await apiClient.post<BackendSignInResponse>(
+      "/api/auth/login",
+      data,
+    );
+    return transformSignInResponse(res);
+  },
 
   /**
    * 注册
@@ -22,14 +59,15 @@ const authRealApi = {
   /**
    * 登出
    */
-  logout: (): Promise<void> =>
-    apiClient.post("/api/auth/logout"),
+  logout: (): Promise<void> => apiClient.post("/api/auth/logout"),
 
   /**
    * 刷新 Token
    */
   refresh: (refreshToken: string): Promise<UserToken> =>
-    apiClient.post<UserToken>("/api/auth/refresh_token", { refresh_token: refreshToken }),
+    apiClient.post<UserToken>("/api/auth/refresh_token", {
+      refresh_token: refreshToken,
+    }),
 
   /**
    * 获取当前用户信息

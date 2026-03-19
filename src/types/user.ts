@@ -13,12 +13,13 @@ export interface Permission {
 }
 
 export interface UserInfo {
-  id: string;
+  id?: string;
   username: string;
   email: string;
-  avatar?: string;
-  roles: Role[];
-  permissions: Permission[];
+  avatar?: string | null;
+  emailVerified?: boolean;
+  roles?: Role[];
+  permissions?: Permission[];
   createdAt?: string;
   updatedAt?: string;
 }

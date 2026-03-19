@@ -46,6 +46,19 @@ const DEFAULT_CONFIG: AxiosRequestConfig = {
 
 const axiosInstance = axios.create(DEFAULT_CONFIG);
 
+// ==================== 工具函数 ====================
+
+/**
+ * 生成 UUID v4
+ */
+function generateUUID(): string {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 // ==================== 请求拦截器 ====================
 
 axiosInstance.interceptors.request.use(
@@ -59,6 +72,9 @@ axiosInstance.interceptors.request.use(
     // 添加语言
     const language = localStorage.getItem("language") || "zh-CN";
     config.headers["Accept-Language"] = language;
+
+    // 添加链路追踪 ID (X_REQUEST_ID)
+    config.headers["X_REQUEST_ID"] = generateUUID();
 
     return config;
   },

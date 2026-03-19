@@ -27,13 +27,13 @@ import type {
   TaskStatus,
   ExecutionStatus,
   TaskConfig,
-} from '../../services/mock/scheduledTasks';
+} from '@/services';
 import {
   scheduledTaskApi,
   taskTypeConfig,
   cronPresets,
   parseCronToText,
-} from '../../services/mock/scheduledTasks';
+} from '@/services';
 
 export default function ScheduledTasksPage() {
   const [tasks, setTasks] = useState<ScheduledTask[]>([]);

@@ -13,9 +13,9 @@ import {
   permissionApi,
   featurePermissionDefinitions,
   mockPermissionTemplates,
-} from '../../services/mock/permissions';
-import { mockSkills } from '../../services/mock/skills';
-import { mockPrompts } from '../../services/mock/prompts';
+} from '@/services';
+import { mockSkills } from '@/services';
+import { mockPrompts } from '@/services';
 import type { PermissionConfig } from '../../types/permission';
 
 interface PermissionConfigProps {

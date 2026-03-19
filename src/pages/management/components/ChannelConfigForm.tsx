@@ -13,7 +13,7 @@ import {
   Divider,
   Space,
 } from "antd";
-import { channelTypeConfig } from "../../../services/mock/channels";
+import { channelTypeConfig } from "@/services";
 import type { Channel, ChannelType, ChannelConfig } from "../../../types";
 
 interface ChannelConfigFormProps {

@@ -19,7 +19,7 @@ import {
   DeleteOutlined,
 } from '@ant-design/icons';
 import { useSkillHubStore } from '../../../../stores/useSkillHubStore';
-import type { SkillParameter } from '../../../../services/mock/skills';
+import type { SkillParameter } from '@/services';
 
 const { Text, Title, Paragraph } = Typography;
 const { TextArea } = Input;

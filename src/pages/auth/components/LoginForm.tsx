@@ -17,7 +17,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { Button, Checkbox, Divider, Form, Input, Alert } from 'antd';
 import { useUserActions } from '../../../stores/useUserStore';
-import authApi from '../../../services/mock/auth';
+import { authApi } from '@/services';
 
 interface LoginFormProps {
   onSwitchToRegister?: () => void;

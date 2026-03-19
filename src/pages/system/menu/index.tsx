@@ -28,7 +28,7 @@ import {
 import { PageHeader, EmptyState } from '../../../components/common';
 import type { MenuItem, MenuFormData } from '../../../types/system';
 import { MenuType, BasicStatus } from '../../../types/system';
-import { menuApi } from '../../../services/mock/system';
+import { menuApi } from '@/services';
 
 const { TextArea } = Input;
 

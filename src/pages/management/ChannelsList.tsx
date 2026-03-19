@@ -17,8 +17,8 @@ import {
   SyncOutlined,
   StopOutlined,
 } from '@ant-design/icons';
-import { channelApi, channelTypeConfig } from '../../services/mock/channels';
-import { agentApi } from '../../services/mock/agents';
+import { channelApi, channelTypeConfig } from '@/services';
+import { agentApi } from '@/services';
 import ChannelConfigForm from './components/ChannelConfigForm';
 import ChannelTypeSelector from './components/ChannelTypeSelector';
 import type { Channel, ChannelStatus, Agent } from '../../types';
@@ -630,7 +630,7 @@ function ChannelAgentsView({
     try {
       setLoading(true);
       const data = await channelApi.getChannelAgents(channel.id);
-      setChannelAgents(data.map((ac) => ({ agentId: ac.agentId, enabled: ac.enabled })));
+      setChannelAgents(data.map((ac: { agentId: string; enabled: boolean }) => ({ agentId: ac.agentId, enabled: ac.enabled })));
     } catch (error) {
       console.error('Failed to load channel agents:', error);
     } finally {

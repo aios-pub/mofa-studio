@@ -16,8 +16,8 @@ import {
   EyeOutlined,
   BulbOutlined,
 } from '@ant-design/icons';
-import type { Prompt, PromptVariable } from '../../services/mock/prompts';
-import { promptApi } from '../../services/mock/prompts';
+import type { Prompt, PromptVariable } from '@/services';
+import { promptApi } from '@/services';
 
 interface PromptEditorProps {
   promptId?: string;

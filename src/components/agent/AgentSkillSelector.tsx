@@ -13,8 +13,8 @@ import {
   PlayCircleOutlined,
   LoadingOutlined,
 } from '@ant-design/icons';
-import { skillApi } from '../../services/mock/skills';
-import type { Skill } from '../../services/mock/skills';
+import { skillApi } from '@/services';
+import type { Skill } from '@/services';
 
 interface AgentSkillSelectorProps {
   agentId: string;

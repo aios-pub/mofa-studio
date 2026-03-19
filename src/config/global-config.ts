@@ -8,6 +8,56 @@ import pkg from "../../package.json";
 export type FloatingMode = "floating" | "window";
 
 /**
+ * 服务端配置
+ */
+export const SERVER_CONFIG = {
+  /** 本地开发环境 */
+  development: {
+    baseURL: "http://localhost:3001",
+    wsURL: "ws://localhost:3001",
+  },
+  /** 生产环境 */
+  production: {
+    baseURL: "https://agentos.aios.pub",
+    wsURL: "wss://agentos.aios.pub",
+  },
+} as const;
+
+/**
+ * 获取服务端 URL
+ */
+export function getServerURL(): string {
+  const envURL = import.meta.env.VITE_APP_SERVER_URL;
+  if (envURL) return envURL;
+
+  return import.meta.env.DEV
+    ? SERVER_CONFIG.development.baseURL
+    : SERVER_CONFIG.production.baseURL;
+}
+
+/**
+ * 获取 WebSocket URL
+ */
+export function getWebSocketURL(): string {
+  return import.meta.env.DEV
+    ? SERVER_CONFIG.development.wsURL
+    : SERVER_CONFIG.production.wsURL;
+}
+
+/**
+ * 是否启用 Mock 数据
+ */
+export function isMockEnabled(): boolean {
+  const mockEnv = import.meta.env.VITE_APP_ENABLE_MOCK;
+  // 如果环境变量有设置，使用环境变量的值
+  if (mockEnv !== undefined) {
+    return mockEnv === "true" || mockEnv === "1";
+  }
+  // 默认：开发环境开启mock，生产环境关闭
+  return import.meta.env.DEV;
+}
+
+/**
  * 全局配置类型定义
  */
 export type GlobalConfig = {
@@ -19,8 +69,8 @@ export type GlobalConfig = {
   defaultRoute: string;
   /** 静态资源公共路径 */
   publicPath: string;
-  /** API 基础 URL */
-  apiBaseUrl: string;
+  /** 服务端 URL (同时作为 API 基础 URL) */
+  serverURL: string;
   /** API 请求超时时间 (ms) */
   apiTimeout: number;
   /** 路由模式 */
@@ -35,6 +85,10 @@ export type GlobalConfig = {
   enableAnalytics: boolean;
   /** 是否启用调试 */
   enableDebug: boolean;
+  /** WebSocket URL */
+  wsURL: string;
+  /** 是否启用 Mock */
+  enableMock: boolean;
 };
 
 /**
@@ -77,7 +131,7 @@ export const GLOBAL_CONFIG: GlobalConfig = {
   appVersion: pkg.version,
   defaultRoute: import.meta.env.VITE_APP_DEFAULT_ROUTE || "/workbench",
   publicPath: import.meta.env.VITE_APP_PUBLIC_PATH || "/",
-  apiBaseUrl: import.meta.env.VITE_APP_API_BASE_URL || "/api",
+  serverURL: getServerURL(),
   apiTimeout: parseNumber(import.meta.env.VITE_APP_API_TIMEOUT, 30000),
   routerMode:
     (import.meta.env.VITE_APP_ROUTER_MODE as "frontend" | "backend") ||
@@ -93,6 +147,8 @@ export const GLOBAL_CONFIG: GlobalConfig = {
     import.meta.env.VITE_APP_ENABLE_DEBUG,
     import.meta.env.DEV,
   ),
+  wsURL: getWebSocketURL(),
+  enableMock: isMockEnabled(),
 };
 
 /**

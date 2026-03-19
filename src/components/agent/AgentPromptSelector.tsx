@@ -5,8 +5,8 @@
 import { useState, useEffect } from 'react';
 import { Input } from 'antd';
 import { SearchOutlined, CloseOutlined, UpOutlined, DownOutlined } from '@ant-design/icons';
-import { promptApi } from '../../services/mock/prompts';
-import type { Prompt } from '../../services/mock/prompts';
+import { promptApi } from '@/services';
+import type { Prompt } from '@/services';
 
 interface AgentPromptSelectorProps {
   agentId: string;

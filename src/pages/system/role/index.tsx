@@ -29,7 +29,7 @@ import {
 import { PageHeader, EmptyState } from '../../../components/common';
 import type { SystemRole, RoleFormData, MenuItem } from '../../../types/system';
 import { BasicStatus } from '../../../types/system';
-import { roleApi, menuApi } from '../../../services/mock/system';
+import { roleApi, menuApi } from '@/services';
 
 const { TextArea } = Input;
 

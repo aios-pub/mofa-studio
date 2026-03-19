@@ -4,8 +4,7 @@
 
 import { create } from 'zustand';
 import type { HubSkill, HubCategory, HubStats } from '../types/skill';
-import { skillHubApi } from '../services/mock/skillHub';
-import { skillApi } from '../services/mock/skills';
+import { skillHubApi, skillApi } from '@/services';
 
 interface SkillHubState {
   // 搜索状态

@@ -17,10 +17,7 @@ import {
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { Button, Card, Progress, Tooltip } from "antd";
-import type { UsageStats, DailyStats } from "../../services/mock/analytics";
-import { analyticsApi } from "../../services/mock/analytics";
-import type { AgentStatus } from "../../services/mock/monitoring";
-import { monitoringApi } from "../../services/mock/monitoring";
+import { analyticsApi, monitoringApi, type UsageStats, type DailyStats, type AgentStatus } from "@/services";
 
 // 欢迎横幅组件
 function WelcomeBanner() {

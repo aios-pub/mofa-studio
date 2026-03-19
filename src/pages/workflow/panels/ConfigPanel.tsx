@@ -7,9 +7,9 @@ import { Button, Input, Select, InputNumber } from 'antd';
 import { DeleteOutlined, CloseOutlined } from '@ant-design/icons';
 import type { Node } from '@xyflow/react';
 import type { NodeConfig, NodeType } from '../../../types/workflow';
-import { nodeTypeConfig } from '../../../services/mock/workflows';
+import { nodeTypeConfig } from '@/services';
 
-import { agentApi } from '../../../services/mock/agents';
+import { agentApi } from '@/services';
 import { useEffect } from 'react';
 import type { Agent } from '../../../types';
 

@@ -9,8 +9,8 @@ const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig(async ({ mode }) => {
-  // 加载环境变量
-  loadEnv(mode, process.cwd(), "");
+  // 加载环境变量 (Vite 会自动加载，这里显式调用确保加载)
+  const env = loadEnv(mode, process.cwd(), "VITE_");
 
   return {
     plugins: [react(), tailwindcss()],

@@ -57,8 +57,8 @@ import type {
   ResourceQuota,
   ResourceUsageStats,
   QuotaLimits,
-} from '../../services/mock/resources';
-import { resourceApi, providerOptions } from '../../services/mock/resources';
+} from '@/services';
+import { resourceApi, providerOptions } from '@/services';
 
 const { Text } = Typography;
 

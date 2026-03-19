@@ -31,8 +31,8 @@ import {
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { PageHeader } from '@/components/common';
-import type { User as UserType } from '../../services/mock/organization';
-import { organizationApi } from '../../services/mock/organization';
+import type { User as UserType } from '@/services';
+import { organizationApi } from '@/services';
 
 const { Text } = Typography;
 

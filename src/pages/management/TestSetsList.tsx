@@ -21,7 +21,7 @@ import {
   FolderOutlined,
 } from '@ant-design/icons';
 import type { TestSet, TestCase, TestReport, TestCaseStatus } from '../../types/testset';
-import { testSetApi } from '../../services/mock/testsets';
+import { testSetApi } from '@/services';
 
 const { Text, Title } = Typography;
 
@@ -278,9 +278,9 @@ function TestSetDetail({
 
       // 更新用例结果
       const newResults = new Map<string, { status: TestCaseStatus; output: string; duration: number }>();
-      report.cases.forEach((c) => {
+      report.cases.forEach((c: { caseId: string; status: string; actualOutput?: string; duration: number }) => {
         newResults.set(c.caseId, {
-          status: c.status,
+          status: c.status as TestCaseStatus,
           output: c.actualOutput || '',
           duration: c.duration,
         });

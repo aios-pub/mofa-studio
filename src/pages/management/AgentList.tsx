@@ -15,7 +15,7 @@ import {
   SettingOutlined,
   SafetyOutlined,
 } from '@ant-design/icons';
-import { agentApi } from '../../services/mock/agents';
+import { agentApi } from '@/services';
 import { PermissionConfig } from '../../components/permission';
 import type { Agent } from '../../types';
 

@@ -11,8 +11,8 @@ import {
   DeleteOutlined,
   EditOutlined,
 } from '@ant-design/icons';
-import { conversationApi } from '../../services/mock/conversations';
-import { mockAgents } from '../../services/mock/agents';
+import { conversationApi } from '@/services';
+import { mockAgents } from '@/services';
 import type { Conversation } from '../../types';
 
 interface ConversationListProps {

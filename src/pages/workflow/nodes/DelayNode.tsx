@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { NodeProps } from '@xyflow/react';
-import { nodeTypeConfig } from '../../../services/mock/workflows';
+import { nodeTypeConfig } from '@/services';
 
 const formatDuration = (ms: number) => ms >= 1000 ? (ms / 1000).toFixed(1) + 's' : ms + 'ms';
 

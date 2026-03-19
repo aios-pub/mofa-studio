@@ -25,8 +25,8 @@ import type {
   ActivityEvent,
   SystemMetrics,
   Alert,
-} from '../../services/mock/monitoring';
-import { monitoringApi } from '../../services/mock/monitoring';
+} from '@/services';
+import { monitoringApi } from '@/services';
 
 export default function MonitoringPage() {
   const [agentStatuses, setAgentStatuses] = useState<AgentStatus[]>([]);
@@ -61,11 +61,11 @@ export default function MonitoringPage() {
     loadData();
 
     // 订阅实时更新
-    const unsubscribeEvents = monitoringApi.subscribeToUpdates((event) => {
+    const unsubscribeEvents = monitoringApi.subscribeToUpdates((event: ActivityEvent) => {
       setActivityEvents((prev) => [event, ...prev].slice(0, 50));
     });
 
-    const unsubscribeMetrics = monitoringApi.subscribeToMetrics((metrics) => {
+    const unsubscribeMetrics = monitoringApi.subscribeToMetrics((metrics: SystemMetrics) => {
       setSystemMetrics(metrics);
     });
 

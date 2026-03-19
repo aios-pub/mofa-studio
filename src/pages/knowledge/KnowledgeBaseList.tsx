@@ -15,7 +15,7 @@ import {
   CloudUploadOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
-import { knowledgeApi } from '../../services/mock/knowledge';
+import { knowledgeApi } from '@/services';
 import SearchPanel from './components/SearchPanel';
 import type { KnowledgeBase, Document } from '../../types/knowledge';
 

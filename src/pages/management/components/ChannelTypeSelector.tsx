@@ -3,7 +3,7 @@
  */
 
 import { Modal } from 'antd';
-import { channelTypeConfig } from '../../../services/mock/channels';
+import { channelTypeConfig } from '@/services';
 import type { ChannelType } from '../../../types';
 
 interface ChannelTypeSelectorProps {

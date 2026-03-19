@@ -26,7 +26,7 @@ import {
   CloudServerOutlined,
 } from "@ant-design/icons";
 import type { Provider, CreateProviderFormData } from "../../types/provider";
-import { providerApi } from "../../services/mock/providers";
+import { providerApi } from "@/services";
 import { getProviderTypeConfig } from "../../services/provider/providerConfigs";
 import { AddProviderModal } from "./components/AddProviderModal";
 

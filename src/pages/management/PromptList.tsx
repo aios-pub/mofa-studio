@@ -17,7 +17,7 @@ import {
   PlayCircleOutlined,
   MoreOutlined,
 } from '@ant-design/icons';
-import { promptApi, type Prompt } from '../../services/mock/prompts';
+import { promptApi, type Prompt } from '@/services';
 import PromptVersionHistory from '../../components/prompt/PromptVersionHistory';
 import PromptTestPanel from '../../components/prompt/PromptTestPanel';
 

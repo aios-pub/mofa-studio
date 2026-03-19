@@ -17,7 +17,7 @@ import {
   ShareAltOutlined,
   BranchesOutlined,
 } from '@ant-design/icons';
-import { workflowApi } from '../../services/mock/workflows';
+import { workflowApi } from '@/services';
 import type { Workflow, WorkflowStatus } from '../../types/workflow';
 
 // 状态配置

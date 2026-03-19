@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { Input, Button, Tag, Empty, Spin, Slider } from 'antd';
 import { SearchOutlined, FileTextOutlined } from '@ant-design/icons';
-import { knowledgeApi } from '../../../services/mock/knowledge';
+import { knowledgeApi } from '@/services';
 import type { SearchResponse, SearchResultItem } from '../../../types/knowledge';
 
 interface SearchPanelProps {

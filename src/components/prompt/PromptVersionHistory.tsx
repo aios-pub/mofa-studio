@@ -14,8 +14,8 @@ import {
   CheckOutlined,
   CloseOutlined,
 } from '@ant-design/icons';
-import type { Prompt, PromptVersion, VersionDiff } from '../../services/mock/prompts';
-import { promptApi } from '../../services/mock/prompts';
+import type { Prompt, PromptVersion, VersionDiff } from '@/services';
+import { promptApi } from '@/services';
 
 interface PromptVersionHistoryProps {
   prompt: Prompt;

@@ -18,12 +18,9 @@ import {
 } from '@ant-design/icons';
 import type { NotificationItem, NotificationType } from '@/types/notification';
 import {
-  fetchNotifications,
-  markNotificationAsRead,
-  markAllNotificationsAsRead,
-  deleteNotification,
+  notificationApi,
   getUnreadCount,
-} from '@/services/mock/notification';
+} from '@/services';
 import { formatRelativeTime } from '@/utils';
 
 // 通知类型图标和颜色
@@ -49,7 +46,7 @@ export default function NotificationDropdown() {
   const loadNotifications = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await fetchNotifications();
+      const data = await notificationApi.fetchNotifications();
       setNotifications(data);
     } catch (error) {
       console.error('Failed to load notifications:', error);
@@ -74,7 +71,7 @@ export default function NotificationDropdown() {
 
   // 标记已读
   const handleMarkAsRead = async (id: string) => {
-    await markNotificationAsRead(id);
+    await notificationApi.markNotificationAsRead(id);
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
@@ -82,14 +79,14 @@ export default function NotificationDropdown() {
 
   // 全部标记已读
   const handleMarkAllAsRead = async () => {
-    await markAllNotificationsAsRead();
+    await notificationApi.markAllNotificationsAsRead();
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
   // 删除通知
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    await deleteNotification(id);
+    await notificationApi.deleteNotification(id);
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 

@@ -12,8 +12,8 @@ import {
 } from '@ant-design/icons';
 import { LocalSkillsList, HubSkillsView, PublishSkillView } from './skills';
 import { SkillDetail } from './SkillDetail';
-import type { Skill } from '../../services/mock/skills';
-import { skillApi } from '../../services/mock/skills';
+import type { Skill } from '@/services';
+import { skillApi } from '@/services';
 
 const { Text, Title } = Typography;
 

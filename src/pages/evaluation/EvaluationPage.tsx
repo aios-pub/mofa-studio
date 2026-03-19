@@ -30,7 +30,7 @@ import {
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { EvaluationMetric, EvaluationRecord, AgentEvaluationSummary } from '../../types/evaluation';
-import evaluationApi from '../../services/mock/evaluation';
+import { evaluationApi } from '@/services';
 
 const { Title, Text } = Typography;
 

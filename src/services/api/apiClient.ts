@@ -10,6 +10,7 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from "axios";
 import { message } from "antd";
+import { GLOBAL_CONFIG, isMockEnabled } from "@/config";
 
 // ==================== 类型定义 ====================
 
@@ -28,13 +29,14 @@ export interface ApiError {
 export type RequestConfig = AxiosRequestConfig & {
   showError?: boolean;
   errorMessage?: string;
+  useMock?: boolean; // 单独请求是否使用 mock
 };
 
 // ==================== 配置 ====================
 
 const DEFAULT_CONFIG: AxiosRequestConfig = {
-  baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
-  timeout: 50000,
+  baseURL: GLOBAL_CONFIG.serverURL || "/api",
+  timeout: GLOBAL_CONFIG.apiTimeout || 50000,
   headers: {
     "Content-Type": "application/json;charset=utf-8",
   },
@@ -270,3 +272,6 @@ export const patch = apiClient.patch.bind(apiClient);
 export const del = apiClient.delete.bind(apiClient);
 export const upload = apiClient.upload.bind(apiClient);
 export const download = apiClient.download.bind(apiClient);
+
+// 导出 mock 开关状态，方便其他模块使用
+export { isMockEnabled };

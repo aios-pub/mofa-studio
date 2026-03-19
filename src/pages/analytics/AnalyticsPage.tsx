@@ -18,8 +18,8 @@ import {
   ApiOutlined,
   RiseOutlined,
 } from '@ant-design/icons';
-import type { AnalyticsFilter, UsageStats, DailyStats, AgentStats, UserStats, HourlyDistribution } from '../../services/mock/analytics';
-import { analyticsApi } from '../../services/mock/analytics';
+import type { AnalyticsFilter, UsageStats, DailyStats, AgentStats, UserStats, HourlyDistribution } from '@/services';
+import { analyticsApi } from '@/services';
 
 // 日期范围选项
 const dateRangeOptions = [

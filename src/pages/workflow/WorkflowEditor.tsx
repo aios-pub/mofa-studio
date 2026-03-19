@@ -35,7 +35,7 @@ import {
   HistoryOutlined,
   MoreOutlined,
 } from '@ant-design/icons';
-import { workflowApi, nodeTypeConfig } from '../../services/mock/workflows';
+import { workflowApi, nodeTypeConfig } from '@/services';
 import NodePanel from './panels/NodePanel';
 import ConfigPanel from './panels/ConfigPanel';
 import { useWorkflowStore } from '../../stores/useWorkflowStore';
@@ -101,14 +101,14 @@ export default function WorkflowEditorPage() {
       if (data) {
         setWorkflow(data);
         // 转换节点格式
-        const rfNodes = data.nodes.map((n) => ({
+        const rfNodes = data.nodes.map((n: { id: string; type: string; position: { x: number; y: number }; config: Record<string, unknown> }) => ({
           id: n.id,
           type: n.type,
           position: n.position,
           data: { config: n.config, label: (n.config.config as { label?: string })?.label || '' },
         }));
         // 转换边格式
-        const rfEdges = data.edges.map((e) => ({
+        const rfEdges = data.edges.map((e: { id: string; sourceNodeId: string; targetNodeId: string; sourcePortId?: string; targetPortId?: string; label?: string }) => ({
           id: e.id,
           source: e.sourceNodeId,
           target: e.targetNodeId,

@@ -12,7 +12,7 @@ import {
   CloudOutlined,
 } from '@ant-design/icons';
 import { useSkillHubStore } from '../../../../stores/useSkillHubStore';
-import { skillApi } from '../../../../services/mock/skills';
+import { skillApi } from '@/services';
 import { HubSkillCard } from './HubSkillCard';
 import { HubSkillDetail } from './HubSkillDetail';
 import type { HubSkill } from '../../../../types/skill';

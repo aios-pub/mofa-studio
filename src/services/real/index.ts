@@ -1,0 +1,31 @@
+/**
+ * 真实 API 服务入口
+ */
+
+// 导出 API 客户端工具
+export { apiClient } from "../api";
+export { createRestApi } from "./base";
+
+// 导出各服务
+export { agentRealApi } from "./agents";
+export { conversationRealApi } from "./conversations";
+export { default as authRealApi } from "./auth";
+export { promptRealApi } from "./prompts";
+export { skillRealApi } from "./skills";
+export { skillHubRealApi } from "./skillHub";
+export { testSetRealApi } from "./testsets";
+export { analyticsRealApi } from "./analytics";
+export { monitoringRealApi } from "./monitoring";
+export { organizationRealApi } from "./organization";
+export { workflowRealApi, nodeTypeConfig } from "./workflows";
+export { knowledgeRealApi } from "./knowledge";
+export { channelRealApi, channelTypeConfig } from "./channels";
+export { providerRealApi } from "./providers";
+export { roleRealApi, menuRealApi } from "./system";
+export { notificationRealApi } from "./notification";
+export { default as tracingRealApi } from "./tracing";
+export { default as evaluationRealApi } from "./evaluation";
+export { resourceRealApi, providerOptions } from "./resources";
+export { auditLogRealApi } from "./auditLogs";
+export { scheduledTaskRealApi } from "./scheduledTasks";
+export { permissionRealApi, featurePermissionDefinitions, defaultFeaturePermissions } from "./permissions";

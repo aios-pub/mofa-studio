@@ -12,7 +12,7 @@ import {
   ClockCircleOutlined,
   LoadingOutlined,
 } from '@ant-design/icons';
-import { testSetApi } from '../../services/mock/testsets';
+import { testSetApi } from '@/services';
 import type { TestSet } from '../../types/testset';
 
 interface AgentTestSetSelectorProps {

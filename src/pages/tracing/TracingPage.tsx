@@ -32,7 +32,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import { PageHeader } from '@/components/common';
 import type { Trace, Span, TracingStats } from '../../types/tracing';
-import tracingApi from '../../services/mock/tracing';
+import { tracingApi } from '@/services';
 
 const { Text } = Typography;
 

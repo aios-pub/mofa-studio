@@ -11,8 +11,8 @@ import {
   PoweroffOutlined,
   FolderOutlined,
 } from '@ant-design/icons';
-import type { Skill } from '../../../../services/mock/skills';
-import { skillApi } from '../../../../services/mock/skills';
+import type { Skill } from '@/services';
+import { skillApi } from '@/services';
 
 const { Text, Title } = Typography;
 

@@ -4,7 +4,7 @@
 
 import { Tag, Dropdown, Button } from 'antd';
 import { MoreOutlined, EditOutlined, DeleteOutlined, ApiOutlined } from '@ant-design/icons';
-import { channelTypeConfig } from '../../../services/mock/channels';
+import { channelTypeConfig } from '@/services';
 import type { Channel, ChannelStatus } from '../../../types';
 
 // 状态配置

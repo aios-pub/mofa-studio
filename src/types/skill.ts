@@ -2,7 +2,30 @@
  * Skill Hub 类型定义
  */
 
-import type { Skill, SkillParameter } from '../services/mock/skills';
+// 基础 Skill 类型
+export interface SkillParameter {
+  name: string;
+  type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+  description: string;
+  required?: boolean;
+  default?: unknown;
+  defaultValue?: unknown;
+}
+
+export interface Skill {
+  id: string;
+  name: string;
+  description: string;
+  version: string;
+  author: string;
+  category: string;
+  tags: string[];
+  parameters: SkillParameter[];
+  enabled: boolean;
+  installed?: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 // Skill 来源类型
 export type SkillSource = 'local' | 'hub' | 'installed';

@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { Input, Collapse } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
-import { nodeTypeConfig } from '../../../services/mock/workflows';
+import { nodeTypeConfig } from '@/services';
 import type { NodeType } from '../../../types/workflow';
 
 interface NodePanelProps {

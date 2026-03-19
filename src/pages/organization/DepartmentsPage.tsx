@@ -13,8 +13,8 @@ import {
   UserOutlined,
   CloseCircleOutlined,
 } from '@ant-design/icons';
-import type { Department, User as UserType } from '../../services/mock/organization';
-import { organizationApi } from '../../services/mock/organization';
+import type { Department, User as UserType } from '@/services';
+import { organizationApi } from '@/services';
 
 export default function DepartmentsPage() {
   const [departments, setDepartments] = useState<Department[]>([]);

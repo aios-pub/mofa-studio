@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { conversationApi } from '../../services/mock/conversations';
+import { conversationApi } from '@/services';
 import { ConversationList } from '../../components/common';
 import { ChatContainer } from '../../components/conversation';
 import type { Conversation } from '../../types';

@@ -34,8 +34,8 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { PageHeader } from '@/components/common';
-import type { AuditLog, AuditAction } from '../../services/mock/auditLogs';
-import { auditLogApi } from '../../services/mock/auditLogs';
+import type { AuditLog, AuditAction } from '@/services';
+import { auditLogApi } from '@/services';
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;

@@ -179,3 +179,13 @@ export async function deleteNotification(id: string): Promise<void> {
 export function getUnreadCount(notifications: NotificationItem[]): number {
   return notifications.filter((n) => !n.read).length;
 }
+
+// 导出为 API 对象格式
+export const notificationApi = {
+  fetchNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  deleteNotification,
+  getUnreadCount,
+  groupNotificationsByDate,
+};

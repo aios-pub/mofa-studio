@@ -136,14 +136,14 @@ export default function MonitoringPage() {
           <MetricCard
             icon={AlertOutlined}
             label="活跃连接"
-            value={systemMetrics.activeConnections.toString()}
+            value={systemMetrics.active_connections.toString()}
             color="blue"
           />
           <MetricCard
             icon={UnorderedListOutlined}
             label="队列长度"
-            value={systemMetrics.queueLength.toString()}
-            color={systemMetrics.queueLength > 10 ? 'yellow' : 'green'}
+            value={systemMetrics.queue_length.toString()}
+            color={systemMetrics.queue_length > 10 ? 'yellow' : 'green'}
           />
         </div>
       )}
@@ -249,13 +249,13 @@ function AgentsTab({ statuses }: { statuses: AgentStatus[] }) {
     <div className="grid grid-cols-2 gap-4">
       {statuses.map((agent) => (
         <div
-          key={agent.agentId}
+          key={agent.agent_id}
           className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4"
         >
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className={`w-2 h-2 rounded-full ${getStatusColor(agent.status)}`} />
-              <span className="font-medium text-[var(--color-text-primary)]">{agent.agentName}</span>
+              <span className="font-medium text-[var(--color-text-primary)]">{agent.agent_name}</span>
             </div>
             <span
               className={`text-xs px-2 py-0.5 rounded ${
@@ -272,10 +272,10 @@ function AgentsTab({ statuses }: { statuses: AgentStatus[] }) {
             </span>
           </div>
 
-          {agent.currentConversation && (
+          {agent.current_conversation && (
             <div className="mb-3 p-2 bg-[var(--color-bg-tertiary)] rounded text-xs">
               <span className="text-[var(--color-text-tertiary)]">当前对话: </span>
-              <span className="text-[var(--color-text-secondary)]">{agent.currentConversation}</span>
+              <span className="text-[var(--color-text-secondary)]">{agent.current_conversation}</span>
             </div>
           )}
 
@@ -283,29 +283,29 @@ function AgentsTab({ statuses }: { statuses: AgentStatus[] }) {
             <div>
               <span className="text-[var(--color-text-tertiary)]">今日对话</span>
               <p className="font-medium text-[var(--color-text-primary)]">
-                {agent.metrics.conversationsToday}
+                {agent.metrics.conversations_today}
               </p>
             </div>
             <div>
               <span className="text-[var(--color-text-tertiary)]">平均响应</span>
               <p className="font-medium text-[var(--color-text-primary)]">
-                {agent.metrics.avgResponseTime}ms
+                {agent.metrics.avg_response_time}ms
               </p>
             </div>
             <div>
               <span className="text-[var(--color-text-tertiary)]">成功率</span>
-              <p className="font-medium text-green-500">{agent.metrics.successRate}%</p>
+              <p className="font-medium text-green-500">{agent.metrics.success_rate}%</p>
             </div>
             <div>
               <span className="text-[var(--color-text-tertiary)]">Token 用量</span>
               <p className="font-medium text-[var(--color-text-primary)]">
-                {(agent.metrics.tokensUsed / 1000).toFixed(0)}K
+                {(agent.metrics.tokens_used / 1000).toFixed(0)}K
               </p>
             </div>
           </div>
 
           <div className="mt-3 pt-3 border-t border-[var(--color-border)] text-xs text-[var(--color-text-tertiary)]">
-            最后活跃: {formatTime(agent.lastActive)}
+            最后活跃: {formatTime(agent.last_active)}
           </div>
         </div>
       ))}
@@ -359,12 +359,12 @@ function ActivityTab({ events }: { events: ActivityEvent[] }) {
           <div className="p-2 bg-[var(--color-bg-tertiary)] rounded-lg">{getEventIcon(event.type)}</div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-medium text-[var(--color-text-primary)]">{event.agentName}</span>
+              <span className="font-medium text-[var(--color-text-primary)]">{event.agent_name}</span>
               <span className="text-xs text-[var(--color-text-tertiary)]">{getEventLabel(event.type)}</span>
             </div>
             <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">{event.details}</p>
-            {event.userName && (
-              <p className="text-xs text-[var(--color-text-tertiary)] mt-1">用户: {event.userName}</p>
+            {event.user_name && (
+              <p className="text-xs text-[var(--color-text-tertiary)] mt-1">用户: {event.user_name}</p>
             )}
             {event.metadata && (
               <div className="flex flex-wrap gap-2 mt-2">
@@ -434,9 +434,9 @@ function AlertsTab({
                 )}
               </div>
               <p className="text-sm text-[var(--color-text-secondary)] mt-1">{alert.message}</p>
-              {alert.agentName && (
+              {alert.agent_name && (
                 <p className="text-xs text-[var(--color-text-tertiary)] mt-2">
-                  相关 Agent: {alert.agentName}
+                  相关 Agent: {alert.agent_name}
                 </p>
               )}
               <p className="text-xs text-[var(--color-text-tertiary)] mt-1">

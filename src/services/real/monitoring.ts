@@ -1,53 +1,58 @@
 /**
  * Monitoring 真实 API
  * 后端端点: /api/monitoring/...
+ * 统一使用 snake_case 与后端保持一致
  */
 
 import { apiClient } from "../api/apiClient";
 
-interface AgentStatus {
-  agentId: string;
-  agentName: string;
-  status: string;
-  lastActive: string;
-  conversations: number;
-  tokens: number;
-  avgResponseTime: number;
-  errorRate: number;
+// 统一使用 snake_case 与后端保持一致
+export interface AgentStatus {
+  agent_id: string;
+  agent_name: string;
+  status: "online" | "offline" | "busy" | "error";
+  current_conversation?: string;
+  last_active: string;
+  metrics: {
+    conversations_today: number;
+    avg_response_time: number;
+    success_rate: number;
+    tokens_used: number;
+  };
 }
 
-interface ActivityEvent {
+export interface ActivityEvent {
   id: string;
   type: string;
-  agentId?: string;
-  agentName?: string;
-  userId?: string;
-  userName?: string;
+  agent_id?: string;
+  agent_name?: string;
+  user_id?: string;
+  user_name?: string;
   description: string;
   timestamp: string;
   details?: Record<string, unknown>;
 }
 
-interface SystemMetrics {
+export interface SystemMetrics {
   cpu: number;
   memory: number;
   disk: number;
   network: number;
-  activeConnections: number;
-  requestRate: number;
-  errorRate: number;
-  avgLatency: number;
+  active_connections: number;
+  request_rate: number;
+  error_rate: number;
+  avg_latency: number;
 }
 
-interface Alert {
+export interface Alert {
   id: string;
-  severity: string;
+  type: "error" | "warning" | "info";
+  title: string;
   message: string;
-  source: string;
+  agent_id?: string;
+  agent_name?: string;
   timestamp: string;
   acknowledged: boolean;
-  acknowledgedBy?: string;
-  acknowledgedAt?: string;
 }
 
 const monitoringRealApi = {
@@ -95,4 +100,3 @@ const monitoringRealApi = {
 };
 
 export { monitoringRealApi };
-export type { AgentStatus, ActivityEvent, SystemMetrics, Alert };

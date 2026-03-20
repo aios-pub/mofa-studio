@@ -1,46 +1,47 @@
 /**
  * Analytics Mock 数据和 API
+ * 统一使用 snake_case 与后端保持一致
  */
 
 // 统计数据类型
 export interface UsageStats {
-  totalConversations: number;
-  totalTokens: number;
-  inputTokens: number;
-  outputTokens: number;
-  avgResponseTime: number;
-  successRate: number;
-  totalCost: number;
+  total_conversations: number;
+  total_tokens: number;
+  input_tokens: number;
+  output_tokens: number;
+  avg_response_time: number;
+  success_rate: number;
+  total_cost: number;
 }
 
 export interface DailyStats {
   date: string;
   conversations: number;
   tokens: number;
-  inputTokens: number;
-  outputTokens: number;
-  avgResponseTime: number;
-  successRate: number;
+  input_tokens: number;
+  output_tokens: number;
+  avg_response_time: number;
+  success_rate: number;
   cost: number;
 }
 
 export interface AgentStats {
-  agentId: string;
-  agentName: string;
+  agent_id: string;
+  agent_name: string;
   conversations: number;
   tokens: number;
-  avgResponseTime: number;
-  successRate: number;
+  avg_response_time: number;
+  success_rate: number;
   cost: number;
 }
 
 export interface UserStats {
-  userId: string;
-  userName: string;
+  user_id: string;
+  user_name: string;
   department: string;
   conversations: number;
   tokens: number;
-  avgResponseTime: number;
+  avg_response_time: number;
 }
 
 export interface HourlyDistribution {
@@ -50,11 +51,11 @@ export interface HourlyDistribution {
 
 // 筛选参数
 export interface AnalyticsFilter {
-  agentIds?: string[];
-  userIds?: string[];
-  startDate?: string;
-  endDate?: string;
-  providerIds?: string[];
+  agent_ids?: string[];
+  user_ids?: string[];
+  start_date?: string;
+  end_date?: string;
+  provider_ids?: string[];
 }
 
 // 生成模拟数据
@@ -74,11 +75,11 @@ const generateDailyStats = (days: number): DailyStats[] => {
       date: date.toISOString().split('T')[0],
       conversations: baseConversations,
       tokens: inputTokens + outputTokens,
-      inputTokens,
-      outputTokens,
-      avgResponseTime: 500 + Math.floor(Math.random() * 1500),
-      successRate: 95 + Math.random() * 5,
-      cost: (inputTokens * 0.00003 + outputTokens * 0.00006).toFixed(4) as unknown as number,
+      input_tokens: inputTokens,
+      output_tokens: outputTokens,
+      avg_response_time: 500 + Math.floor(Math.random() * 1500),
+      success_rate: 95 + Math.random() * 5,
+      cost: Number((inputTokens * 0.00003 + outputTokens * 0.00006).toFixed(4)),
     });
   }
 
@@ -100,12 +101,12 @@ const generateAgentStats = (): AgentStats[] => {
     const outputTokens = Math.floor(25000 + Math.random() * 100000);
 
     return {
-      agentId: agent.id,
-      agentName: agent.name,
+      agent_id: agent.id,
+      agent_name: agent.name,
       conversations,
       tokens: inputTokens + outputTokens,
-      avgResponseTime: 500 + Math.floor(Math.random() * 2000),
-      successRate: 90 + Math.random() * 10,
+      avg_response_time: 500 + Math.floor(Math.random() * 2000),
+      success_rate: 90 + Math.random() * 10,
       cost: Number((inputTokens * 0.00003 + outputTokens * 0.00006).toFixed(2)),
     };
   });
@@ -128,12 +129,12 @@ const generateUserStats = (): UserStats[] => {
     const tokens = Math.floor(10000 + Math.random() * 100000);
 
     return {
-      userId: user.id,
-      userName: user.name,
+      user_id: user.id,
+      user_name: user.name,
       department: user.department,
       conversations,
       tokens,
-      avgResponseTime: 500 + Math.floor(Math.random() * 1500),
+      avg_response_time: 500 + Math.floor(Math.random() * 1500),
     };
   });
 };
@@ -181,46 +182,46 @@ export const analyticsApi = {
 
     // 根据筛选条件过滤（模拟）
     let stats = dailyStatsCache;
-    if (filter?.startDate) {
-      stats = stats.filter((s) => s.date >= filter.startDate!);
+    if (filter?.start_date) {
+      stats = stats.filter((s) => s.date >= filter.start_date!);
     }
-    if (filter?.endDate) {
-      stats = stats.filter((s) => s.date <= filter.endDate!);
+    if (filter?.end_date) {
+      stats = stats.filter((s) => s.date <= filter.end_date!);
     }
 
     const totals = stats.reduce(
       (acc, s) => ({
-        totalConversations: acc.totalConversations + s.conversations,
-        totalTokens: acc.totalTokens + s.tokens,
-        inputTokens: acc.inputTokens + s.inputTokens,
-        outputTokens: acc.outputTokens + s.outputTokens,
-        totalCost: acc.totalCost + Number(s.cost),
-        responseTimes: [...(acc.responseTimes || []), s.avgResponseTime],
-        successRates: [...(acc.successRates || []), s.successRate],
+        total_conversations: acc.total_conversations + s.conversations,
+        total_tokens: acc.total_tokens + s.tokens,
+        input_tokens: acc.input_tokens + s.input_tokens,
+        output_tokens: acc.output_tokens + s.output_tokens,
+        total_cost: acc.total_cost + Number(s.cost),
+        response_times: [...(acc.response_times || []), s.avg_response_time],
+        success_rates: [...(acc.success_rates || []), s.success_rate],
       }),
       {
-        totalConversations: 0,
-        totalTokens: 0,
-        inputTokens: 0,
-        outputTokens: 0,
-        totalCost: 0,
-        responseTimes: [] as number[],
-        successRates: [] as number[],
+        total_conversations: 0,
+        total_tokens: 0,
+        input_tokens: 0,
+        output_tokens: 0,
+        total_cost: 0,
+        response_times: [] as number[],
+        success_rates: [] as number[],
       }
     );
 
     return {
-      totalConversations: totals.totalConversations,
-      totalTokens: totals.totalTokens,
-      inputTokens: totals.inputTokens,
-      outputTokens: totals.outputTokens,
-      avgResponseTime: Math.round(
-        totals.responseTimes.reduce((a, b) => a + b, 0) / totals.responseTimes.length
+      total_conversations: totals.total_conversations,
+      total_tokens: totals.total_tokens,
+      input_tokens: totals.input_tokens,
+      output_tokens: totals.output_tokens,
+      avg_response_time: Math.round(
+        totals.response_times.reduce((a, b) => a + b, 0) / totals.response_times.length
       ),
-      successRate: Number(
-        (totals.successRates.reduce((a, b) => a + b, 0) / totals.successRates.length).toFixed(1)
+      success_rate: Number(
+        (totals.success_rates.reduce((a, b) => a + b, 0) / totals.success_rates.length).toFixed(1)
       ),
-      totalCost: Number(totals.totalCost.toFixed(2)),
+      total_cost: Number(totals.total_cost.toFixed(2)),
     };
   },
 
@@ -230,11 +231,11 @@ export const analyticsApi = {
     initCache();
 
     let stats = dailyStatsCache;
-    if (filter?.startDate) {
-      stats = stats.filter((s) => s.date >= filter.startDate!);
+    if (filter?.start_date) {
+      stats = stats.filter((s) => s.date >= filter.start_date!);
     }
-    if (filter?.endDate) {
-      stats = stats.filter((s) => s.date <= filter.endDate!);
+    if (filter?.end_date) {
+      stats = stats.filter((s) => s.date <= filter.end_date!);
     }
 
     return stats;
@@ -246,8 +247,8 @@ export const analyticsApi = {
     initCache();
 
     let stats = agentStatsCache;
-    if (filter?.agentIds && filter.agentIds.length > 0) {
-      stats = stats.filter((s) => filter.agentIds!.includes(s.agentId));
+    if (filter?.agent_ids && filter.agent_ids.length > 0) {
+      stats = stats.filter((s) => filter.agent_ids!.includes(s.agent_id));
     }
 
     // 按对话数排序
@@ -260,8 +261,8 @@ export const analyticsApi = {
     initCache();
 
     let stats = userStatsCache;
-    if (filter?.userIds && filter.userIds.length > 0) {
-      stats = stats.filter((s) => filter.userIds!.includes(s.userId));
+    if (filter?.user_ids && filter.user_ids.length > 0) {
+      stats = stats.filter((s) => filter.user_ids!.includes(s.user_id));
     }
 
     // 按对话数排序
@@ -277,18 +278,18 @@ export const analyticsApi = {
 
   // 获取趋势数据（用于图表）
   async getTrendData(
-    metric: 'conversations' | 'tokens' | 'cost' | 'responseTime',
+    metric: 'conversations' | 'tokens' | 'cost' | 'response_time',
     filter?: AnalyticsFilter
   ): Promise<{ date: string; value: number }[]> {
     await delay(300);
     initCache();
 
     let stats = dailyStatsCache;
-    if (filter?.startDate) {
-      stats = stats.filter((s) => s.date >= filter.startDate!);
+    if (filter?.start_date) {
+      stats = stats.filter((s) => s.date >= filter.start_date!);
     }
-    if (filter?.endDate) {
-      stats = stats.filter((s) => s.date <= filter.endDate!);
+    if (filter?.end_date) {
+      stats = stats.filter((s) => s.date <= filter.end_date!);
     }
 
     return stats.map((s) => ({
@@ -300,7 +301,7 @@ export const analyticsApi = {
             ? s.tokens
             : metric === 'cost'
               ? Number(s.cost)
-              : s.avgResponseTime,
+              : s.avg_response_time,
     }));
   },
 
@@ -319,7 +320,7 @@ export const analyticsApi = {
       };
       dept.conversations += user.conversations;
       dept.tokens += user.tokens;
-      dept.users.add(user.userId);
+      dept.users.add(user.user_id);
       departmentMap.set(user.department, dept);
     });
 
@@ -348,10 +349,10 @@ export const analyticsApi = {
       s.date,
       s.conversations,
       s.tokens,
-      s.inputTokens,
-      s.outputTokens,
-      s.avgResponseTime,
-      s.successRate.toFixed(1),
+      s.input_tokens,
+      s.output_tokens,
+      s.avg_response_time,
+      s.success_rate.toFixed(1),
       s.cost,
     ]);
 

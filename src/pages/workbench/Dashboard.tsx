@@ -55,7 +55,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState<UsageStats | null>(null);
   const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
   const [agentStatuses, setAgentStatuses] = useState<AgentStatus[]>([]);
-  const [trendMetric, setTrendMetric] = useState<'tokens' | 'conversations' | 'avgResponseTime'>('tokens');
+  const [trendMetric, setTrendMetric] = useState<'tokens' | 'conversations' | 'avg_response_time'>('tokens');
   const chartRef = useRef<HTMLDivElement>(null);
 
   const loadData = useCallback(async () => {
@@ -80,7 +80,8 @@ export default function Dashboard() {
     loadData();
   }, [loadData]);
 
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number | undefined | null) => {
+    if (num === undefined || num === null) return "0";
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
     return num.toString();
@@ -118,7 +119,7 @@ export default function Dashboard() {
         },
         {
           title: "Token 消耗",
-          value: formatNumber(stats.totalTokens),
+          value: formatNumber(stats.total_tokens),
           change: calculateTrend(dailyStats, "tokens"),
           icon: ThunderboltOutlined,
           color: "#8b5cf6",
@@ -126,19 +127,19 @@ export default function Dashboard() {
         },
         {
           title: "平均响应",
-          value: `${(stats.avgResponseTime / 1000).toFixed(1)}s`,
-          change: -calculateTrend(dailyStats, "avgResponseTime"), // 响应时间越低越好
+          value: `${((stats.avg_response_time || 0) / 1000).toFixed(1)}s`,
+          change: -calculateTrend(dailyStats, "avg_response_time"), // 响应时间越低越好
           icon: ClockCircleOutlined,
           color: "#f59e0b",
-          chartData: dailyStats.map((d) => d.avgResponseTime),
+          chartData: dailyStats.map((d) => d.avg_response_time),
         },
         {
           title: "成功率",
-          value: `${stats.successRate.toFixed(1)}%`,
-          change: calculateTrend(dailyStats, "successRate"),
+          value: `${(stats.success_rate || 100).toFixed(1)}%`,
+          change: calculateTrend(dailyStats, "success_rate"),
           icon: LineChartOutlined,
           color: "#10b981",
-          chartData: dailyStats.map((d) => d.successRate),
+          chartData: dailyStats.map((d) => d.success_rate),
         },
       ]
     : [];
@@ -288,7 +289,7 @@ export default function Dashboard() {
                     {[
                       { key: 'tokens', label: 'Token', color: '#8b5cf6' },
                       { key: 'conversations', label: '对话', color: '#3b82f6' },
-                      { key: 'avgResponseTime', label: '响应', color: '#f59e0b' },
+                      { key: 'avg_response_time', label: '响应', color: '#f59e0b' },
                     ].map((metric) => (
                       <button
                         key={metric.key}
@@ -326,7 +327,7 @@ export default function Dashboard() {
                   const metricConfig = {
                     tokens: { color: '#8b5cf6', format: (v: number) => formatNumber(v) },
                     conversations: { color: '#3b82f6', format: (v: number) => v.toString() },
-                    avgResponseTime: { color: '#f59e0b', format: (v: number) => `${(v / 1000).toFixed(1)}s` },
+                    avg_response_time: { color: '#f59e0b', format: (v: number) => `${(v / 1000).toFixed(1)}s` },
                   };
                   const config = metricConfig[trendMetric];
 
@@ -506,11 +507,11 @@ export default function Dashboard() {
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#f59e0b' }} />
-                                    <span>响应: {(point.day.avgResponseTime / 1000).toFixed(1)}s</span>
+                                    <span>响应: {((point.day.avg_response_time || 0) / 1000).toFixed(1)}s</span>
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#10b981' }} />
-                                    <span>成功率: {point.day.successRate.toFixed(1)}%</span>
+                                    <span>成功率: {(point.day.success_rate || 100).toFixed(1)}%</span>
                                   </div>
                                 </div>
                               }
@@ -557,7 +558,7 @@ export default function Dashboard() {
                     <div className="w-3 h-3 rounded" style={{ backgroundColor: '#10b981' }} />
                     <span className="text-xs text-[var(--color-text-secondary)]">
                       平均成功率: <span className="font-medium text-[var(--color-text-primary)]">
-                        {(dailyStats.reduce((sum, d) => sum + d.successRate, 0) / dailyStats.length).toFixed(1)}%
+                        {(dailyStats.reduce((sum, d) => sum + (d.success_rate || 0), 0) / (dailyStats.length || 1)).toFixed(1)}%
                       </span>
                     </span>
                   </div>
@@ -687,7 +688,7 @@ export default function Dashboard() {
             <div className="space-y-2">
               {agentStatuses.slice(0, 5).map((agent) => (
                 <div
-                  key={agent.agentId}
+                  key={agent.agent_id}
                   className="flex items-center justify-between p-3 bg-[var(--color-bg-secondary)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
                 >
                   <div className="flex items-center gap-3">
@@ -703,20 +704,20 @@ export default function Dashboard() {
                       }`}
                     />
                     <span className="font-medium text-[var(--color-text-primary)]">
-                      {agent.agentName}
+                      {agent.agent_name}
                     </span>
                   </div>
                   <div className="flex items-center gap-6 text-sm text-[var(--color-text-tertiary)]">
-                    <span>{agent.metrics.conversationsToday} 对话</span>
-                    <span>{agent.metrics.avgResponseTime}ms</span>
+                    <span>{agent.metrics.conversations_today} 对话</span>
+                    <span>{agent.metrics.avg_response_time}ms</span>
                     <span
                       className={`font-medium ${
-                        agent.metrics.successRate >= 95
+                        (agent.metrics.success_rate || 100) >= 95
                           ? "text-green-500"
                           : "text-yellow-500"
                       }`}
                     >
-                      {agent.metrics.successRate}%
+                      {agent.metrics.success_rate || 100}%
                     </span>
                   </div>
                 </div>

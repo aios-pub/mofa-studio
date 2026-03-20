@@ -2,18 +2,18 @@
  * Monitoring Mock 数据和 API
  */
 
-// Agent 状态类型
+// Agent 状态类型 - 使用 snake_case 与后端保持一致
 export interface AgentStatus {
-  agentId: string;
-  agentName: string;
+  agent_id: string;
+  agent_name: string;
   status: "online" | "offline" | "busy" | "error";
-  currentConversation?: string;
-  lastActive: Date;
+  current_conversation?: string;
+  last_active: Date;
   metrics: {
-    conversationsToday: number;
-    avgResponseTime: number;
-    successRate: number;
-    tokensUsed: number;
+    conversations_today: number;
+    avg_response_time: number;
+    success_rate: number;
+    tokens_used: number;
   };
 }
 
@@ -28,10 +28,10 @@ export interface ActivityEvent {
     | "error"
     | "skill_call"
     | "test_run";
-  agentId: string;
-  agentName: string;
-  userId?: string;
-  userName?: string;
+  agent_id: string;
+  agent_name: string;
+  user_id?: string;
+  user_name?: string;
   details: string;
   metadata?: Record<string, unknown>;
 }
@@ -41,8 +41,8 @@ export interface SystemMetrics {
   cpu: number;
   memory: number;
   network: number;
-  activeConnections: number;
-  queueLength: number;
+  active_connections: number;
+  queue_length: number;
   timestamp: Date;
 }
 
@@ -52,8 +52,8 @@ export interface Alert {
   type: "error" | "warning" | "info";
   title: string;
   message: string;
-  agentId?: string;
-  agentName?: string;
+  agent_id?: string;
+  agent_name?: string;
   timestamp: Date;
   acknowledged: boolean;
 }
@@ -61,64 +61,64 @@ export interface Alert {
 // Mock 数据
 const mockAgentStatuses: AgentStatus[] = [
   {
-    agentId: "agent-1",
-    agentName: "通用助手",
+    agent_id: "agent-1",
+    agent_name: "通用助手",
     status: "online",
-    lastActive: new Date(),
+    last_active: new Date(),
     metrics: {
-      conversationsToday: 45,
-      avgResponseTime: 850,
-      successRate: 98.5,
-      tokensUsed: 125000,
+      conversations_today: 45,
+      avg_response_time: 850,
+      success_rate: 98.5,
+      tokens_used: 125000,
     },
   },
   {
-    agentId: "agent-2",
-    agentName: "代码专家",
+    agent_id: "agent-2",
+    agent_name: "代码专家",
     status: "busy",
-    currentConversation: "conv-123",
-    lastActive: new Date(),
+    current_conversation: "conv-123",
+    last_active: new Date(),
     metrics: {
-      conversationsToday: 32,
-      avgResponseTime: 1200,
-      successRate: 96.2,
-      tokensUsed: 89000,
+      conversations_today: 32,
+      avg_response_time: 1200,
+      success_rate: 96.2,
+      tokens_used: 89000,
     },
   },
   {
-    agentId: "agent-3",
-    agentName: "翻译助手",
+    agent_id: "agent-3",
+    agent_name: "翻译助手",
     status: "online",
-    lastActive: new Date(),
+    last_active: new Date(),
     metrics: {
-      conversationsToday: 28,
-      avgResponseTime: 650,
-      successRate: 99.1,
-      tokensUsed: 45000,
+      conversations_today: 28,
+      avg_response_time: 650,
+      success_rate: 99.1,
+      tokens_used: 45000,
     },
   },
   {
-    agentId: "agent-4",
-    agentName: "数据分析师",
+    agent_id: "agent-4",
+    agent_name: "数据分析师",
     status: "offline",
-    lastActive: new Date(Date.now() - 3600000),
+    last_active: new Date(Date.now() - 3600000),
     metrics: {
-      conversationsToday: 12,
-      avgResponseTime: 1500,
-      successRate: 94.5,
-      tokensUsed: 67000,
+      conversations_today: 12,
+      avg_response_time: 1500,
+      success_rate: 94.5,
+      tokens_used: 67000,
     },
   },
   {
-    agentId: "agent-5",
-    agentName: "写作助手",
+    agent_id: "agent-5",
+    agent_name: "写作助手",
     status: "error",
-    lastActive: new Date(Date.now() - 7200000),
+    last_active: new Date(Date.now() - 7200000),
     metrics: {
-      conversationsToday: 8,
-      avgResponseTime: 2000,
-      successRate: 75.0,
-      tokensUsed: 23000,
+      conversations_today: 8,
+      avg_response_time: 2000,
+      success_rate: 75.0,
+      tokens_used: 23000,
     },
   },
 ];
@@ -128,20 +128,20 @@ const mockActivityEvents: ActivityEvent[] = [
     id: "event-1",
     timestamp: new Date(Date.now() - 60000),
     type: "conversation_start",
-    agentId: "agent-1",
-    agentName: "通用助手",
-    userId: "user-1",
-    userName: "张三",
+    agent_id: "agent-1",
+    agent_name: "通用助手",
+    user_id: "user-1",
+    user_name: "张三",
     details: "开始新对话",
   },
   {
     id: "event-2",
     timestamp: new Date(Date.now() - 120000),
     type: "message",
-    agentId: "agent-2",
-    agentName: "代码专家",
-    userId: "user-2",
-    userName: "李四",
+    agent_id: "agent-2",
+    agent_name: "代码专家",
+    user_id: "user-2",
+    user_name: "李四",
     details: "处理代码审查请求",
     metadata: { tokens: 1500 },
   },
@@ -149,10 +149,10 @@ const mockActivityEvents: ActivityEvent[] = [
     id: "event-3",
     timestamp: new Date(Date.now() - 180000),
     type: "skill_call",
-    agentId: "agent-3",
-    agentName: "翻译助手",
-    userId: "user-3",
-    userName: "王五",
+    agent_id: "agent-3",
+    agent_name: "翻译助手",
+    user_id: "user-3",
+    user_name: "王五",
     details: "调用 web_search 技能",
     metadata: { skill: "web_search", duration: 1200 },
   },
@@ -160,8 +160,8 @@ const mockActivityEvents: ActivityEvent[] = [
     id: "event-4",
     timestamp: new Date(Date.now() - 240000),
     type: "error",
-    agentId: "agent-5",
-    agentName: "写作助手",
+    agent_id: "agent-5",
+    agent_name: "写作助手",
     details: "API 调用超时",
     metadata: { error: "timeout", retryCount: 3 },
   },
@@ -169,10 +169,10 @@ const mockActivityEvents: ActivityEvent[] = [
     id: "event-5",
     timestamp: new Date(Date.now() - 300000),
     type: "conversation_end",
-    agentId: "agent-1",
-    agentName: "通用助手",
-    userId: "user-1",
-    userName: "张三",
+    agent_id: "agent-1",
+    agent_name: "通用助手",
+    user_id: "user-1",
+    user_name: "张三",
     details: "对话结束，用户满意度: 5星",
     metadata: { duration: 180000, rating: 5 },
   },
@@ -180,8 +180,8 @@ const mockActivityEvents: ActivityEvent[] = [
     id: "event-6",
     timestamp: new Date(Date.now() - 360000),
     type: "test_run",
-    agentId: "agent-2",
-    agentName: "代码专家",
+    agent_id: "agent-2",
+    agent_name: "代码专家",
     details: "执行测试集: 代码能力测试集",
     metadata: { testSetId: "testset-2", passRate: 92 },
   },
@@ -193,8 +193,8 @@ const mockAlerts: Alert[] = [
     type: "error",
     title: "Agent 连接失败",
     message: "写作助手 Agent 无法连接到 Provider，请检查 API 配置",
-    agentId: "agent-5",
-    agentName: "写作助手",
+    agent_id: "agent-5",
+    agent_name: "写作助手",
     timestamp: new Date(Date.now() - 3600000),
     acknowledged: false,
   },
@@ -203,8 +203,8 @@ const mockAlerts: Alert[] = [
     type: "warning",
     title: "响应时间过长",
     message: "数据分析师 Agent 平均响应时间超过 1.5 秒",
-    agentId: "agent-4",
-    agentName: "数据分析师",
+    agent_id: "agent-4",
+    agent_name: "数据分析师",
     timestamp: new Date(Date.now() - 7200000),
     acknowledged: false,
   },
@@ -231,8 +231,8 @@ const generateSystemMetrics = (): SystemMetrics => ({
   cpu: 30 + Math.random() * 40,
   memory: 40 + Math.random() * 30,
   network: 10 + Math.random() * 50,
-  activeConnections: 50 + Math.floor(Math.random() * 100),
-  queueLength: Math.floor(Math.random() * 20),
+  active_connections: 50 + Math.floor(Math.random() * 100),
+  queue_length: Math.floor(Math.random() * 20),
   timestamp: new Date(),
 });
 
@@ -250,7 +250,7 @@ export const monitoringApi = {
   // 获取单个 Agent 状态
   async getAgentStatus(agentId: string): Promise<AgentStatus | undefined> {
     await delay(200);
-    return mockAgentStatuses.find((a) => a.agentId === agentId);
+    return mockAgentStatuses.find((a) => a.agent_id === agentId);
   },
 
   // 获取活动事件流
@@ -308,12 +308,12 @@ export const monitoringApi = {
           id: `event-${Date.now()}`,
           timestamp: new Date(),
           type: randomType,
-          agentId: randomAgent,
-          agentName:
-            mockAgentStatuses.find((a) => a.agentId === randomAgent)
-              ?.agentName || randomAgent,
-          userId: `user-${Math.floor(Math.random() * 4) + 1}`,
-          userName: randomUser,
+          agent_id: randomAgent,
+          agent_name:
+            mockAgentStatuses.find((a) => a.agent_id === randomAgent)
+              ?.agent_name || randomAgent,
+          user_id: `user-${Math.floor(Math.random() * 4) + 1}`,
+          user_name: randomUser,
           details: getEventDetails(randomType),
         };
 

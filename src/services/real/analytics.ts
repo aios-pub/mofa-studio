@@ -5,34 +5,41 @@
 
 import { apiClient } from "../api/apiClient";
 
-interface AnalyticsOverview {
-  totalConversations: number;
-  totalMessages: number;
-  totalTokens: number;
-  activeUsers: number;
-  activeAgents: number;
+// 统一使用 snake_case 与后端保持一致
+export interface UsageStats {
+  total_conversations: number;
+  total_tokens: number;
+  input_tokens: number;
+  output_tokens: number;
+  avg_response_time: number;
+  success_rate: number;
+  total_cost: number;
 }
 
-interface DailyStat {
+export interface DailyStats {
   date: string;
   conversations: number;
-  messages: number;
   tokens: number;
+  input_tokens: number;
+  output_tokens: number;
+  avg_response_time: number;
+  success_rate: number;
+  cost: number;
 }
 
-interface HourlyDistribution {
+export interface HourlyDistribution {
   hour: number;
   count: number;
 }
 
 const analyticsRealApi = {
-  getOverview: (): Promise<AnalyticsOverview> =>
+  getOverview: (): Promise<UsageStats> =>
     apiClient.get("/api/analytics/overview"),
 
-  getOverviewStats: (params?: { start_date?: string; end_date?: string }): Promise<AnalyticsOverview> =>
+  getOverviewStats: (params?: { start_date?: string; end_date?: string }): Promise<UsageStats> =>
     apiClient.get("/api/analytics/overview", { params }),
 
-  getDailyStats: (params?: { start_date?: string; end_date?: string }): Promise<DailyStat[]> =>
+  getDailyStats: (params?: { start_date?: string; end_date?: string }): Promise<DailyStats[]> =>
     apiClient.get("/api/analytics/daily", { params }),
 
   getHourlyDistribution: (params?: { date?: string }): Promise<HourlyDistribution[]> =>
@@ -49,15 +56,14 @@ const analyticsRealApi = {
     apiClient.get("/api/analytics/export", { params: { ...params, format } }),
 
   // 兼容旧接口
-  getUsageStats: (params?: { start_date?: string; end_date?: string }): Promise<AnalyticsOverview> =>
+  getUsageStats: (params?: { start_date?: string; end_date?: string }): Promise<UsageStats> =>
     apiClient.get("/api/analytics/overview", { params }),
 
-  getAgentStats: (params?: { agent_id?: string }): Promise<AnalyticsOverview> =>
+  getAgentStats: (params?: { agent_id?: string }): Promise<UsageStats> =>
     apiClient.get("/api/analytics/overview", { params }),
 
-  getUserStats: (params?: { user_id?: string }): Promise<AnalyticsOverview> =>
+  getUserStats: (params?: { user_id?: string }): Promise<UsageStats> =>
     apiClient.get("/api/analytics/overview", { params }),
 };
 
 export { analyticsRealApi };
-export type { AnalyticsOverview, DailyStat, HourlyDistribution };

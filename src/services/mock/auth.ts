@@ -89,8 +89,8 @@ export const authApi = {
     }
 
     return {
-      accessToken: generateMockToken(user.userInfo.id),
-      refreshToken: generateMockRefreshToken(user.userInfo.id),
+      accessToken: generateMockToken(user.userInfo.id || user.username),
+      refreshToken: generateMockRefreshToken(user.userInfo.id || user.username),
       user: user.userInfo,
     };
   },
@@ -128,8 +128,8 @@ export const authApi = {
     });
 
     return {
-      accessToken: generateMockToken(newUser.id),
-      refreshToken: generateMockRefreshToken(newUser.id),
+      accessToken: generateMockToken(newUser.id || newUser.username),
+      refreshToken: generateMockRefreshToken(newUser.id || newUser.username),
       user: newUser,
     };
   },

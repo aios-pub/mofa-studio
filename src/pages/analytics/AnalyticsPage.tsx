@@ -31,35 +31,35 @@ const dateRangeOptions = [
 ];
 
 // 获取日期范围
-const getDateRange = (option: string): { startDate: string; endDate: string } => {
+const getDateRange = (option: string): { start_date: string; end_date: string } => {
   const today = new Date();
-  const endDate = today.toISOString().split('T')[0];
-  let startDate = endDate;
+  const end_date = today.toISOString().split('T')[0];
+  let start_date = end_date;
 
   switch (option) {
     case 'today':
-      startDate = endDate;
+      start_date = end_date;
       break;
     case 'yesterday':
       const yesterday = new Date(today);
       yesterday.setDate(yesterday.getDate() - 1);
-      startDate = yesterday.toISOString().split('T')[0];
+      start_date = yesterday.toISOString().split('T')[0];
       break;
     case '7days':
       const sevenDaysAgo = new Date(today);
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      startDate = sevenDaysAgo.toISOString().split('T')[0];
+      start_date = sevenDaysAgo.toISOString().split('T')[0];
       break;
     case '30days':
       const thirtyDaysAgo = new Date(today);
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      startDate = thirtyDaysAgo.toISOString().split('T')[0];
+      start_date = thirtyDaysAgo.toISOString().split('T')[0];
       break;
     default:
       break;
   }
 
-  return { startDate, endDate };
+  return { start_date, end_date };
 };
 
 export default function AnalyticsPage() {
@@ -82,12 +82,12 @@ export default function AnalyticsPage() {
     try {
       const range =
         dateRangeOption === 'custom'
-          ? { startDate: customStartDate, endDate: customEndDate }
+          ? { start_date: customStartDate, end_date: customEndDate }
           : getDateRange(dateRangeOption);
 
       const filter: AnalyticsFilter = {
-        startDate: range.startDate,
-        endDate: range.endDate,
+        start_date: range.start_date,
+        end_date: range.end_date,
       };
 
       const [overview, daily, agents, users, hourly] = await Promise.all([
@@ -119,12 +119,12 @@ export default function AnalyticsPage() {
   const handleExport = async (format: 'csv' | 'json') => {
     const range =
       dateRangeOption === 'custom'
-        ? { startDate: customStartDate, endDate: customEndDate }
+        ? { start_date: customStartDate, end_date: customEndDate }
         : getDateRange(dateRangeOption);
 
     const filter: AnalyticsFilter = {
-      startDate: range.startDate,
-      endDate: range.endDate,
+      start_date: range.start_date,
+      end_date: range.end_date,
     };
 
     const data = await analyticsApi.exportData(format, filter);
@@ -337,29 +337,29 @@ function OverviewTab({
         <StatCard
           icon={MessageOutlined}
           label="总对话数"
-          value={formatNumber(stats.totalConversations)}
+          value={formatNumber(stats.total_conversations)}
           trend={conversationTrend}
           color="blue"
         />
         <StatCard
           icon={ApiOutlined}
           label="总 Tokens"
-          value={formatNumber(stats.totalTokens)}
-          subValue={`输入 ${formatNumber(stats.inputTokens)} / 输出 ${formatNumber(stats.outputTokens)}`}
+          value={formatNumber(stats.total_tokens)}
+          subValue={`输入 ${formatNumber(stats.input_tokens)} / 输出 ${formatNumber(stats.output_tokens)}`}
           trend={tokenTrend}
           color="green"
         />
         <StatCard
           icon={ClockCircleOutlined}
           label="平均响应时间"
-          value={`${stats.avgResponseTime}ms`}
-          subValue={`成功率 ${stats.successRate}%`}
+          value={`${stats.avg_response_time}ms`}
+          subValue={`成功率 ${stats.success_rate}%`}
           color="orange"
         />
         <StatCard
           icon={DollarOutlined}
           label="预估费用"
-          value={formatCurrency(stats.totalCost)}
+          value={formatCurrency(stats.total_cost)}
           trend={costTrend}
           color="purple"
         />
@@ -443,7 +443,7 @@ function AgentsTab({
         </div>
         <div className="divide-y divide-[var(--color-border)]">
           {stats.map((agent, index) => (
-            <div key={agent.agentId} className="p-4">
+            <div key={agent.agent_id} className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
                   <span
@@ -459,7 +459,7 @@ function AgentsTab({
                   >
                     {index + 1}
                   </span>
-                  <span className="font-medium text-[var(--color-text-primary)]">{agent.agentName}</span>
+                  <span className="font-medium text-[var(--color-text-primary)]">{agent.agent_name}</span>
                 </div>
                 <div className="text-right">
                   <span className="text-sm font-medium text-[var(--color-text-primary)]">
@@ -479,9 +479,9 @@ function AgentsTab({
               <div className="flex items-center gap-4 mt-2 text-xs text-[var(--color-text-tertiary)]">
                 <span>Tokens: {formatNumber(agent.tokens)}</span>
                 <span>•</span>
-                <span>响应: {agent.avgResponseTime}ms</span>
+                <span>响应: {agent.avg_response_time}ms</span>
                 <span>•</span>
-                <span>成功率: {agent.successRate.toFixed(1)}%</span>
+                <span>成功率: {agent.success_rate.toFixed(1)}%</span>
               </div>
             </div>
           ))}
@@ -553,7 +553,7 @@ function UsersTab({
           </thead>
           <tbody>
             {stats.slice(0, 10).map((user, index) => (
-              <tr key={user.userId} className="border-b border-[var(--color-border)]/50">
+              <tr key={user.user_id} className="border-b border-[var(--color-border)]/50">
                 <td className="py-2 px-4">
                   <span
                     className={`w-6 h-6 flex items-center justify-center rounded text-xs font-medium ${
@@ -569,7 +569,7 @@ function UsersTab({
                     {index + 1}
                   </span>
                 </td>
-                <td className="py-2 px-4 font-medium text-[var(--color-text-primary)]">{user.userName}</td>
+                <td className="py-2 px-4 font-medium text-[var(--color-text-primary)]">{user.user_name}</td>
                 <td className="py-2 px-4 text-[var(--color-text-secondary)]">{user.department}</td>
                 <td className="py-2 px-4 text-right">
                   <div className="flex items-center justify-end gap-2">
@@ -586,7 +586,7 @@ function UsersTab({
                   {formatNumber(user.tokens)}
                 </td>
                 <td className="py-2 px-4 text-right text-[var(--color-text-secondary)]">
-                  {user.avgResponseTime}ms
+                  {user.avg_response_time}ms
                 </td>
               </tr>
             ))}

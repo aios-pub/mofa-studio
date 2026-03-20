@@ -13,8 +13,8 @@ export type FloatingMode = "floating" | "window";
 export const SERVER_CONFIG = {
   /** 本地开发环境 */
   development: {
-    baseURL: "http://localhost:3001",
-    wsURL: "ws://localhost:3001",
+    baseURL: "http://localhost:3002",
+    wsURL: "ws://localhost:3002",
   },
   /** 生产环境 */
   production: {

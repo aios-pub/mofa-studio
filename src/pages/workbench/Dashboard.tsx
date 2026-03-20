@@ -319,6 +319,9 @@ export default function Dashboard() {
               {/* 折线图区域 */}
               <div className="h-48 relative" ref={chartRef}>
                 {(() => {
+                  if (dailyStats.length === 0) {
+                    return <div className="flex items-center justify-center h-full text-gray-400">暂无数据</div>;
+                  }
                   const values = dailyStats.map((d) => d[trendMetric]);
                   const maxValue = Math.max(...values);
                   const minValue = Math.min(...values);

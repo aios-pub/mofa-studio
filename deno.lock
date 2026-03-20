@@ -32,6 +32,7 @@
     "npm:rehype-raw@7": "7.0.0",
     "npm:remark-gfm@^4.0.1": "4.0.1",
     "npm:remark-math@6": "6.0.0",
+    "npm:socket.io-client@^4.8.3": "4.8.3",
     "npm:sonner@^2.0.7": "2.0.7_react@19.2.4_react-dom@19.2.4__react@19.2.4",
     "npm:tailwind-merge@^3.5.0": "3.5.0",
     "npm:tailwindcss@^4.2.1": "4.2.1",
@@ -849,6 +850,10 @@
       "cpu": ["x64"],
       "tarball": "https://registry.npmmirror.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.59.0.tgz"
     },
+    "@socket.io/component-emitter@3.1.2": {
+      "integrity": "sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==",
+      "tarball": "https://registry.npmmirror.com/@socket.io/component-emitter/-/component-emitter-3.1.2.tgz"
+    },
     "@tailwindcss/node@4.2.1": {
       "integrity": "sha512-jlx6sLk4EOwO6hHe1oCGm1Q4AN/s0rSrTTPBGPM0/RQ6Uylwq17FuU8IeJJKEjtc6K6O07zsvP+gDO6MMWo7pg==",
       "dependencies": [
@@ -1518,6 +1523,21 @@
     "electron-to-chromium@1.5.313": {
       "integrity": "sha512-QBMrTWEf00GXZmJyx2lbYD45jpI3TUFnNIzJ5BBc8piGUDwMPa1GV6HJWTZVvY/eiN3fSopl7NRbgGp9sZ9LTA==",
       "tarball": "https://registry.npmmirror.com/electron-to-chromium/-/electron-to-chromium-1.5.313.tgz"
+    },
+    "engine.io-client@6.6.4": {
+      "integrity": "sha512-+kjUJnZGwzewFDw951CDWcwj35vMNf2fcj7xQWOctq1F2i1jkDdVvdFG9kM/BEChymCH36KgjnW0NsL58JYRxw==",
+      "dependencies": [
+        "@socket.io/component-emitter",
+        "debug",
+        "engine.io-parser",
+        "ws",
+        "xmlhttprequest-ssl"
+      ],
+      "tarball": "https://registry.npmmirror.com/engine.io-client/-/engine.io-client-6.6.4.tgz"
+    },
+    "engine.io-parser@5.2.3": {
+      "integrity": "sha512-HqD3yTBfnBxIrbnM1DoD6Pcq8NECnh8d4As1Qgh0z5Gg3jRRIqijury0CL3ghu/edArpUYiYqQiDUQBIs4np3Q==",
+      "tarball": "https://registry.npmmirror.com/engine.io-parser/-/engine.io-parser-5.2.3.tgz"
     },
     "enhanced-resolve@5.20.0": {
       "integrity": "sha512-/ce7+jQ1PQ6rVXwe+jKEg5hW5ciicHwIQUagZkp6IufBoY3YDgdTTY1azVs0qoRgVmvsNB+rbjLJxDAeHHtwsQ==",
@@ -3388,6 +3408,24 @@
       "integrity": "sha512-oeM1lpU/UvhTxw+g3cIfxXHyJRc/uidd3yK1P242gzHds0udQBYzs3y8j4gCCW+ZJ7ad0yctld8RYO+bdurlvw==",
       "tarball": "https://registry.npmmirror.com/set-cookie-parser/-/set-cookie-parser-2.7.2.tgz"
     },
+    "socket.io-client@4.8.3": {
+      "integrity": "sha512-uP0bpjWrjQmUt5DTHq9RuoCBdFJF10cdX9X+a368j/Ft0wmaVgxlrjvK3kjvgCODOMMOz9lcaRzxmso0bTWZ/g==",
+      "dependencies": [
+        "@socket.io/component-emitter",
+        "debug",
+        "engine.io-client",
+        "socket.io-parser"
+      ],
+      "tarball": "https://registry.npmmirror.com/socket.io-client/-/socket.io-client-4.8.3.tgz"
+    },
+    "socket.io-parser@4.2.6": {
+      "integrity": "sha512-asJqbVBDsBCJx0pTqw3WfesSY0iRX+2xzWEWzrpcH7L6fLzrhyF8WPI8UaeM4YCuDfpwA/cgsdugMsmtz8EJeg==",
+      "dependencies": [
+        "@socket.io/component-emitter",
+        "debug"
+      ],
+      "tarball": "https://registry.npmmirror.com/socket.io-parser/-/socket.io-parser-4.2.6.tgz"
+    },
     "sonner@2.0.7_react@19.2.4_react-dom@19.2.4__react@19.2.4": {
       "integrity": "sha512-W6ZN4p58k8aDKA4XPcx2hpIQXBRAgyiWVkYhT7CvK6D3iAu7xjvVyhQHg2/iaKJZ1XVJ4r7XuwGL+WGEK37i9w==",
       "dependencies": [
@@ -3627,6 +3665,14 @@
       "integrity": "sha512-bKr1DkiNa2krS7qxNtdrtHAmzuYGFQLiQ13TsorsdT6ULTkPLKuu5+GsFpDlg6JFjUTwX2DyhMPG2be8uPrqsQ==",
       "tarball": "https://registry.npmmirror.com/web-namespaces/-/web-namespaces-2.0.1.tgz"
     },
+    "ws@8.18.3": {
+      "integrity": "sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==",
+      "tarball": "https://registry.npmmirror.com/ws/-/ws-8.18.3.tgz"
+    },
+    "xmlhttprequest-ssl@2.1.2": {
+      "integrity": "sha512-TEU+nJVUUnA4CYJFLvK5X9AOeH4KvDvhIfm0vV1GaQRtchnG0hgK5p8hw/xjv8cunWYCsiPCSDzObPyhEwq3KQ==",
+      "tarball": "https://registry.npmmirror.com/xmlhttprequest-ssl/-/xmlhttprequest-ssl-2.1.2.tgz"
+    },
     "yallist@3.1.1": {
       "integrity": "sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==",
       "tarball": "https://registry.npmmirror.com/yallist/-/yallist-3.1.1.tgz"
@@ -3694,6 +3740,7 @@
         "npm:rehype-raw@7",
         "npm:remark-gfm@^4.0.1",
         "npm:remark-math@6",
+        "npm:socket.io-client@^4.8.3",
         "npm:sonner@^2.0.7",
         "npm:tailwind-merge@^3.5.0",
         "npm:tailwindcss@^4.2.1",

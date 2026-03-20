@@ -25,12 +25,23 @@ export interface ThinkingProcess {
   duration?: number;
 }
 
+/** 消息附件 */
+export interface MessageAttachment {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  url?: string;
+  file?: File;
+}
+
 /** 消息 */
 export interface Message {
   id: string;
   conversationId: string;
   role: MessageRole;
   content: string;
+  attachments?: MessageAttachment[];
   status: MessageStatus;
   thinking?: ThinkingProcess;
   toolCalls?: ToolCall[];

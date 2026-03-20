@@ -22,6 +22,7 @@ import AccountDropdown from "./AccountDropdown";
 import NotificationDropdown from "./NotificationDropdown";
 import { useSettingsDrawer } from "./MainLayout";
 import { SearchCommand } from "../common";
+import ConnectionSwitcher from "../websocket/ConnectionSwitcher";
 
 interface HeaderProps {
   showBreadcrumb?: boolean;
@@ -201,6 +202,9 @@ export default function Header({
 
         {/* 通知按钮 */}
         <NotificationDropdown />
+
+        {/* WebSocket 连接状态切换 */}
+        <ConnectionSwitcher showStatusText={false} />
 
         {/* 分隔线 */}
         <div className="w-px h-5 bg-[var(--color-border)] mx-1" />

@@ -15,7 +15,7 @@ export function generateTraceId(): string {
 // 生成唯一的 Span ID
 export function generateSpanId(): string {
   return Array.from({ length: 16 }, () =>
-    Math.floor(Math.random() * 16).toString(16)
+        Math.floor(Math.random() * 16).toString(16)
   ).join('');
 }
 
@@ -41,13 +41,14 @@ export function startSpan(
   const now = new Date();
 
   const span: Span = {
-    traceId: parentSpan?.traceId || generateTraceId(),
-    spanId: generateSpanId(),
-    parentSpanId: parentSpan?.spanId,
+    id: generateSpanId(),
+    span_id: generateSpanId(),
+    trace_id: parentSpan?.trace_id || generateTraceId(),
+    parent_span_id: parentSpan?.span_id,
     name,
     kind,
-    startTime: now.toISOString(),
-    endTime: '',
+    start_time: now.toISOString(),
+    end_time: undefined,
     duration: 0,
     status: 'UNSET',
     attributes: {
@@ -56,7 +57,7 @@ export function startSpan(
     },
     events: [],
     resource: {
-      serviceName: getTracingConfig().serviceName,
+      service_name: getTracingConfig().serviceName,
     },
   };
 
@@ -69,8 +70,8 @@ export function startSpan(
  */
 export function endSpan(span: Span, status: Span['status'] = 'OK'): void {
   const now = new Date();
-  span.endTime = now.toISOString();
-  span.duration = now.getTime() - new Date(span.startTime).getTime();
+  span.end_time = now.toISOString();
+  span.duration = now.getTime() - new Date(span.start_time).getTime();
   span.status = status;
 
   // 从活跃栈中移除
@@ -82,8 +83,8 @@ export function endSpan(span: Span, status: Span['status'] = 'OK'): void {
   // 如果追踪已初始化，发送 span
   if (isTracingInitialized()) {
     console.log('[Tracing] Span ended:', span.name, {
-      traceId: span.traceId,
-      spanId: span.spanId,
+      trace_id: span.trace_id,
+      span_id: span.span_id,
       duration: span.duration,
       status: span.status,
     });
@@ -98,6 +99,9 @@ export function addEvent(
   name: string,
   attributes: Record<string, string | number | boolean> = {}
 ): void {
+  if (!span.events) {
+    span.events = [];
+  }
   span.events.push({
     name,
     timestamp: new Date().toISOString(),
@@ -113,6 +117,9 @@ export function setAttribute(
   key: string,
   value: string | number | boolean
 ): void {
+  if (!span.attributes) {
+    span.attributes = {};
+  }
   span.attributes[key] = value;
 }
 

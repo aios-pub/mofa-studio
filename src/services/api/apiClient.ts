@@ -162,6 +162,20 @@ axiosInstance.interceptors.response.use(
 
 class ApiClient {
   /**
+   * 获取基础 URL
+   */
+  getBaseUrl(): string {
+    return axiosInstance.defaults.baseURL || "";
+  }
+
+  /**
+   * 获取当前 Token
+   */
+  getToken(): string | null {
+    return localStorage.getItem("token");
+  }
+
+  /**
    * GET 请求
    */
   get<T = unknown>(url: string, config?: RequestConfig): Promise<T> {

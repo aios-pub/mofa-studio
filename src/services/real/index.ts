@@ -23,7 +23,7 @@ export { channelRealApi, channelTypeConfig } from "./channels";
 export { providerRealApi } from "./providers";
 export { roleRealApi, menuRealApi } from "./system";
 export { notificationRealApi } from "./notification";
-export { default as tracingRealApi } from "./tracing";
+export { tracingRealApi } from "./tracing";
 export { default as evaluationRealApi } from "./evaluation";
 export { resourceRealApi, providerOptions } from "./resources";
 export { auditLogRealApi } from "./auditLogs";

@@ -1,5 +1,6 @@
 /**
  * 对话内容区容器组件
+ * 支持智能体选择、文件上传、清空上下文
  */
 
 import { useState, useRef, useEffect } from 'react';
@@ -11,24 +12,48 @@ import {
   CopyOutlined,
   ReloadOutlined,
   DownOutlined,
+  ClearOutlined,
+  PaperClipOutlined,
+  CloseOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
+import { Select, Modal, Button, Input, InputNumber, Switch, Upload, DatePicker, message, Popconfirm } from 'antd';
+import type { UploadFile } from 'antd/es/upload/interface';
+import dayjs from 'dayjs';
 import { MarkdownRenderer } from '../common';
-import type { Message, Conversation } from '../../types';
+import type { Message, Conversation, Agent, AgentInputParameter, MessageAttachment } from '../../types';
+
+const { TextArea } = Input;
 
 interface ChatContainerProps {
   conversation: Conversation | null;
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string, attachments?: MessageAttachment[], params?: Record<string, unknown>) => void;
+  onClearContext?: () => void;
+  onSelectAgent?: (agentId: string) => void;
+  agents?: Agent[];
+  selectedAgentId?: string;
   isLoading?: boolean;
 }
 
 export default function ChatContainer({
   conversation,
   onSendMessage,
+  onClearContext,
+  onSelectAgent,
+  agents = [],
+  selectedAgentId,
   isLoading = false,
 }: ChatContainerProps) {
   const [input, setInput] = useState('');
+  const [attachments, setAttachments] = useState<MessageAttachment[]>([]);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [showParamModal, setShowParamModal] = useState(false);
+  const [paramValues, setParamValues] = useState<Record<string, unknown>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // 获取当前选中的智能体
+  const selectedAgent = agents.find(a => a.id === selectedAgentId) || (conversation ? agents.find(a => a.id === conversation.agentId) : null);
 
   // 滚动到底部
   useEffect(() => {
@@ -43,11 +68,47 @@ export default function ChatContainer({
     }
   }, [input]);
 
+  // 处理文件上传
+  const handleFileChange = (info: { fileList: UploadFile[] }) => {
+    setFileList(info.fileList);
+    const newAttachments: MessageAttachment[] = info.fileList
+      .filter(file => file.originFileObj)
+      .map(file => ({
+        id: file.uid,
+        name: file.name,
+        type: file.type || 'application/octet-stream',
+        size: file.size || 0,
+        file: file.originFileObj,
+      }));
+    setAttachments(newAttachments);
+  };
+
+  // 移除附件
+  const handleRemoveFile = (file: UploadFile) => {
+    setFileList(prev => prev.filter(f => f.uid !== file.uid));
+    setAttachments(prev => prev.filter(a => a.id !== file.uid));
+  };
+
   // 发送消息
   const handleSend = () => {
     if (!input.trim() || isLoading) return;
-    onSendMessage(input.trim());
+
+    // 检查是否需要填写参数
+    if (selectedAgent?.inputParameters && selectedAgent.inputParameters.length > 0) {
+      const hasRequiredEmpty = selectedAgent.inputParameters
+        .filter(p => p.required)
+        .some(p => paramValues[p.id] === undefined || paramValues[p.id] === '');
+
+      if (hasRequiredEmpty) {
+        setShowParamModal(true);
+        return;
+      }
+    }
+
+    onSendMessage(input.trim(), attachments.length > 0 ? attachments : undefined, paramValues);
     setInput('');
+    setFileList([]);
+    setAttachments([]);
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
@@ -58,6 +119,79 @@ export default function ChatContainer({
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  // 清空上下文
+  const handleClearContext = () => {
+    if (onClearContext) {
+      onClearContext();
+      message.success('上下文已清空');
+    }
+  };
+
+  // 渲染参数输入表单
+  const renderParameterForm = (parameter: AgentInputParameter) => {
+    switch (parameter.type) {
+      case 'text':
+        return (
+          <TextArea
+            placeholder={parameter.placeholder}
+            value={paramValues[parameter.id] as string}
+            onChange={e => setParamValues(prev => ({ ...prev, [parameter.id]: e.target.value }))}
+            rows={2}
+          />
+        );
+      case 'number':
+        return (
+          <InputNumber
+            placeholder={parameter.placeholder}
+            value={paramValues[parameter.id] as number}
+            onChange={value => setParamValues(prev => ({ ...prev, [parameter.id]: value }))}
+            min={parameter.validation?.min}
+            max={parameter.validation?.max}
+            style={{ width: '100%' }}
+          />
+        );
+      case 'boolean':
+        return (
+          <Switch
+            checked={paramValues[parameter.id] as boolean}
+            onChange={checked => setParamValues(prev => ({ ...prev, [parameter.id]: checked }))}
+          />
+        );
+      case 'file':
+        return (
+          <Upload
+            maxCount={1}
+            beforeUpload={() => false}
+            fileList={fileList}
+            onChange={handleFileChange}
+            onRemove={handleRemoveFile}
+          >
+            <Button icon={<PaperClipOutlined />}>选择文件</Button>
+          </Upload>
+        );
+      case 'select':
+        return (
+          <Select
+            placeholder={parameter.placeholder}
+            value={paramValues[parameter.id] as string}
+            onChange={value => setParamValues(prev => ({ ...prev, [parameter.id]: value }))}
+            options={parameter.options}
+            style={{ width: '100%' }}
+          />
+        );
+      case 'date':
+        return (
+          <DatePicker
+            value={paramValues[parameter.id] ? dayjs(paramValues[parameter.id] as string) : null}
+            onChange={date => setParamValues(prev => ({ ...prev, [parameter.id]: date?.toISOString() }))}
+            style={{ width: '100%' }}
+          />
+        );
+      default:
+        return null;
     }
   };
 
@@ -89,6 +223,44 @@ export default function ChatContainer({
             {conversation.messages.length} 条消息 · {conversation.totalTokens} tokens
           </p>
         </div>
+
+        {/* 智能体选择器 */}
+        {onSelectAgent && agents.length > 0 && (
+          <Select
+            placeholder="选择智能体"
+            value={selectedAgentId || conversation.agentId}
+            onChange={onSelectAgent}
+            style={{ width: 180 }}
+            options={agents.map(a => ({
+              label: a.name,
+              value: a.id,
+            }))}
+          />
+        )}
+
+        {/* 参数设置按钮 */}
+        {selectedAgent?.inputParameters && selectedAgent.inputParameters.length > 0 && (
+          <Button
+            icon={<SettingOutlined />}
+            onClick={() => setShowParamModal(true)}
+            title="参数设置"
+          />
+        )}
+
+        {/* 清空上下文按钮 */}
+        {onClearContext && (
+          <Popconfirm
+            title="确定要清空上下文吗？"
+            description="清空后将无法恢复消息历史"
+            onConfirm={handleClearContext}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Button icon={<ClearOutlined />} danger title="清空上下文">
+              清空
+            </Button>
+          </Popconfirm>
+        )}
       </div>
 
       {/* 消息区域 */}
@@ -103,8 +275,8 @@ export default function ChatContainer({
           </div>
         ) : (
           <div className="max-w-3xl mx-auto space-y-4">
-            {conversation.messages.map((message) => (
-              <MessageItem key={message.id} message={message} />
+            {conversation.messages.map((msg) => (
+              <MessageItem key={msg.id} message={msg} />
             ))}
 
             {/* 加载中 */}
@@ -124,9 +296,51 @@ export default function ChatContainer({
         )}
       </div>
 
+      {/* 附件预览区 */}
+      {attachments.length > 0 && (
+        <div className="px-4 py-2 border-t border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
+          <div className="max-w-3xl mx-auto flex flex-wrap gap-2">
+            {attachments.map(att => (
+              <div
+                key={att.id}
+                className="flex items-center gap-1 px-2 py-1 bg-[var(--color-bg-tertiary)] rounded text-sm"
+              >
+                <PaperClipOutlined className="text-xs" />
+                <span className="text-[var(--color-text-secondary)]">{att.name}</span>
+                <span className="text-xs text-[var(--color-text-tertiary)]">
+                  ({formatFileSize(att.size)})
+                </span>
+                <CloseOutlined
+                  className="text-xs cursor-pointer hover:text-red-500"
+                  onClick={() => {
+                    setAttachments(prev => prev.filter(a => a.id !== att.id));
+                    setFileList(prev => prev.filter(f => f.uid !== att.id));
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* 输入区域 */}
       <div className="p-4 border-t border-[var(--color-border)]">
         <div className="max-w-3xl mx-auto flex gap-2">
+          {/* 文件上传按钮 */}
+          <Upload
+            multiple
+            showUploadList={false}
+            beforeUpload={() => false}
+            onChange={handleFileChange}
+          >
+            <button
+              className="px-3 py-2 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
+              title="添加附件"
+            >
+              <PaperClipOutlined />
+            </button>
+          </Upload>
+
           <textarea
             ref={textareaRef}
             value={input}
@@ -146,6 +360,42 @@ export default function ChatContainer({
           </button>
         </div>
       </div>
+
+      {/* 参数填写弹窗 */}
+      <Modal
+        title="智能体参数设置"
+        open={showParamModal}
+        onOk={() => {
+          setShowParamModal(false);
+          if (input.trim()) {
+            onSendMessage(input.trim(), attachments.length > 0 ? attachments : undefined, paramValues);
+            setInput('');
+            setFileList([]);
+            setAttachments([]);
+          }
+        }}
+        onCancel={() => setShowParamModal(false)}
+        okText="确定"
+        cancelText="取消"
+        width={500}
+      >
+        <div className="space-y-4">
+          {selectedAgent?.inputParameters?.map(param => (
+            <div key={param.id}>
+              <div className="flex items-center gap-2 mb-1">
+                <label className="text-sm font-medium text-[var(--color-text-primary)]">
+                  {param.label}
+                </label>
+                {param.required && <span className="text-red-500">*</span>}
+              </div>
+              {param.description && (
+                <p className="text-xs text-[var(--color-text-tertiary)] mb-1">{param.description}</p>
+              )}
+              {renderParameterForm(param)}
+            </div>
+          ))}
+        </div>
+      </Modal>
     </div>
   );
 }
@@ -189,6 +439,21 @@ function MessageItem({ message }: { message: Message }) {
                 {message.thinking.content}
               </div>
             )}
+          </div>
+        )}
+
+        {/* 附件 */}
+        {message.attachments && message.attachments.length > 0 && (
+          <div className="mb-2 flex flex-wrap gap-1">
+            {message.attachments.map(att => (
+              <div
+                key={att.id}
+                className="inline-flex items-center gap-1 px-2 py-1 bg-[var(--color-bg-tertiary)] rounded text-xs"
+              >
+                <PaperClipOutlined />
+                <span>{att.name}</span>
+              </div>
+            ))}
           </div>
         )}
 
@@ -263,4 +528,11 @@ function formatTime(date: Date): string {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+// 格式化文件大小
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }

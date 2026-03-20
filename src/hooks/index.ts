@@ -14,3 +14,4 @@ export * from './useText';
 export * from './useImage';
 export * from './useDrag';
 export * from './useScrollProgress';
+export * from './useWebSocket';

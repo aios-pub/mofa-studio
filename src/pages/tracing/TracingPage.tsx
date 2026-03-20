@@ -19,6 +19,8 @@ import {
   Row,
   Col,
   Typography,
+  Dropdown,
+  message,
 } from 'antd';
 import {
   SearchOutlined,
@@ -28,6 +30,8 @@ import {
   RightOutlined,
   DownOutlined,
   FundOutlined,
+  DownloadOutlined,
+  FileTextOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { PageHeader } from '@/components/common';
@@ -76,18 +80,18 @@ export default function TracingPage() {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
-      trace.traceId.toLowerCase().includes(query) ||
-      trace.operationName.toLowerCase().includes(query) ||
-      trace.serviceName.toLowerCase().includes(query)
+      trace.trace_id.toLowerCase().includes(query) ||
+      trace.operation_name.toLowerCase().includes(query) ||
+      trace.service_name.toLowerCase().includes(query)
     );
   });
 
-  const toggleSpan = (spanId: string) => {
+  const toggleSpan = (span_id: string) => {
     const newExpanded = new Set(expandedSpans);
-    if (newExpanded.has(spanId)) {
-      newExpanded.delete(spanId);
+    if (newExpanded.has(span_id)) {
+      newExpanded.delete(span_id);
     } else {
-      newExpanded.add(spanId);
+      newExpanded.add(span_id);
     }
     setExpandedSpans(newExpanded);
   };
@@ -110,15 +114,42 @@ export default function TracingPage() {
     setDrawerOpen(true);
   };
 
+  // 导出功能
+  const handleExport = async (format: 'json' | 'csv') => {
+    try {
+      const blob = await tracingApi.exportTraces(
+        {
+          status: (statusFilter as any) || undefined,
+          trace_id: searchQuery || undefined,
+        },
+        format
+      );
+
+      // 创建下载链接
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `traces-export-${new Date().toISOString().split('T')[0]}.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      message.success(t('tracing.exportSuccess', '导出成功'));
+    } catch (error) {
+      console.error('Export failed:', error);
+      message.error(t('tracing.exportFailed', '导出失败'));
+    }
+  };
+
   // 表格列配置
   const columns: ColumnsType<Trace> = [
     {
       title: t('tracing.operation', '操作'),
-      dataIndex: 'operationName',
-      key: 'operationName',
+      dataIndex: 'operation_name',
+      key: 'operation_name',
       render: (name: string, record: Trace) => (
         <Space>
-          {record.hasError ? (
+          {record.has_error ? (
             <CloseCircleOutlined className="text-red-500" />
           ) : (
             <CheckCircleOutlined className="text-green-500" />
@@ -129,14 +160,14 @@ export default function TracingPage() {
     },
     {
       title: t('tracing.service', '服务'),
-      dataIndex: 'serviceName',
-      key: 'serviceName',
+      dataIndex: 'service_name',
+      key: 'service_name',
       width: 150,
       render: (name: string) => <Text type="secondary">{name}</Text>,
     },
     {
       title: t('common.status', '状态'),
-      dataIndex: 'hasError',
+      dataIndex: 'has_error',
       key: 'status',
       width: 100,
       render: (hasError: boolean) => (
@@ -147,20 +178,20 @@ export default function TracingPage() {
     },
     {
       title: t('tracing.duration', '耗时'),
-      dataIndex: 'totalDuration',
+      dataIndex: 'total_duration',
       key: 'duration',
       width: 120,
-      sorter: (a, b) => a.totalDuration - b.totalDuration,
+      sorter: (a, b) => a.total_duration - b.total_duration,
       render: (duration: number) => (
         <Text type="secondary">{formatDuration(duration)}</Text>
       ),
     },
     {
       title: t('tracing.startTime', '开始时间'),
-      dataIndex: 'startTime',
-      key: 'startTime',
+      dataIndex: 'start_time',
+      key: 'start_time',
       width: 120,
-      sorter: (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+      sorter: (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
       render: (time: string) => (
         <Text type="secondary" className="text-xs">
           {formatTime(time)}
@@ -172,22 +203,22 @@ export default function TracingPage() {
   // 渲染 Span 树
   const renderSpanTree = (
     spans: Span[],
-    parentSpanId?: string,
+    parent_span_id?: string,
     depth: number = 0
   ): React.ReactElement[] => {
     return spans
-      .filter((span) => span.parentSpanId === parentSpanId)
+      .filter((span) => span.parent_span_id === parent_span_id)
       .map((span) => {
-        const hasChildren = spans.some((s) => s.parentSpanId === span.spanId);
-        const isExpanded = expandedSpans.has(span.spanId);
+        const hasChildren = spans.some((s) => s.parent_span_id === span.span_id);
+        const isExpanded = expandedSpans.has(span.span_id);
 
         return (
-          <div key={span.spanId}>
+          <div key={span.span_id}>
             <div
               className={`flex items-center gap-2 py-2 px-3 hover:bg-[var(--color-bg-tertiary)] cursor-pointer ${
                 depth > 0 ? 'ml-6' : ''
               }`}
-              onClick={() => hasChildren && toggleSpan(span.spanId)}
+              onClick={() => hasChildren && toggleSpan(span.span_id)}
             >
               {hasChildren ? (
                 isExpanded ? (
@@ -221,7 +252,7 @@ export default function TracingPage() {
               </Text>
             </div>
 
-            {hasChildren && isExpanded && renderSpanTree(spans, span.spanId, depth + 1)}
+            {hasChildren && isExpanded && renderSpanTree(spans, span.span_id, depth + 1)}
           </div>
         );
       });
@@ -234,14 +265,28 @@ export default function TracingPage() {
         description={t('tracing.subtitle', 'OpenTelemetry 分布式追踪')}
         icon={<FundOutlined className="text-xl" />}
         actions={
-          <Button
-            type="primary"
-            icon={<ReloadOutlined spin={loading} />}
-            onClick={loadTraces}
-            loading={loading}
-          >
-            {t('common.refresh', '刷新')}
-          </Button>
+          <Space>
+            <Dropdown
+              menu={{
+                items: [
+                  { key: 'json', label: t('tracing.exportJSON', '导出 JSON'), icon: <DownloadOutlined />, onClick: () => handleExport('json') },
+                  { key: 'csv', label: t('tracing.exportCSV', '导出 CSV'), icon: <FileTextOutlined />, onClick: () => handleExport('csv') },
+                ],
+              }}
+            >
+              <Button icon={<DownloadOutlined />}>
+                {t('tracing.export', '导出')}
+              </Button>
+            </Dropdown>
+            <Button
+              type="primary"
+              icon={<ReloadOutlined spin={loading} />}
+              onClick={loadTraces}
+              loading={loading}
+            >
+              {t('common.refresh', '刷新')}
+            </Button>
+          </Space>
         }
       />
 
@@ -252,7 +297,7 @@ export default function TracingPage() {
             <Card>
               <Statistic
                 title={t('tracing.totalTraces', '总追踪数')}
-                value={stats.totalTraces}
+                value={stats.total_traces}
                 valueStyle={{ color: 'var(--color-text-primary)' }}
               />
             </Card>
@@ -261,7 +306,7 @@ export default function TracingPage() {
             <Card>
               <Statistic
                 title={t('tracing.errorRate', '错误率')}
-                value={stats.errorRate.toFixed(1)}
+                value={stats.error_rate.toFixed(1)}
                 suffix="%"
                 valueStyle={{ color: '#ef4444' }}
               />
@@ -271,7 +316,7 @@ export default function TracingPage() {
             <Card>
               <Statistic
                 title={t('tracing.avgDuration', '平均耗时')}
-                value={formatDuration(stats.avgDuration)}
+                value={formatDuration(stats.avg_duration)}
                 valueStyle={{ color: 'var(--color-text-primary)' }}
               />
             </Card>
@@ -280,7 +325,7 @@ export default function TracingPage() {
             <Card>
               <Statistic
                 title={t('tracing.p95Duration', 'P95 耗时')}
-                value={formatDuration(stats.p95Duration)}
+                value={formatDuration(stats.p95_duration)}
                 valueStyle={{ color: 'var(--color-text-primary)' }}
               />
             </Card>
@@ -318,7 +363,7 @@ export default function TracingPage() {
         <Table
           columns={columns}
           dataSource={filteredTraces}
-          rowKey="traceId"
+          rowKey="trace_id"
           loading={loading}
           onRow={(record) => ({
             onClick: () => handleRowClick(record),
@@ -352,17 +397,17 @@ export default function TracingPage() {
               <Descriptions column={1} size="small">
                 <Descriptions.Item label={t('tracing.traceId', 'Trace ID')}>
                   <Text code className="text-xs break-all">
-                    {selectedTrace.traceId}
+                    {selectedTrace.trace_id}
                   </Text>
                 </Descriptions.Item>
                 <Descriptions.Item label={t('tracing.operation', '操作')}>
-                  {selectedTrace.operationName}
+                  {selectedTrace.operation_name}
                 </Descriptions.Item>
                 <Descriptions.Item label={t('tracing.spans', 'Span 数量')}>
-                  {selectedTrace.spanCount}
+                  {selectedTrace.span_count}
                 </Descriptions.Item>
                 <Descriptions.Item label={t('tracing.duration', '总耗时')}>
-                  {formatDuration(selectedTrace.totalDuration)}
+                  {formatDuration(selectedTrace.total_duration)}
                 </Descriptions.Item>
               </Descriptions>
             </Card>
@@ -370,7 +415,7 @@ export default function TracingPage() {
             {/* Span 树 */}
             <Card size="small" title={t('tracing.spanTree', 'Span 树')}>
               <div className="border border-[var(--color-border)] rounded-lg max-h-96 overflow-y-auto">
-                {renderSpanTree(selectedTrace.spans)}
+                {renderSpanTree(selectedTrace.spans || [])}
               </div>
             </Card>
           </div>

@@ -26,7 +26,7 @@ import { channelApi as channelMockApi, channelTypeConfig as mockChannelTypeConfi
 import { providerApi as providerMockApi } from "./mock/providers";
 import { roleApi as roleMockApi, menuApi as menuMockApi } from "./mock/system";
 import { notificationApi as notificationMockApi } from "./mock/notification";
-import tracingMockApi from "./mock/tracing";
+import { tracingApi as tracingMockApi } from "./mock/tracing";
 import evaluationMockApi from "./mock/evaluation";
 import { resourceApi as resourceMockApi, providerOptions as mockProviderOptions } from "./mock/resources";
 import { auditLogApi as auditLogMockApi } from "./mock/auditLogs";
@@ -50,7 +50,7 @@ import { channelRealApi, channelTypeConfig as realChannelTypeConfig } from "./re
 import { providerRealApi } from "./real/providers";
 import { roleRealApi, menuRealApi } from "./real/system";
 import { notificationRealApi } from "./real/notification";
-import tracingRealApi from "./real/tracing";
+import { tracingRealApi } from "./real/tracing";
 import evaluationRealApi from "./real/evaluation";
 import { resourceRealApi, providerOptions as realProviderOptions } from "./real/resources";
 import { auditLogRealApi } from "./real/auditLogs";

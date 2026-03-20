@@ -18,11 +18,13 @@ import type { Conversation } from '../../types';
 interface ConversationListProps {
   onSelectConversation?: (conversation: Conversation) => void;
   selectedId?: string;
+  onCreateConversation?: () => void;
 }
 
 export default function ConversationList({
   onSelectConversation,
   selectedId,
+  onCreateConversation,
 }: ConversationListProps) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,15 +50,19 @@ export default function ConversationList({
 
   // 创建新会话
   const handleCreateConversation = async () => {
-    try {
-      const newConversation = await conversationApi.create({
-        agentId: 'agent-1',
-        title: '新对话',
-      });
-      setConversations([newConversation, ...conversations]);
-      onSelectConversation?.(newConversation);
-    } catch (error) {
-      console.error('Failed to create conversation:', error);
+    if (onCreateConversation) {
+      onCreateConversation();
+    } else {
+      try {
+        const newConversation = await conversationApi.create({
+          agentId: 'agent-1',
+          title: '新对话',
+        });
+        setConversations([newConversation, ...conversations]);
+        onSelectConversation?.(newConversation);
+      } catch (error) {
+        console.error('Failed to create conversation:', error);
+      }
     }
   };
 

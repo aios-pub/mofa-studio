@@ -91,7 +91,7 @@ export async function traceModelCall<T>(
     {
       'model.name': model,
       'conversation.id': conversationId,
-      'parent.span_id': parentSpan?.spanId || '',
+      'parent.span_id': parentSpan?.span_id || '',
     }
   );
 }

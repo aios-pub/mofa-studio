@@ -477,7 +477,7 @@ function AboutSettings() {
             <span style={{ fontSize: 40 }}>🤖</span>
           </Avatar>
           <Title level={3} style={{ marginBottom: 8 }}>
-            AmosClaw
+            Amos
           </Title>
           <Text type="secondary">AI Dialogue Platform</Text>
 

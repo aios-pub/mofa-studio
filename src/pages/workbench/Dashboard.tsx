@@ -17,7 +17,13 @@ import {
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { Button, Card, Progress, Tooltip } from "antd";
-import { analyticsApi, monitoringApi, type UsageStats, type DailyStats, type AgentStatus } from "@/services";
+import {
+  analyticsApi,
+  monitoringApi,
+  type UsageStats,
+  type DailyStats,
+  type AgentStatus,
+} from "@/services";
 
 // 欢迎横幅组件
 function WelcomeBanner() {
@@ -30,7 +36,7 @@ function WelcomeBanner() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex-1">
             <h2 className="text-xl font-bold text-white mb-2">
-              {greeting}，欢迎使用 AmosClaw
+              {greeting}，欢迎使用 Amos
             </h2>
             <p className="text-white/80 text-sm mb-4">
               强大的 AI Agent 管理平台，助您构建智能对话系统。探索无限可能。
@@ -55,7 +61,9 @@ export default function Dashboard() {
   const [stats, setStats] = useState<UsageStats | null>(null);
   const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
   const [agentStatuses, setAgentStatuses] = useState<AgentStatus[]>([]);
-  const [trendMetric, setTrendMetric] = useState<'tokens' | 'conversations' | 'avg_response_time'>('tokens');
+  const [trendMetric, setTrendMetric] = useState<
+    "tokens" | "conversations" | "avg_response_time"
+  >("tokens");
   const chartRef = useRef<HTMLDivElement>(null);
 
   const loadData = useCallback(async () => {
@@ -287,31 +295,47 @@ export default function Dashboard() {
                   {/* 指标切换 */}
                   <div className="flex items-center gap-1 bg-[var(--color-bg-secondary)] rounded-lg p-1">
                     {[
-                      { key: 'tokens', label: 'Token', color: '#8b5cf6' },
-                      { key: 'conversations', label: '对话', color: '#3b82f6' },
-                      { key: 'avg_response_time', label: '响应', color: '#f59e0b' },
+                      { key: "tokens", label: "Token", color: "#8b5cf6" },
+                      { key: "conversations", label: "对话", color: "#3b82f6" },
+                      {
+                        key: "avg_response_time",
+                        label: "响应",
+                        color: "#f59e0b",
+                      },
                     ].map((metric) => (
                       <button
                         key={metric.key}
-                        onClick={() => setTrendMetric(metric.key as typeof trendMetric)}
+                        onClick={() =>
+                          setTrendMetric(metric.key as typeof trendMetric)
+                        }
                         className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
                           trendMetric === metric.key
-                            ? 'bg-white shadow-sm text-[var(--color-text-primary)]'
-                            : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                            ? "bg-white shadow-sm text-[var(--color-text-primary)]"
+                            : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
                         }`}
                         style={{
-                          borderLeft: trendMetric === metric.key ? `3px solid ${metric.color}` : 'none',
+                          borderLeft:
+                            trendMetric === metric.key
+                              ? `3px solid ${metric.color}`
+                              : "none",
                         }}
                       >
                         {metric.label}
                       </button>
                     ))}
                   </div>
-                  <span className={`flex items-center gap-1 text-sm font-semibold ${
-                    trendChange >= 0 ? 'text-green-500' : 'text-red-500'
-                  }`}>
-                    <ArrowRightOutlined className={trendChange >= 0 ? 'rotate-[-45deg]' : 'rotate-[135deg]'} />
-                    {trendChange >= 0 ? '+' : ''}{trendChange.toFixed(1)}%
+                  <span
+                    className={`flex items-center gap-1 text-sm font-semibold ${
+                      trendChange >= 0 ? "text-green-500" : "text-red-500"
+                    }`}
+                  >
+                    <ArrowRightOutlined
+                      className={
+                        trendChange >= 0 ? "rotate-[-45deg]" : "rotate-[135deg]"
+                      }
+                    />
+                    {trendChange >= 0 ? "+" : ""}
+                    {trendChange.toFixed(1)}%
                   </span>
                 </div>
               </div>
@@ -320,7 +344,11 @@ export default function Dashboard() {
               <div className="h-48 relative" ref={chartRef}>
                 {(() => {
                   if (dailyStats.length === 0) {
-                    return <div className="flex items-center justify-center h-full text-gray-400">暂无数据</div>;
+                    return (
+                      <div className="flex items-center justify-center h-full text-gray-400">
+                        暂无数据
+                      </div>
+                    );
                   }
                   const values = dailyStats.map((d) => d[trendMetric]);
                   const maxValue = Math.max(...values);
@@ -328,9 +356,18 @@ export default function Dashboard() {
                   const range = maxValue - minValue || 1;
 
                   const metricConfig = {
-                    tokens: { color: '#8b5cf6', format: (v: number) => formatNumber(v) },
-                    conversations: { color: '#3b82f6', format: (v: number) => v.toString() },
-                    avg_response_time: { color: '#f59e0b', format: (v: number) => `${(v / 1000).toFixed(1)}s` },
+                    tokens: {
+                      color: "#8b5cf6",
+                      format: (v: number) => formatNumber(v),
+                    },
+                    conversations: {
+                      color: "#3b82f6",
+                      format: (v: number) => v.toString(),
+                    },
+                    avg_response_time: {
+                      color: "#f59e0b",
+                      format: (v: number) => `${(v / 1000).toFixed(1)}s`,
+                    },
                   };
                   const config = metricConfig[trendMetric];
 
@@ -343,22 +380,31 @@ export default function Dashboard() {
 
                   // 计算点坐标
                   const points = values.map((value, index) => ({
-                    x: padding.left + (index / (values.length - 1)) * chartWidth,
-                    y: padding.top + chartHeight - ((value - minValue) / range) * chartHeight,
+                    x:
+                      padding.left + (index / (values.length - 1)) * chartWidth,
+                    y:
+                      padding.top +
+                      chartHeight -
+                      ((value - minValue) / range) * chartHeight,
                     value,
                     date: dailyStats[index].date,
                     day: dailyStats[index],
                   }));
 
                   // 生成折线路径
-                  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+                  const linePath = points
+                    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+                    .join(" ");
 
                   // 生成填充区域路径
                   const areaPath = `${linePath} L ${points[points.length - 1].x} ${padding.top + chartHeight} L ${padding.left} ${padding.top + chartHeight} Z`;
 
                   // Y 轴刻度
                   const yTicks = 4;
-                  const yTickValues = Array.from({ length: yTicks + 1 }, (_, i) => minValue + (range * i) / yTicks);
+                  const yTickValues = Array.from(
+                    { length: yTicks + 1 },
+                    (_, i) => minValue + (range * i) / yTicks,
+                  );
 
                   // 计算 SVG 在容器中的实际位置（考虑 preserveAspectRatio 居中）
                   const containerWidth = chartRef.current?.offsetWidth || 600;
@@ -366,7 +412,10 @@ export default function Dashboard() {
                   const viewBoxRatio = width / height;
                   const containerRatio = containerWidth / containerHeight;
 
-                  let svgActualWidth: number, svgActualHeight: number, offsetX: number, offsetY: number;
+                  let svgActualWidth: number,
+                    svgActualHeight: number,
+                    offsetX: number,
+                    offsetY: number;
 
                   if (containerRatio > viewBoxRatio) {
                     // 容器更宽，SVG 上下有空白
@@ -394,9 +443,23 @@ export default function Dashboard() {
                       >
                         {/* 渐变定义 */}
                         <defs>
-                          <linearGradient id={`gradient-${trendMetric}`} x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor={config.color} stopOpacity="0.3" />
-                            <stop offset="100%" stopColor={config.color} stopOpacity="0.02" />
+                          <linearGradient
+                            id={`gradient-${trendMetric}`}
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="0%"
+                              stopColor={config.color}
+                              stopOpacity="0.3"
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor={config.color}
+                              stopOpacity="0.02"
+                            />
                           </linearGradient>
                         </defs>
 
@@ -405,20 +468,32 @@ export default function Dashboard() {
                           <g key={i}>
                             <line
                               x1={padding.left}
-                              y1={padding.top + chartHeight - ((tick - minValue) / range) * chartHeight}
+                              y1={
+                                padding.top +
+                                chartHeight -
+                                ((tick - minValue) / range) * chartHeight
+                              }
                               x2={width - padding.right}
-                              y2={padding.top + chartHeight - ((tick - minValue) / range) * chartHeight}
+                              y2={
+                                padding.top +
+                                chartHeight -
+                                ((tick - minValue) / range) * chartHeight
+                              }
                               stroke="var(--color-border)"
                               strokeOpacity="0.5"
                               strokeDasharray="4 4"
                             />
                             <text
                               x={padding.left - 8}
-                              y={padding.top + chartHeight - ((tick - minValue) / range) * chartHeight}
+                              y={
+                                padding.top +
+                                chartHeight -
+                                ((tick - minValue) / range) * chartHeight
+                              }
                               textAnchor="end"
                               alignmentBaseline="middle"
                               className="fill-[var(--color-text-tertiary)]"
-                              style={{ fontSize: '10px' }}
+                              style={{ fontSize: "10px" }}
                             >
                               {config.format(tick)}
                             </text>
@@ -426,7 +501,10 @@ export default function Dashboard() {
                         ))}
 
                         {/* 填充区域 */}
-                        <path d={areaPath} fill={`url(#gradient-${trendMetric})`} />
+                        <path
+                          d={areaPath}
+                          fill={`url(#gradient-${trendMetric})`}
+                        />
 
                         {/* 折线 */}
                         <path
@@ -467,7 +545,10 @@ export default function Dashboard() {
                                   y={point.y - 14}
                                   textAnchor="middle"
                                   className="fill-[var(--color-primary)]"
-                                  style={{ fontSize: '10px', fontWeight: '500' }}
+                                  style={{
+                                    fontSize: "10px",
+                                    fontWeight: "500",
+                                  }}
                                 >
                                   今日
                                 </text>
@@ -477,10 +558,20 @@ export default function Dashboard() {
                                 x={point.x}
                                 y={height - 8}
                                 textAnchor="middle"
-                                className={isToday ? 'fill-[var(--color-primary)]' : 'fill-[var(--color-text-tertiary)]'}
-                                style={{ fontSize: '11px', fontWeight: isToday ? '500' : 'normal' }}
+                                className={
+                                  isToday
+                                    ? "fill-[var(--color-primary)]"
+                                    : "fill-[var(--color-text-tertiary)]"
+                                }
+                                style={{
+                                  fontSize: "11px",
+                                  fontWeight: isToday ? "500" : "normal",
+                                }}
                               >
-                                {new Date(point.date).toLocaleDateString("zh-CN", { weekday: "short" })}
+                                {new Date(point.date).toLocaleDateString(
+                                  "zh-CN",
+                                  { weekday: "short" },
+                                )}
                               </text>
                             </g>
                           );
@@ -499,22 +590,51 @@ export default function Dashboard() {
                               key={index}
                               title={
                                 <div className="space-y-1">
-                                  <div className="font-medium">{point.date}</div>
+                                  <div className="font-medium">
+                                    {point.date}
+                                  </div>
                                   <div className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#3b82f6' }} />
+                                    <span
+                                      className="w-2 h-2 rounded-full"
+                                      style={{ backgroundColor: "#3b82f6" }}
+                                    />
                                     <span>对话: {point.day.conversations}</span>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#8b5cf6' }} />
-                                    <span>Tokens: {formatNumber(point.day.tokens)}</span>
+                                    <span
+                                      className="w-2 h-2 rounded-full"
+                                      style={{ backgroundColor: "#8b5cf6" }}
+                                    />
+                                    <span>
+                                      Tokens: {formatNumber(point.day.tokens)}
+                                    </span>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#f59e0b' }} />
-                                    <span>响应: {((point.day.avg_response_time || 0) / 1000).toFixed(1)}s</span>
+                                    <span
+                                      className="w-2 h-2 rounded-full"
+                                      style={{ backgroundColor: "#f59e0b" }}
+                                    />
+                                    <span>
+                                      响应:{" "}
+                                      {(
+                                        (point.day.avg_response_time || 0) /
+                                        1000
+                                      ).toFixed(1)}
+                                      s
+                                    </span>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#10b981' }} />
-                                    <span>成功率: {(point.day.success_rate || 100).toFixed(1)}%</span>
+                                    <span
+                                      className="w-2 h-2 rounded-full"
+                                      style={{ backgroundColor: "#10b981" }}
+                                    />
+                                    <span>
+                                      成功率:{" "}
+                                      {(point.day.success_rate || 100).toFixed(
+                                        1,
+                                      )}
+                                      %
+                                    </span>
                                   </div>
                                 </div>
                               }
@@ -524,9 +644,9 @@ export default function Dashboard() {
                                 style={{
                                   left: actualX,
                                   top: actualY,
-                                  transform: 'translate(-50%, -50%)',
-                                  width: '28px',
-                                  height: '28px',
+                                  transform: "translate(-50%, -50%)",
+                                  width: "28px",
+                                  height: "28px",
                                 }}
                               />
                             </Tooltip>
@@ -542,26 +662,51 @@ export default function Dashboard() {
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-[var(--color-border)]">
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded" style={{ backgroundColor: '#3b82f6' }} />
+                    <div
+                      className="w-3 h-3 rounded"
+                      style={{ backgroundColor: "#3b82f6" }}
+                    />
                     <span className="text-xs text-[var(--color-text-secondary)]">
-                      总对话: <span className="font-medium text-[var(--color-text-primary)]">
-                        {formatNumber(dailyStats.reduce((sum, d) => sum + d.conversations, 0))}
+                      总对话:{" "}
+                      <span className="font-medium text-[var(--color-text-primary)]">
+                        {formatNumber(
+                          dailyStats.reduce(
+                            (sum, d) => sum + d.conversations,
+                            0,
+                          ),
+                        )}
                       </span>
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded" style={{ backgroundColor: '#8b5cf6' }} />
+                    <div
+                      className="w-3 h-3 rounded"
+                      style={{ backgroundColor: "#8b5cf6" }}
+                    />
                     <span className="text-xs text-[var(--color-text-secondary)]">
-                      总Token: <span className="font-medium text-[var(--color-text-primary)]">
-                        {formatNumber(dailyStats.reduce((sum, d) => sum + d.tokens, 0))}
+                      总Token:{" "}
+                      <span className="font-medium text-[var(--color-text-primary)]">
+                        {formatNumber(
+                          dailyStats.reduce((sum, d) => sum + d.tokens, 0),
+                        )}
                       </span>
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded" style={{ backgroundColor: '#10b981' }} />
+                    <div
+                      className="w-3 h-3 rounded"
+                      style={{ backgroundColor: "#10b981" }}
+                    />
                     <span className="text-xs text-[var(--color-text-secondary)]">
-                      平均成功率: <span className="font-medium text-[var(--color-text-primary)]">
-                        {(dailyStats.reduce((sum, d) => sum + (d.success_rate || 0), 0) / (dailyStats.length || 1)).toFixed(1)}%
+                      平均成功率:{" "}
+                      <span className="font-medium text-[var(--color-text-primary)]">
+                        {(
+                          dailyStats.reduce(
+                            (sum, d) => sum + (d.success_rate || 0),
+                            0,
+                          ) / (dailyStats.length || 1)
+                        ).toFixed(1)}
+                        %
                       </span>
                     </span>
                   </div>

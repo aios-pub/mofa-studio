@@ -7,106 +7,109 @@ import type {
   ChannelType,
   AgentChannel,
   ChannelTestResult,
-} from '../../types/channel';
+} from "../../types/channel";
 
 // 渠道类型配置信息
-export const channelTypeConfig: Record<ChannelType, { name: string; icon: string; description: string }> = {
+export const channelTypeConfig: Record<
+  ChannelType,
+  { name: string; icon: string; description: string }
+> = {
   wechat: {
-    name: '微信',
-    icon: '💬',
-    description: '连接微信公众号，接收和发送微信消息',
+    name: "微信",
+    icon: "💬",
+    description: "连接微信公众号，接收和发送微信消息",
   },
   wechat_work: {
-    name: '企业微信',
-    icon: '🏢',
-    description: '连接企业微信应用，实现企业内部沟通',
+    name: "企业微信",
+    icon: "🏢",
+    description: "连接企业微信应用，实现企业内部沟通",
   },
   dingtalk: {
-    name: '钉钉',
-    icon: '📌',
-    description: '连接钉钉机器人，实现钉钉群聊和单聊',
+    name: "钉钉",
+    icon: "📌",
+    description: "连接钉钉机器人，实现钉钉群聊和单聊",
   },
   feishu: {
-    name: '飞书/Lark',
-    icon: '🚀',
-    description: '连接飞书机器人，实现飞书群聊和单聊',
+    name: "飞书/Lark",
+    icon: "🚀",
+    description: "连接飞书机器人，实现飞书群聊和单聊",
   },
   slack: {
-    name: 'Slack',
-    icon: '💼',
-    description: '连接 Slack 工作区，实现团队协作',
+    name: "Slack",
+    icon: "💼",
+    description: "连接 Slack 工作区，实现团队协作",
   },
   telegram: {
-    name: 'Telegram',
-    icon: '✈️',
-    description: '连接 Telegram Bot，实现消息收发',
+    name: "Telegram",
+    icon: "✈️",
+    description: "连接 Telegram Bot，实现消息收发",
   },
   discord: {
-    name: 'Discord',
-    icon: '🎮',
-    description: '连接 Discord 服务器，实现社区互动',
+    name: "Discord",
+    icon: "🎮",
+    description: "连接 Discord 服务器，实现社区互动",
   },
   whatsapp: {
-    name: 'WhatsApp',
-    icon: '📱',
-    description: '连接 WhatsApp Business API，实现客户沟通',
+    name: "WhatsApp",
+    icon: "📱",
+    description: "连接 WhatsApp Business API，实现客户沟通",
   },
   line: {
-    name: 'Line',
-    icon: '💬',
-    description: '连接 Line Messaging API，实现消息收发',
+    name: "Line",
+    icon: "💬",
+    description: "连接 Line Messaging API，实现消息收发",
   },
   messenger: {
-    name: 'Messenger',
-    icon: '📘',
-    description: '连接 Facebook Messenger，实现社交互动',
+    name: "Messenger",
+    icon: "📘",
+    description: "连接 Facebook Messenger，实现社交互动",
   },
   instagram: {
-    name: 'Instagram',
-    icon: '📷',
-    description: '连接 Instagram Messaging，实现社交互动',
+    name: "Instagram",
+    icon: "📷",
+    description: "连接 Instagram Messaging，实现社交互动",
   },
   teams: {
-    name: 'Microsoft Teams',
-    icon: '👥',
-    description: '连接 Microsoft Teams，实现企业协作',
+    name: "Microsoft Teams",
+    icon: "👥",
+    description: "连接 Microsoft Teams，实现企业协作",
   },
   webhook: {
-    name: 'Webhook',
-    icon: '🔗',
-    description: '通用 Webhook 接口，支持自定义集成',
+    name: "Webhook",
+    icon: "🔗",
+    description: "通用 Webhook 接口，支持自定义集成",
   },
   email: {
-    name: '邮件',
-    icon: '📧',
-    description: 'SMTP 邮件发送，支持邮件通知',
+    name: "邮件",
+    icon: "📧",
+    description: "SMTP 邮件发送，支持邮件通知",
   },
   sms: {
-    name: '短信',
-    icon: '📱',
-    description: '短信发送服务，支持多种短信平台',
+    name: "短信",
+    icon: "📱",
+    description: "短信发送服务，支持多种短信平台",
   },
   custom: {
-    name: '自定义',
-    icon: '⚙️',
-    description: '自定义渠道配置，灵活对接各种系统',
+    name: "自定义",
+    icon: "⚙️",
+    description: "自定义渠道配置，灵活对接各种系统",
   },
 };
 
 // Mock 渠道数据
 export const mockChannels: Channel[] = [
   {
-    id: 'channel-1',
-    name: '微信公众号',
-    type: 'wechat',
-    description: '公司官方微信公众号渠道',
-    status: 'active',
+    id: "channel-1",
+    name: "微信公众号",
+    type: "wechat",
+    description: "公司官方微信公众号渠道",
+    status: "active",
     config: {
-      type: 'wechat',
+      type: "wechat",
       config: {
-        appId: 'wx1234567890',
-        appSecret: 'secret***',
-        token: 'mytoken',
+        appId: "wx1234567890",
+        appSecret: "secret***",
+        token: "mytoken",
       },
     },
     stats: {
@@ -115,52 +118,52 @@ export const mockChannels: Channel[] = [
       failedMessages: 220,
       successRate: 98.57,
       avgResponseTime: 156,
-      lastMessageAt: new Date('2026-03-14T10:30:00'),
+      lastMessageAt: new Date("2026-03-14T10:30:00"),
     },
     enabled: true,
-    createdAt: new Date('2026-01-10'),
-    updatedAt: new Date('2026-03-14'),
-    lastSyncAt: new Date('2026-03-14T10:30:00'),
+    createdAt: new Date("2026-01-10"),
+    updatedAt: new Date("2026-03-14"),
+    lastSyncAt: new Date("2026-03-14T10:30:00"),
   },
   {
-    id: 'channel-2',
-    name: '企业微信机器人',
-    type: 'wechat_work',
-    description: '内部企业微信群机器人',
-    status: 'active',
+    id: "channel-2",
+    name: "企业微信机器人",
+    type: "wechat_work",
+    description: "内部企业微信群机器人",
+    status: "active",
     config: {
-      type: 'wechat_work',
+      type: "wechat_work",
       config: {
-        corpId: 'ww1234567890',
-        agentId: '100001',
-        secret: 'secret***',
-        token: 'worktoken',
+        corpId: "ww1234567890",
+        agentId: "100001",
+        secret: "secret***",
+        token: "worktoken",
       },
     },
     stats: {
       totalMessages: 8560,
       successMessages: 8500,
       failedMessages: 60,
-      successRate: 99.30,
+      successRate: 99.3,
       avgResponseTime: 89,
-      lastMessageAt: new Date('2026-03-14T09:45:00'),
+      lastMessageAt: new Date("2026-03-14T09:45:00"),
     },
     enabled: true,
-    createdAt: new Date('2026-02-01'),
-    updatedAt: new Date('2026-03-14'),
-    lastSyncAt: new Date('2026-03-14T09:45:00'),
+    createdAt: new Date("2026-02-01"),
+    updatedAt: new Date("2026-03-14"),
+    lastSyncAt: new Date("2026-03-14T09:45:00"),
   },
   {
-    id: 'channel-3',
-    name: '钉钉通知',
-    type: 'dingtalk',
-    description: '钉钉群消息通知',
-    status: 'active',
+    id: "channel-3",
+    name: "钉钉通知",
+    type: "dingtalk",
+    description: "钉钉群消息通知",
+    status: "active",
     config: {
-      type: 'dingtalk',
+      type: "dingtalk",
       config: {
-        appKey: 'ding123456',
-        appSecret: 'secret***',
+        appKey: "ding123456",
+        appSecret: "secret***",
       },
     },
     stats: {
@@ -169,24 +172,24 @@ export const mockChannels: Channel[] = [
       failedMessages: 50,
       successRate: 98.46,
       avgResponseTime: 120,
-      lastMessageAt: new Date('2026-03-13T16:20:00'),
+      lastMessageAt: new Date("2026-03-13T16:20:00"),
     },
     enabled: true,
-    createdAt: new Date('2026-02-15'),
-    updatedAt: new Date('2026-03-13'),
-    lastSyncAt: new Date('2026-03-13T16:20:00'),
+    createdAt: new Date("2026-02-15"),
+    updatedAt: new Date("2026-03-13"),
+    lastSyncAt: new Date("2026-03-13T16:20:00"),
   },
   {
-    id: 'channel-4',
-    name: 'Slack 工作区',
-    type: 'slack',
-    description: '团队 Slack 频道集成',
-    status: 'inactive',
+    id: "channel-4",
+    name: "Slack 工作区",
+    type: "slack",
+    description: "团队 Slack 频道集成",
+    status: "inactive",
     config: {
-      type: 'slack',
+      type: "slack",
       config: {
-        botToken: 'xoxb-***',
-        signingSecret: 'secret***',
+        botToken: "xoxb-***",
+        signingSecret: "secret***",
       },
     },
     stats: {
@@ -197,22 +200,22 @@ export const mockChannels: Channel[] = [
       avgResponseTime: 0,
     },
     enabled: false,
-    createdAt: new Date('2026-03-01'),
-    updatedAt: new Date('2026-03-10'),
+    createdAt: new Date("2026-03-01"),
+    updatedAt: new Date("2026-03-10"),
   },
   {
-    id: 'channel-5',
-    name: 'Webhook 接口',
-    type: 'webhook',
-    description: '通用 Webhook 接口',
-    status: 'active',
+    id: "channel-5",
+    name: "Webhook 接口",
+    type: "webhook",
+    description: "通用 Webhook 接口",
+    status: "active",
     config: {
-      type: 'webhook',
+      type: "webhook",
       config: {
-        url: 'https://api.example.com/webhook',
-        method: 'POST',
+        url: "https://api.example.com/webhook",
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       },
     },
@@ -220,25 +223,25 @@ export const mockChannels: Channel[] = [
       totalMessages: 12500,
       successMessages: 12300,
       failedMessages: 200,
-      successRate: 98.40,
+      successRate: 98.4,
       avgResponseTime: 234,
-      lastMessageAt: new Date('2026-03-14T11:00:00'),
+      lastMessageAt: new Date("2026-03-14T11:00:00"),
     },
     enabled: true,
-    createdAt: new Date('2026-01-20'),
-    updatedAt: new Date('2026-03-14'),
-    lastSyncAt: new Date('2026-03-14T11:00:00'),
+    createdAt: new Date("2026-01-20"),
+    updatedAt: new Date("2026-03-14"),
+    lastSyncAt: new Date("2026-03-14T11:00:00"),
   },
   {
-    id: 'channel-6',
-    name: 'Telegram Bot',
-    type: 'telegram',
-    description: 'Telegram 机器人渠道',
-    status: 'error',
+    id: "channel-6",
+    name: "Telegram Bot",
+    type: "telegram",
+    description: "Telegram 机器人渠道",
+    status: "error",
     config: {
-      type: 'telegram',
+      type: "telegram",
       config: {
-        botToken: '123456:ABC***',
+        botToken: "123456:ABC***",
       },
     },
     stats: {
@@ -247,28 +250,28 @@ export const mockChannels: Channel[] = [
       failedMessages: 40,
       successRate: 95.51,
       avgResponseTime: 180,
-      lastMessageAt: new Date('2026-03-12T14:30:00'),
+      lastMessageAt: new Date("2026-03-12T14:30:00"),
     },
     enabled: true,
-    createdAt: new Date('2026-02-28'),
-    updatedAt: new Date('2026-03-12'),
-    errorMessage: 'Bot token 验证失败，请检查配置',
+    createdAt: new Date("2026-02-28"),
+    updatedAt: new Date("2026-03-12"),
+    errorMessage: "Bot token 验证失败，请检查配置",
   },
   {
-    id: 'channel-7',
-    name: '邮件服务',
-    type: 'email',
-    description: 'SMTP 邮件发送服务',
-    status: 'active',
+    id: "channel-7",
+    name: "邮件服务",
+    type: "email",
+    description: "SMTP 邮件发送服务",
+    status: "active",
     config: {
-      type: 'email',
+      type: "email",
       config: {
-        smtpHost: 'smtp.example.com',
+        smtpHost: "smtp.example.com",
         smtpPort: 587,
-        smtpUser: 'noreply@example.com',
-        smtpPassword: '***',
-        fromAddress: 'noreply@example.com',
-        fromName: 'AmosClaw',
+        smtpUser: "noreply@example.com",
+        smtpPassword: "***",
+        fromAddress: "noreply@example.com",
+        fromName: "Amos",
         useTLS: true,
       },
     },
@@ -278,67 +281,67 @@ export const mockChannels: Channel[] = [
       failedMessages: 60,
       successRate: 98.94,
       avgResponseTime: 450,
-      lastMessageAt: new Date('2026-03-14T08:00:00'),
+      lastMessageAt: new Date("2026-03-14T08:00:00"),
     },
     enabled: true,
-    createdAt: new Date('2026-01-05'),
-    updatedAt: new Date('2026-03-14'),
-    lastSyncAt: new Date('2026-03-14T08:00:00'),
+    createdAt: new Date("2026-01-05"),
+    updatedAt: new Date("2026-03-14"),
+    lastSyncAt: new Date("2026-03-14T08:00:00"),
   },
 ];
 
 // Mock Agent-Channel 关联
 export const mockAgentChannels: AgentChannel[] = [
   {
-    id: 'ac-1',
-    agentId: 'agent-1',
-    channelId: 'channel-1',
+    id: "ac-1",
+    agentId: "agent-1",
+    channelId: "channel-1",
     enabled: true,
     priority: 10,
     config: {
-      welcomeMessage: '您好！我是智能助手，有什么可以帮助您的？',
-      fallbackMessage: '抱歉，我暂时无法处理您的请求，请稍后再试。',
+      welcomeMessage: "您好！我是智能助手，有什么可以帮助您的？",
+      fallbackMessage: "抱歉，我暂时无法处理您的请求，请稍后再试。",
       timeout: 30000,
       maxRetries: 3,
     },
-    createdAt: new Date('2026-01-15'),
-    updatedAt: new Date('2026-03-10'),
+    createdAt: new Date("2026-01-15"),
+    updatedAt: new Date("2026-03-10"),
   },
   {
-    id: 'ac-2',
-    agentId: 'agent-1',
-    channelId: 'channel-5',
+    id: "ac-2",
+    agentId: "agent-1",
+    channelId: "channel-5",
     enabled: true,
     priority: 5,
-    createdAt: new Date('2026-01-20'),
-    updatedAt: new Date('2026-03-10'),
+    createdAt: new Date("2026-01-20"),
+    updatedAt: new Date("2026-03-10"),
   },
   {
-    id: 'ac-3',
-    agentId: 'agent-2',
-    channelId: 'channel-2',
+    id: "ac-3",
+    agentId: "agent-2",
+    channelId: "channel-2",
     enabled: true,
     priority: 10,
-    createdAt: new Date('2026-02-05'),
-    updatedAt: new Date('2026-03-12'),
+    createdAt: new Date("2026-02-05"),
+    updatedAt: new Date("2026-03-12"),
   },
   {
-    id: 'ac-4',
-    agentId: 'agent-3',
-    channelId: 'channel-1',
+    id: "ac-4",
+    agentId: "agent-3",
+    channelId: "channel-1",
     enabled: true,
     priority: 8,
-    createdAt: new Date('2026-02-20'),
-    updatedAt: new Date('2026-03-11'),
+    createdAt: new Date("2026-02-20"),
+    updatedAt: new Date("2026-03-11"),
   },
   {
-    id: 'ac-5',
-    agentId: 'agent-4',
-    channelId: 'channel-7',
+    id: "ac-5",
+    agentId: "agent-4",
+    channelId: "channel-7",
     enabled: true,
     priority: 10,
-    createdAt: new Date('2026-02-25'),
-    updatedAt: new Date('2026-03-13'),
+    createdAt: new Date("2026-02-25"),
+    updatedAt: new Date("2026-03-13"),
   },
 ];
 
@@ -364,11 +367,14 @@ export const channelApi = {
     await delay(500);
     const newChannel: Channel = {
       id: `channel-${Date.now()}`,
-      name: data.name || '新渠道',
-      type: data.type || 'webhook',
-      description: data.description || '',
-      status: 'inactive',
-      config: data.config || { type: 'webhook', config: { url: '', method: 'POST' } },
+      name: data.name || "新渠道",
+      type: data.type || "webhook",
+      description: data.description || "",
+      status: "inactive",
+      config: data.config || {
+        type: "webhook",
+        config: { url: "", method: "POST" },
+      },
       stats: {
         totalMessages: 0,
         successMessages: 0,
@@ -385,11 +391,18 @@ export const channelApi = {
   },
 
   // 更新渠道
-  async update(id: string, data: Partial<Channel>): Promise<Channel | undefined> {
+  async update(
+    id: string,
+    data: Partial<Channel>,
+  ): Promise<Channel | undefined> {
     await delay(300);
     const index = mockChannels.findIndex((c) => c.id === id);
     if (index === -1) return undefined;
-    mockChannels[index] = { ...mockChannels[index], ...data, updatedAt: new Date() };
+    mockChannels[index] = {
+      ...mockChannels[index],
+      ...data,
+      updatedAt: new Date(),
+    };
     return mockChannels[index];
   },
 
@@ -414,8 +427,8 @@ export const channelApi = {
     if (!channel) {
       return {
         success: false,
-        message: '渠道不存在',
-        error: 'CHANNEL_NOT_FOUND',
+        message: "渠道不存在",
+        error: "CHANNEL_NOT_FOUND",
       };
     }
 
@@ -424,7 +437,7 @@ export const channelApi = {
     if (success) {
       return {
         success: true,
-        message: '连接测试成功',
+        message: "连接测试成功",
         latency: Math.floor(50 + Math.random() * 200),
         details: {
           server: `${channel.type}.api.example.com`,
@@ -434,8 +447,8 @@ export const channelApi = {
     } else {
       return {
         success: false,
-        message: '连接测试失败',
-        error: 'CONNECTION_TIMEOUT',
+        message: "连接测试失败",
+        error: "CONNECTION_TIMEOUT",
         latency: 5000,
       };
     }
@@ -452,7 +465,7 @@ export const channelApi = {
     agentId: string;
     channelId: string;
     priority?: number;
-    config?: AgentChannel['config'];
+    config?: AgentChannel["config"];
   }): Promise<AgentChannel> {
     await delay(300);
     const newAgentChannel: AgentChannel = {
@@ -470,10 +483,13 @@ export const channelApi = {
   },
 
   // 从渠道移除 Agent
-  async removeAgentFromChannel(agentId: string, channelId: string): Promise<boolean> {
+  async removeAgentFromChannel(
+    agentId: string,
+    channelId: string,
+  ): Promise<boolean> {
     await delay(300);
     const index = mockAgentChannels.findIndex(
-      (ac) => ac.agentId === agentId && ac.channelId === channelId
+      (ac) => ac.agentId === agentId && ac.channelId === channelId,
     );
     if (index === -1) return false;
     mockAgentChannels.splice(index, 1);
@@ -484,14 +500,18 @@ export const channelApi = {
   async updateAgentChannel(
     agentId: string,
     channelId: string,
-    data: Partial<AgentChannel>
+    data: Partial<AgentChannel>,
   ): Promise<AgentChannel | undefined> {
     await delay(300);
     const index = mockAgentChannels.findIndex(
-      (ac) => ac.agentId === agentId && ac.channelId === channelId
+      (ac) => ac.agentId === agentId && ac.channelId === channelId,
     );
     if (index === -1) return undefined;
-    mockAgentChannels[index] = { ...mockAgentChannels[index], ...data, updatedAt: new Date() };
+    mockAgentChannels[index] = {
+      ...mockAgentChannels[index],
+      ...data,
+      updatedAt: new Date(),
+    };
     return mockAgentChannels[index];
   },
 
@@ -501,7 +521,7 @@ export const channelApi = {
     const channel = mockChannels.find((c) => c.id === id);
     if (!channel) return undefined;
     channel.enabled = !channel.enabled;
-    channel.status = channel.enabled ? 'active' : 'disabled';
+    channel.status = channel.enabled ? "active" : "disabled";
     channel.updatedAt = new Date();
     return channel;
   },

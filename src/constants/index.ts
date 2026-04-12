@@ -3,7 +3,7 @@
  */
 
 // 应用信息
-export const APP_NAME = "AmosClaw";
+export const APP_NAME = "Amos";
 export const APP_VERSION = "0.1.0";
 
 // 窗口尺寸

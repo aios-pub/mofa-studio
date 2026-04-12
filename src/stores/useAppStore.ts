@@ -2,11 +2,11 @@
  * 应用全局状态管理
  */
 
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import type { ThemeMode, WindowMode } from '../types';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { ThemeMode, WindowMode } from "../types";
 
-export type SupportedLanguage = 'zh-CN' | 'en-US';
+export type SupportedLanguage = "zh-CN" | "en-US";
 
 interface AppState {
   // 主题
@@ -39,20 +39,21 @@ export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
       // 主题
-      theme: 'system',
+      theme: "system",
       setTheme: (theme) => set({ theme }),
 
       // 语言
-      language: 'zh-CN',
+      language: "zh-CN",
       setLanguage: (language) => set({ language }),
 
       // 窗口模式
-      windowMode: 'full',
+      windowMode: "full",
       setWindowMode: (windowMode) => set({ windowMode }),
 
       // 侧边栏
       sidebarCollapsed: false,
-      toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
+      toggleSidebar: () =>
+        set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
       setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
 
       // 当前 Agent
@@ -61,16 +62,17 @@ export const useAppStore = create<AppState>()(
 
       // 当前会话
       currentConversationId: null,
-      setCurrentConversationId: (currentConversationId) => set({ currentConversationId }),
+      setCurrentConversationId: (currentConversationId) =>
+        set({ currentConversationId }),
     }),
     {
-      name: 'amos-claw-app-store',
+      name: "AMOS-claw-app-store",
       partialize: (state) => ({
         theme: state.theme,
         language: state.language,
         sidebarCollapsed: state.sidebarCollapsed,
         windowMode: state.windowMode,
       }),
-    }
-  )
+    },
+  ),
 );

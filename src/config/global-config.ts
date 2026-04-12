@@ -127,7 +127,7 @@ function getFloatingMode(): FloatingMode {
  * 从环境变量和 package.json 读取配置
  */
 export const GLOBAL_CONFIG: GlobalConfig = {
-  appName: "Amos Claw",
+  appName: "AMOS Claw",
   appVersion: pkg.version,
   defaultRoute: import.meta.env.VITE_APP_DEFAULT_ROUTE || "/workbench",
   publicPath: import.meta.env.VITE_APP_PUBLIC_PATH || "/",
@@ -136,7 +136,7 @@ export const GLOBAL_CONFIG: GlobalConfig = {
   routerMode:
     (import.meta.env.VITE_APP_ROUTER_MODE as "frontend" | "backend") ||
     "frontend",
-  appTitle: import.meta.env.VITE_APP_TITLE || "Amos Claw - AI Agent Management",
+  appTitle: import.meta.env.VITE_APP_TITLE || "AMOS Claw - AI Agent Management",
   floatingMode: getFloatingMode(),
   isFloatingMode: getFloatingMode() === "floating",
   enableAnalytics: parseBoolean(
@@ -171,11 +171,11 @@ export const LAYOUT_CONFIG = {
  * 存储键名枚举
  */
 export const StorageEnum = {
-  ThemeMode: "amos-claw-theme-mode",
-  Settings: "amos-claw-settings",
-  Token: "amos-claw-token",
-  User: "amos-claw-user",
-  Language: "amos-claw-language",
+  ThemeMode: "AMOS-claw-theme-mode",
+  Settings: "AMOS-claw-settings",
+  Token: "AMOS-claw-token",
+  User: "AMOS-claw-user",
+  Language: "AMOS-claw-language",
 } as const;
 
 /**

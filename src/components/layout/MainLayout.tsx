@@ -125,7 +125,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {/* Logo */}
             <div className="flex items-center gap-2 mr-6">
               <RobotOutlined className="text-2xl text-[var(--color-primary)]" />
-              <span className="text-lg font-bold text-white">Amos</span>
+              <span className="text-lg font-bold text-white">AMOS</span>
             </div>
 
             {/* 水平菜单 */}

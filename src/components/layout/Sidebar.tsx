@@ -253,7 +253,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           style={{ borderColor }}
         >
           <RobotOutlined className="text-2xl text-[var(--color-primary)]" />
-          <span className={`text-lg font-bold ${logoTextColor}`}>Amos</span>
+          <span className={`text-lg font-bold ${logoTextColor}`}>AMOS</span>
         </div>
 
         {/* 菜单列表 */}
@@ -301,7 +301,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
               color: isDark ? "#fff" : "var(--color-text-primary)",
             }}
           >
-            Amos
+            AMOS
           </span>
         </div>
 

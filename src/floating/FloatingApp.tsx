@@ -797,7 +797,7 @@ export default function FloatingApp() {
         onContextMenu={handleContextMenu}
         aria-label={expanded ? "收起菜单" : "展开菜单"}
       >
-        <img src="/claw512.png" alt="Amos" />
+        <img src="/claw512.png" alt="AMOS" />
 
         <div className="pet-effects">
           {particles.map((p) => (
@@ -829,9 +829,9 @@ export default function FloatingApp() {
         >
           <div className="floating-menu-header">
             <div className="floating-menu-title">
-              <img src="/claw512.png" alt="Amos" />
+              <img src="/claw512.png" alt="AMOS" />
               <div>
-                <div className="floating-menu-name">Amos</div>
+                <div className="floating-menu-name">AMOS</div>
                 <div className="floating-menu-subtitle">你的桌面伙伴</div>
               </div>
             </div>

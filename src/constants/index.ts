@@ -3,7 +3,7 @@
  */
 
 // 应用信息
-export const APP_NAME = "Amos";
+export const APP_NAME = "AMOS";
 export const APP_VERSION = "0.1.0";
 
 // 窗口尺寸
@@ -36,8 +36,8 @@ export const AGENT_STATUS_TEXT: Record<string, string> = {
 
 // 存储键名
 export const STORAGE_KEYS = {
-  THEME: "amos-claw-theme",
-  LANGUAGE: "amos-claw-language",
-  WINDOW_MODE: "amos-claw-window-mode",
-  RECENT_CONVERSATIONS: "amos-claw-recent-conversations",
+  THEME: "AMOS-claw-theme",
+  LANGUAGE: "AMOS-claw-language",
+  WINDOW_MODE: "AMOS-claw-window-mode",
+  RECENT_CONVERSATIONS: "AMOS-claw-recent-conversations",
 } as const;

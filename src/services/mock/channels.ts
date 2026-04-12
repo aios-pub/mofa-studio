@@ -271,7 +271,7 @@ export const mockChannels: Channel[] = [
         smtpUser: "noreply@example.com",
         smtpPassword: "***",
         fromAddress: "noreply@example.com",
-        fromName: "Amos",
+        fromName: "AMOS",
         useTLS: true,
       },
     },

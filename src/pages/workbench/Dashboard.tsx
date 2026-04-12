@@ -36,7 +36,7 @@ function WelcomeBanner() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex-1">
             <h2 className="text-xl font-bold text-white mb-2">
-              {greeting}，欢迎使用 Amos
+              {greeting}，欢迎使用 AMOS
             </h2>
             <p className="text-white/80 text-sm mb-4">
               强大的 AI Agent 管理平台，助您构建智能对话系统。探索无限可能。

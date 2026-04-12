@@ -220,7 +220,7 @@ const mockAlerts: Alert[] = [
     id: "alert-4",
     type: "info",
     title: "新版本可用",
-    message: "Amos v1.2.0 已发布，包含多项性能优化",
+    message: "AMOS v1.2.0 已发布，包含多项性能优化",
     timestamp: new Date(Date.now() - 86400000),
     acknowledged: true,
   },

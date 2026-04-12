@@ -321,11 +321,11 @@ function DataSettings() {
     // 导出所有数据
     const data = {
       conversations: JSON.parse(
-        localStorage.getItem("amos-claw-conversations") || "[]",
+        localStorage.getItem("AMOS-claw-conversations") || "[]",
       ),
-      agents: JSON.parse(localStorage.getItem("amos-claw-agents") || "[]"),
-      prompts: JSON.parse(localStorage.getItem("amos-claw-prompts") || "[]"),
-      settings: JSON.parse(localStorage.getItem("amos-claw-app-store") || "{}"),
+      agents: JSON.parse(localStorage.getItem("AMOS-claw-agents") || "[]"),
+      prompts: JSON.parse(localStorage.getItem("AMOS-claw-prompts") || "[]"),
+      settings: JSON.parse(localStorage.getItem("AMOS-claw-app-store") || "{}"),
       exportedAt: new Date().toISOString(),
     };
 
@@ -335,7 +335,7 @@ function DataSettings() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `amos-claw-backup-${new Date().toISOString().split("T")[0]}.json`;
+    a.download = `AMOS-claw-backup-${new Date().toISOString().split("T")[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -354,25 +354,25 @@ function DataSettings() {
           const data = JSON.parse(event.target?.result as string);
           if (data.conversations) {
             localStorage.setItem(
-              "amos-claw-conversations",
+              "AMOS-claw-conversations",
               JSON.stringify(data.conversations),
             );
           }
           if (data.agents) {
             localStorage.setItem(
-              "amos-claw-agents",
+              "AMOS-claw-agents",
               JSON.stringify(data.agents),
             );
           }
           if (data.prompts) {
             localStorage.setItem(
-              "amos-claw-prompts",
+              "AMOS-claw-prompts",
               JSON.stringify(data.prompts),
             );
           }
           if (data.settings) {
             localStorage.setItem(
-              "amos-claw-app-store",
+              "AMOS-claw-app-store",
               JSON.stringify(data.settings),
             );
           }
@@ -477,7 +477,7 @@ function AboutSettings() {
             <span style={{ fontSize: 40 }}>🤖</span>
           </Avatar>
           <Title level={3} style={{ marginBottom: 8 }}>
-            Amos
+            AMOS
           </Title>
           <Text type="secondary">AI Dialogue Platform</Text>
 

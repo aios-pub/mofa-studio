@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    amos_claw_lib::run()
+    AMOS_claw_lib::run()
 }

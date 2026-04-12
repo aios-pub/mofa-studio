@@ -67,7 +67,7 @@ export const useSettingStore = create<SettingStore>()(
       },
     }),
     {
-      name: "amos-claw-setting-store",
+      name: "AMOS-claw-setting-store",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ settings: state.settings }),
     },

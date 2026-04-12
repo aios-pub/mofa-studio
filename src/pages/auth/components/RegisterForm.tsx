@@ -74,7 +74,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
       <div className="flex items-center justify-center gap-2 mb-6">
         <RobotOutlined className="text-3xl text-[var(--color-primary)]" />
         <span className="text-2xl font-bold text-[var(--color-text-primary)]">
-          Amos
+          AMOS
         </span>
       </div>
 

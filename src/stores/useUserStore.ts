@@ -2,9 +2,9 @@
  * 用户状态管理
  */
 
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import type { UserInfo, UserToken } from '../types/user';
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import type { UserInfo, UserToken } from "../types/user";
 
 type UserStore = {
   userInfo: Partial<UserInfo>;
@@ -34,20 +34,22 @@ const useUserStore = create<UserStore>()(
       },
     }),
     {
-      name: 'amos-claw-user-store',
+      name: "AMOS-claw-user-store",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         userInfo: state.userInfo,
         userToken: state.userToken,
       }),
-    }
-  )
+    },
+  ),
 );
 
 export const useUserInfo = () => useUserStore((state) => state.userInfo);
 export const useUserToken = () => useUserStore((state) => state.userToken);
-export const useUserPermissions = () => useUserStore((state) => state.userInfo.permissions || []);
-export const useUserRoles = () => useUserStore((state) => state.userInfo.roles || []);
+export const useUserPermissions = () =>
+  useUserStore((state) => state.userInfo.permissions || []);
+export const useUserRoles = () =>
+  useUserStore((state) => state.userInfo.roles || []);
 export const useUserActions = () => useUserStore((state) => state.actions);
 
 // 检查是否已登录

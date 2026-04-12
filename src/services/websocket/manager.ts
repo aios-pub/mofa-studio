@@ -8,10 +8,10 @@ import type {
   ConnectionState,
   WebSocketEventHandler,
   ConnectionMode,
-} from './types';
-import type { WebSocketAdapter } from './base';
-import { NativeWebSocketAdapter } from './adapters/wss';
-import { SocketIOAdapter } from './adapters/socketio';
+} from "./types";
+import type { WebSocketAdapter } from "./base";
+import { NativeWebSocketAdapter } from "./adapters/wss";
+import { SocketIOAdapter } from "./adapters/socketio";
 
 /** WebSocket 管理器配置 */
 export interface WebSocketManagerConfig extends Partial<WebSocketConfig> {
@@ -22,7 +22,7 @@ export interface WebSocketManagerConfig extends Partial<WebSocketConfig> {
 }
 
 /** 存储键 */
-const STORAGE_KEY = 'amos-claw-ws-mode';
+const STORAGE_KEY = "AMOS-claw-ws-mode";
 
 /**
  * WebSocket 管理器
@@ -37,7 +37,8 @@ export class WebSocketManager {
   constructor(config: WebSocketManagerConfig) {
     this.config = config;
     // 从存储中读取模式，或使用配置的默认模式
-    this._mode = this.loadMode() ?? config.defaultMode ?? config.mode ?? 'socketio';
+    this._mode =
+      this.loadMode() ?? config.defaultMode ?? config.mode ?? "socketio";
   }
 
   /**
@@ -50,7 +51,10 @@ export class WebSocketManager {
         try {
           handler(data);
         } catch (error) {
-          console.error(`Error in WebSocket event handler for "${event}":`, error);
+          console.error(
+            `Error in WebSocket event handler for "${event}":`,
+            error,
+          );
         }
       });
     }
@@ -63,7 +67,7 @@ export class WebSocketManager {
 
   /** 获取当前连接状态 */
   get state(): ConnectionState {
-    return this.adapter?.state ?? 'disconnected';
+    return this.adapter?.state ?? "disconnected";
   }
 
   /** 是否已连接 */
@@ -111,8 +115,8 @@ export class WebSocketManager {
     this.adapter = this.createAdapter(this._mode);
 
     // 转发状态变化事件
-    this.adapter.on('state_change', (data) => {
-      this.emitInternal('state_change', data);
+    this.adapter.on("state_change", (data) => {
+      this.emitInternal("state_change", data);
     });
 
     await this.adapter.connect();
@@ -132,7 +136,7 @@ export class WebSocketManager {
    */
   emit<T = unknown>(event: string, data: T): void {
     if (!this.adapter) {
-      console.warn('WebSocket not initialized');
+      console.warn("WebSocket not initialized");
       return;
     }
     this.adapter.emit(event, data);
@@ -141,7 +145,10 @@ export class WebSocketManager {
   /**
    * 订阅事件
    */
-  on<T = unknown>(event: string, handler: WebSocketEventHandler<T>): () => void {
+  on<T = unknown>(
+    event: string,
+    handler: WebSocketEventHandler<T>,
+  ): () => void {
     // 添加到管理器自己的事件处理器
     if (!this.eventHandlers.has(event)) {
       this.eventHandlers.set(event, new Set());
@@ -192,9 +199,9 @@ export class WebSocketManager {
     };
 
     switch (mode) {
-      case 'wss':
+      case "wss":
         return new NativeWebSocketAdapter(adapterConfig);
-      case 'socketio':
+      case "socketio":
       default:
         return new SocketIOAdapter(adapterConfig);
     }
@@ -206,7 +213,7 @@ export class WebSocketManager {
   private loadMode(): ConnectionMode | null {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved === 'socketio' || saved === 'wss') {
+      if (saved === "socketio" || saved === "wss") {
         return saved;
       }
     } catch {
@@ -233,12 +240,16 @@ let globalManager: WebSocketManager | null = null;
 /**
  * 获取全局 WebSocket 管理器实例
  */
-export function getWebSocketManager(config?: WebSocketManagerConfig): WebSocketManager {
+export function getWebSocketManager(
+  config?: WebSocketManagerConfig,
+): WebSocketManager {
   if (!globalManager && config) {
     globalManager = new WebSocketManager(config);
   }
   if (!globalManager) {
-    throw new Error('WebSocketManager not initialized. Call getWebSocketManager with config first.');
+    throw new Error(
+      "WebSocketManager not initialized. Call getWebSocketManager with config first.",
+    );
   }
   return globalManager;
 }
@@ -246,7 +257,9 @@ export function getWebSocketManager(config?: WebSocketManagerConfig): WebSocketM
 /**
  * 初始化全局 WebSocket 管理器
  */
-export function initWebSocketManager(config: WebSocketManagerConfig): WebSocketManager {
+export function initWebSocketManager(
+  config: WebSocketManagerConfig,
+): WebSocketManager {
   globalManager = new WebSocketManager(config);
   return globalManager;
 }

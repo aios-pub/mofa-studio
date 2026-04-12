@@ -116,7 +116,7 @@ export default function LoginPage() {
 
         {/* 底部版权 */}
         <div className="p-4 text-center text-sm text-[var(--color-text-tertiary)]">
-          © {new Date().getFullYear()} Amos.{" "}
+          © {new Date().getFullYear()} AMOS.{" "}
           {t("common.allRightsReserved", "保留所有权利")}
         </div>
       </div>

@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Amos",
+  "productName": "AMOS",
   "version": "0.1.0",
-  "identifier": "com.aios.Amos",
+  "identifier": "com.aios.AMOS",
   "build": {
     "beforeDevCommand": "deno task dev",
     "devUrl": "http://localhost:1420",
@@ -14,7 +14,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Amos",
+        "title": "AMOS",
         "width": 1200,
         "height": 800,
         "minWidth": 800,
@@ -24,7 +24,7 @@
       },
       {
         "label": "floating",
-        "title": "Amos Floating",
+        "title": "AMOS Floating",
         "url": "floating.html",
         "width": 64,
         "height": 64,

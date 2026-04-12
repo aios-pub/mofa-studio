@@ -4,7 +4,7 @@
  */
 
 // 检查是否在浏览器环境
-const isBrowser = typeof window !== 'undefined';
+const isBrowser = typeof window !== "undefined";
 
 // 配置选项
 export interface TracingConfig {
@@ -18,9 +18,9 @@ export interface TracingConfig {
 
 const defaultConfig: TracingConfig = {
   enabled: import.meta.env.PROD, // 只在生产环境启用
-  serviceName: 'amos-claw-frontend',
-  serviceVersion: '1.0.0',
-  otlpEndpoint: import.meta.env.VITE_OTLP_ENDPOINT || '/v1/traces',
+  serviceName: "AMOS-claw-frontend",
+  serviceVersion: "1.0.0",
+  otlpEndpoint: import.meta.env.VITE_OTLP_ENDPOINT || "/v1/traces",
   sampleRate: 0.1, // 10% 采样率
   propagateTraceHeader: true,
 };
@@ -39,12 +39,12 @@ export function initTracing(config: Partial<TracingConfig> = {}) {
   currentConfig = { ...defaultConfig, ...config };
 
   if (!currentConfig.enabled) {
-    console.log('[Tracing] Tracing is disabled');
+    console.log("[Tracing] Tracing is disabled");
     return;
   }
 
   if (tracingInitialized) {
-    console.log('[Tracing] Already initialized');
+    console.log("[Tracing] Already initialized");
     return;
   }
 
@@ -73,10 +73,10 @@ export function initTracing(config: Partial<TracingConfig> = {}) {
     provider.register();
     */
 
-    console.log('[Tracing] OpenTelemetry initialized', currentConfig);
+    console.log("[Tracing] OpenTelemetry initialized", currentConfig);
     tracingInitialized = true;
   } catch (error) {
-    console.error('[Tracing] Failed to initialize OpenTelemetry:', error);
+    console.error("[Tracing] Failed to initialize OpenTelemetry:", error);
   }
 }
 
@@ -99,7 +99,7 @@ export function isTracingInitialized(): boolean {
  */
 export function shutdownTracing() {
   tracingInitialized = false;
-  console.log('[Tracing] Tracing shutdown');
+  console.log("[Tracing] Tracing shutdown");
 }
 
 export default {

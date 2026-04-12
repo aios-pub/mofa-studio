@@ -546,7 +546,7 @@ function EmailConfigForm() {
         <Input placeholder="noreply@example.com" />
       </Form.Item>
       <Form.Item name="fromName" label="发件人名称">
-        <Input placeholder="Amos" />
+        <Input placeholder="AMOS" />
       </Form.Item>
       <Form.Item
         name="useTLS"

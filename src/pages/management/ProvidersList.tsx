@@ -45,6 +45,8 @@ export default function ProvidersListPage() {
   const [validatingKey, setValidatingKey] = useState<string | null>(null);
   const [refreshingModels, setRefreshingModels] = useState<string | null>(null);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
 
   useEffect(() => {
     loadProviders();
@@ -166,6 +168,23 @@ export default function ProvidersListPage() {
     setProviders([...providers, newProvider]);
     setSelectedProvider(newProvider);
     message.success(`Provider "${newProvider.name}" 添加成功`);
+  };
+
+  // 处理编辑 Provider
+  const handleEditProvider = async (id: string, formData: CreateProviderFormData) => {
+    const updateData: Record<string, unknown> = {
+      name: formData.name,
+      baseUrl: formData.baseUrl,
+      type: formData.type,
+    };
+    // 只有 apiKey 被实际修改时才传递（未修改时 formData 中不包含 apiKey）
+    if (formData.apiKey !== undefined) {
+      updateData.apiKey = formData.apiKey;
+    }
+    const updated = await providerApi.update(id, updateData);
+    setProviders(providers.map((p) => (p.id === id ? updated : p)));
+    setSelectedProvider(updated);
+    message.success(`Provider "${updated.name}" 更新成功`);
   };
 
   return (
@@ -320,6 +339,10 @@ export default function ProvidersListPage() {
             onValidateKey={handleValidateKey}
             onRefreshModels={handleRefreshModels}
             onToggleModel={handleToggleModel}
+            onEdit={(provider) => {
+              setEditingProvider(provider);
+              setEditModalOpen(true);
+            }}
             validatingKey={validatingKey === selectedProvider.id}
             refreshingModels={refreshingModels === selectedProvider.id}
           />
@@ -344,6 +367,18 @@ export default function ProvidersListPage() {
         onClose={() => setAddModalOpen(false)}
         onSubmit={handleAddProvider}
       />
+
+      {/* 编辑 Provider 弹窗 */}
+      <AddProviderModal
+        open={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setEditingProvider(null);
+        }}
+        onSubmit={handleAddProvider}
+        provider={editingProvider}
+        onEdit={handleEditProvider}
+      />
     </div>
   );
 }
@@ -355,6 +390,7 @@ function ProviderDetail({
   onValidateKey,
   onRefreshModels,
   onToggleModel,
+  onEdit,
   validatingKey,
   refreshingModels,
 }: {
@@ -367,6 +403,7 @@ function ProviderDetail({
     modelId: string,
     enabled: boolean,
   ) => void;
+  onEdit: (provider: Provider) => void;
   validatingKey: boolean;
   refreshingModels: boolean;
 }) {
@@ -422,7 +459,7 @@ function ProviderDetail({
           >
             删除
           </Button>
-          <Button type="primary" icon={<EditOutlined />}>
+          <Button type="primary" icon={<EditOutlined />} onClick={() => onEdit(provider)}>
             编辑
           </Button>
         </div>

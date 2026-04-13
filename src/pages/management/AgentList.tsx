@@ -275,7 +275,7 @@ function AgentFormModal({
     } catch (error: any) {
       if (error?.errorFields) return;
       console.error("Failed to save agent:", error);
-      message.error(isEdit ? "更新失败" : "创建失败");
+      message.error(error?.message || (isEdit ? "更新失败" : "创建失败"));
     } finally {
       setLoading(false);
     }
@@ -1111,9 +1111,9 @@ export default function AgentListPage() {
 
       setAgents((prev) => [...prev, newAgent]);
       message.success("Agent 已复制");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to duplicate agent:", error);
-      message.error("复制失败");
+      message.error(error?.message || "复制失败");
     }
   };
 

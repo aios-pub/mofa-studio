@@ -120,13 +120,16 @@ const providerRealApi = {
   },
 
   update: async (id: string, data: Record<string, unknown>): Promise<Provider> => {
-    const payload = {
+    const payload: Record<string, unknown> = {
       id,
       api_base: data.baseUrl || "",
-      api_key: data.apiKey || "",
       provider_name: data.name || "",
       provider_type: data.type || "custom",
     };
+    // 只有明确传了 apiKey 才更新，避免用 masked 值覆盖真实密钥
+    if (data.apiKey !== undefined) {
+      payload.api_key = data.apiKey;
+    }
     const raw = await apiClient.post<ProviderRaw>("/api/provider/update", payload);
     return mapProvider(raw);
   },

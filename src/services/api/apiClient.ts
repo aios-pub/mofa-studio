@@ -102,7 +102,6 @@ axiosInstance.interceptors.response.use(
 
       // 业务错误 — 使用后端返回的 msg
       const errorMsg = data.msg || "请求失败";
-      message.error(errorMsg);
       return Promise.reject(new Error(errorMsg));
     }
 

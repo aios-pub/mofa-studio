@@ -391,7 +391,7 @@ export default function UsersPage() {
         onOk={handleSave}
         okText={t('common.save', '保存')}
         cancelText={t('common.cancel', '取消')}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
           form={form}

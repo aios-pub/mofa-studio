@@ -284,7 +284,7 @@ export default function RoleManagementPage() {
         onCancel={() => setModalVisible(false)}
         onOk={handleSubmit}
         width={650}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical">
           <div className="grid grid-cols-2 gap-4">

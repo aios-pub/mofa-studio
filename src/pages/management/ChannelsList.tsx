@@ -312,7 +312,7 @@ export default function ChannelsListPage() {
         onCancel={() => setShowCreateModal(false)}
         footer={null}
         width={600}
-        destroyOnClose
+        destroyOnHidden
       >
         <ChannelConfigForm
           onSave={handleCreateChannel}

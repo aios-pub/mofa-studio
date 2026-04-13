@@ -735,7 +735,7 @@ function CreateKeyModal({
       okText="保存"
       cancelText="取消"
       confirmLoading={saving}
-      destroyOnClose
+      destroyOnHidden
     >
       <Form
         form={form}
@@ -845,7 +845,7 @@ function QuotaEditModal({
       okText="保存"
       cancelText="取消"
       confirmLoading={saving}
-      destroyOnClose
+      destroyOnHidden
     >
       <Form form={form} layout="vertical">
         <Form.Item name="maxTokens" label="最大 Tokens">

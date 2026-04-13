@@ -25,7 +25,8 @@ import {
   LoadingOutlined,
   CloudServerOutlined,
 } from "@ant-design/icons";
-import type { Provider, CreateProviderFormData } from "../../types/provider";
+import type { CreateProviderFormData } from "../../types/provider";
+import type { Provider } from "../../services/real/providers";
 import { providerApi } from "@/services";
 import { getProviderTypeConfig } from "../../services/provider/providerConfigs";
 import { AddProviderModal } from "./components/AddProviderModal";
@@ -64,8 +65,8 @@ export default function ProvidersListPage() {
   // 过滤 Providers
   const filteredProviders = providers.filter((p) => {
     const matchesSearch =
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.type.toLowerCase().includes(searchQuery.toLowerCase());
+      (p.name ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.type ?? "").toLowerCase().includes(searchQuery.toLowerCase());
     return matchesSearch;
   });
 
@@ -113,10 +114,13 @@ export default function ProvidersListPage() {
   const handleRefreshModels = async (id: string) => {
     setRefreshingModels(id);
     try {
-      const models = await providerApi.refreshModels(id);
-      setProviders(providers.map((p) => (p.id === id ? { ...p, models } : p)));
-      if (selectedProvider?.id === id) {
-        setSelectedProvider({ ...selectedProvider, models });
+      await providerApi.refreshModels(id);
+      // 刷新后重新加载全部列表以获取最新模型数据
+      await loadProviders();
+      // 重新设置选中的 provider
+      const updated = providers.find((p) => p.id === id);
+      if (selectedProvider?.id === id && updated) {
+        setSelectedProvider(updated);
       }
       message.success("模型列表已刷新");
     } catch (error) {
@@ -238,22 +242,22 @@ export default function ProvidersListPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-[var(--color-text-primary)] truncate">
-                          {provider.name}
+                          {provider.name || "-"}
                         </span>
                         {getStatusIcon(provider.status)}
                       </div>
                       <p className="text-sm text-[var(--color-text-tertiary)]">
-                        {provider.models.length} 个模型
+                        {(provider.models?.length ?? 0)} 个模型
                       </p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-[var(--color-text-tertiary)]">
-                          {provider.usage.totalCalls} 次调用
+                          {provider.usage?.totalCalls ?? "-"} 次调用
                         </span>
                         <span className="text-xs text-[var(--color-text-tertiary)]">
                           •
                         </span>
                         <span className="text-xs text-[var(--color-text-tertiary)]">
-                          {(provider.usage.totalTokens / 1000).toFixed(0)}K
+                          {provider.usage?.totalTokens ? (provider.usage.totalTokens / 1000).toFixed(0) + "K" : "-"}
                           tokens
                         </span>
                       </div>
@@ -279,7 +283,7 @@ export default function ProvidersListPage() {
                 {/* 展开的模型列表 */}
                 {expandedProviders.has(provider.id) && (
                   <div className="ml-4 mt-1 space-y-1">
-                    {provider.models.map((model) => (
+                    {(provider.models ?? []).map((model) => (
                       <div
                         key={model.id}
                         className="flex items-center justify-between p-2 bg-[var(--color-bg-tertiary)] rounded-lg text-sm"
@@ -295,7 +299,7 @@ export default function ProvidersListPage() {
                           )}
                         </div>
                         <span className="text-xs text-[var(--color-text-tertiary)]">
-                          ${model.pricing.input.toFixed(4)}/1K
+                          {model.pricing.input > 0 ? `$${model.pricing.input.toFixed(4)}/1K` : "-"}
                         </span>
                       </div>
                     ))}
@@ -379,8 +383,8 @@ function ProviderDetail({
 
   // 计算预估费用
   const estimatedCost =
-    (provider.usage.totalTokens / 1000) *
-    (provider.models[0]?.pricing.input || 0);
+    (provider.usage?.totalTokens ?? 0) / 1000 *
+    (provider.models?.[0]?.pricing.input || 0);
 
   const tabs = [
     { key: "models", label: "模型列表", icon: ThunderboltOutlined },
@@ -396,10 +400,10 @@ function ProviderDetail({
           <div className="flex items-center gap-2">
             <span className="text-2xl">{typeConfig?.icon || "⚙️"}</span>
             <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
-              {provider.name}
+              {provider.name || "-"}
             </h2>
             <Tag color={typeConfig?.color || "default"}>
-              {typeConfig?.name || provider.type}
+              {typeConfig?.name || provider.type || "-"}
             </Tag>
           </div>
           <p className="text-[var(--color-text-secondary)] mt-1">
@@ -524,15 +528,12 @@ function ProviderDetail({
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-[var(--color-text-primary)]">
-                          {model.name}
+                          {model.name || "-"}
                         </span>
-                        <code className="text-xs px-1.5 py-0.5 bg-[var(--color-bg-tertiary)] rounded text-[var(--color-text-tertiary)]">
-                          {model.id}
-                        </code>
                       </div>
                       <div className="flex items-center gap-3 mt-1 text-xs text-[var(--color-text-tertiary)]">
                         <span>
-                          最大 {model.maxTokens.toLocaleString()} tokens
+                          {model.maxTokens ? `最大 ${model.maxTokens.toLocaleString()} tokens` : ""}
                         </span>
                         <span>•</span>
                         <span>

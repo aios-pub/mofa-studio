@@ -17,7 +17,7 @@ import { GLOBAL_CONFIG, isMockEnabled } from "@/config";
 export interface ApiResponse<T = unknown> {
   code: number;
   data: T;
-  message: string;
+  msg: string;
 }
 
 export interface ApiError {
@@ -100,8 +100,8 @@ axiosInstance.interceptors.response.use(
         return data.data;
       }
 
-      // 业务错误
-      const errorMsg = data.message || "请求失败";
+      // 业务错误 — 使用后端返回的 msg
+      const errorMsg = data.msg || "请求失败";
       message.error(errorMsg);
       return Promise.reject(new Error(errorMsg));
     }
@@ -145,7 +145,7 @@ axiosInstance.interceptors.response.use(
           break;
         default:
           errorMessage =
-            response.data?.message || `请求失败 (${response.status})`;
+            response.data?.msg || `请求失败 (${response.status})`;
       }
     } else if (error.code === "ECONNABORTED") {
       errorMessage = "请求超时";

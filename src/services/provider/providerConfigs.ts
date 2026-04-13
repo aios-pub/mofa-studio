@@ -1790,9 +1790,9 @@ export const categoryInfo: Record<
 
 // 获取厂商简单配置（用于列表显示）
 export const getProviderTypeConfig = (
-  type: ProviderType,
+  type: string,
 ): { name: string; color: string; icon: string } => {
-  const config = getProviderConfig(type);
+  const config = getProviderConfig(type as ProviderType);
   if (!config) {
     return { name: type, color: "default", icon: "⚙️" };
   }

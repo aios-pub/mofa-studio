@@ -240,7 +240,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
       }
       width={currentStep === 0 ? 720 : 560}
       footer={renderFooter()}
-      destroyOnClose={false}
+      destroyOnHidden={false}
       maskClosable={false}
     >
       {/* 步骤条 */}

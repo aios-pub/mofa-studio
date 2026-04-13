@@ -486,7 +486,7 @@ export default function PromptListPage() {
         width={720}
         open={editorOpen}
         onClose={handleEditorCancel}
-        destroyOnClose
+        destroyOnHidden
         footer={
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
             <Button onClick={handleEditorCancel}>取消</Button>

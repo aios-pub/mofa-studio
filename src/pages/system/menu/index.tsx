@@ -296,7 +296,7 @@ export default function MenuManagementPage() {
         onCancel={() => setModalVisible(false)}
         onOk={handleSubmit}
         width={600}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical">
           <Form.Item

@@ -234,7 +234,7 @@ export default function KnowledgeBaseListPage() {
           </div>
         )}
       </div>
-      <Modal title="创建知识库" open={showCreateModal} onCancel={() => setShowCreateModal(false)} footer={null} width={600} destroyOnClose>
+      <Modal title="创建知识库" open={showCreateModal} onCancel={() => setShowCreateModal(false)} footer={null} width={600} destroyOnHidden>
         <div className="p-4 text-center text-[var(--color-text-secondary)]">知识库创建功能开发中...</div>
       </Modal>
     </div>

@@ -212,13 +212,13 @@ export default function AgentSkillSelector({
                         <div className="px-3 pb-3 border-t border-[var(--color-border)]">
                           <div className="mt-2 space-y-3">
                             {/* 参数列表 */}
-                            {skill.parameters.length > 0 && (
+                            {Array.isArray(skill.parameters) && skill.parameters.length > 0 && (
                               <div>
                                 <h5 className="text-xs font-medium text-[var(--color-text-tertiary)] mb-1">
                                   参数
                                 </h5>
                                 <div className="space-y-1">
-                                  {skill.parameters.map((param) => (
+                                  {(Array.isArray(skill.parameters) ? skill.parameters : []).map((param) => (
                                     <div
                                       key={param.name}
                                       className="flex items-center gap-2 text-xs"

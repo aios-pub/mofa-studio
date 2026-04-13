@@ -139,7 +139,7 @@ export function HubSkillDetail({
           <Statistic title={<Text type="secondary" style={{ fontSize: 12 }}>超时时间</Text>} value={skill.timeout / 1000} suffix="s" valueStyle={{ fontSize: 14 }} />
         </Card>
         <Card size="small" bordered={false} style={{ background: 'var(--color-bg-secondary)' }}>
-          <Statistic title={<Text type="secondary" style={{ fontSize: 12 }}>参数数量</Text>} value={skill.parameters.length} valueStyle={{ fontSize: 14 }} />
+          <Statistic title={<Text type="secondary" style={{ fontSize: 12 }}>参数数量</Text>} value={Array.isArray(skill.parameters) ? skill.parameters.length : 0} valueStyle={{ fontSize: 14 }} />
         </Card>
         <Card size="small" bordered={false} style={{ background: 'var(--color-bg-secondary)' }}>
           <Statistic
@@ -175,7 +175,7 @@ export function HubSkillDetail({
                 参数定义
               </span>
             </div>
-            {skill.parameters.length === 0 ? (
+            {(Array.isArray(skill.parameters) ? skill.parameters : []).length === 0 ? (
               <div className="p-4 text-center text-[var(--color-text-tertiary)]">暂无参数</div>
             ) : (
               <table className="w-full text-sm">
@@ -189,7 +189,7 @@ export function HubSkillDetail({
                   </tr>
                 </thead>
                 <tbody>
-                  {skill.parameters.map((param) => (
+                  {(Array.isArray(skill.parameters) ? skill.parameters : []).map((param) => (
                     <tr key={param.name} className="border-b border-[var(--color-border)]/50">
                       <td className="py-2 px-4">
                         <code className="text-[var(--color-primary)]">{param.name}</code>

@@ -37,7 +37,7 @@ export function SkillDetail({ skill, onUpdate: _onUpdate, onToggleEnabled }: Ski
   useEffect(() => {
     // 初始化测试参数
     const initialParams: Record<string, unknown> = {};
-    skill.parameters.forEach((p) => {
+    (Array.isArray(skill.parameters) ? skill.parameters : []).forEach((p) => {
       if (p.defaultValue !== undefined) {
         initialParams[p.name] = p.defaultValue;
       }
@@ -93,12 +93,13 @@ export function SkillDetail({ skill, onUpdate: _onUpdate, onToggleEnabled }: Ski
   };
 
   const getTypeTag = (type: Skill['type']) => {
-    const config: Record<Skill['type'], { color: string; label: string }> = {
+    const config: Record<string, { color: string; label: string }> = {
       builtin: { color: 'blue', label: '内置' },
       custom: { color: 'purple', label: '自定义' },
       api: { color: 'orange', label: 'API' },
     };
-    return <Tag color={config[type].color}>{config[type].label}</Tag>;
+    const item = config[type ?? ''] ?? { color: 'default', label: type ?? '未知' };
+    return <Tag color={item.color}>{item.label}</Tag>;
   };
 
   const tabs = [
@@ -138,10 +139,10 @@ export function SkillDetail({ skill, onUpdate: _onUpdate, onToggleEnabled }: Ski
           <Statistic title={<Text type="secondary" style={{ fontSize: 12 }}>分类</Text>} value={skill.category} valueStyle={{ fontSize: 14 }} />
         </Card>
         <Card size="small" bordered={false} style={{ background: 'var(--color-bg-secondary)' }}>
-          <Statistic title={<Text type="secondary" style={{ fontSize: 12 }}>超时时间</Text>} value={skill.timeout / 1000} suffix="s" valueStyle={{ fontSize: 14 }} />
+          <Statistic title={<Text type="secondary" style={{ fontSize: 12 }}>超时时间</Text>} value={(skill.timeout ?? 30000) / 1000} suffix="s" valueStyle={{ fontSize: 14 }} />
         </Card>
         <Card size="small" bordered={false} style={{ background: 'var(--color-bg-secondary)' }}>
-          <Statistic title={<Text type="secondary" style={{ fontSize: 12 }}>参数数量</Text>} value={skill.parameters.length} valueStyle={{ fontSize: 14 }} />
+          <Statistic title={<Text type="secondary" style={{ fontSize: 12 }}>参数数量</Text>} value={Array.isArray(skill.parameters) ? skill.parameters.length : 0} valueStyle={{ fontSize: 14 }} />
         </Card>
         <Card size="small" bordered={false} style={{ background: 'var(--color-bg-secondary)' }}>
           <Statistic
@@ -178,7 +179,7 @@ export function SkillDetail({ skill, onUpdate: _onUpdate, onToggleEnabled }: Ski
                   参数定义
                 </span>
               </div>
-              {skill.parameters.length === 0 ? (
+              {(Array.isArray(skill.parameters) ? skill.parameters : []).length === 0 ? (
                 <div className="p-4 text-center text-[var(--color-text-tertiary)]">暂无参数</div>
               ) : (
                 <table className="w-full text-sm">
@@ -202,7 +203,7 @@ export function SkillDetail({ skill, onUpdate: _onUpdate, onToggleEnabled }: Ski
                     </tr>
                   </thead>
                   <tbody>
-                    {skill.parameters.map((param) => (
+                    {(Array.isArray(skill.parameters) ? skill.parameters : []).map((param) => (
                       <tr key={param.name} className="border-b border-[var(--color-border)]/50">
                         <td className="py-2 px-4">
                           <code className="text-[var(--color-primary)]">{param.name}</code>
@@ -244,7 +245,7 @@ export function SkillDetail({ skill, onUpdate: _onUpdate, onToggleEnabled }: Ski
                   {
                     name: skill.name,
                     description: skill.description,
-                    parameters: skill.parameters.reduce(
+                    parameters: (Array.isArray(skill.parameters) ? skill.parameters : []).reduce(
                       (acc, p) => {
                         acc[p.name] = {
                           type: p.type,
@@ -276,7 +277,7 @@ export function SkillDetail({ skill, onUpdate: _onUpdate, onToggleEnabled }: Ski
                   </span>
                 </div>
                 <div className="p-4 space-y-3">
-                  {skill.parameters.map((param) => (
+                  {(Array.isArray(skill.parameters) ? skill.parameters : []).map((param) => (
                     <div key={param.name}>
                       <label className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)] mb-1">
                         <code className="text-[var(--color-primary)]">{param.name}</code>

@@ -93,12 +93,13 @@ export function LocalSkillsList({ selectedSkill, onSelectSkill, onRefresh }: Loc
   };
 
   const getTypeTag = (type: Skill['type']) => {
-    const config: Record<Skill['type'], { color: string; label: string }> = {
+    const config: Record<string, { color: string; label: string }> = {
       builtin: { color: 'blue', label: '内置' },
       custom: { color: 'purple', label: '自定义' },
       api: { color: 'orange', label: 'API' },
     };
-    return <Tag color={config[type].color}>{config[type].label}</Tag>;
+    const item = config[type ?? ''] ?? { color: 'default', label: type ?? '未知' };
+    return <Tag color={item.color}>{item.label}</Tag>;
   };
 
   return (
@@ -200,7 +201,7 @@ export function LocalSkillsList({ selectedSkill, onSelectSkill, onRefresh }: Loc
                           {getTypeTag(skill.type)}
                         </div>
                         <Text type="secondary" style={{ fontSize: 12 }}>
-                          {skill.parameters.length} 个参数 · {skill.timeout / 1000}s 超时
+                          {Array.isArray(skill.parameters) ? skill.parameters.length : 0} 个参数 · {(skill.timeout ?? 0) / 1000}s 超时
                         </Text>
                       </div>
                       <Button

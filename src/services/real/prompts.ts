@@ -53,8 +53,19 @@ const promptRealApi = {
   getByCategory: (category: string): Promise<Prompt[]> =>
     apiClient.get<Prompt[]>(`/api/prompt/by-category?category=${category}`),
 
-  getVersions: (promptId: string): Promise<PromptVersion[]> =>
-    apiClient.get<PromptVersion[]>(`/api/prompt/versions?prompt_id=${promptId}`),
+  getVersions: async (promptId: string): Promise<PromptVersion[]> => {
+    const data = await apiClient.get<any[]>(`/api/prompt/versions?prompt_id=${promptId}`);
+    return data.map((v) => ({
+      id: v.id,
+      promptId: v.prompt_id ?? v.promptId,
+      version: v.version,
+      content: v.content,
+      variables: v.variables ?? [],
+      changeNote: v.change_note ?? v.changeNote ?? v.changes ?? '',
+      createdAt: v.create_time ?? v.createdAt,
+      createdBy: v.created_by ?? v.createdBy ?? '未知',
+    }));
+  },
 
   // 版本比较 - 后端可能不支持，返回模拟数据
   compareVersions: async (_versionId1: string, _versionId2: string): Promise<VersionDiff> => {

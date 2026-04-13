@@ -196,4 +196,5 @@ export interface CreateProviderFormData {
   baseUrl?: string;
   config?: Record<string, string | number>;
   selectedModels?: string[];
+  customModels?: ProviderModel[];
 }

@@ -38,6 +38,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
     baseUrl: '',
     config: {},
     selectedModels: [],
+    customModels: [],
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

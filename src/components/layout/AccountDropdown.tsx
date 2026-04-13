@@ -107,7 +107,7 @@ export default function AccountDropdown({ collapsed = false }: AccountDropdownPr
     <Dropdown
       menu={{ items: menuItems }}
       trigger={['click']}
-      dropdownRender={dropdownRender}
+      popupRender={popupRender}
       placement="topRight"
     >
       <div className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-[var(--color-action-hover)] transition-colors cursor-pointer">

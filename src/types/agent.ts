@@ -8,15 +8,48 @@ export type AgentStatus = 'idle' | 'thinking' | 'tool' | 'waiting' | 'error' | '
 /** Agent 基本信息 */
 export interface Agent {
   id: string;
+  /** Agent 名称 */
   name: string;
-  description: string;
+  /** Agent 唯一编码 */
+  agentCode: string;
+  /** 描述 / 系统提示词 */
+  systemPrompt: string;
+  /** 头像 emoji */
   avatar?: string;
-  status: AgentStatus;
+  /** 启用状态 */
+  enabled: boolean;
+  /** 排序权重 */
+  order?: number;
+  /** 模型 ID (UUID) */
   modelId: string;
+  /** 模型名称 */
+  modelName: string;
+  /** 供应商 ID (UUID) */
   providerId: string;
+  /** 供应商名称 */
+  providerName?: string;
+  /** 上下文限制 */
+  contextLimit?: number;
+  /** 温度参数 */
+  temperature?: number;
+  /** 是否启用思考模式 */
+  thinking?: boolean;
+  /** 是否流式输出 */
+  stream?: boolean;
+  /** 响应格式 */
+  responseFormat?: string;
+  /** 最大完成 token 数 */
+  maxCompletionTokens?: number;
+  /** 自定义参数 */
+  customParams?: Record<string, unknown>;
+  /** 输入参数配置（前端使用） */
   inputParameters?: AgentInputParameter[];
-  createdAt: Date;
-  updatedAt: Date;
+  /** 平台标识 */
+  platform?: number;
+  /** 状态（前端用） */
+  status?: AgentStatus;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 /** Agent RBAC 权限配置 */
@@ -82,7 +115,7 @@ export interface AgentInputParameter {
   defaultValue?: string | number | boolean;
   placeholder?: string;
   description?: string;
-  options?: { label: string; value: string }[]; // for select type
+  options?: { label: string; value: string }[];
   validation?: {
     min?: number;
     max?: number;

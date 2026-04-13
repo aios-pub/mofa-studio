@@ -704,7 +704,7 @@ function ChannelAgentsView({
                       {agent.name}
                     </div>
                     <div className="text-sm text-[var(--color-text-tertiary)]">
-                      {agent.description}
+                      {agent.systemPrompt?.slice(0, 50) || agent.agentCode}
                     </div>
                   </div>
                 </div>
@@ -741,7 +741,7 @@ function ChannelAgentsView({
                       {agent.name}
                     </div>
                     <div className="text-sm text-[var(--color-text-tertiary)]">
-                      {agent.description}
+                      {agent.systemPrompt?.slice(0, 50) || agent.agentCode}
                     </div>
                   </div>
                 </div>

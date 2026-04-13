@@ -2,8 +2,17 @@
  * Hub Skill 详情组件
  */
 
-import { useState } from 'react';
-import { Button, Tag, Rate, Typography, Card, Statistic, Tabs, message } from 'antd';
+import { useState } from "react";
+import {
+  Button,
+  Tag,
+  Rate,
+  Typography,
+  Card,
+  Statistic,
+  Tabs,
+  message,
+} from "antd";
 import {
   DownloadOutlined,
   LoadingOutlined,
@@ -14,8 +23,8 @@ import {
   FileTextOutlined,
   CheckOutlined,
   CloseOutlined,
-} from '@ant-design/icons';
-import type { HubSkill } from '../../../../types/skill';
+} from "@ant-design/icons";
+import type { HubSkill } from "../../../../types/skill";
 
 const { Text, Title, Paragraph } = Typography;
 
@@ -34,7 +43,7 @@ export function HubSkillDetail({
   onInstall,
   onBack: _onBack,
 }: HubSkillDetailProps) {
-  const [activeTab, setActiveTab] = useState<'params' | 'readme'>('params');
+  const [activeTab, setActiveTab] = useState<"params" | "readme">("params");
   const [localInstalling, setLocalInstalling] = useState(false);
 
   const handleInstall = async () => {
@@ -42,20 +51,20 @@ export function HubSkillDetail({
     try {
       const success = await onInstall?.();
       if (success) {
-        message.success('安装成功');
+        message.success("安装成功");
       } else {
-        message.error('安装失败');
+        message.error("安装失败");
       }
     } finally {
       setLocalInstalling(false);
     }
   };
 
-  const getTypeTag = (type: HubSkill['type']) => {
-    const config: Record<HubSkill['type'], { color: string; label: string }> = {
-      builtin: { color: 'blue', label: '内置' },
-      custom: { color: 'purple', label: '自定义' },
-      api: { color: 'orange', label: 'API' },
+  const getTypeTag = (type: HubSkill["type"]) => {
+    const config: Record<HubSkill["type"], { color: string; label: string }> = {
+      builtin: { color: "blue", label: "内置" },
+      custom: { color: "purple", label: "自定义" },
+      api: { color: "orange", label: "API" },
     };
     return <Tag color={config[type].color}>{config[type].label}</Tag>;
   };
@@ -68,8 +77,8 @@ export function HubSkillDetail({
   };
 
   const tabs = [
-    { key: 'params', label: '参数配置', icon: SettingOutlined },
-    { key: 'readme', label: 'README', icon: FileTextOutlined },
+    { key: "params", label: "参数配置", icon: SettingOutlined },
+    { key: "readme", label: "README", icon: FileTextOutlined },
   ];
 
   return (
@@ -79,7 +88,9 @@ export function HubSkillDetail({
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <Title level={4} style={{ margin: 0 }}>{skill.name}</Title>
+              <Title level={4} style={{ margin: 0 }}>
+                {skill.name}
+              </Title>
               {getTypeTag(skill.type)}
               <Tag color="cyan">v{skill.version}</Tag>
             </div>
@@ -88,12 +99,22 @@ export function HubSkillDetail({
             </Paragraph>
           </div>
           <Button
-            type={isInstalled ? 'default' : 'primary'}
-            icon={isInstalling || localInstalling ? <LoadingOutlined /> : <DownloadOutlined />}
+            type={isInstalled ? "default" : "primary"}
+            icon={
+              isInstalling || localInstalling ? (
+                <LoadingOutlined />
+              ) : (
+                <DownloadOutlined />
+              )
+            }
             disabled={isInstalled || isInstalling || localInstalling}
             onClick={handleInstall}
           >
-            {isInstalling || localInstalling ? '安装中...' : isInstalled ? '已安装' : '安装'}
+            {isInstalling || localInstalling
+              ? "安装中..."
+              : isInstalled
+                ? "已安装"
+                : "安装"}
           </Button>
         </div>
 
@@ -108,12 +129,21 @@ export function HubSkillDetail({
             <span>{formatDownloads(skill.downloads)} 下载</span>
           </div>
           <div className="flex items-center gap-1">
-            <Rate disabled value={skill.rating} allowHalf style={{ fontSize: 12 }} />
-            <span className="text-[var(--color-text-secondary)]">{skill.rating.toFixed(1)}</span>
+            <Rate
+              disabled
+              value={skill.rating}
+              allowHalf
+              style={{ fontSize: 12 }}
+            />
+            <span className="text-[var(--color-text-secondary)]">
+              {skill.rating.toFixed(1)}
+            </span>
           </div>
           <div className="flex items-center gap-1 text-[var(--color-text-tertiary)]">
             <ClockCircleOutlined />
-            <span>更新于 {new Date(skill.updatedAt).toLocaleDateString('zh-CN')}</span>
+            <span>
+              更新于 {new Date(skill.updatedAt).toLocaleDateString("zh-CN")}
+            </span>
           </div>
         </div>
 
@@ -132,19 +162,66 @@ export function HubSkillDetail({
 
       {/* 统计卡片 */}
       <div className="grid grid-cols-4 gap-4 p-6 pb-4">
-        <Card size="small" bordered={false} style={{ background: 'var(--color-bg-secondary)' }}>
-          <Statistic title={<Text type="secondary" style={{ fontSize: 12 }}>分类</Text>} value={skill.category} valueStyle={{ fontSize: 14 }} />
-        </Card>
-        <Card size="small" bordered={false} style={{ background: 'var(--color-bg-secondary)' }}>
-          <Statistic title={<Text type="secondary" style={{ fontSize: 12 }}>超时时间</Text>} value={skill.timeout / 1000} suffix="s" valueStyle={{ fontSize: 14 }} />
-        </Card>
-        <Card size="small" bordered={false} style={{ background: 'var(--color-bg-secondary)' }}>
-          <Statistic title={<Text type="secondary" style={{ fontSize: 12 }}>参数数量</Text>} value={Array.isArray(skill.parameters) ? skill.parameters.length : 0} valueStyle={{ fontSize: 14 }} />
-        </Card>
-        <Card size="small" bordered={false} style={{ background: 'var(--color-bg-secondary)' }}>
+        <Card
+          size="small"
+          variant={false}
+          style={{ background: "var(--color-bg-secondary)" }}
+        >
           <Statistic
-            title={<Text type="secondary" style={{ fontSize: 12 }}>发布时间</Text>}
-            value={new Date(skill.publishedAt).toLocaleDateString('zh-CN')}
+            title={
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                分类
+              </Text>
+            }
+            value={skill.category}
+            valueStyle={{ fontSize: 14 }}
+          />
+        </Card>
+        <Card
+          size="small"
+          variant={false}
+          style={{ background: "var(--color-bg-secondary)" }}
+        >
+          <Statistic
+            title={
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                超时时间
+              </Text>
+            }
+            value={skill.timeout / 1000}
+            suffix="s"
+            valueStyle={{ fontSize: 14 }}
+          />
+        </Card>
+        <Card
+          size="small"
+          bordered={false}
+          style={{ background: "var(--color-bg-secondary)" }}
+        >
+          <Statistic
+            title={
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                参数数量
+              </Text>
+            }
+            value={
+              Array.isArray(skill.parameters) ? skill.parameters.length : 0
+            }
+            valueStyle={{ fontSize: 14 }}
+          />
+        </Card>
+        <Card
+          size="small"
+          variant={false}
+          style={{ background: "var(--color-bg-secondary)" }}
+        >
+          <Statistic
+            title={
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                发布时间
+              </Text>
+            }
+            value={new Date(skill.publishedAt).toLocaleDateString("zh-CN")}
             valueStyle={{ fontSize: 14 }}
           />
         </Card>
@@ -168,36 +245,63 @@ export function HubSkillDetail({
 
       {/* 内容区 */}
       <div className="flex-1 overflow-y-auto p-6">
-        {activeTab === 'params' && (
+        {activeTab === "params" && (
           <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] overflow-hidden">
             <div className="p-3 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]">
               <span className="text-sm font-medium text-[var(--color-text-primary)]">
                 参数定义
               </span>
             </div>
-            {(Array.isArray(skill.parameters) ? skill.parameters : []).length === 0 ? (
-              <div className="p-4 text-center text-[var(--color-text-tertiary)]">暂无参数</div>
+            {(Array.isArray(skill.parameters) ? skill.parameters : [])
+              .length === 0 ? (
+              <div className="p-4 text-center text-[var(--color-text-tertiary)]">
+                暂无参数
+              </div>
             ) : (
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[var(--color-border)]">
-                    <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">参数名</th>
-                    <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">类型</th>
-                    <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">描述</th>
-                    <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">默认值</th>
-                    <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">必填</th>
+                    <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
+                      参数名
+                    </th>
+                    <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
+                      类型
+                    </th>
+                    <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
+                      描述
+                    </th>
+                    <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
+                      默认值
+                    </th>
+                    <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
+                      必填
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {(Array.isArray(skill.parameters) ? skill.parameters : []).map((param) => (
-                    <tr key={param.name} className="border-b border-[var(--color-border)]/50">
+                  {(Array.isArray(skill.parameters)
+                    ? skill.parameters
+                    : []
+                  ).map((param) => (
+                    <tr
+                      key={param.name}
+                      className="border-b border-[var(--color-border)]/50"
+                    >
                       <td className="py-2 px-4">
-                        <code className="text-[var(--color-primary)]">{param.name}</code>
+                        <code className="text-[var(--color-primary)]">
+                          {param.name}
+                        </code>
                       </td>
-                      <td className="py-2 px-4 text-[var(--color-text-secondary)]">{param.type}</td>
-                      <td className="py-2 px-4 text-[var(--color-text-secondary)]">{param.description}</td>
                       <td className="py-2 px-4 text-[var(--color-text-secondary)]">
-                        {param.defaultValue !== undefined ? JSON.stringify(param.defaultValue) : '-'}
+                        {param.type}
+                      </td>
+                      <td className="py-2 px-4 text-[var(--color-text-secondary)]">
+                        {param.description}
+                      </td>
+                      <td className="py-2 px-4 text-[var(--color-text-secondary)]">
+                        {param.defaultValue !== undefined
+                          ? JSON.stringify(param.defaultValue)
+                          : "-"}
                       </td>
                       <td className="py-2 px-4">
                         {param.required ? (
@@ -214,10 +318,12 @@ export function HubSkillDetail({
           </div>
         )}
 
-        {activeTab === 'readme' && (
+        {activeTab === "readme" && (
           <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] overflow-hidden">
             <div className="p-3 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]">
-              <span className="text-sm font-medium text-[var(--color-text-primary)]">README</span>
+              <span className="text-sm font-medium text-[var(--color-text-primary)]">
+                README
+              </span>
             </div>
             <div className="p-4">
               {skill.readme ? (
@@ -225,7 +331,9 @@ export function HubSkillDetail({
                   {skill.readme}
                 </pre>
               ) : (
-                <div className="text-center text-[var(--color-text-tertiary)]">暂无 README</div>
+                <div className="text-center text-[var(--color-text-tertiary)]">
+                  暂无 README
+                </div>
               )}
             </div>
           </div>

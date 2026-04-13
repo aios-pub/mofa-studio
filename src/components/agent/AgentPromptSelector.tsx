@@ -1,22 +1,40 @@
 /**
- * Agent 关联提示词选择器
+ * Agent 关联提示词选择器 — 全部使用 antd 组件
  */
 
 import { useState, useEffect } from 'react';
-import { Input } from 'antd';
-import { SearchOutlined, CloseOutlined, UpOutlined, DownOutlined } from '@ant-design/icons';
+import {
+  Input,
+  Checkbox,
+  Tag,
+  Collapse,
+  Typography,
+  Space,
+  Spin,
+  Empty,
+  Button,
+} from 'antd';
+import {
+  SearchOutlined,
+  TagOutlined,
+  RightOutlined,
+} from '@ant-design/icons';
 import { promptApi } from '@/services';
 import type { Prompt } from '@/services';
 
+const { Text, Paragraph } = Typography;
+
 interface AgentPromptSelectorProps {
-  agentId: string;
+  agentId?: string;
   selectedPrompts: string[];
   onChange: (prompts: string[]) => void;
+  maxHeight?: number;
 }
 
 export default function AgentPromptSelector({
   selectedPrompts,
   onChange,
+  maxHeight,
 }: AgentPromptSelectorProps) {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,7 +69,7 @@ export default function AgentPromptSelector({
     (p) =>
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.category.toLowerCase().includes(searchQuery.toLowerCase())
+      p.category.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   // 按分类分组
@@ -63,36 +81,41 @@ export default function AgentPromptSelector({
       acc[prompt.category].push(prompt);
       return acc;
     },
-    {} as Record<string, Prompt[]>
+    {} as Record<string, Prompt[]>,
   );
 
-  // 已选择的提示词
+  // 已选择的提示词对象
   const selectedPromptObjects = prompts.filter((p) => selectedPrompts.includes(p.id));
 
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <Spin />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-4">
-      {/* 已选择的提示词 */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* 已选择的提示词标签 */}
       {selectedPromptObjects.length > 0 && (
-        <div className="space-y-2">
-          <h4 className="text-sm font-medium text-[var(--color-text-primary)]">
-            已关联提示词 ({selectedPromptObjects.length})
-          </h4>
-          <div className="flex flex-wrap gap-2">
+        <div>
+          <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+            已关联 ({selectedPromptObjects.length})
+          </Text>
+          <Space wrap>
             {selectedPromptObjects.map((prompt) => (
-              <div
+              <Tag
                 key={prompt.id}
-                className="flex items-center gap-1 px-2 py-1 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30 rounded-lg"
+                closable
+                onClose={() => togglePrompt(prompt.id)}
+                color="blue"
+                icon={<TagOutlined />}
               >
-                <span className="text-sm text-[var(--color-primary)]">{prompt.name}</span>
-                <button
-                  onClick={() => togglePrompt(prompt.id)}
-                  className="p-0.5 hover:bg-[var(--color-primary)]/20 rounded"
-                >
-                  <CloseOutlined className="text-xs text-[var(--color-primary)]" />
-                </button>
-              </div>
+                {prompt.name}
+              </Tag>
             ))}
-          </div>
+          </Space>
         </div>
       )}
 
@@ -103,115 +126,157 @@ export default function AgentPromptSelector({
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         allowClear
+        size="small"
       />
 
       {/* 提示词列表 */}
-      {loading ? (
-        <div className="text-center py-4 text-[var(--color-text-tertiary)]">加载中...</div>
+      {filteredPrompts.length === 0 ? (
+        <Empty description="暂无匹配的提示词" image={Empty.PRESENTED_IMAGE_SIMPLE} />
       ) : (
-        <div className="space-y-4 max-h-96 overflow-y-auto">
-          {Object.entries(groupedPrompts).map(([category, categoryPrompts]) => (
-            <div key={category}>
-              <h4 className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
-                {category}
-              </h4>
-              <div className="space-y-2">
-                {categoryPrompts.map((prompt) => {
-                  const isSelected = selectedPrompts.includes(prompt.id);
-                  const isExpanded = expandedPrompt === prompt.id;
+        <div style={{ maxHeight: maxHeight ?? 360, overflowY: 'auto' }}>
+          <Collapse
+            bordered={false}
+            size="small"
+            defaultActiveKey={Object.keys(groupedPrompts)}
+            expandIconPosition="start"
+            style={{ background: 'transparent' }}
+            items={Object.entries(groupedPrompts).map(function ([category, categoryPrompts]) {
+              return {
+                key: category,
+                label: (
+                  <Space>
+                    <Text strong>{category}</Text>
+                    <Tag>{categoryPrompts.length}</Tag>
+                  </Space>
+                ),
+                children: (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {categoryPrompts.map(function (prompt) {
+                      const isSelected = selectedPrompts.includes(prompt.id);
+                      const isExpanded = expandedPrompt === prompt.id;
 
-                  return (
-                    <div
-                      key={prompt.id}
-                      className={`border rounded-lg overflow-hidden transition-colors ${
-                        isSelected
-                          ? 'bg-[var(--color-primary)]/5 border-[var(--color-primary)]/30'
-                          : 'bg-[var(--color-bg-secondary)] border-[var(--color-border)] hover:border-[var(--color-border-hover)]'
-                      }`}
-                    >
-                      {/* 头部 */}
-                      <div
-                        className="flex items-center gap-3 p-3 cursor-pointer"
-                        onClick={() => togglePrompt(prompt.id)}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => togglePrompt(prompt.id)}
-                          onClick={(e) => e.stopPropagation()}
-                          className="rounded border-[var(--color-border)]"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-[var(--color-text-primary)]">
-                              {prompt.name}
-                            </span>
-                            <span className="text-xs text-[var(--color-text-tertiary)]">
-                              v{prompt.version}
-                            </span>
-                          </div>
-                          <p className="text-xs text-[var(--color-text-tertiary)] truncate">
-                            {prompt.description}
-                          </p>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setExpandedPrompt(isExpanded ? null : prompt.id);
+                      return (
+                        <div
+                          key={prompt.id}
+                          style={{
+                            border: `1px solid ${isSelected ? 'var(--color-primary, #1677ff)' : 'var(--color-border, #d9d9d9)'}`,
+                            borderRadius: 6,
+                            background: isSelected
+                              ? 'var(--color-primary-bg, rgba(22,119,255,0.04))'
+                              : 'transparent',
+                            overflow: 'hidden',
                           }}
-                          className="p-1 hover:bg-[var(--color-bg-tertiary)] rounded"
                         >
-                          {isExpanded ? (
-                            <UpOutlined className="text-[var(--color-text-tertiary)]" />
-                          ) : (
-                            <DownOutlined className="text-[var(--color-text-tertiary)]" />
-                          )}
-                        </button>
-                      </div>
-
-                      {/* 展开内容 */}
-                      {isExpanded && (
-                        <div className="px-3 pb-3 border-t border-[var(--color-border)]">
-                          <div className="mt-2 p-3 bg-[var(--color-bg-tertiary)] rounded-lg">
-                            <pre className="text-xs text-[var(--color-text-secondary)] whitespace-pre-wrap font-mono">
-                              {prompt.content}
-                            </pre>
+                          {/* 头部：Checkbox + 展开按钮 */}
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 8,
+                              padding: '8px 12px',
+                            }}
+                          >
+                            <Checkbox
+                              checked={isSelected}
+                              onChange={() => togglePrompt(prompt.id)}
+                            >
+                              <div>
+                                <Space size={4}>
+                                  <Text strong>{prompt.name}</Text>
+                                  <Text type="secondary" style={{ fontSize: 12 }}>
+                                    v{prompt.version}
+                                  </Text>
+                                </Space>
+                                <div>
+                                  <Text
+                                    type="secondary"
+                                    style={{ fontSize: 12 }}
+                                    ellipsis
+                                  >
+                                    {prompt.description}
+                                  </Text>
+                                </div>
+                              </div>
+                            </Checkbox>
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={
+                                <RightOutlined
+                                  style={{
+                                    transition: 'transform 0.2s',
+                                    transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                                  }}
+                                />
+                              }
+                              onClick={() =>
+                                setExpandedPrompt(isExpanded ? null : prompt.id)
+                              }
+                              style={{ marginLeft: 'auto' }}
+                            />
                           </div>
 
-                          {/* 变量列表 */}
-                          {prompt.variables.length > 0 && (
-                            <div className="mt-2">
-                              <h5 className="text-xs font-medium text-[var(--color-text-tertiary)] mb-1">
-                                变量
-                              </h5>
-                              <div className="flex flex-wrap gap-1">
-                                {prompt.variables.map((variable) => (
-                                  <span
-                                    key={variable.name}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-[var(--color-bg-tertiary)] rounded text-xs"
+                          {/* 展开详情 */}
+                          {isExpanded && (
+                            <div
+                              style={{
+                                padding: '0 12px 12px',
+                                borderTop: '1px solid var(--color-border, #d9d9d9)',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  padding: 8,
+                                  borderRadius: 4,
+                                  background: 'var(--color-fill-quaternary, #fafafa)',
+                                  marginTop: 8,
+                                }}
+                              >
+                                <Paragraph style={{ margin: 0 }}>
+                                  <pre
+                                    style={{
+                                      fontSize: 12,
+                                      whiteSpace: 'pre-wrap',
+                                      fontFamily: 'monospace',
+                                      color: 'var(--color-text-secondary)',
+                                      margin: 0,
+                                    }}
                                   >
-                                    <code className="text-[var(--color-primary)]">
-                                      {`{{${variable.name}}}`}
-                                    </code>
-                                    <span className="text-[var(--color-text-tertiary)]">
-                                      ({variable.type})
-                                    </span>
-                                    {variable.required && (
-                                      <span className="text-red-500">*</span>
-                                    )}
-                                  </span>
-                                ))}
+                                    {prompt.content}
+                                  </pre>
+                                </Paragraph>
                               </div>
+
+                              {prompt.variables.length > 0 && (
+                                <div style={{ marginTop: 8 }}>
+                                  <Text
+                                    type="secondary"
+                                    style={{ fontSize: 12, display: 'block', marginBottom: 4 }}
+                                  >
+                                    变量
+                                  </Text>
+                                  <Space wrap size={4}>
+                                    {prompt.variables.map((variable) => (
+                                      <Tag
+                                        key={variable.name}
+                                        color={variable.required ? 'red' : 'default'}
+                                      >
+                                        <code>{`{{${variable.name}}}`}</code> ({variable.type})
+                                      </Tag>
+                                    ))}
+                                  </Space>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+                      );
+                    })}
+                  </div>
+                ),
+              };
+            })}
+          />
         </div>
       )}
     </div>

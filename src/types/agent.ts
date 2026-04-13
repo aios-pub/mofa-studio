@@ -12,8 +12,8 @@ export interface Agent {
   name: string;
   /** Agent 唯一编码 */
   agentCode: string;
-  /** 描述 / 系统提示词 */
-  systemPrompt: string;
+  /** 描述 / 系统提示词（运行时从关联提示词生成） */
+  systemPrompt?: string;
   /** 头像 emoji */
   avatar?: string;
   /** 启用状态 */

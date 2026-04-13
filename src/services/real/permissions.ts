@@ -72,7 +72,7 @@ const permissionRealApi = {
 
   // 更新 Agent 权限配置
   updateAgentPermission: (agentId: string, config: PermissionConfig): Promise<PermissionConfig> =>
-    apiClient.post<PermissionConfig>("/api/permission/save", { agent_id: agentId, ...config }),
+    apiClient.post<PermissionConfig>("/api/permission/save", { agent_id: agentId, config }),
 
   // 删除 Agent 权限配置
   deleteAgentPermission: (agentId: string): Promise<void> =>
@@ -102,7 +102,7 @@ const permissionRealApi = {
     apiClient.get<PermissionTemplate>(`/api/permission/template/${templateId}`).then((template) => {
       return apiClient.post<PermissionConfig>("/api/permission/save", {
         agent_id: agentId,
-        ...template.config,
+        config: template.config,
       });
     }),
 

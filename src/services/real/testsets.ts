@@ -3,103 +3,260 @@
  * 后端端点: /api/testset/...
  */
 
-import { createActionApi } from "./base";
 import { apiClient } from "../api/apiClient";
+import type {
+  TestSet,
+  TestSetFormData,
+  TestCase,
+  TestCaseFormData,
+  TestReport,
+  Assertion,
+} from "../../types/testset";
 
-// 类型定义
-interface TestSetItem {
-  id: string;
-  testSetId: string;
-  input: string;
-  expectedOutput?: string;
-  actualOutput?: string;
-  status?: 'pending' | 'running' | 'passed' | 'failed';
-  createdAt: Date;
-}
+// ==================== 数据映射 ====================
 
-interface TestSet {
+interface BackendTestSet {
   id: string;
   name: string;
-  description: string;
-  agentId: string;
-  items: TestSetItem[];
-  itemCount: number;
-  createdAt: Date;
-  updatedAt: Date;
+  description?: string;
+  category?: string;
+  status: string;
+  tenant_id?: string;
+  create_time: string;
+  update_time: string;
 }
 
-interface TestCase {
+interface BackendTestCase {
   id: string;
-  testSetId: string;
+  test_set_id: string;
+  name: string;
+  description?: string;
   input: string;
-  expectedOutput?: string;
-  actualOutput?: string;
-  status?: 'pending' | 'running' | 'passed' | 'failed';
+  expected_output?: string;
+  assertions?: Assertion[] | Record<string, unknown>;
+  status: string;
+  tenant_id?: string;
+  create_time: string;
+  update_time: string;
 }
 
-const baseApi = createActionApi<TestSet>("/api/testset", "list");
+interface BackendTestReport {
+  id: string;
+  test_set_id: string;
+  agent_id: string;
+  total_cases: number;
+  passed_cases: number;
+  failed_cases: number;
+  pass_rate?: number;
+  total_duration?: number;
+  executed_at: string;
+  tenant_id?: string;
+  create_time: string;
+  update_time: string;
+}
+
+function mapTestSet(raw: BackendTestSet): TestSet {
+  return {
+    id: raw.id,
+    name: raw.name,
+    description: raw.description,
+    category: raw.category,
+    status: raw.status,
+    tenantId: raw.tenant_id,
+    createTime: raw.create_time,
+    updateTime: raw.update_time,
+  };
+}
+
+function mapTestCase(raw: BackendTestCase): TestCase {
+  return {
+    id: raw.id,
+    testSetId: raw.test_set_id,
+    name: raw.name,
+    description: raw.description,
+    input: raw.input,
+    expectedOutput: raw.expected_output,
+    assertions: raw.assertions,
+    status: raw.status,
+    tenantId: raw.tenant_id,
+    createTime: raw.create_time,
+    updateTime: raw.update_time,
+  };
+}
+
+function mapTestReport(raw: BackendTestReport): TestReport {
+  return {
+    id: raw.id,
+    testSetId: raw.test_set_id,
+    agentId: raw.agent_id,
+    totalCases: raw.total_cases,
+    passedCases: raw.passed_cases,
+    failedCases: raw.failed_cases,
+    passRate: raw.pass_rate,
+    totalDuration: raw.total_duration,
+    executedAt: raw.executed_at,
+    tenantId: raw.tenant_id,
+    createTime: raw.create_time,
+    updateTime: raw.update_time,
+  };
+}
+
+// ==================== API ====================
 
 const testSetRealApi = {
-  ...baseApi,
+  // ==================== TestSet CRUD ====================
 
-  getByCategory: (category: string): Promise<TestSet[]> =>
-    apiClient.get<TestSet[]>(`/api/testset/by-category?category=${category}`),
+  getAll: async (): Promise<TestSet[]> => {
+    const rawList = await apiClient.get<BackendTestSet[]>("/api/testset/list");
+    return rawList.map(mapTestSet);
+  },
 
-  // Test Cases
-  getCases: (): Promise<TestSetItem[]> =>
-    apiClient.get<TestSetItem[]>("/api/testset/cases"),
+  getById: async (id: string): Promise<TestSet> => {
+    const raw = await apiClient.get<BackendTestSet>(`/api/testset/${id}`);
+    return mapTestSet(raw);
+  },
 
-  getCase: (id: string): Promise<TestSetItem> =>
-    apiClient.get<TestSetItem>(`/api/testset/case/${id}`),
+  create: async (data: TestSetFormData): Promise<TestSet> => {
+    const raw = await apiClient.post<BackendTestSet>("/api/testset/create", {
+      name: data.name,
+      description: data.description,
+      category: data.category,
+    });
+    return mapTestSet(raw);
+  },
 
-  createCase: (data: Partial<TestSetItem>): Promise<TestSetItem> =>
-    apiClient.post<TestSetItem>("/api/testset/case/create", data),
+  update: async (id: string, data: Partial<TestSetFormData>): Promise<TestSet> => {
+    const raw = await apiClient.post<BackendTestSet>("/api/testset/update", {
+      id,
+      name: data.name,
+      description: data.description,
+      category: data.category,
+    });
+    return mapTestSet(raw);
+  },
 
-  updateCase: (id: string, data: Partial<TestSetItem>): Promise<TestSetItem> =>
-    apiClient.post<TestSetItem>("/api/testset/case/update", { id, ...data }),
+  delete: async (id: string): Promise<boolean> => {
+    await apiClient.delete(`/api/testset/delete/${id}`);
+    return true;
+  },
+
+  // ==================== TestCase CRUD ====================
+
+  getCases: async (testSetId: string): Promise<TestCase[]> => {
+    const rawList = await apiClient.get<BackendTestCase[]>(
+      `/api/testset/cases?test_set_id=${testSetId}`,
+    );
+    return rawList.map(mapTestCase);
+  },
+
+  getCase: async (id: string): Promise<TestCase> => {
+    const raw = await apiClient.get<BackendTestCase>(`/api/testset/case/${id}`);
+    return mapTestCase(raw);
+  },
+
+  createCase: async (
+    testSetId: string,
+    data: TestCaseFormData,
+  ): Promise<TestCase> => {
+    const raw = await apiClient.post<BackendTestCase>(
+      "/api/testset/case/create",
+      {
+        test_set_id: testSetId,
+        name: data.name,
+        description: data.description,
+        input: data.input,
+        expected_output: data.expectedOutput,
+        assertions: data.assertions,
+      },
+    );
+    return mapTestCase(raw);
+  },
+
+  updateCase: async (
+    id: string,
+    testSetId: string,
+    data: Partial<TestCaseFormData>,
+  ): Promise<TestCase> => {
+    const raw = await apiClient.post<BackendTestCase>(
+      "/api/testset/case/update",
+      {
+        id,
+        test_set_id: testSetId,
+        name: data.name,
+        description: data.description,
+        input: data.input,
+        expected_output: data.expectedOutput,
+        assertions: data.assertions,
+      },
+    );
+    return mapTestCase(raw);
+  },
 
   deleteCase: async (id: string): Promise<boolean> => {
     await apiClient.delete(`/api/testset/case/delete/${id}`);
     return true;
   },
 
-  // Test Reports
-  getReportsByTestSet: (testsetId: string): Promise<unknown[]> =>
-    apiClient.get(`/api/testset/reports/by-testset?testset_id=${testsetId}`),
+  // ==================== Test Execution ====================
 
-  getReportsByAgent: (agentId: string): Promise<unknown[]> =>
-    apiClient.get(`/api/testset/reports/by-agent?agent_id=${agentId}`),
-
-  getReport: (id: string): Promise<unknown> =>
-    apiClient.get(`/api/testset/report/${id}`),
-
-  createReport: (data: Record<string, unknown>): Promise<unknown> =>
-    apiClient.post("/api/testset/report/create", data),
-
-  deleteReport: async (id: string): Promise<boolean> => {
-    await apiClient.delete(`/api/testset/report/delete/${id}`);
-    return true;
+  runTest: async (
+    testSetId: string,
+    agentId: string,
+  ): Promise<TestReport> => {
+    const raw = await apiClient.post<BackendTestReport>(
+      "/api/testset/run-test",
+      {
+        test_set_id: testSetId,
+        agent_id: agentId,
+      },
+    );
+    return mapTestReport(raw);
   },
 
-  // 兼容旧接口
-  getItems: (testSetId: string): Promise<TestSetItem[]> =>
-    apiClient.get<TestSetItem[]>(`/api/testset/cases?testset_id=${testSetId}`),
+  // 别名
+  runTestSet: async (
+    testSetId: string,
+    agentId: string,
+  ): Promise<TestReport> => {
+    const raw = await apiClient.post<BackendTestReport>(
+      "/api/testset/run-test",
+      {
+        test_set_id: testSetId,
+        agent_id: agentId,
+      },
+    );
+    return mapTestReport(raw);
+  },
 
-  addItem: (testSetId: string, item: Partial<TestSetItem>): Promise<TestSetItem> =>
-    apiClient.post<TestSetItem>("/api/testset/case/create", { testset_id: testSetId, ...item }),
-
-  runTest: (testSetId: string, agentId: string): Promise<{ id: string; totalCases: number; passedCases: number; failedCases: number; passRate: number }> =>
-    apiClient.post("/api/testset/run-test", { test_set_id: testSetId, agent_id: agentId }),
-
-  // 别名方法
-  runTestSet: (testSetId: string, agentId: string): Promise<{ id: string; totalCases: number; passedCases: number; failedCases: number; passRate: number }> =>
-    apiClient.post("/api/testset/run-test", { test_set_id: testSetId, agent_id: agentId }),
-
-  runTestCase: async (_testCase: TestCase): Promise<{ status: string; output: string }> => {
+  runTestCase: async (
+    _testCase: TestCase,
+  ): Promise<{ status: string; output: string }> => {
     console.warn("testSetApi.runTestCase: Using mock response");
     return { status: "passed", output: "Test case executed successfully" };
+  },
+
+  // ==================== Test Reports ====================
+
+  getReportsByTestSet: async (testSetId: string): Promise<TestReport[]> => {
+    const rawList = await apiClient.get<BackendTestReport[]>(
+      `/api/testset/reports/by-testset?test_set_id=${testSetId}`,
+    );
+    return rawList.map(mapTestReport);
+  },
+
+  getReportsByAgent: async (agentId: string): Promise<TestReport[]> => {
+    const rawList = await apiClient.get<BackendTestReport[]>(
+      `/api/testset/reports/by-agent?agent_id=${agentId}`,
+    );
+    return rawList.map(mapTestReport);
+  },
+
+  getReport: async (id: string): Promise<TestReport> => {
+    const raw = await apiClient.get<BackendTestReport>(
+      `/api/testset/report/${id}`,
+    );
+    return mapTestReport(raw);
   },
 };
 
 export { testSetRealApi };
-export type { TestSet, TestSetItem, TestCase };

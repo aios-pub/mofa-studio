@@ -151,7 +151,7 @@ export const permissionApi = createProxyService(permissionMockApi, permissionRea
 // 导出 mock 数据和类型
 export { mockPrompts, type Prompt, type PromptVariable, type PromptVersion, type VersionDiff } from "./mock/prompts";
 export { mockSkills, type Skill, type SkillParameter } from "./mock/skills";
-export { type TestSet, type TestSetItem } from "./real/testsets";
+export { type TestSet, type TestCase, type TestReport, type TestSetFormData, type TestCaseFormData, type TestSetDetail, type Assertion, type AssertionType, type TestCaseStatus } from "../types/testset";
 export { type AnalyticsFilter, type UsageStats, type DailyStats, type AgentStats, type UserStats, type HourlyDistribution } from "./mock/analytics";
 export { type AgentStatus, type ActivityEvent, type SystemMetrics, type Alert } from "./mock/monitoring";
 export { type Department, type User, type User as OrgUser } from "./mock/organization";

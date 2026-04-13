@@ -2,7 +2,7 @@
  * 测试集管理页面
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Input,
   Button,
@@ -35,9 +35,13 @@ import type {
   TestSet,
   TestCase,
   TestReport,
-  TestCaseStatus,
+  TestSetFormData,
+  TestCaseFormData,
 } from "../../types/testset";
 import { testSetApi } from "@/services";
+import { showDeleteConfirm } from "@/components/common/Modal";
+import { TestSetFormModal } from "./components/TestSetFormModal";
+import { TestCaseFormModal } from "./components/TestCaseFormModal";
 
 const { Text, Title } = Typography;
 
@@ -48,6 +52,11 @@ export default function TestSetsListPage() {
   const [selectedTestSet, setSelectedTestSet] = useState<TestSet | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+
+  // Modal states
+  const [testSetModalOpen, setTestSetModalOpen] = useState(false);
+  const [editingTestSet, setEditingTestSet] = useState<TestSet | null>(null);
+  const [testSetModalLoading, setTestSetModalLoading] = useState(false);
 
   useEffect(() => {
     loadTestSets();
@@ -66,13 +75,20 @@ export default function TestSetsListPage() {
   };
 
   // 获取所有分类
-  const categories = ["all", ...new Set(testSets.map((t) => t.category))];
+  const categories = [
+    "all",
+    ...new Set(
+      testSets
+        .map((t) => t.category)
+        .filter((c): c is string => !!c),
+    ),
+  ];
 
   // 过滤测试集
   const filteredTestSets = testSets.filter((t) => {
     const matchesSearch =
       t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.description.toLowerCase().includes(searchQuery.toLowerCase());
+      (t.description || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory =
       selectedCategory === "all" || t.category === selectedCategory;
     return matchesSearch && matchesCategory;
@@ -81,10 +97,11 @@ export default function TestSetsListPage() {
   // 按分类分组
   const groupedTestSets = filteredTestSets.reduce(
     (acc, testSet) => {
-      if (!acc[testSet.category]) {
-        acc[testSet.category] = [];
+      const cat = testSet.category || "未分类";
+      if (!acc[cat]) {
+        acc[cat] = [];
       }
-      acc[testSet.category].push(testSet);
+      acc[cat].push(testSet);
       return acc;
     },
     {} as Record<string, TestSet[]>,
@@ -94,24 +111,81 @@ export default function TestSetsListPage() {
     setExpandedCategories(Array.isArray(keys) ? keys : [keys]);
   };
 
-  const handleDelete = (id: string) => {
-    setTestSets(testSets.filter((t) => t.id !== id));
-    if (selectedTestSet?.id === id) {
-      setSelectedTestSet(null);
-    }
-    message.success("测试集已删除");
+  // ==================== TestSet CRUD ====================
+
+  const handleCreateTestSet = () => {
+    setEditingTestSet(null);
+    setTestSetModalOpen(true);
   };
 
-  const handleDuplicate = async (testSet: TestSet) => {
-    const newTestSet: TestSet = {
-      ...testSet,
-      id: `testset-${Date.now()}`,
-      name: `${testSet.name} (副本)`,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    setTestSets([...testSets, newTestSet]);
-    message.success("测试集已复制");
+  const handleEditTestSet = (testSet: TestSet) => {
+    setEditingTestSet(testSet);
+    setTestSetModalOpen(true);
+  };
+
+  const handleTestSetSubmit = async (data: TestSetFormData) => {
+    try {
+      setTestSetModalLoading(true);
+      if (editingTestSet) {
+        const updated = await testSetApi.update(editingTestSet.id, data);
+        setTestSets((prev) =>
+          prev.map((t) => (t.id === editingTestSet.id ? updated : t)),
+        );
+        if (selectedTestSet?.id === editingTestSet.id) {
+          setSelectedTestSet(updated);
+        }
+        message.success("测试集已更新");
+      } else {
+        const created = await testSetApi.create(data);
+        setTestSets((prev) => [...prev, created]);
+        message.success("测试集已创建");
+      }
+      setTestSetModalOpen(false);
+    } catch (error) {
+      console.error("Failed to save test set:", error);
+      message.error("保存失败");
+    } finally {
+      setTestSetModalLoading(false);
+    }
+  };
+
+  const handleDeleteTestSet = (testSet: TestSet) => {
+    showDeleteConfirm({
+      title: "删除测试集",
+      content: `确定要删除测试集「${testSet.name}」吗？此操作不可恢复。`,
+      onOk: async () => {
+        try {
+          await testSetApi.delete(testSet.id);
+          setTestSets((prev) => prev.filter((t) => t.id !== testSet.id));
+          if (selectedTestSet?.id === testSet.id) {
+            setSelectedTestSet(null);
+          }
+          message.success("测试集已删除");
+        } catch (error) {
+          console.error("Failed to delete test set:", error);
+          message.error("删除失败");
+        }
+      },
+    });
+  };
+
+  const handleDuplicateTestSet = async (testSet: TestSet) => {
+    try {
+      const created = await testSetApi.create({
+        name: `${testSet.name} (副本)`,
+        description: testSet.description,
+        category: testSet.category,
+      });
+      setTestSets((prev) => [...prev, created]);
+      message.success("测试集已复制");
+    } catch (error) {
+      console.error("Failed to duplicate test set:", error);
+      message.error("复制失败");
+    }
+  };
+
+  const handleSelectTestSet = (testSet: TestSet) => {
+    setSelectedTestSet(testSet);
   };
 
   return (
@@ -124,7 +198,12 @@ export default function TestSetsListPage() {
             <Title level={5} style={{ margin: 0 }}>
               测试集管理
             </Title>
-            <Button type="primary" icon={<PlusOutlined />} size="small" />
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              size="small"
+              onClick={handleCreateTestSet}
+            />
           </div>
 
           {/* 搜索 */}
@@ -193,26 +272,14 @@ export default function TestSetsListPage() {
                       {categoryTestSets.map((testSet) => (
                         <div
                           key={testSet.id}
-                          onClick={() => setSelectedTestSet(testSet)}
+                          onClick={() => handleSelectTestSet(testSet)}
                           className={`group flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all ${
                             selectedTestSet?.id === testSet.id
                               ? "bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30"
                               : "hover:bg-[var(--color-bg-tertiary)] border border-transparent"
                           }`}
                         >
-                          <div
-                            className={`flex-shrink-0 p-1.5 rounded ${
-                              testSet.status === "running"
-                                ? "bg-blue-500/10 text-blue-500"
-                                : testSet.passRate !== undefined &&
-                                    testSet.passRate >= 80
-                                  ? "bg-green-500/10 text-green-500"
-                                  : testSet.passRate !== undefined &&
-                                      testSet.passRate < 80
-                                    ? "bg-red-500/10 text-red-500"
-                                    : "bg-gray-500/10 text-gray-500"
-                            }`}
-                          >
+                          <div className="flex-shrink-0 p-1.5 rounded bg-gray-500/10 text-gray-500">
                             <ExperimentOutlined style={{ fontSize: 12 }} />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -224,21 +291,7 @@ export default function TestSetsListPage() {
                               {testSet.name}
                             </Text>
                             <Text type="secondary" style={{ fontSize: 12 }}>
-                              {testSet.cases.length} 个用例
-                              {testSet.passRate !== undefined && (
-                                <Tag
-                                  color={
-                                    testSet.passRate >= 80
-                                      ? "success"
-                                      : testSet.passRate >= 60
-                                        ? "warning"
-                                        : "error"
-                                  }
-                                  style={{ marginLeft: 8, fontSize: 11 }}
-                                >
-                                  {testSet.passRate.toFixed(0)}% 通过
-                                </Tag>
-                              )}
+                              {testSet.status === "idle" ? "待测试" : testSet.status === "completed" ? "已完成" : "运行中"}
                             </Text>
                           </div>
                           <div className="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -248,7 +301,16 @@ export default function TestSetsListPage() {
                               icon={<CopyOutlined />}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDuplicate(testSet);
+                                handleDuplicateTestSet(testSet);
+                              }}
+                            />
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<EditOutlined />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditTestSet(testSet);
                               }}
                             />
                             <Button
@@ -258,7 +320,7 @@ export default function TestSetsListPage() {
                               icon={<DeleteOutlined />}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDelete(testSet.id);
+                                handleDeleteTestSet(testSet);
                               }}
                             />
                           </div>
@@ -276,7 +338,12 @@ export default function TestSetsListPage() {
       {/* 右侧详情 */}
       <div className="flex-1 overflow-hidden">
         {selectedTestSet ? (
-          <TestSetDetail testSet={selectedTestSet} onUpdate={loadTestSets} />
+          <TestSetDetail
+            testSet={selectedTestSet}
+            onUpdate={loadTestSets}
+            onEditTestSet={handleEditTestSet}
+            onDeleteTestSet={handleDeleteTestSet}
+          />
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -295,6 +362,18 @@ export default function TestSetsListPage() {
           </div>
         )}
       </div>
+
+      {/* 测试集创建/编辑弹窗 */}
+      <TestSetFormModal
+        open={testSetModalOpen}
+        onClose={() => {
+          setTestSetModalOpen(false);
+          setEditingTestSet(null);
+        }}
+        onSubmit={handleTestSetSubmit}
+        testSet={editingTestSet}
+        loading={testSetModalLoading}
+      />
     </div>
   );
 }
@@ -303,82 +382,121 @@ export default function TestSetsListPage() {
 function TestSetDetail({
   testSet,
   onUpdate,
+  onEditTestSet,
+  onDeleteTestSet,
 }: {
   testSet: TestSet;
   onUpdate: () => void;
+  onEditTestSet: (testSet: TestSet) => void;
+  onDeleteTestSet: (testSet: TestSet) => void;
 }) {
   const [activeTab, setActiveTab] = useState<"cases" | "run" | "report">(
     "cases",
   );
+  const [cases, setCases] = useState<TestCase[]>([]);
+  const [casesLoading, setCasesLoading] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
-  const [runningCaseId, setRunningCaseId] = useState<string | null>(null);
   const [currentReport, setCurrentReport] = useState<TestReport | null>(null);
-  const [caseResults, setCaseResults] = useState<
-    Map<string, { status: TestCaseStatus; output: string; duration: number }>
-  >(new Map());
+  const [reports, setReports] = useState<TestReport[]>([]);
+
+  // 测试用例弹窗
+  const [caseModalOpen, setCaseModalOpen] = useState(false);
+  const [editingCase, setEditingCase] = useState<TestCase | null>(null);
+  const [caseModalLoading, setCaseModalLoading] = useState(false);
+
+  const loadCases = useCallback(async () => {
+    if (!testSet.id) return;
+    try {
+      setCasesLoading(true);
+      const data = await testSetApi.getCases(testSet.id);
+      setCases(data);
+    } catch (error) {
+      console.error("Failed to load test cases:", error);
+    } finally {
+      setCasesLoading(false);
+    }
+  }, [testSet.id]);
+
+  const loadReports = useCallback(async () => {
+    if (!testSet.id) return;
+    try {
+      const data = await testSetApi.getReportsByTestSet(testSet.id);
+      setReports(data);
+    } catch (error) {
+      console.error("Failed to load reports:", error);
+    }
+  }, [testSet.id]);
+
+  useEffect(() => {
+    loadCases();
+    loadReports();
+  }, [loadCases, loadReports]);
+
+  // ==================== Test Run ====================
 
   const handleRunAll = async () => {
     setIsRunning(true);
-    setCaseResults(new Map());
     setCurrentReport(null);
-
     try {
-      // 使用 'agent-1' 作为模拟 agent
       const report = await testSetApi.runTestSet("agent-1", testSet.id);
       setCurrentReport(report);
-
-      // 更新用例结果
-      const newResults = new Map<
-        string,
-        { status: TestCaseStatus; output: string; duration: number }
-      >();
-      report.cases.forEach(
-        (c: {
-          caseId: string;
-          status: string;
-          actualOutput?: string;
-          duration: number;
-        }) => {
-          newResults.set(c.caseId, {
-            status: c.status as TestCaseStatus,
-            output: c.actualOutput || "",
-            duration: c.duration,
-          });
-        },
-      );
-      setCaseResults(newResults);
-
       onUpdate();
+      loadReports();
     } catch (error) {
       console.error("Failed to run test set:", error);
+      message.error("测试运行失败");
     } finally {
       setIsRunning(false);
-      setRunningCaseId(null);
     }
   };
 
-  const handleRunSingle = async (testCase: TestCase) => {
-    setRunningCaseId(testCase.id);
+  // ==================== TestCase CRUD ====================
+
+  const handleCreateCase = () => {
+    setEditingCase(null);
+    setCaseModalOpen(true);
+  };
+
+  const handleEditCase = (testCase: TestCase) => {
+    setEditingCase(testCase);
+    setCaseModalOpen(true);
+  };
+
+  const handleCaseSubmit = async (data: TestCaseFormData) => {
     try {
-      const result = await testSetApi.runTestCase("agent-1", testCase);
-      const newResults = new Map(caseResults);
-      newResults.set(testCase.id, {
-        status: result.status,
-        output: result.output,
-        duration: result.duration,
-      });
-      setCaseResults(newResults);
+      setCaseModalLoading(true);
+      if (editingCase) {
+        await testSetApi.updateCase(editingCase.id, testSet.id, data);
+        message.success("测试用例已更新");
+      } else {
+        await testSetApi.createCase(testSet.id, data);
+        message.success("测试用例已创建");
+      }
+      setCaseModalOpen(false);
+      loadCases();
     } catch (error) {
-      console.error("Failed to run test case:", error);
+      console.error("Failed to save test case:", error);
+      message.error("保存失败");
     } finally {
-      setRunningCaseId(null);
+      setCaseModalLoading(false);
     }
   };
 
-  const getPassRateColor = (rate: number) => {
-    if (rate >= 80) return "text-green-500";
-    if (rate >= 60) return "text-yellow-500";
-    return "text-red-500";
+  const handleDeleteCase = (testCase: TestCase) => {
+    showDeleteConfirm({
+      title: "删除测试用例",
+      content: `确定要删除测试用例「${testCase.name}」吗？`,
+      onOk: async () => {
+        try {
+          await testSetApi.deleteCase(testCase.id);
+          message.success("测试用例已删除");
+          loadCases();
+        } catch (error) {
+          console.error("Failed to delete test case:", error);
+          message.error("删除失败");
+        }
+      },
+    });
   };
 
   const tabs = [
@@ -386,6 +504,9 @@ function TestSetDetail({
     { key: "run", label: "执行详情", icon: PlayCircleOutlined },
     { key: "report", label: "测试报告", icon: BarChartOutlined },
   ];
+
+  // 最新报告
+  const latestReport = currentReport || reports[0];
 
   return (
     <div className="flex flex-col h-full">
@@ -407,8 +528,19 @@ function TestSetDetail({
           >
             {isRunning ? "运行中..." : "运行全部"}
           </Button>
-          <Button type="primary" icon={<EditOutlined />}>
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            onClick={() => onEditTestSet(testSet)}
+          >
             编辑
+          </Button>
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => onDeleteTestSet(testSet)}
+          >
+            删除
           </Button>
         </div>
       </div>
@@ -417,7 +549,7 @@ function TestSetDetail({
       <div className="grid grid-cols-4 gap-4 px-6 pb-4">
         <Card
           size="small"
-          variant={false}
+          variant="borderless"
           style={{ background: "var(--color-bg-secondary)" }}
         >
           <Statistic
@@ -426,13 +558,13 @@ function TestSetDetail({
                 分类
               </Text>
             }
-            value={testSet.category}
+            value={testSet.category || "未分类"}
             valueStyle={{ fontSize: 14 }}
           />
         </Card>
         <Card
           size="small"
-          variant={false}
+          variant="borderless"
           style={{ background: "var(--color-bg-secondary)" }}
         >
           <Statistic
@@ -441,55 +573,43 @@ function TestSetDetail({
                 用例数
               </Text>
             }
-            value={testSet.cases.length}
+            value={cases.length}
             valueStyle={{ fontSize: 14 }}
           />
         </Card>
         <Card
           size="small"
-          variant={false}
+          variant="borderless"
           style={{ background: "var(--color-bg-secondary)" }}
         >
           <Statistic
             title={
               <Text type="secondary" style={{ fontSize: 12 }}>
-                通过率
+                状态
               </Text>
             }
             value={
-              testSet.passRate !== undefined ? testSet.passRate.toFixed(0) : "-"
+              testSet.status === "idle"
+                ? "待测试"
+                : testSet.status === "completed"
+                  ? "已完成"
+                  : testSet.status
             }
-            suffix={testSet.passRate !== undefined ? "%" : ""}
-            valueStyle={{
-              fontSize: 14,
-              color:
-                testSet.passRate !== undefined
-                  ? testSet.passRate >= 80
-                    ? "#22c55e"
-                    : testSet.passRate >= 60
-                      ? "#eab308"
-                      : "#ef4444"
-                  : undefined,
-            }}
+            valueStyle={{ fontSize: 14 }}
           />
         </Card>
         <Card
           size="small"
-          variant={false}
+          variant="borderless"
           style={{ background: "var(--color-bg-secondary)" }}
         >
           <Statistic
             title={
               <Text type="secondary" style={{ fontSize: 12 }}>
-                总耗时
+                报告数
               </Text>
             }
-            value={
-              testSet.totalDuration
-                ? (testSet.totalDuration / 1000).toFixed(1)
-                : "-"
-            }
-            suffix={testSet.totalDuration ? "s" : ""}
+            value={reports.length}
             valueStyle={{ fontSize: 14 }}
           />
         </Card>
@@ -513,116 +633,143 @@ function TestSetDetail({
 
       {/* 内容区 */}
       <div className="flex-1 overflow-hidden">
+        {/* 测试用例 Tab */}
         {activeTab === "cases" && (
           <div className="p-6 h-full overflow-y-auto">
-            <div className="space-y-3">
-              {testSet.cases.map((testCase) => {
-                const result = caseResults.get(testCase.id);
-                return (
-                  <div
-                    key={testCase.id}
-                    className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] overflow-hidden"
-                  >
-                    <div className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-[var(--color-text-primary)]">
-                              {testCase.name}
-                            </span>
-                            {result && (
-                              <span
-                                className={`flex items-center gap-1 text-xs ${
-                                  result.status === "passed"
-                                    ? "text-green-500"
-                                    : "text-red-500"
-                                }`}
-                              >
-                                {result.status === "passed" ? (
-                                  <CheckCircleOutlined className="text-sm" />
-                                ) : (
-                                  <CloseCircleOutlined className="text-sm" />
-                                )}
-                                {result.status === "passed" ? "通过" : "失败"}
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-medium text-[var(--color-text-primary)]">
+                测试用例 ({cases.length})
+              </span>
+              <Button
+                type="primary"
+                size="small"
+                icon={<PlusOutlined />}
+                onClick={handleCreateCase}
+              >
+                添加用例
+              </Button>
+            </div>
+
+            {casesLoading ? (
+              <div className="text-center py-8">
+                <LoadingOutlined />
+                <Text type="secondary" className="ml-2">
+                  加载中...
+                </Text>
+              </div>
+            ) : cases.length === 0 ? (
+              <div className="text-center py-8">
+                <FileTextOutlined
+                  style={{
+                    fontSize: 32,
+                    opacity: 0.3,
+                    marginBottom: 8,
+                    display: "block",
+                  }}
+                />
+                <Text type="secondary">暂无测试用例，点击上方按钮添加</Text>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {cases.map((testCase) => {
+                  const assertionList = Array.isArray(testCase.assertions)
+                    ? testCase.assertions
+                    : [];
+                  return (
+                    <div
+                      key={testCase.id}
+                      className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] overflow-hidden"
+                    >
+                      <div className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-[var(--color-text-primary)]">
+                                {testCase.name}
                               </span>
+                              <Tag
+                                color={
+                                  testCase.status === "passed"
+                                    ? "success"
+                                    : testCase.status === "failed"
+                                      ? "error"
+                                      : "default"
+                                }
+                                style={{ fontSize: 11 }}
+                              >
+                                {testCase.status === "passed"
+                                  ? "通过"
+                                  : testCase.status === "failed"
+                                    ? "失败"
+                                    : "待测试"}
+                              </Tag>
+                            </div>
+                            {testCase.description && (
+                              <p className="text-sm text-[var(--color-text-tertiary)] mt-0.5">
+                                {testCase.description}
+                              </p>
                             )}
                           </div>
-                          <p className="text-sm text-[var(--color-text-tertiary)] mt-0.5">
-                            {testCase.description}
-                          </p>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<EditOutlined />}
+                              onClick={() => handleEditCase(testCase)}
+                            />
+                            <Button
+                              type="text"
+                              size="small"
+                              danger
+                              icon={<DeleteOutlined />}
+                              onClick={() => handleDeleteCase(testCase)}
+                            />
+                          </div>
                         </div>
-                        <Button
-                          size="small"
-                          icon={
-                            runningCaseId === testCase.id ? (
-                              <LoadingOutlined />
-                            ) : (
-                              <PlayCircleOutlined />
-                            )
-                          }
-                          onClick={() => handleRunSingle(testCase)}
-                          disabled={isRunning || runningCaseId === testCase.id}
-                        >
-                          运行
-                        </Button>
-                      </div>
 
-                      <div className="mt-3 grid grid-cols-2 gap-4">
-                        <div>
-                          <span className="text-xs text-[var(--color-text-tertiary)]">
-                            输入
-                          </span>
-                          <p className="mt-1 text-sm text-[var(--color-text-primary)] bg-[var(--color-bg-tertiary)] p-2 rounded font-mono">
-                            {testCase.input || "(空)"}
-                          </p>
+                        <div className="mt-3 grid grid-cols-2 gap-4">
+                          <div>
+                            <span className="text-xs text-[var(--color-text-tertiary)]">
+                              输入
+                            </span>
+                            <p className="mt-1 text-sm text-[var(--color-text-primary)] bg-[var(--color-bg-tertiary)] p-2 rounded font-mono">
+                              {testCase.input || "(空)"}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-xs text-[var(--color-text-tertiary)]">
+                              期望输出
+                            </span>
+                            <p className="mt-1 text-sm text-[var(--color-text-primary)] bg-[var(--color-bg-tertiary)] p-2 rounded">
+                              {testCase.expectedOutput || "(无)"}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <span className="text-xs text-[var(--color-text-tertiary)]">
-                            期望输出
-                          </span>
-                          <p className="mt-1 text-sm text-[var(--color-text-primary)] bg-[var(--color-bg-tertiary)] p-2 rounded">
-                            {testCase.expectedOutput}
-                          </p>
-                        </div>
-                      </div>
 
-                      {result && (
-                        <div className="mt-3">
-                          <span className="text-xs text-[var(--color-text-tertiary)]">
-                            实际输出
-                          </span>
-                          <p
-                            className={`mt-1 text-sm p-2 rounded font-mono ${
-                              result.status === "passed"
-                                ? "bg-green-500/10 text-green-400"
-                                : "bg-red-500/10 text-red-400"
-                            }`}
-                          >
-                            {result.output}
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="mt-3">
-                        <span className="text-xs text-[var(--color-text-tertiary)]">
-                          断言 ({testCase.assertions.length})
-                        </span>
-                        <div className="mt-1 flex flex-wrap gap-2">
-                          {testCase.assertions.map((assertion) => (
-                            <Tag key={assertion.id}>
-                              {assertion.type}: {assertion.value}
-                            </Tag>
-                          ))}
-                        </div>
+                        {assertionList.length > 0 && (
+                          <div className="mt-3">
+                            <span className="text-xs text-[var(--color-text-tertiary)]">
+                              断言 ({assertionList.length})
+                            </span>
+                            <div className="mt-1 flex flex-wrap gap-2">
+                              {assertionList.map((assertion) => (
+                                <Tag key={assertion.id}>
+                                  {assertion.type}: {assertion.value}
+                                </Tag>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
+        {/* 执行详情 Tab */}
         {activeTab === "run" && (
           <div className="p-6 h-full overflow-y-auto">
             {isRunning ? (
@@ -635,9 +782,20 @@ function TestSetDetail({
                   请稍候，测试用例正在逐一执行
                 </p>
               </div>
-            ) : caseResults.size > 0 ? (
+            ) : latestReport ? (
               <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
+                    <div className="flex items-center gap-2">
+                      <FileTextOutlined className="text-[var(--color-text-tertiary)]" />
+                      <span className="text-sm text-[var(--color-text-secondary)]">
+                        总用例
+                      </span>
+                    </div>
+                    <p className="text-2xl font-semibold text-[var(--color-text-primary)] mt-2">
+                      {latestReport.totalCases}
+                    </p>
+                  </div>
                   <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
                     <div className="flex items-center gap-2">
                       <CheckCircleOutlined className="text-green-500" />
@@ -646,11 +804,7 @@ function TestSetDetail({
                       </span>
                     </div>
                     <p className="text-2xl font-semibold text-green-500 mt-2">
-                      {
-                        Array.from(caseResults.values()).filter(
-                          (r) => r.status === "passed",
-                        ).length
-                      }
+                      {latestReport.passedCases}
                     </p>
                   </div>
                   <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
@@ -661,30 +815,46 @@ function TestSetDetail({
                       </span>
                     </div>
                     <p className="text-2xl font-semibold text-red-500 mt-2">
-                      {
-                        Array.from(caseResults.values()).filter(
-                          (r) => r.status === "failed",
-                        ).length
-                      }
+                      {latestReport.failedCases}
                     </p>
                   </div>
                   <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
                     <div className="flex items-center gap-2">
-                      <ClockCircleOutlined className="text-[var(--color-text-tertiary)]" />
+                      <BarChartOutlined className="text-[var(--color-text-tertiary)]" />
                       <span className="text-sm text-[var(--color-text-secondary)]">
-                        总耗时
+                        通过率
                       </span>
                     </div>
-                    <p className="text-2xl font-semibold text-[var(--color-text-primary)] mt-2">
-                      {Array.from(caseResults.values()).reduce(
-                        (sum, r) => sum + r.duration,
-                        0,
-                      ) / 1000}
-                      s
+                    <p
+                      className={`text-2xl font-semibold mt-2 ${
+                        (latestReport.passRate ?? 0) >= 80
+                          ? "text-green-500"
+                          : (latestReport.passRate ?? 0) >= 60
+                            ? "text-yellow-500"
+                            : "text-red-500"
+                      }`}
+                    >
+                      {latestReport.passRate?.toFixed(1) || "0"}%
                     </p>
                   </div>
                 </div>
 
+                {latestReport.totalDuration !== undefined &&
+                  latestReport.totalDuration > 0 && (
+                    <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
+                      <div className="flex items-center gap-2">
+                        <ClockCircleOutlined className="text-[var(--color-text-tertiary)]" />
+                        <span className="text-sm text-[var(--color-text-secondary)]">
+                          总耗时
+                        </span>
+                      </div>
+                      <p className="text-lg font-semibold text-[var(--color-text-primary)] mt-1">
+                        {(latestReport.totalDuration / 1000).toFixed(1)}s
+                      </p>
+                    </div>
+                  )}
+
+                {/* 用例执行结果 */}
                 <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
                   <div className="p-3 border-b border-[var(--color-border)]">
                     <span className="text-sm font-medium text-[var(--color-text-primary)]">
@@ -692,33 +862,40 @@ function TestSetDetail({
                     </span>
                   </div>
                   <div className="divide-y divide-[var(--color-border)]">
-                    {testSet.cases.map((testCase) => {
-                      const result = caseResults.get(testCase.id);
-                      return (
-                        <div
-                          key={testCase.id}
-                          className="p-3 flex items-center justify-between"
-                        >
-                          <div className="flex items-center gap-3">
-                            {result?.status === "passed" ? (
-                              <CheckCircleOutlined className="text-green-500" />
-                            ) : result?.status === "failed" ? (
-                              <CloseCircleOutlined className="text-red-500" />
-                            ) : (
-                              <ClockCircleOutlined className="text-[var(--color-text-tertiary)]" />
-                            )}
-                            <span className="text-sm text-[var(--color-text-primary)]">
-                              {testCase.name}
-                            </span>
-                          </div>
-                          {result && (
-                            <span className="text-xs text-[var(--color-text-tertiary)]">
-                              {result.duration}ms
-                            </span>
+                    {cases.map((testCase) => (
+                      <div
+                        key={testCase.id}
+                        className="p-3 flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-3">
+                          {testCase.status === "passed" ? (
+                            <CheckCircleOutlined className="text-green-500" />
+                          ) : testCase.status === "failed" ? (
+                            <CloseCircleOutlined className="text-red-500" />
+                          ) : (
+                            <ClockCircleOutlined className="text-[var(--color-text-tertiary)]" />
                           )}
+                          <span className="text-sm text-[var(--color-text-primary)]">
+                            {testCase.name}
+                          </span>
                         </div>
-                      );
-                    })}
+                        <Tag
+                          color={
+                            testCase.status === "passed"
+                              ? "success"
+                              : testCase.status === "failed"
+                                ? "error"
+                                : "default"
+                          }
+                        >
+                          {testCase.status === "passed"
+                            ? "通过"
+                            : testCase.status === "failed"
+                              ? "失败"
+                              : "未执行"}
+                        </Tag>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -731,128 +908,79 @@ function TestSetDetail({
           </div>
         )}
 
+        {/* 测试报告 Tab */}
         {activeTab === "report" && (
           <div className="p-6 h-full overflow-y-auto">
-            {currentReport ? (
+            {reports.length > 0 ? (
               <div className="space-y-4">
-                {/* 概览统计 */}
-                <div className="grid grid-cols-4 gap-4">
-                  <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-                    <span className="text-xs text-[var(--color-text-tertiary)]">
-                      总用例
-                    </span>
-                    <p className="text-xl font-semibold text-[var(--color-text-primary)] mt-1">
-                      {currentReport.totalCases}
-                    </p>
-                  </div>
-                  <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-                    <span className="text-xs text-[var(--color-text-tertiary)]">
-                      通过
-                    </span>
-                    <p className="text-xl font-semibold text-green-500 mt-1">
-                      {currentReport.passedCases}
-                    </p>
-                  </div>
-                  <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-                    <span className="text-xs text-[var(--color-text-tertiary)]">
-                      失败
-                    </span>
-                    <p className="text-xl font-semibold text-red-500 mt-1">
-                      {currentReport.failedCases}
-                    </p>
-                  </div>
-                  <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-                    <span className="text-xs text-[var(--color-text-tertiary)]">
-                      通过率
-                    </span>
-                    <p
-                      className={`text-xl font-semibold mt-1 ${getPassRateColor(currentReport.passRate)}`}
-                    >
-                      {currentReport.passRate.toFixed(1)}%
-                    </p>
-                  </div>
-                </div>
-
-                {/* 详细结果 */}
-                <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-                  <div className="p-3 border-b border-[var(--color-border)]">
-                    <span className="text-sm font-medium text-[var(--color-text-primary)]">
-                      详细结果
-                    </span>
-                  </div>
-                  <div className="divide-y divide-[var(--color-border)]">
-                    {currentReport.cases.map((reportCase) => (
-                      <div key={reportCase.caseId} className="p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            {reportCase.status === "passed" ? (
-                              <CheckCircleOutlined className="text-green-500" />
-                            ) : (
-                              <CloseCircleOutlined className="text-red-500" />
-                            )}
-                            <span className="font-medium text-[var(--color-text-primary)]">
-                              {reportCase.caseName}
-                            </span>
-                          </div>
-                          <span className="text-xs text-[var(--color-text-tertiary)]">
-                            {reportCase.duration}ms
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3 text-sm">
-                          <div>
-                            <span className="text-[var(--color-text-tertiary)]">
-                              输入:
-                            </span>
-                            <p className="mt-1 p-2 bg-[var(--color-bg-tertiary)] rounded font-mono">
-                              {reportCase.input}
-                            </p>
-                          </div>
-                          <div>
-                            <span className="text-[var(--color-text-tertiary)]">
-                              期望:
-                            </span>
-                            <p className="mt-1 p-2 bg-[var(--color-bg-tertiary)] rounded">
-                              {reportCase.expectedOutput}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="mt-3">
-                          <span className="text-sm text-[var(--color-text-tertiary)]">
-                            实际输出:
-                          </span>
-                          <p
-                            className={`mt-1 p-2 rounded text-sm font-mono ${
-                              reportCase.status === "passed"
-                                ? "bg-green-500/10 text-green-400"
-                                : "bg-red-500/10 text-red-400"
-                            }`}
-                          >
-                            {reportCase.actualOutput}
-                          </p>
-                        </div>
-
-                        <div className="mt-3">
-                          <span className="text-xs text-[var(--color-text-tertiary)]">
-                            断言结果:
-                          </span>
-                          <div className="mt-1 flex flex-wrap gap-2">
-                            {reportCase.assertions.map((assertion, index) => (
-                              <Tag
-                                key={index}
-                                color={assertion.passed ? "success" : "error"}
-                              >
-                                {assertion.passed ? "✓" : "✗"}{" "}
-                                {assertion.message}
-                              </Tag>
-                            ))}
-                          </div>
-                        </div>
+                {reports.map((report) => (
+                  <div
+                    key={report.id}
+                    className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <BarChartOutlined className="text-[var(--color-text-tertiary)]" />
+                        <span className="font-medium text-[var(--color-text-primary)]">
+                          测试报告
+                        </span>
                       </div>
-                    ))}
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        {new Date(report.executedAt).toLocaleString()}
+                      </Text>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-3">
+                      <div>
+                        <span className="text-xs text-[var(--color-text-tertiary)]">
+                          总用例
+                        </span>
+                        <p className="text-lg font-semibold text-[var(--color-text-primary)]">
+                          {report.totalCases}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-[var(--color-text-tertiary)]">
+                          通过
+                        </span>
+                        <p className="text-lg font-semibold text-green-500">
+                          {report.passedCases}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-[var(--color-text-tertiary)]">
+                          失败
+                        </span>
+                        <p className="text-lg font-semibold text-red-500">
+                          {report.failedCases}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-[var(--color-text-tertiary)]">
+                          通过率
+                        </span>
+                        <p
+                          className={`text-lg font-semibold ${
+                            (report.passRate ?? 0) >= 80
+                              ? "text-green-500"
+                              : (report.passRate ?? 0) >= 60
+                                ? "text-yellow-500"
+                                : "text-red-500"
+                          }`}
+                        >
+                          {report.passRate?.toFixed(1) || "0"}%
+                        </p>
+                      </div>
+                    </div>
+
+                    {report.totalDuration !== undefined &&
+                      report.totalDuration > 0 && (
+                        <div className="mt-2 text-sm text-[var(--color-text-tertiary)]">
+                          总耗时: {(report.totalDuration / 1000).toFixed(1)}s
+                        </div>
+                      )}
                   </div>
-                </div>
+                ))}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-[var(--color-text-tertiary)]">
@@ -863,6 +991,18 @@ function TestSetDetail({
           </div>
         )}
       </div>
+
+      {/* 测试用例创建/编辑弹窗 */}
+      <TestCaseFormModal
+        open={caseModalOpen}
+        onClose={() => {
+          setCaseModalOpen(false);
+          setEditingCase(null);
+        }}
+        onSubmit={handleCaseSubmit}
+        testCase={editingCase}
+        loading={caseModalLoading}
+      />
     </div>
   );
 }

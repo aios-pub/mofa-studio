@@ -60,7 +60,6 @@ export default function AgentTestSetSelector({
     setRunningTestSetId(testSetId);
     try {
       await testSetApi.runTestSet(agentId, testSetId);
-      // 重新加载测试集以获取最新状态
       await loadTestSets();
     } catch (error) {
       console.error('Failed to run test:', error);
@@ -72,27 +71,28 @@ export default function AgentTestSetSelector({
   const filteredTestSets = testSets.filter(
     (t) =>
       t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.category.toLowerCase().includes(searchQuery.toLowerCase())
+      (t.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (t.category || '').toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   // 按分类分组
   const groupedTestSets = filteredTestSets.reduce(
     (acc, testSet) => {
-      if (!acc[testSet.category]) {
-        acc[testSet.category] = [];
+      const cat = testSet.category || '未分类';
+      if (!acc[cat]) {
+        acc[cat] = [];
       }
-      acc[testSet.category].push(testSet);
+      acc[cat].push(testSet);
       return acc;
     },
-    {} as Record<string, TestSet[]>
+    {} as Record<string, TestSet[]>,
   );
 
   // 已选择的测试集
   const selectedTestSetObjects = testSets.filter((t) => selectedTestSets.includes(t.id));
 
   // 状态图标
-  const getStatusIcon = (status: TestSet['status']) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case 'running':
         return <LoadingOutlined className="text-blue-500 animate-spin" />;
@@ -177,29 +177,10 @@ export default function AgentTestSetSelector({
                             <span className="text-sm font-medium text-[var(--color-text-primary)]">
                               {testSet.name}
                             </span>
-                            {testSet.passRate !== undefined && (
-                              <span
-                                className={`text-xs px-1.5 py-0.5 rounded ${
-                                  testSet.passRate >= 80
-                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                    : testSet.passRate >= 50
-                                    ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                                }`}
-                              >
-                                {testSet.passRate.toFixed(0)}%
-                              </span>
-                            )}
                           </div>
                           <p className="text-xs text-[var(--color-text-tertiary)] truncate">
                             {testSet.description}
                           </p>
-                          <div className="flex items-center gap-3 mt-1 text-xs text-[var(--color-text-tertiary)]">
-                            <span>{testSet.cases.length} 个用例</span>
-                            {testSet.totalDuration && (
-                              <span>{(testSet.totalDuration / 1000).toFixed(1)}s</span>
-                            )}
-                          </div>
                         </div>
                         <button
                           onClick={() => runTest(testSet.id)}

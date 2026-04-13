@@ -2,8 +2,23 @@
  * 提示词列表页面
  */
 
-import { useState, useEffect } from 'react';
-import { Input, Button, Tag, Dropdown, message } from 'antd';
+import { useState, useEffect, useCallback } from 'react';
+import {
+  Input,
+  Button,
+  Tag,
+  Dropdown,
+  message,
+  Modal,
+  Drawer,
+  Form,
+  Select,
+  Switch,
+  Space,
+  Tabs,
+  Card,
+  Empty,
+} from 'antd';
 import {
   PlusOutlined,
   SearchOutlined,
@@ -13,13 +28,107 @@ import {
   FileTextOutlined,
   CodeOutlined,
   HistoryOutlined,
-  EyeOutlined,
   PlayCircleOutlined,
   MoreOutlined,
+  ExclamationCircleOutlined,
+  SaveOutlined,
+  MinusCircleOutlined,
 } from '@ant-design/icons';
-import { promptApi, type Prompt } from '@/services';
+import type { Prompt, PromptVariable } from '@/services';
+import { promptApi } from '@/services';
 import PromptVersionHistory from '../../components/prompt/PromptVersionHistory';
 import PromptTestPanel from '../../components/prompt/PromptTestPanel';
+
+// 变量类型选项
+const variableTypeOptions = [
+  { value: 'string', label: '字符串' },
+  { value: 'number', label: '数字' },
+  { value: 'enum', label: '枚举' },
+  { value: 'date', label: '日期' },
+];
+
+// 预设模板
+const presetTemplates = [
+  {
+    key: 'translation',
+    name: '翻译助手',
+    category: '翻译',
+    content: `你是一个专业的翻译助手。请将用户输入的内容从 {{source_language}} 翻译成 {{target_language}}。
+
+翻译要求：
+1. 保持原文的语气和风格
+2. 使用地道的表达方式
+3. 专业术语保持准确
+4. 必要时提供注释说明`,
+    variables: [
+      { name: 'source_language', type: 'enum' as const, defaultValue: '英语', required: true, options: ['中文', '英语', '日语', '韩语', '法语', '德语'] },
+      { name: 'target_language', type: 'enum' as const, defaultValue: '中文', required: true, options: ['中文', '英语', '日语', '韩语', '法语', '德语'] },
+    ],
+  },
+  {
+    key: 'code-review',
+    name: '代码审查',
+    category: '开发',
+    content: `你是一个专业的代码审查助手。请根据以下规范审查代码：
+
+项目: {{project_name}}
+语言: {{language}}
+审查重点: {{review_focus}}
+
+请从以下维度进行评估：
+1. 代码质量 - 可读性、可维护性
+2. 性能优化 - 算法效率、资源使用
+3. 安全性 - 潜在漏洞、敏感数据处理
+4. 最佳实践 - 代码规范、设计模式
+
+请提供具体的改进建议。`,
+    variables: [
+      { name: 'project_name', type: 'string' as const, defaultValue: '我的项目', required: true },
+      { name: 'language', type: 'enum' as const, defaultValue: 'JavaScript', required: true, options: ['JavaScript', 'TypeScript', 'Python', 'Java', 'Go', 'Rust'] },
+      { name: 'review_focus', type: 'string' as const, defaultValue: '全部', required: false },
+    ],
+  },
+  {
+    key: 'assistant',
+    name: '通用助手',
+    category: '通用',
+    content: `你是一个友好、专业的 AI 助手，名字叫 {{agent_name}}。
+
+你的职责是：
+1. 准确理解用户的问题
+2. 提供清晰、有帮助的回答
+3. 必要时请求更多信息
+4. 保持专业和友好的语气
+
+回答原则：
+- 简洁明了，避免冗余
+- 提供示例帮助理解
+- 不确定时诚实说明
+- 保护用户隐私`,
+    variables: [
+      { name: 'agent_name', type: 'string' as const, defaultValue: '小助手', required: true },
+    ],
+  },
+  {
+    key: 'data-analysis',
+    name: '数据分析',
+    category: '分析',
+    content: `你是一个数据分析专家，擅长处理和解读各类数据。
+
+可用的分析工具：
+- SQL 查询
+- Python 数据处理 (pandas, numpy)
+- 统计分析
+- 数据可视化
+
+请根据用户的需求：
+1. 理解数据结构和业务背景
+2. 提供分析思路和方法
+3. 编写分析代码
+4. 解释结果并给出建议`,
+    variables: [],
+  },
+];
 
 export default function PromptListPage() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
@@ -28,11 +137,18 @@ export default function PromptListPage() {
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
+  // 编辑器 Drawer 状态
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [form] = Form.useForm();
+  const [activeTab, setActiveTab] = useState('content');
+
   useEffect(() => {
     loadPrompts();
   }, []);
 
-  const loadPrompts = async () => {
+  const loadPrompts = useCallback(async () => {
     try {
       setLoading(true);
       const data = await promptApi.getAll();
@@ -42,29 +158,153 @@ export default function PromptListPage() {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  // 更新 selectedPrompt 使其与列表数据同步
+  useEffect(() => {
+    if (selectedPrompt) {
+      const updated = prompts.find((p) => p.id === selectedPrompt.id);
+      if (updated) {
+        setSelectedPrompt(updated);
+      }
+    }
+  }, [prompts, selectedPrompt]);
+
+  // 打开新建
+  const handleCreate = () => {
+    setEditingPrompt(null);
+    form.resetFields();
+    setActiveTab('content');
+    setEditorOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
+  // 打开编辑
+  const handleEdit = (prompt: Prompt) => {
+    setEditingPrompt(prompt);
+    form.setFieldsValue({
+      name: prompt.name,
+      description: prompt.description,
+      category: prompt.category,
+      content: prompt.content,
+      variables: prompt.variables.map((v) => ({
+        name: v.name,
+        type: v.type,
+        defaultValue: v.defaultValue || '',
+        required: v.required,
+        options: v.options?.join(', ') || '',
+      })),
+    });
+    setActiveTab('content');
+    setEditorOpen(true);
+  };
+
+  // 应用模板
+  const applyTemplate = (template: (typeof presetTemplates)[number]) => {
+    form.setFieldsValue({
+      name: template.name,
+      category: template.category,
+      content: template.content,
+      variables: template.variables.map((v) => ({
+        name: v.name,
+        type: v.type,
+        defaultValue: v.defaultValue || '',
+        required: v.required,
+        options: v.options?.join(', ') || '',
+      })),
+    });
+    setActiveTab('content');
+    message.info(`已应用「${template.name}」模板`);
+  };
+
+  // 保存
+  const handleSave = async () => {
     try {
-      await promptApi.delete(id);
-      setPrompts(prompts.filter((p) => p.id !== id));
-      if (selectedPrompt?.id === id) {
-        setSelectedPrompt(null);
+      const values = await form.validateFields();
+      setSaving(true);
+
+      const variables: PromptVariable[] = (values.variables || []).map(
+        (v: { name: string; type: string; defaultValue: string; required: boolean; options: string }) => ({
+          name: v.name,
+          type: v.type as PromptVariable['type'],
+          defaultValue: v.defaultValue || undefined,
+          required: v.required ?? false,
+          ...(v.type === 'enum' && v.options ? { options: v.options.split(',').map((s: string) => s.trim()) } : {}),
+        }),
+      );
+
+      const promptData = {
+        name: values.name,
+        description: values.description || '',
+        category: values.category || '通用',
+        content: values.content,
+        variables,
+      };
+
+      if (editingPrompt) {
+        const saved = await promptApi.update(editingPrompt.id, promptData);
+        message.success('提示词已更新');
+        setSelectedPrompt(saved || null);
+      } else {
+        const saved = await promptApi.create(promptData);
+        message.success('提示词已创建');
+        setSelectedPrompt(saved);
       }
-      message.success('提示词已删除');
+
+      setEditorOpen(false);
+      loadPrompts();
     } catch (error) {
-      console.error('Failed to delete prompt:', error);
-      message.error('删除失败');
+      if (error && typeof error === 'object' && 'errorFields' in error) {
+        // antd form validation error, ignore
+        return;
+      }
+      console.error('Failed to save prompt:', error);
+      message.error('保存失败');
+    } finally {
+      setSaving(false);
     }
+  };
+
+  // 取消编辑
+  const handleEditorCancel = () => {
+    setEditorOpen(false);
+    setEditingPrompt(null);
+  };
+
+  // 删除（带确认）
+  const handleDelete = (prompt: Prompt) => {
+    Modal.confirm({
+      title: '确认删除',
+      icon: <ExclamationCircleOutlined />,
+      content: `确定要删除提示词「${prompt.name}」吗？此操作不可恢复。`,
+      okText: '删除',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          await promptApi.delete(prompt.id);
+          setPrompts((prev) => prev.filter((p) => p.id !== prompt.id));
+          if (selectedPrompt?.id === prompt.id) {
+            setSelectedPrompt(null);
+          }
+          message.success('提示词已删除');
+        } catch (error) {
+          console.error('Failed to delete prompt:', error);
+          message.error('删除失败');
+        }
+      },
+    });
   };
 
   const handleDuplicate = async (prompt: Prompt) => {
     try {
       const newPrompt = await promptApi.create({
-        ...prompt,
         name: `${prompt.name} (副本)`,
+        description: prompt.description,
+        content: prompt.content,
+        category: prompt.category,
+        variables: prompt.variables,
       });
-      setPrompts([...prompts, newPrompt]);
+      setPrompts((prev) => [...prev, newPrompt]);
       message.success('提示词已复制');
     } catch (error) {
       console.error('Failed to duplicate prompt:', error);
@@ -90,7 +330,7 @@ export default function PromptListPage() {
       key: 'edit',
       label: '编辑',
       icon: <EditOutlined />,
-      onClick: () => setSelectedPrompt(prompt),
+      onClick: () => handleEdit(prompt),
     },
     {
       key: 'copy',
@@ -106,9 +346,20 @@ export default function PromptListPage() {
       label: '删除',
       icon: <DeleteOutlined />,
       danger: true,
-      onClick: () => handleDelete(prompt.id),
+      onClick: () => handleDelete(prompt),
     },
   ];
+
+  // 预览内容（替换变量）
+  const getPreviewContent = () => {
+    const content = form.getFieldValue('content') || '';
+    const variables: { name: string; defaultValue?: string }[] = form.getFieldValue('variables') || [];
+    let preview = content;
+    variables.forEach((v) => {
+      preview = preview.replace(new RegExp(`\\{\\{${v.name}\\}\\}`, 'g'), v.defaultValue || `[${v.name}]`);
+    });
+    return preview;
+  };
 
   return (
     <div className="flex h-full">
@@ -118,7 +369,9 @@ export default function PromptListPage() {
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">提示词管理</h2>
-            <Button type="primary" icon={<PlusOutlined />} size="small" />
+            <Button type="primary" icon={<PlusOutlined />} size="small" onClick={handleCreate}>
+              新建
+            </Button>
           </div>
 
           {/* 搜索 */}
@@ -174,9 +427,7 @@ export default function PromptListPage() {
                       </span>
                       <span className="text-xs text-[var(--color-text-tertiary)]">v{prompt.version}</span>
                     </div>
-                    <p className="text-sm text-[var(--color-text-tertiary)] truncate">
-                      {prompt.description}
-                    </p>
+                    <p className="text-sm text-[var(--color-text-tertiary)] truncate">{prompt.description}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs px-1.5 py-0.5 bg-[var(--color-bg-base)] rounded text-[var(--color-text-tertiary)]">
                         {prompt.category}
@@ -214,7 +465,8 @@ export default function PromptListPage() {
           <PromptDetail
             prompt={selectedPrompt}
             onUpdate={loadPrompts}
-            onPreview={() => {}}
+            onEdit={() => handleEdit(selectedPrompt)}
+            onDelete={() => handleDelete(selectedPrompt)}
           />
         ) : (
           <div className="flex items-center justify-center h-full">
@@ -226,6 +478,195 @@ export default function PromptListPage() {
           </div>
         )}
       </div>
+
+      {/* 新建/编辑 Drawer */}
+      <Drawer
+        title={editingPrompt ? '编辑提示词' : '新建提示词'}
+        placement="right"
+        width={720}
+        open={editorOpen}
+        onClose={handleEditorCancel}
+        destroyOnClose
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <Button onClick={handleEditorCancel}>取消</Button>
+            <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={handleSave}>
+              保存
+            </Button>
+          </div>
+        }
+      >
+        {/* 预设模板（仅新建时显示） */}
+        {!editingPrompt && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 8, color: 'var(--color-text-tertiary)', fontSize: 12, fontWeight: 500 }}>
+              快速开始 - 选择模板
+            </div>
+            <Space wrap>
+              {presetTemplates.map((t) => (
+                <Button key={t.key} size="small" onClick={() => applyTemplate(t)}>
+                  {t.name}
+                </Button>
+              ))}
+            </Space>
+          </div>
+        )}
+
+        <Form form={form} layout="vertical" initialValues={{ category: '通用', variables: [] }}>
+          <Form.Item label="名称" name="name" rules={[{ required: true, message: '请输入名称' }]}>
+            <Input placeholder="提示词名称" />
+          </Form.Item>
+
+          <Space style={{ width: '100%' }} size="middle">
+            <Form.Item label="分类" name="category" style={{ flex: 1 }}>
+              <Input placeholder="分类名称" />
+            </Form.Item>
+            <Form.Item label="描述" name="description" style={{ flex: 2 }}>
+              <Input placeholder="简短描述用途" />
+            </Form.Item>
+          </Space>
+
+          <Tabs
+            activeKey={activeTab}
+            onChange={setActiveTab}
+            items={[
+              {
+                key: 'content',
+                label: '内容',
+                icon: <FileTextOutlined />,
+                children: (
+                  <Form.Item
+                    name="content"
+                    rules={[{ required: true, message: '请输入提示词内容' }]}
+                    style={{ marginBottom: 0 }}
+                  >
+                    <Input.TextArea
+                      placeholder="输入提示词内容，使用 {{变量名}} 插入变量..."
+                      autoSize={{ minRows: 14, maxRows: 30 }}
+                      style={{ fontFamily: 'monospace' }}
+                    />
+                  </Form.Item>
+                ),
+              },
+              {
+                key: 'variables',
+                label: '变量',
+                icon: <CodeOutlined />,
+                children: (
+                  <Form.List name="variables">
+                    {(fields, { add, remove }) => (
+                      <>
+                        {fields.length === 0 ? (
+                          <Empty description="暂无变量" style={{ margin: '24px 0' }} />
+                        ) : (
+                          fields.map(({ key, name, ...restField }) => (
+                            <Card
+                              key={key}
+                              size="small"
+                              style={{ marginBottom: 12 }}
+                              extra={
+                                <Button
+                                  type="text"
+                                  danger
+                                  size="small"
+                                  icon={<MinusCircleOutlined />}
+                                  onClick={() => remove(name)}
+                                />
+                              }
+                            >
+                              <Space style={{ width: '100%' }} size="small" wrap>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, 'name']}
+                                  label="变量名"
+                                  rules={[{ required: true, message: '必填' }]}
+                                  style={{ marginBottom: 0, width: 150 }}
+                                >
+                                  <Input placeholder="variable_name" />
+                                </Form.Item>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, 'type']}
+                                  label="类型"
+                                  style={{ marginBottom: 0, width: 110 }}
+                                >
+                                  <Select options={variableTypeOptions} />
+                                </Form.Item>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, 'defaultValue']}
+                                  label="默认值"
+                                  style={{ marginBottom: 0, width: 120 }}
+                                >
+                                  <Input placeholder="默认值" />
+                                </Form.Item>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, 'required']}
+                                  label="必填"
+                                  valuePropName="checked"
+                                  style={{ marginBottom: 0 }}
+                                >
+                                  <Switch size="small" />
+                                </Form.Item>
+                              </Space>
+                              <Form.Item noStyle shouldUpdate={(prev, cur) => {
+                                const prevType = prev.variables?.[name]?.type;
+                                const curType = cur.variables?.[name]?.type;
+                                return prevType !== curType;
+                              }}>
+                                {({ getFieldValue }) =>
+                                  getFieldValue(['variables', name, 'type']) === 'enum' ? (
+                                    <Form.Item
+                                      {...restField}
+                                      name={[name, 'options']}
+                                      label="枚举选项（逗号分隔）"
+                                      style={{ marginBottom: 0, marginTop: 8 }}
+                                    >
+                                      <Input placeholder="选项1, 选项2, 选项3" />
+                                    </Form.Item>
+                                  ) : null
+                                }
+                              </Form.Item>
+                            </Card>
+                          ))
+                        )}
+                        <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                          添加变量
+                        </Button>
+                      </>
+                    )}
+                  </Form.List>
+                ),
+              },
+              {
+                key: 'preview',
+                label: '预览',
+                icon: <PlayCircleOutlined />,
+                children: (
+                  <Form.Item shouldUpdate style={{ marginBottom: 0 }}>
+                    {() => (
+                      <Card size="small" title="预览结果">
+                        <pre
+                          style={{
+                            whiteSpace: 'pre-wrap',
+                            fontFamily: 'monospace',
+                            fontSize: 13,
+                            margin: 0,
+                            color: 'var(--color-text-primary)',
+                          }}
+                        >
+                          {getPreviewContent() || '请在「内容」标签页中填写提示词内容'}
+                        </pre>
+                      </Card>
+                    )}
+                  </Form.Item>
+                ),
+              },
+            ]}
+          />
+        </Form>
+      </Drawer>
     </div>
   );
 }
@@ -234,22 +675,22 @@ export default function PromptListPage() {
 function PromptDetail({
   prompt,
   onUpdate,
-  onPreview,
+  onEdit,
+  onDelete,
 }: {
   prompt: Prompt;
   onUpdate: () => void;
-  onPreview: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }) {
   const [activeTab, setActiveTab] = useState<'content' | 'variables' | 'versions' | 'test'>('content');
   const [currentPrompt, setCurrentPrompt] = useState(prompt);
 
-  // 当 prompt prop 变化时更新当前提示词
   useEffect(() => {
     setCurrentPrompt(prompt);
   }, [prompt]);
 
   const handleRollback = async () => {
-    // 重新加载提示词数据
     onUpdate();
     const updated = await promptApi.getById(prompt.id);
     if (updated) {
@@ -272,17 +713,14 @@ function PromptDetail({
           <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">{currentPrompt.name}</h2>
           <p className="text-[var(--color-text-secondary)]">{currentPrompt.description}</p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            icon={<EyeOutlined />}
-            onClick={onPreview}
-          >
-            预览
+        <Space>
+          <Button icon={<DeleteOutlined />} danger onClick={onDelete}>
+            删除
           </Button>
-          <Button type="primary" icon={<EditOutlined />}>
+          <Button type="primary" icon={<EditOutlined />} onClick={onEdit}>
             编辑
           </Button>
-        </div>
+        </Space>
       </div>
 
       {/* 元信息 */}
@@ -356,9 +794,7 @@ function PromptDetail({
                           <code className="text-[var(--color-primary)]">{`{{${variable.name}}}`}</code>
                         </td>
                         <td className="py-2 text-[var(--color-text-secondary)]">{variable.type}</td>
-                        <td className="py-2 text-[var(--color-text-secondary)]">
-                          {variable.defaultValue || '-'}
-                        </td>
+                        <td className="py-2 text-[var(--color-text-secondary)]">{variable.defaultValue || '-'}</td>
                         <td className="py-2">
                           {variable.required ? (
                             <span className="text-red-500">是</span>

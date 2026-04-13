@@ -34,6 +34,7 @@ import {
   cronPresets,
   parseCronToText,
 } from '@/services';
+import { formatDate } from '@/utils';
 
 export default function ScheduledTasksPage() {
   const [tasks, setTasks] = useState<ScheduledTask[]>([]);
@@ -115,16 +116,6 @@ export default function ScheduledTasksPage() {
       console.error('Failed to delete task:', error);
       message.error('删除失败');
     }
-  };
-
-  const formatDate = (date: Date | undefined) => {
-    if (!date) return '-';
-    return new Date(date).toLocaleString('zh-CN', {
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
   };
 
   const getStatusIcon = (status: ExecutionStatus | undefined) => {

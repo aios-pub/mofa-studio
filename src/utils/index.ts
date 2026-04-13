@@ -277,6 +277,37 @@ export function formatFileSize(bytes: number): string {
 // ==================== 日期工具 ====================
 
 /**
+ * 将后端日期字符串统一解析为 Date 对象
+ * 后端格式示例: "2026-04-13T07:41:16.516682" (无时区信息的 ISO 8601)
+ */
+export function parseDate(date: Date | string | number): Date {
+  return new Date(date);
+}
+
+/**
+ * 格式化日期为标准显示格式
+ * @param date 后端日期字符串或 Date 对象
+ * @param format 格式类型: 'datetime' | 'date' | 'time' | 'short'
+ * @returns 格式化后的字符串
+ */
+export function formatDate(
+  date: Date | string | number | undefined | null,
+  format: 'datetime' | 'date' | 'time' | 'short' = 'datetime',
+): string {
+  if (!date) return '-';
+  const d = parseDate(date);
+  if (isNaN(d.getTime())) return '-';
+
+  const optionsMap: Record<string, Intl.DateTimeFormatOptions> = {
+    datetime: { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' },
+    date: { year: 'numeric', month: '2-digit', day: '2-digit' },
+    time: { hour: '2-digit', minute: '2-digit', second: '2-digit' },
+    short: { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' },
+  };
+  return d.toLocaleString('zh-CN', optionsMap[format]);
+}
+
+/**
  * 格式化相对时间
  * @param date 日期
  * @returns 相对时间字符串

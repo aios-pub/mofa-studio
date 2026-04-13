@@ -59,6 +59,7 @@ import type {
   QuotaLimits,
 } from '@/services';
 import { resourceApi, providerOptions } from '@/services';
+import { formatDate } from '@/utils';
 
 const { Text } = Typography;
 
@@ -174,11 +175,6 @@ export default function ResourceManagementPage() {
   };
 
   const formatCurrency = (amount: number) => `¥${amount.toFixed(2)}`;
-
-  const formatDate = (date: Date | undefined) => {
-    if (!date) return '-';
-    return new Date(date).toLocaleDateString('zh-CN');
-  };
 
   const getProviderLabel = (provider: string) => {
     return providerOptions.find((p) => p.value === provider)?.label || provider;

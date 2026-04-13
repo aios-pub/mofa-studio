@@ -33,6 +33,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { PageHeader } from '@/components/common';
 import type { User as UserType } from '@/services';
 import { organizationApi } from '@/services';
+import { formatDate } from '@/utils';
 
 const { Text } = Typography;
 
@@ -157,14 +158,6 @@ export default function UsersPage() {
     } catch (error) {
       console.error('Failed to save user:', error);
     }
-  };
-
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
   };
 
   const formatNumber = (num: number) => {

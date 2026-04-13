@@ -47,7 +47,7 @@ export default function AccountDropdown({ collapsed = false }: AccountDropdownPr
     },
   ];
 
-  const dropdownRender = (menu: React.ReactNode) => (
+  const popupRender = (menu: React.ReactNode) => (
     <div className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg shadow-lg overflow-hidden min-w-[220px]">
       {/* 用户信息 */}
       <div className="flex items-center gap-3 p-3 border-b border-[var(--color-border)]">
@@ -89,7 +89,7 @@ export default function AccountDropdown({ collapsed = false }: AccountDropdownPr
       <Dropdown
         menu={{ items: menuItems }}
         trigger={['click']}
-        dropdownRender={dropdownRender}
+        popupRender={popupRender}
         placement="topRight"
       >
         <div className="flex justify-center cursor-pointer p-2 hover:bg-white/10 rounded-lg">

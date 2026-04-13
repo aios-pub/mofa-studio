@@ -29,6 +29,7 @@ import type { Provider, CreateProviderFormData } from "../../types/provider";
 import { providerApi } from "@/services";
 import { getProviderTypeConfig } from "../../services/provider/providerConfigs";
 import { AddProviderModal } from "./components/AddProviderModal";
+import { formatDate } from "@/utils";
 
 export default function ProvidersListPage() {
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -371,16 +372,6 @@ function ProviderDetail({
   );
 
   const typeConfig = getProviderTypeConfig(provider.type);
-
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("zh-CN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   const formatCurrency = (amount: number) => {
     return `$${amount.toFixed(4)}`;

@@ -268,7 +268,7 @@ export default function NotificationDropdown() {
     <Dropdown
       open={open}
       onOpenChange={setOpen}
-      dropdownRender={() => dropdownContent}
+      popupRender={() => dropdownContent}
       trigger={['click']}
       placement="bottomRight"
       arrow={false}

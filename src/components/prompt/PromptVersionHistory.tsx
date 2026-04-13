@@ -16,6 +16,7 @@ import {
 } from '@ant-design/icons';
 import type { Prompt, PromptVersion, VersionDiff } from '@/services';
 import { promptApi } from '@/services';
+import { formatDate } from '@/utils';
 
 interface PromptVersionHistoryProps {
   prompt: Prompt;
@@ -68,16 +69,6 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
     } catch (error) {
       console.error('Failed to rollback:', error);
     }
-  };
-
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
   };
 
   if (loading) {

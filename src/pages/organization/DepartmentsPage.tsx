@@ -15,6 +15,7 @@ import {
 } from '@ant-design/icons';
 import type { Department, User as UserType } from '@/services';
 import { organizationApi } from '@/services';
+import { formatDate } from '@/utils';
 
 export default function DepartmentsPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -65,14 +66,6 @@ export default function DepartmentsPage() {
       setSelectedDepartment(null);
     }
     loadDepartments();
-  };
-
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
   };
 
   // 统计信息

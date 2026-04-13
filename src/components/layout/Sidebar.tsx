@@ -66,9 +66,9 @@ const menuItems: MenuProps["items"] = [
     type: "group",
   },
   {
-    key: "/management/agents",
-    icon: <RobotOutlined />,
-    label: "Agent 管理",
+    key: "/management/providers",
+    icon: <CloudServerOutlined />,
+    label: "Provider 管理",
   },
   {
     key: "/management/prompts",
@@ -81,14 +81,14 @@ const menuItems: MenuProps["items"] = [
     label: "Skills 管理",
   },
   {
+    key: "/management/agents",
+    icon: <RobotOutlined />,
+    label: "Agent 管理",
+  },
+  {
     key: "/management/test-sets",
     icon: <ExperimentOutlined />,
     label: "测试集管理",
-  },
-  {
-    key: "/management/providers",
-    icon: <CloudServerOutlined />,
-    label: "Provider 管理",
   },
   {
     key: "/management/channels",
@@ -109,7 +109,7 @@ const menuItems: MenuProps["items"] = [
   {
     key: "/workflow",
     icon: <BranchesOutlined />,
-    label: "工作流编辑",
+    label: "工作流管理",
   },
   {
     key: "knowledge",

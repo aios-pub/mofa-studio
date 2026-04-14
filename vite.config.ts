@@ -22,7 +22,7 @@ export default defineConfig(async ({ mode }) => {
 
     // 多页面应用配置
     build: {
-      rollupOptions: {
+      rolldownOptions: {
         input: {
           main: resolve(__dirname, "index.html"),
           floating: resolve(__dirname, "floating.html"),

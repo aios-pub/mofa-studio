@@ -13,6 +13,11 @@ import {
 import type { ScheduledTask, TaskType } from '@/services';
 import { scheduledTaskApi, taskTypeConfig } from '@/services';
 
+// 安全获取任务类型配置
+function getTaskTypeConfig(type: string) {
+  return taskTypeConfig[type as TaskType] ?? { label: type, description: '', icon: '📋' };
+}
+
 // 迷你柱状图组件（参考 apalis-board stats_card / queue_card 活动图）
 function MiniBarChart({ data, height = 'h-8', barWidth = 'w-1.5', color = 'bg-[var(--color-primary)]' }: {
   data: number[];
@@ -63,11 +68,11 @@ function StatCard({ title, value, subtitle, icon, data, color }: {
 
 // 任务类型卡片（参考 apalis-board queue_card）
 function TypeCard({ type, tasks, onClick }: {
-  type: TaskType;
+  type: string;
   tasks: ScheduledTask[];
   onClick: () => void;
 }) {
-  const config = taskTypeConfig[type];
+  const config = getTaskTypeConfig(type);
   const enabled = tasks.filter((t) => t.status === 'enabled').length;
   const totalSuccess = tasks.reduce((s, t) => s + t.successCount, 0);
   const totalFailure = tasks.reduce((s, t) => s + t.failureCount, 0);
@@ -142,10 +147,10 @@ export default function OverviewTab({ onNavigateToTasks }: Props) {
   }, [tasks]);
 
   const tasksByType = useMemo(() => {
-    const map: Partial<Record<TaskType, ScheduledTask[]>> = {};
+    const map: Record<string, ScheduledTask[]> = {};
     tasks.forEach((t) => {
       if (!map[t.type]) map[t.type] = [];
-      map[t.type]!.push(t);
+      map[t.type].push(t);
     });
     return map;
   }, [tasks]);
@@ -205,12 +210,12 @@ export default function OverviewTab({ onNavigateToTasks }: Props) {
         <h2 className="text-base font-semibold text-[var(--color-text-primary)] mb-1">任务类型</h2>
         <p className="text-sm text-[var(--color-text-tertiary)] mb-4">按类型查看任务调度状态</p>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {(Object.keys(taskTypeConfig) as TaskType[]).map((type) => (
+          {Object.keys(tasksByType).map((type) => (
             <TypeCard
               key={type}
               type={type}
               tasks={tasksByType[type] || []}
-              onClick={() => onNavigateToTasks?.(type)}
+              onClick={() => onNavigateToTasks?.(type as TaskType)}
             />
           ))}
         </div>

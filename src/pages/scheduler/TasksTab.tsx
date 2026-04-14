@@ -19,6 +19,11 @@ import {
 } from '@ant-design/icons';
 import type { ScheduledTask, TaskType, TaskStatus, TaskExecution } from '@/services';
 import { scheduledTaskApi, taskTypeConfig, parseCronToText } from '@/services';
+
+// 安全获取任务类型配置（后端返回的 task_type 可能不在预定义列表中）
+function getTaskTypeConfig(type: string) {
+  return taskTypeConfig[type as TaskType] ?? { label: type, description: '', icon: '📋' };
+}
 import { formatDate } from '@/utils';
 import TaskDetail from './TaskDetail';
 import TaskFormModal from './TaskFormModal';
@@ -117,7 +122,7 @@ export default function TasksTab({ initialFilterType, onFilterTypeConsumed }: {
       sorter: (a, b) => a.name.localeCompare(b.name),
       render: (name: string, record: ScheduledTask) => (
         <div className="flex items-center gap-2">
-          <span>{taskTypeConfig[record.type].icon}</span>
+          <span>{getTaskTypeConfig(record.type).icon}</span>
           <span className="font-medium text-[var(--color-text-primary)]">{name}</span>
         </div>
       ),
@@ -239,8 +244,8 @@ export default function TasksTab({ initialFilterType, onFilterTypeConsumed }: {
           allowClear
           style={{ width: 160 }}
           size="small"
-          options={Object.entries(taskTypeConfig).map(([type, config]) => ({
-            label: `${config.icon} ${config.label}`,
+          options={Object.entries(taskTypeConfig).map(([type, cfg]) => ({
+            label: `${cfg.icon} ${cfg.label}`,
             value: type,
           }))}
         />

@@ -68,9 +68,20 @@ interface BackendExecution {
 
 // ==================== 字段映射 ====================
 
+/** 安全解析后端返回的日期字符串（支持 ISO 8601 / "YYYY-MM-DD HH:MM:SS" / 时间戳） */
+function parseDate(value: string | number | null | undefined): Date | undefined {
+  if (!value) return undefined;
+  if (typeof value === 'number') return new Date(value);
+  // chrono::NaiveDateTime 可能输出 "YYYY-MM-DDTHH:MM:SS" 或 "YYYY-MM-DD HH:MM:SS"
+  const d = new Date(value.includes(' ') ? value.replace(' ', 'T') : value);
+  return isNaN(d.getTime()) ? undefined : d;
+}
+
 const STATUS_MAP: Record<string, TaskStatus> = {
   active: "enabled",
   paused: "disabled",
+  enabled: "enabled",
+  disabled: "disabled",
 };
 
 const STATUS_REVERSE_MAP: Record<TaskStatus, string> = {
@@ -81,6 +92,8 @@ const STATUS_REVERSE_MAP: Record<TaskStatus, string> = {
 const EXECUTION_STATUS_MAP: Record<string, ExecutionStatus> = {
   completed: "success",
   failed: "failure",
+  success: "success",
+  failure: "failure",
   running: "running",
   pending: "pending",
 };
@@ -94,15 +107,15 @@ function mapTaskFromBackend(raw: BackendTask): ScheduledTask {
     cronExpression: raw.cron_expression,
     status: STATUS_MAP[raw.status] || "disabled",
     config: (raw.config as TaskConfig) || ({} as TaskConfig),
-    lastRunAt: raw.last_run_at ? new Date(raw.last_run_at) : undefined,
+    lastRunAt: parseDate(raw.last_run_at),
     lastRunStatus: raw.last_run_status
-      ? (EXECUTION_STATUS_MAP[raw.last_run_status] || raw.last_run_status as ExecutionStatus)
+      ? (EXECUTION_STATUS_MAP[raw.last_run_status] ?? raw.last_run_status as ExecutionStatus)
       : undefined,
-    nextRunAt: raw.next_run_at ? new Date(raw.next_run_at) : undefined,
-    successCount: raw.success_count || 0,
-    failureCount: raw.failure_count || 0,
-    createdAt: new Date(raw.create_time),
-    updatedAt: new Date(raw.update_time),
+    nextRunAt: parseDate(raw.next_run_at),
+    successCount: raw.success_count ?? 0,
+    failureCount: raw.failure_count ?? 0,
+    createdAt: parseDate(raw.create_time) ?? new Date(),
+    updatedAt: parseDate(raw.update_time) ?? new Date(),
     createdBy: raw.created_by || "",
   };
 }
@@ -126,9 +139,9 @@ function mapExecutionFromBackend(raw: BackendExecution): TaskExecution {
     id: raw.id,
     taskId: raw.task_id,
     taskName: raw.task_name,
-    startedAt: new Date(raw.started_at),
-    completedAt: raw.completed_at ? new Date(raw.completed_at) : undefined,
-    status: EXECUTION_STATUS_MAP[raw.status] || (raw.status as ExecutionStatus),
+    startedAt: parseDate(raw.started_at) ?? new Date(),
+    completedAt: parseDate(raw.completed_at),
+    status: EXECUTION_STATUS_MAP[raw.status] ?? (raw.status as ExecutionStatus),
     duration: raw.duration,
     result: raw.result,
     error: raw.error,

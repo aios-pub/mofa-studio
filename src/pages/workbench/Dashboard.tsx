@@ -856,16 +856,16 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <div className="flex items-center gap-6 text-sm text-[var(--color-text-tertiary)]">
-                    <span>{agent.metrics.conversations_today} 对话</span>
-                    <span>{agent.metrics.avg_response_time}ms</span>
+                    <span>{agent.metrics?.conversations_today ?? 0} 对话</span>
+                    <span>{agent.metrics?.avg_response_time ?? 0}ms</span>
                     <span
                       className={`font-medium ${
-                        (agent.metrics.success_rate || 100) >= 95
+                        (agent.metrics?.success_rate || 100) >= 95
                           ? "text-green-500"
                           : "text-yellow-500"
                       }`}
                     >
-                      {agent.metrics.success_rate || 100}%
+                      {agent.metrics?.success_rate || 100}%
                     </span>
                   </div>
                 </div>

@@ -3,7 +3,7 @@
  * 显示系统操作日志、错误日志等
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Table, Tag, Input, Select, Button, Space, DatePicker, Card, Badge, Tooltip, Popover } from 'antd';
 import { SearchOutlined, ReloadOutlined, FilterOutlined, ExportOutlined, EyeOutlined } from '@ant-design/icons';
@@ -20,6 +20,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { PageHeader } from '@/components/common';
+import { auditLogApi } from '@/services';
 
 const { RangePicker } = DatePicker;
 
@@ -36,96 +37,27 @@ interface LogItem {
   user?: string;
   ip?: string;
   duration?: number;
-  createdAt: Date;
+  createdAt: Date | string;
   details?: Record<string, any>;
 }
 
-// Mock 数据
-const mockLogs: LogItem[] = [
-  {
-    id: '1',
-    level: 'info',
-    module: 'Agent',
-    action: 'create',
-    message: '创建了新的 Agent: CustomerService-v2',
-    user: 'admin',
-    ip: '192.168.1.100',
-    createdAt: new Date('2024-01-15 10:30:00'),
-  },
-  {
-    id: '2',
-    level: 'error',
-    module: 'API',
-    action: 'call',
-    message: 'API 调用失败: Connection timeout after 30s',
-    user: 'system',
-    ip: '10.0.0.1',
-    duration: 30000,
-    createdAt: new Date('2024-01-15 10:28:45'),
-    details: { endpoint: '/api/v1/chat', error: 'ETIMEDOUT' },
-  },
-  {
-    id: '3',
-    level: 'warning',
-    module: 'Token',
-    action: 'limit',
-    message: 'Token 使用量已达到警告阈值 (80%)',
-    user: 'system',
-    createdAt: new Date('2024-01-15 10:25:00'),
-    details: { current: 80000, limit: 100000 },
-  },
-  {
-    id: '4',
-    level: 'success',
-    module: 'Conversation',
-    action: 'complete',
-    message: '对话完成，共消耗 1,234 tokens',
-    user: 'user_001',
-    ip: '192.168.1.105',
-    duration: 2500,
-    createdAt: new Date('2024-01-15 10:20:30'),
-  },
-  {
-    id: '5',
-    level: 'debug',
-    module: 'Prompt',
-    action: 'render',
-    message: '提示词模板渲染完成',
-    user: 'system',
-    createdAt: new Date('2024-01-15 10:18:00'),
-    details: { template: 'customer-support-v1', variables: 5 },
-  },
-  {
-    id: '6',
-    level: 'info',
-    module: 'User',
-    action: 'login',
-    message: '用户登录成功',
-    user: 'john@example.com',
-    ip: '192.168.1.200',
-    createdAt: new Date('2024-01-15 10:15:00'),
-  },
-  {
-    id: '7',
-    level: 'error',
-    module: 'Provider',
-    action: 'connect',
-    message: '无法连接到 OpenAI API: Invalid API key',
-    user: 'admin',
-    createdAt: new Date('2024-01-15 10:10:00'),
-    details: { provider: 'openai', model: 'gpt-4' },
-  },
-  {
-    id: '8',
-    level: 'warning',
-    module: 'System',
-    action: 'resource',
-    message: '内存使用率超过 70%',
-    user: 'system',
-    createdAt: new Date('2024-01-15 10:05:00'),
-    details: { memoryUsage: '72%', cpuUsage: '45%' },
-  },
-];
+// 从 AuditLog 映射到 LogItem
+function auditToLog(raw: any): LogItem {
+  return {
+    id: raw.id,
+    level: (raw.action === 'delete' || raw.action === 'error') ? 'error'
+      : (raw.action === 'update' || raw.action === 'warning') ? 'warning'
+      : (raw.action === 'create' || raw.action === 'success') ? 'success'
+      : (raw.action === 'debug') ? 'debug' : 'info',
+    module: raw.resource || 'System',
+    action: raw.action || '',
+    message: `${raw.action || ''} ${raw.resource || ''}${raw.resourceId ? ' ' + raw.resourceId : ''}`.trim(),
+    user: raw.userName || raw.userId || undefined,
+    ip: raw.ipAddress || undefined,
+    details: raw.details,
+    createdAt: raw.createdAt || '',
+  };
+}
 
 // 日志级别配置
 const levelConfig: Record<LogLevel, { color: string; icon: React.ReactNode; label: string }> = {
@@ -151,11 +83,25 @@ const moduleOptions = [
 
 export default function LogsPage() {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(false);
-  const [logs] = useState<LogItem[]>(mockLogs);
+  const [loading, setLoading] = useState(true);
+  const [logs, setLogs] = useState<LogItem[]>([]);
   const [searchText, setSearchText] = useState('');
   const [levelFilter, setLevelFilter] = useState<string>('');
   const [moduleFilter, setModuleFilter] = useState<string>('');
+
+  const loadLogs = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await auditLogApi.getAll();
+      setLogs(data.map(auditToLog));
+    } catch (error) {
+      console.error('Failed to load logs:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadLogs(); }, [loadLogs]);
 
   // 过滤日志
   const filteredLogs = logs.filter((log) => {
@@ -170,8 +116,7 @@ export default function LogsPage() {
 
   // 刷新日志
   const handleRefresh = () => {
-    setLoading(true);
-    setTimeout(() => setLoading(false), 1000);
+    loadLogs();
   };
 
   // 表格列配置

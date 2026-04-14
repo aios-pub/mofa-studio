@@ -176,6 +176,24 @@ export const conversationApi = {
     return newConversation;
   },
 
+  // 更新会话
+  async update(id: string, data: Partial<Conversation>): Promise<Conversation> {
+    await delay(300);
+    const idx = mockConversations.findIndex((c) => c.id === id);
+    if (idx === -1) throw new Error('Conversation not found');
+    Object.assign(mockConversations[idx], data, { updatedAt: new Date() });
+    return mockConversations[idx];
+  },
+
+  // 删除会话
+  async delete(id: string): Promise<boolean> {
+    await delay(300);
+    const idx = mockConversations.findIndex((c) => c.id === id);
+    if (idx === -1) return false;
+    mockConversations.splice(idx, 1);
+    return true;
+  },
+
   // 发送消息
   async sendMessage(
     conversationId: string,
@@ -209,14 +227,5 @@ export const conversationApi = {
     conversation.updatedAt = new Date();
 
     return { userMessage, assistantMessage };
-  },
-
-  // 删除会话
-  async delete(id: string): Promise<boolean> {
-    await delay(300);
-    const index = mockConversations.findIndex((c) => c.id === id);
-    if (index === -1) return false;
-    mockConversations.splice(index, 1);
-    return true;
   },
 };

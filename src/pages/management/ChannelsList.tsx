@@ -403,20 +403,20 @@ function ChannelDetail({
       <div className="grid grid-cols-4 gap-4 mb-6">
         <StatCard
           title="总消息数"
-          value={channel.stats.totalMessages.toLocaleString()}
+          value={(channel.stats?.totalMessages ?? 0).toLocaleString()}
         />
         <StatCard
           title="成功率"
-          value={`${channel.stats.successRate.toFixed(1)}%`}
-          status={channel.stats.successRate >= 95 ? 'success' : channel.stats.successRate >= 80 ? 'warning' : 'error'}
+          value={`${(channel.stats?.successRate ?? 0).toFixed(1)}%`}
+          status={(channel.stats?.successRate ?? 0) >= 95 ? 'success' : (channel.stats?.successRate ?? 0) >= 80 ? 'warning' : 'error'}
         />
         <StatCard
           title="失败消息"
-          value={channel.stats.failedMessages.toLocaleString()}
+          value={(channel.stats?.failedMessages ?? 0).toLocaleString()}
         />
         <StatCard
           title="平均响应"
-          value={`${channel.stats.avgResponseTime}ms`}
+          value={`${channel.stats?.avgResponseTime ?? 0}ms`}
         />
       </div>
 
@@ -555,19 +555,19 @@ function ChannelStatsView({ channel }: { channel: Channel }) {
         <div className="bg-[var(--color-bg-tertiary)] rounded-lg p-4">
           <div className="text-sm text-[var(--color-text-tertiary)]">今日消息</div>
           <div className="text-2xl font-semibold text-[var(--color-text-primary)] mt-1">
-            {Math.floor(channel.stats.totalMessages * 0.05).toLocaleString()}
+            {Math.floor((channel.stats?.totalMessages ?? 0) * 0.05).toLocaleString()}
           </div>
         </div>
         <div className="bg-[var(--color-bg-tertiary)] rounded-lg p-4">
           <div className="text-sm text-[var(--color-text-tertiary)]">本周消息</div>
           <div className="text-2xl font-semibold text-[var(--color-text-primary)] mt-1">
-            {Math.floor(channel.stats.totalMessages * 0.2).toLocaleString()}
+            {Math.floor((channel.stats?.totalMessages ?? 0) * 0.2).toLocaleString()}
           </div>
         </div>
         <div className="bg-[var(--color-bg-tertiary)] rounded-lg p-4">
           <div className="text-sm text-[var(--color-text-tertiary)]">本月消息</div>
           <div className="text-2xl font-semibold text-[var(--color-text-primary)] mt-1">
-            {Math.floor(channel.stats.totalMessages * 0.8).toLocaleString()}
+            {Math.floor((channel.stats?.totalMessages ?? 0) * 0.8).toLocaleString()}
           </div>
         </div>
       </div>
@@ -595,11 +595,11 @@ function ChannelStatsView({ channel }: { channel: Channel }) {
               </div>
             </div>
           )}
-          {channel.stats.lastMessageAt && (
+          {channel.stats?.lastMessageAt && (
             <div>
               <div className="text-sm text-[var(--color-text-tertiary)]">最后消息</div>
               <div className="text-[var(--color-text-primary)] mt-1">
-                {channel.stats.lastMessageAt.toLocaleString('zh-CN')}
+                {channel.stats?.lastMessageAt?.toLocaleString('zh-CN')}
               </div>
             </div>
           )}

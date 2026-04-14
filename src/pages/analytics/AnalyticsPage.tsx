@@ -98,11 +98,11 @@ export default function AnalyticsPage() {
         analyticsApi.getHourlyDistribution(filter),
       ]);
 
-      setOverviewStats(overview);
-      setDailyStats(daily);
-      setAgentStats(agents);
-      setUserStats(users);
-      setHourlyDistribution(hourly);
+      setOverviewStats(overview ?? null);
+      setDailyStats(Array.isArray(daily) ? daily : []);
+      setAgentStats(Array.isArray(agents) ? agents : []);
+      setUserStats(Array.isArray(users) ? users : []);
+      setHourlyDistribution(Array.isArray(hourly) ? hourly : []);
     } catch (error) {
       console.error('Failed to load stats:', error);
     } finally {
@@ -160,7 +160,7 @@ export default function AnalyticsPage() {
     return ((recent - previous) / previous) * 100;
   };
 
-  const maxHourlyCount = Math.max(...hourlyDistribution.map((h) => h.count));
+  const maxHourlyCount = hourlyDistribution?.length ? Math.max(...hourlyDistribution.map((h) => h.count)) : 0;
 
   return (
     <div className="flex flex-col h-full">

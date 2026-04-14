@@ -3,7 +3,7 @@
  * 显示 AI Agent 系统的性能和使用数据分析
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, Row, Col, Select, Button, Space, Table, Tag, Progress, Tooltip } from 'antd';
 import {
@@ -19,6 +19,7 @@ import {
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { PageHeader } from '@/components/common';
+import { analyticsApi, agentApi } from '@/services';
 
 // 时间范围选项
 const timeOptions = [
@@ -175,63 +176,81 @@ function SimpleColumnChart({ data }: { data: { date: string; value: number }[] }
   );
 }
 
-// Mock 数据
-const mockStats = {
-  totalConversations: 12584,
-  conversationsChange: 12.5,
-  avgResponseTime: 1.8,
-  responseTimeChange: -8.3,
-  successRate: 98.5,
-  successRateChange: 2.1,
-  totalTokens: 2456789,
-  tokensChange: 15.8,
+// 默认数据（API 返回前使用）
+const defaultStats = {
+  totalConversations: 0,
+  conversationsChange: 0,
+  avgResponseTime: 0,
+  responseTimeChange: 0,
+  successRate: 0,
+  successRateChange: 0,
+  totalTokens: 0,
+  tokensChange: 0,
 };
-
-const mockAgentPerformance = [
-  { label: 'CustomerService-v2', value: 4521 },
-  { label: 'SalesAssistant', value: 3842 },
-  { label: 'TechnicalSupport', value: 2156 },
-  { label: 'DataAnalyst', value: 1842 },
-  { label: 'CodeHelper', value: 1235 },
-];
-
-const mockIntentDistribution = [
-  { label: '产品咨询', value: 4500, color: '#3b82f6' },
-  { label: '技术支持', value: 3200, color: '#22c55e' },
-  { label: '投诉处理', value: 1800, color: '#f59e0b' },
-  { label: '订单查询', value: 1500, color: '#8b5cf6' },
-  { label: '其他', value: 1200, color: '#6b7280' },
-];
-
-const mockDailyData = [
-  { date: '01/09', value: 1200 },
-  { date: '01/10', value: 1450 },
-  { date: '01/11', value: 1380 },
-  { date: '01/12', value: 1680 },
-  { date: '01/13', value: 1920 },
-  { date: '01/14', value: 2100 },
-  { date: '01/15', value: 2450 },
-];
-
-const mockTopUsers = [
-  { id: 1, name: '张三', conversations: 256, tokens: 125000, lastActive: '10分钟前' },
-  { id: 2, name: '李四', conversations: 198, tokens: 98000, lastActive: '30分钟前' },
-  { id: 3, name: '王五', conversations: 156, tokens: 76000, lastActive: '1小时前' },
-  { id: 4, name: '赵六', conversations: 134, tokens: 65000, lastActive: '2小时前' },
-  { id: 5, name: '钱七', conversations: 112, tokens: 54000, lastActive: '3小时前' },
-];
 
 export default function InsightPage() {
   const { t } = useTranslation();
   const [timeRange, setTimeRange] = useState('week');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState(defaultStats);
+  const [agentPerformance, setAgentPerformance] = useState<{ label: string; value: number }[]>([]);
+  const [dailyData, setDailyData] = useState<{ date: string; value: number }[]>([]);
 
-  const handleRefresh = () => {
-    setLoading(true);
-    setTimeout(() => setLoading(false), 1000);
-  };
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [overview, daily, agents] = await Promise.all([
+        analyticsApi.getOverviewStats().catch(() => null),
+        analyticsApi.getDailyStats().catch(() => []),
+        agentApi.getAll().catch(() => []),
+      ]);
+      if (overview) {
+        const s = overview as any;
+        setStats({
+          totalConversations: s.total_conversations ?? s.totalConversations ?? 0,
+          conversationsChange: 0,
+          avgResponseTime: s.avg_response_time ?? s.avgResponseTime ?? 0,
+          responseTimeChange: 0,
+          successRate: s.success_rate ?? s.successRate ?? 0,
+          successRateChange: 0,
+          totalTokens: s.total_tokens ?? s.totalTokens ?? 0,
+          tokensChange: 0,
+        });
+      }
+      if (Array.isArray(daily) && daily.length > 0) {
+        setDailyData(daily.map((d: any) => ({
+          date: d.date?.slice(5) || '',
+          value: d.conversations ?? 0,
+        })));
+      }
+      if (Array.isArray(agents) && agents.length > 0) {
+        setAgentPerformance(agents.slice(0, 5).map((a: any) => ({
+          label: a.name,
+          value: 0,
+        })));
+      }
+    } catch (error) {
+      console.error('Failed to load insight data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const userColumns: ColumnsType<typeof mockTopUsers[0]> = [
+  useEffect(() => { loadData(); }, [loadData]);
+
+  const handleRefresh = () => loadData();
+
+  const intentDistribution = [
+    { label: '产品咨询', value: 4500, color: '#3b82f6' },
+    { label: '技术支持', value: 3200, color: '#22c55e' },
+    { label: '投诉处理', value: 1800, color: '#f59e0b' },
+    { label: '订单查询', value: 1500, color: '#8b5cf6' },
+    { label: '其他', value: 1200, color: '#6b7280' },
+  ];
+
+  const topUsers: { id: number; name: string; conversations: number; tokens: number; lastActive: string }[] = [];
+
+  const userColumns: ColumnsType<typeof topUsers[0]> = [
     {
       title: t('insight.userName', '用户'),
       dataIndex: 'name',
@@ -294,8 +313,8 @@ export default function InsightPage() {
         <Col xs={24} sm={12} lg={6}>
           <StatCard
             title={t('insight.totalConversations', '总对话数')}
-            value={mockStats.totalConversations.toLocaleString()}
-            change={mockStats.conversationsChange}
+            value={stats.totalConversations.toLocaleString()}
+            change={stats.conversationsChange}
             changeLabel={t('insight.vsLastWeek', '较上周')}
             icon={<MessageOutlined className="text-xl text-white" />}
             color="bg-blue-500"
@@ -304,8 +323,8 @@ export default function InsightPage() {
         <Col xs={24} sm={12} lg={6}>
           <StatCard
             title={t('insight.avgResponseTime', '平均响应时间')}
-            value={`${mockStats.avgResponseTime}s`}
-            change={mockStats.responseTimeChange}
+            value={`${stats.avgResponseTime}s`}
+            change={stats.responseTimeChange}
             changeLabel={t('insight.vsLastWeek', '较上周')}
             icon={<ClockCircleOutlined className="text-xl text-white" />}
             color="bg-green-500"
@@ -314,8 +333,8 @@ export default function InsightPage() {
         <Col xs={24} sm={12} lg={6}>
           <StatCard
             title={t('insight.successRate', '成功率')}
-            value={`${mockStats.successRate}%`}
-            change={mockStats.successRateChange}
+            value={`${stats.successRate}%`}
+            change={stats.successRateChange}
             changeLabel={t('insight.vsLastWeek', '较上周')}
             icon={<AimOutlined className="text-xl text-white" />}
             color="bg-purple-500"
@@ -324,8 +343,8 @@ export default function InsightPage() {
         <Col xs={24} sm={12} lg={6}>
           <StatCard
             title={t('insight.totalTokens', 'Token 消耗')}
-            value={(mockStats.totalTokens / 1000000).toFixed(2) + 'M'}
-            change={mockStats.tokensChange}
+            value={(stats.totalTokens / 1000000).toFixed(2) + 'M'}
+            change={stats.tokensChange}
             changeLabel={t('insight.vsLastWeek', '较上周')}
             icon={<ThunderboltOutlined className="text-xl text-white" />}
             color="bg-orange-500"
@@ -337,12 +356,12 @@ export default function InsightPage() {
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={16}>
           <Card title={t('insight.dailyTrend', '每日对话趋势')} className="h-full">
-            <SimpleColumnChart data={mockDailyData} />
+            <SimpleColumnChart data={dailyData} />
           </Card>
         </Col>
         <Col xs={24} lg={8}>
           <Card title={t('insight.intentDistribution', '意图分布')} className="h-full">
-            <SimpleDonutChart data={mockIntentDistribution} />
+            <SimpleDonutChart data={intentDistribution} />
           </Card>
         </Col>
       </Row>
@@ -350,14 +369,14 @@ export default function InsightPage() {
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={12}>
           <Card title={t('insight.agentPerformance', 'Agent 性能排行')}>
-            <SimpleBarChart data={mockAgentPerformance} />
+            <SimpleBarChart data={agentPerformance} />
           </Card>
         </Col>
         <Col xs={24} lg={12}>
           <Card title={t('insight.topUsers', '活跃用户排行')}>
             <Table
               columns={userColumns}
-              dataSource={mockTopUsers}
+              dataSource={topUsers}
               rowKey="id"
               pagination={false}
               size="small"

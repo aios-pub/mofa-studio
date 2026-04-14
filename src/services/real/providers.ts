@@ -120,15 +120,26 @@ const providerRealApi = {
   },
 
   update: async (id: string, data: Record<string, unknown>): Promise<Provider> => {
+    // 合并已有数据以确保完整字段
+    const existing = await providerRealApi.getById(id);
+    const merged = {
+      ...existing,
+      baseUrl: data.baseUrl ?? existing.baseUrl,
+      name: data.name ?? existing.name,
+      type: data.type ?? existing.type,
+      ...data,
+    };
     const payload: Record<string, unknown> = {
       id,
-      api_base: data.baseUrl || "",
-      provider_name: data.name || "",
-      provider_type: data.type || "custom",
+      api_base: merged.baseUrl || "",
+      provider_name: merged.name || "",
+      provider_type: merged.type || "custom",
     };
-    // 只有明确传了 apiKey 才更新，避免用 masked 值覆盖真实密钥
     if (data.apiKey !== undefined) {
       payload.api_key = data.apiKey;
+    }
+    if (data.models !== undefined) {
+      payload.models = data.models;
     }
     const raw = await apiClient.post<ProviderRaw>("/api/provider/update", payload);
     return mapProvider(raw);

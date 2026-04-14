@@ -11,11 +11,11 @@ import {
 } from '@ant-design/icons';
 import {
   permissionApi,
+  skillApi,
+  promptApi,
   featurePermissionDefinitions,
   mockPermissionTemplates,
 } from '@/services';
-import { mockSkills } from '@/services';
-import { mockPrompts } from '@/services';
 import type { PermissionConfig } from '../../types/permission';
 
 interface PermissionConfigProps {
@@ -31,9 +31,13 @@ export default function PermissionConfig({ agentId, onSave }: PermissionConfigPr
   const [saving, setSaving] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [hasChanges, setHasChanges] = useState(false);
+  const [skills, setSkills] = useState<{ id: string; name: string }[]>([]);
+  const [prompts, setPrompts] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
     loadPermission();
+    skillApi.getAll().then((s: any[]) => setSkills(s)).catch(console.error);
+    promptApi.getAll().then((p: any[]) => setPrompts(p)).catch(console.error);
   }, [agentId]);
 
   useEffect(() => {
@@ -224,7 +228,7 @@ export default function PermissionConfig({ agentId, onSave }: PermissionConfigPr
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-[var(--color-text-primary)]">Skills 访问权限</h3>
         <div className="grid grid-cols-3 gap-2">
-          {mockSkills.map((skill) => (
+          {skills.map((skill) => (
             <label
               key={skill.id}
               className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors ${
@@ -249,7 +253,7 @@ export default function PermissionConfig({ agentId, onSave }: PermissionConfigPr
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-[var(--color-text-primary)]">提示词访问权限</h3>
         <div className="grid grid-cols-2 gap-2">
-          {mockPrompts.map((prompt) => (
+          {prompts.map((prompt) => (
             <label
               key={prompt.id}
               className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors ${

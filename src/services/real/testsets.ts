@@ -126,11 +126,13 @@ const testSetRealApi = {
   },
 
   update: async (id: string, data: Partial<TestSetFormData>): Promise<TestSet> => {
+    const existing = await testSetRealApi.getById(id);
+    const merged = { ...existing, ...data };
     const raw = await apiClient.post<BackendTestSet>("/api/testset/update", {
       id,
-      name: data.name,
-      description: data.description,
-      category: data.category,
+      name: merged.name,
+      description: merged.description,
+      category: merged.category,
     });
     return mapTestSet(raw);
   },

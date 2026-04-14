@@ -11,9 +11,8 @@ import {
   DeleteOutlined,
   EditOutlined,
 } from '@ant-design/icons';
-import { conversationApi } from '@/services';
-import { mockAgents } from '@/services';
-import type { Conversation } from '../../types';
+import { conversationApi, agentApi } from '@/services';
+import type { Conversation, Agent } from '../../types';
 
 interface ConversationListProps {
   onSelectConversation?: (conversation: Conversation) => void;
@@ -27,13 +26,17 @@ export default function ConversationList({
   onCreateConversation,
 }: ConversationListProps) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
 
   // 加载会话列表
   useEffect(() => {
     loadConversations();
+    agentApi.getAll().then(setAgents).catch(console.error);
   }, []);
 
   const loadConversations = async () => {
@@ -83,10 +86,22 @@ export default function ConversationList({
   );
 
   // 按 Agent 分组
-  const groupedConversations = mockAgents.map((agent) => ({
+  const groupedConversations = agents.map((agent) => ({
     agent,
     conversations: filteredConversations.filter((c) => c.agentId === agent.id),
   }));
+
+  // 重命名会话
+  const handleRenameConversation = async (id: string) => {
+    if (!renameValue.trim()) { setRenamingId(null); return; }
+    try {
+      const updated = await conversationApi.update(id, { title: renameValue.trim() });
+      setConversations(conversations.map((c) => c.id === id ? { ...c, title: updated.title } : c));
+      setRenamingId(null);
+    } catch (error) {
+      console.error('Failed to rename conversation:', error);
+    }
+  };
 
   // 右键菜单
   const handleContextMenu = (e: React.MouseEvent, id: string) => {
@@ -166,9 +181,24 @@ export default function ConversationList({
                       >
                         <MessageOutlined className="flex-shrink-0 text-[var(--color-text-tertiary)]" />
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-[var(--color-text-primary)] truncate">
-                            {conversation.title}
-                          </div>
+                          {renamingId === conversation.id ? (
+                            <input
+                              autoFocus
+                              value={renameValue}
+                              onChange={(e) => setRenameValue(e.target.value)}
+                              onBlur={() => handleRenameConversation(conversation.id)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleRenameConversation(conversation.id);
+                                if (e.key === 'Escape') setRenamingId(null);
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              className="w-full px-1 py-0.5 text-sm bg-[var(--color-bg-base)] border border-[var(--color-primary)] rounded text-[var(--color-text-primary)] focus:outline-none"
+                            />
+                          ) : (
+                            <div className="text-sm font-medium text-[var(--color-text-primary)] truncate">
+                              {conversation.title}
+                            </div>
+                          )}
                           <div className="text-xs text-[var(--color-text-tertiary)]">
                             {conversation.messages.length} 条消息 ·{' '}
                             {formatRelativeTime(conversation.updatedAt)}
@@ -201,7 +231,11 @@ export default function ConversationList({
         >
           <button
             onClick={() => {
-              // TODO: 实现重命名
+              const conv = conversations.find((c) => c.id === contextMenu.id);
+              if (conv) {
+                setRenameValue(conv.title);
+                setRenamingId(contextMenu.id);
+              }
               setContextMenu(null);
             }}
             className="flex items-center gap-2 w-full px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]"

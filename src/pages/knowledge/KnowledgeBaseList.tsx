@@ -188,7 +188,7 @@ export default function KnowledgeBaseListPage() {
                      <span className="font-medium text-[var(--color-text-primary)] truncate">{kb.name}</span>
                      <Tag color={kb.enabled ? 'green' : 'default'} className="text-xs">{kb.enabled ? '启用' : '禁用'}</Tag>
                    </div>
-                   <p className="text-sm text-[var(--color-text-tertiary)] truncate mt-1">{kb.stats.documentCount} 文档 · {kb.stats.chunkCount} 分片</p>
+                   <p className="text-sm text-[var(--color-text-tertiary)] truncate mt-1">{kb.stats?.documentCount ?? 0} 文档 · {kb.stats?.chunkCount ?? 0} 分片</p>
                  </div>
                  <Dropdown menu={{ items: getMenuItems(kb) }} trigger={['click']} placement="bottomRight">
                    <Button type="text" size="small" icon={<MoreOutlined />} className="opacity-0 group-hover:opacity-100" onClick={e => e.stopPropagation()} />
@@ -212,7 +212,7 @@ export default function KnowledgeBaseListPage() {
               </div>
             </div>
             <div className="grid grid-cols-4 gap-4 mb-6">
-              {[{ t: '文档数', v: selectedKB.stats.documentCount }, { t: '分片数', v: selectedKB.stats.chunkCount }, { t: '向量数', v: selectedKB.stats.vectorCount }, { t: '存储大小', v: formatSize(selectedKB.stats.totalSize) }].map((s, i) => (
+              {[{ t: '文档数', v: selectedKB.stats?.documentCount ?? 0 }, { t: '分片数', v: selectedKB.stats?.chunkCount ?? 0 }, { t: '向量数', v: selectedKB.stats?.vectorCount ?? 0 }, { t: '存储大小', v: formatSize(selectedKB.stats?.totalSize ?? 0) }].map((s, i) => (
                 <div key={i} className="bg-[var(--color-bg-tertiary)] rounded-lg p-4">
                   <div className="text-sm text-[var(--color-text-tertiary)]">{s.t}</div>
                   <div className="text-xl font-semibold text-[var(--color-text-primary)] mt-1">{s.v}</div>
@@ -231,7 +231,25 @@ export default function KnowledgeBaseListPage() {
               {activeTab === 'documents' && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-4">
-                    <Button type="primary" icon={<CloudUploadOutlined />}>上传文档</Button>
+                    <Button type="primary" icon={<CloudUploadOutlined />} onClick={() => {
+                      if (!selectedKB) return;
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = '.pdf,.txt,.md,.docx';
+                      input.onchange = async (e) => {
+                        const file = (e.target as HTMLInputElement).files?.[0];
+                        if (!file || !selectedKB) return;
+                        try {
+                          await knowledgeApi.uploadDocument(selectedKB.id, file);
+                          message.success(`文档「${file.name}」上传成功`);
+                          loadDocuments(selectedKB.id);
+                          loadKnowledgeBases();
+                        } catch (err: any) {
+                          message.error(err?.message || '上传失败');
+                        }
+                      };
+                      input.click();
+                    }}>上传文档</Button>
                     <span className="text-sm text-[var(--color-text-tertiary)]">支持 PDF、TXT、MD、DOCX 格式</span>
                   </div>
                   {documentsLoading ? <div className="flex justify-center py-8"><Spin /></div> :

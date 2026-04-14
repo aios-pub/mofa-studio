@@ -1,7 +1,9 @@
 /**
  * 对话 API 服务
- * 支持多 Provider (OpenAI/Claude/智谱等)
+ * 通过后端 /v1/chat/completions 代理调用 LLM Provider
  */
+
+import { apiClient } from "../api/apiClient";
 
 // API 配置
 export interface APIConfig {
@@ -55,134 +57,115 @@ export const providerConfigs: Record<string, { baseUrl: string; models: string[]
 
 /**
  * 聊天服务类
+ * 通过后端代理调用各种 LLM Provider
  */
 class ChatService {
   private config: APIConfig | null = null;
 
-  // 设置配置
   setConfig(config: APIConfig) {
     this.config = config;
   }
 
-  // 获取当前配置
   getConfig(): APIConfig | null {
     return this.config;
   }
 
   // 发送聊天请求 (非流式)
   async chat(request: ChatRequest): Promise<ChatResponse> {
-    if (!this.config) {
-      throw new Error('API not configured');
-    }
+    const body: Record<string, unknown> = {
+      messages: request.messages,
+      stream: false,
+    };
+    if (request.model) body.model = request.model;
+    if (request.temperature !== undefined) body.temperature = request.temperature;
+    if (request.maxTokens !== undefined) body.max_tokens = request.maxTokens;
 
-    // 根据不同 Provider 调用不同的 API
-    switch (this.config.provider) {
-      case 'openai':
-        return this.chatOpenAI(request);
-      case 'anthropic':
-        return this.chatAnthropic(request);
-      case 'zhipu':
-        return this.chatZhipu(request);
-      default:
-        return this.chatGeneric(request);
-    }
+    const data = await apiClient.post<{
+      id?: string;
+      choices?: Array<{ message?: { content?: string }; finish_reason?: string }>;
+      content?: string;
+      usage?: { prompt_tokens?: number; completion_tokens?: number };
+    }>("/v1/chat/completions", body);
+
+    return {
+      id: data.id ?? `chat-${Date.now()}`,
+      content: data.choices?.[0]?.message?.content ?? data.content ?? "",
+      tokens: data.usage
+        ? { input: data.usage.prompt_tokens ?? 0, output: data.usage.completion_tokens ?? 0 }
+        : undefined,
+      finishReason: data.choices?.[0]?.finish_reason ?? "stop",
+    };
   }
 
-  // 流式聊天
+  // 流式聊天 - 通过 SSE 读取后端流式响应
   async chatStream(
     request: ChatRequest,
-    onChunk: StreamCallback
+    onChunk: StreamCallback,
   ): Promise<ChatResponse> {
-    if (!this.config) {
-      throw new Error('API not configured');
+    const baseURL = apiClient.getBaseUrl?.() ?? "";
+    const url = `${baseURL}/v1/chat/completions`;
+
+    const body: Record<string, unknown> = {
+      messages: request.messages,
+      stream: true,
+    };
+    if (request.model) body.model = request.model;
+    if (request.temperature !== undefined) body.temperature = request.temperature;
+    if (request.maxTokens !== undefined) body.max_tokens = request.maxTokens;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok || !response.body) {
+      // 降级为非流式
+      return this.chat({ ...request, stream: false });
     }
 
-    // 模拟流式响应 (实际项目中调用真实 API)
-    return this.chatStreamMock(request, onChunk);
-  }
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullContent = "";
+    let chatId = `chat-${Date.now()}`;
 
-  // OpenAI API 调用
-  private async chatOpenAI(request: ChatRequest): Promise<ChatResponse> {
-    // TODO: 实现真实 API 调用
-    return this.chatMock(request);
-  }
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-  // Anthropic API 调用
-  private async chatAnthropic(request: ChatRequest): Promise<ChatResponse> {
-    // TODO: 实现真实 API 调用
-    return this.chatMock(request);
-  }
+        const text = decoder.decode(value, { stream: true });
+        const lines = text.split("\n");
 
-  // 智谱 API 调用
-  private async chatZhipu(request: ChatRequest): Promise<ChatResponse> {
-    // TODO: 实现真实 API 调用
-    return this.chatMock(request);
-  }
-
-  // 通用 API 调用 (兼容 OpenAI 格式)
-  private async chatGeneric(request: ChatRequest): Promise<ChatResponse> {
-    // TODO: 实现真实 API 调用
-    return this.chatMock(request);
-  }
-
-  // Mock 响应 (开发环境)
-  private async chatMock(request: ChatRequest): Promise<ChatResponse> {
-    await this.delay(500 + Math.random() * 500);
-
-    const lastMessage = request.messages[request.messages.length - 1];
-
-    return {
-      id: `chat-${Date.now()}`,
-      content: this.generateMockResponse(lastMessage.content),
-      tokens: {
-        input: lastMessage.content.length,
-        output: 100,
-      },
-      finishReason: 'stop',
-    };
-  }
-
-  // Mock 流式响应
-  private async chatStreamMock(
-    request: ChatRequest,
-    onChunk: StreamCallback
-  ): Promise<ChatResponse> {
-    const lastMessage = request.messages[request.messages.length - 1];
-    const fullResponse = this.generateMockResponse(lastMessage.content);
-
-    // 模拟逐字输出
-    const words = fullResponse.split('');
-    for (let i = 0; i < words.length; i++) {
-      await this.delay(20 + Math.random() * 30);
-      onChunk(words[i], false);
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6).trim();
+          if (data === "[DONE]") {
+            onChunk("", true);
+            continue;
+          }
+          try {
+            const parsed = JSON.parse(data);
+            const delta = parsed.choices?.[0]?.delta?.content ?? "";
+            if (delta) {
+              fullContent += delta;
+              onChunk(delta, false);
+            }
+            if (parsed.id) chatId = parsed.id;
+          } catch {
+            // 忽略解析错误，继续处理下一行
+          }
+        }
+      }
+    } finally {
+      reader.releaseLock();
     }
 
-    onChunk('', true);
-
     return {
-      id: `chat-${Date.now()}`,
-      content: fullResponse,
-      tokens: {
-        input: lastMessage.content.length,
-        output: fullResponse.length,
-      },
-      finishReason: 'stop',
+      id: chatId,
+      content: fullContent,
+      finishReason: "stop",
     };
-  }
-
-  // 生成 Mock 响应
-  private generateMockResponse(input: string): string {
-    const responses = [
-      `您的问题是："${input}"。这是一个模拟的 AI 响应。`,
-      `关于"${input}"，我来为您详细解答。这是一个开发环境的 Mock 响应，实际使用时需要配置真实的 API。`,
-      `收到您的消息："${input}"。正在为您分析中...\n\n这是一个测试响应，用于验证对话功能是否正常工作。`,
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
-  }
-
-  // 延迟
-  private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
 

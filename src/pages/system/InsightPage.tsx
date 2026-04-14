@@ -17,6 +17,7 @@ import {
   FallOutlined,
   BarChartOutlined,
 } from '@ant-design/icons';
+import type { UsageStats as ApiUsageStats, DailyStats as ApiDailyStats } from '@/services';
 import type { ColumnsType } from 'antd/es/table';
 import { PageHeader } from '@/components/common';
 import { analyticsApi, agentApi } from '@/services';
@@ -205,20 +206,20 @@ export default function InsightPage() {
         agentApi.getAll().catch(() => []),
       ]);
       if (overview) {
-        const s = overview as any;
+        const s = overview as ApiUsageStats;
         setStats({
-          totalConversations: s.total_conversations ?? s.totalConversations ?? 0,
+          totalConversations: s.total_conversations ?? 0,
           conversationsChange: 0,
-          avgResponseTime: s.avg_response_time ?? s.avgResponseTime ?? 0,
+          avgResponseTime: s.avg_response_time ?? 0,
           responseTimeChange: 0,
-          successRate: s.success_rate ?? s.successRate ?? 0,
+          successRate: s.success_rate ?? 0,
           successRateChange: 0,
-          totalTokens: s.total_tokens ?? s.totalTokens ?? 0,
+          totalTokens: s.total_tokens ?? 0,
           tokensChange: 0,
         });
       }
       if (Array.isArray(daily) && daily.length > 0) {
-        setDailyData(daily.map((d: any) => ({
+        setDailyData((daily as ApiDailyStats[]).map((d) => ({
           date: d.date?.slice(5) || '',
           value: d.conversations ?? 0,
         })));

@@ -38,6 +38,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import type { EvaluationMetric, EvaluationRecord, AgentEvaluationSummary } from '../../types/evaluation';
 import { evaluationApi } from '@/services';
+import type { Evaluation } from '@/services/real/evaluation';
 import { formatDate } from '@/utils';
 
 const { Title, Text } = Typography;
@@ -68,7 +69,7 @@ export default function EvaluationPage() {
       setMetrics(metricsData);
       setSummaries(summariesData);
       // Adapt Evaluation[] → EvaluationRecord[]
-      const records: EvaluationRecord[] = (evalsData as any[]).map((e: any) => ({
+      const records: EvaluationRecord[] = (evalsData as Evaluation[]).map((e) => ({
         id: e.id,
         agentId: e.agentId,
         conversationId: e.conversationId || '',
@@ -76,8 +77,8 @@ export default function EvaluationPage() {
           ? Object.entries(e.metrics).map(([metricId, value]) => ({ metricId, value: value as number }))
           : Array.isArray(e.metrics) ? e.metrics : [],
         overallScore: e.overallScore ?? 0,
-        evaluatedAt: e.createTime ?? e.createdAt ?? '',
-        evaluator: e.evaluator || 'auto',
+        evaluatedAt: (e.createTime instanceof Date ? e.createTime.toISOString() : e.createTime) ?? '',
+        evaluator: (e.evaluator === 'human' ? 'human' : 'auto') as 'auto' | 'human',
         evaluatorId: e.evaluatorId,
         evaluatorName: e.evaluator,
         feedback: e.feedback,

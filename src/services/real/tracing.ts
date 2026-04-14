@@ -1,39 +1,29 @@
 /**
  * Tracing 真实 API
  * 后端端点: /api/tracing/...
+ *
+ * 注意: Trace 类型已按后端 snake_case 格式定义，无需转换
  */
 
 import { apiClient } from "../api/apiClient";
 import type { Trace, TraceDetail, TracingStats, TracingFilter } from "@/types/tracing";
 
+// ==================== API 方法 ====================
+
 const tracingRealApi = {
-  /**
-   * 获取追踪列表
-   * apiClient 会自动解包 { code, msg, data } 响应，返回 data 字段
-   * 后端返回 { code: 0, msg: "OK", data: Trace[] }，解包后为 Trace[]
-   * 包装为 { data: Trace[] } 以保持与 mock API 一致
-   */
-  getTraces: async (params?: TracingFilter): Promise<{ data: Trace[] }> => {
+  async getTraces(params?: TracingFilter): Promise<{ data: Trace[] }> {
     const traces = await apiClient.get<Trace[]>("/api/tracing/traces", { params });
-    return { data: traces };
+    return { data: Array.isArray(traces) ? traces : [] };
   },
 
-  /**
-   * 获取单个追踪详情
-   */
-  getTrace: (traceId: string) =>
-    apiClient.get<TraceDetail | null>(`/api/tracing/traces/${traceId}`),
+  async getTrace(traceId: string): Promise<TraceDetail | null> {
+    return apiClient.get<TraceDetail | null>(`/api/tracing/traces/${traceId}`);
+  },
 
-  /**
-   * 获取追踪统计
-   */
-  getStats: () =>
+  getStats: (): Promise<TracingStats> =>
     apiClient.get<TracingStats>("/api/tracing/stats"),
 
-  /**
-   * 导出所有追踪数据
-   */
-  exportTraces: async (params?: TracingFilter, format: 'json' | 'csv' = 'json'): Promise<Blob> => {
+  async exportTraces(params?: TracingFilter, format: 'json' | 'csv' = 'json'): Promise<Blob> {
     const queryParams = params ? '&' + new URLSearchParams(params as Record<string, string>).toString() : '';
     const response = await fetch(
       `${apiClient.getBaseUrl()}/api/tracing/traces/export?format=${format}${queryParams}`,
@@ -46,10 +36,7 @@ const tracingRealApi = {
     return response.blob();
   },
 
-  /**
-   * 导出单个追踪数据
-   */
-  exportTrace: async (traceId: string, format: 'json' | 'csv' = 'json'): Promise<Blob> => {
+  async exportTrace(traceId: string, format: 'json' | 'csv' = 'json'): Promise<Blob> {
     const response = await fetch(
       `${apiClient.getBaseUrl()}/api/tracing/traces/${traceId}/export?format=${format}`,
       {
@@ -61,16 +48,12 @@ const tracingRealApi = {
     return response.blob();
   },
 
-  // 别名方法 (保持向后兼容)
-  getTracingStats: () =>
-    apiClient.get<TracingStats>("/api/tracing/stats"),
+  // 别名
+  getTracingStats: (): Promise<TracingStats> => tracingRealApi.getStats(),
 
-  // 兼容旧接口
-  getSpans: (traceId: string) =>
-    apiClient.get<TraceDetail | null>(`/api/tracing/traces/${traceId}`),
+  getSpans: (traceId: string): Promise<TraceDetail | null> => tracingRealApi.getTrace(traceId),
 
-  getSpan: (spanId: string) =>
-    apiClient.get<TraceDetail | null>(`/api/tracing/traces/${spanId}`),
+  getSpan: (spanId: string): Promise<TraceDetail | null> => tracingRealApi.getTrace(spanId),
 };
 
 export { tracingRealApi };

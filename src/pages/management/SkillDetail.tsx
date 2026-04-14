@@ -163,7 +163,7 @@ export function SkillDetail({
       <div className="grid grid-cols-4 gap-4 px-6 pb-4">
         <Card
           size="small"
-          variant={false}
+          variant="borderless"
           style={{ background: "var(--color-bg-secondary)" }}
         >
           <Statistic
@@ -178,7 +178,7 @@ export function SkillDetail({
         </Card>
         <Card
           size="small"
-          variant={false}
+          variant="borderless"
           style={{ background: "var(--color-bg-secondary)" }}
         >
           <Statistic
@@ -194,7 +194,7 @@ export function SkillDetail({
         </Card>
         <Card
           size="small"
-          variant={false}
+          variant="borderless"
           style={{ background: "var(--color-bg-secondary)" }}
         >
           <Statistic
@@ -211,7 +211,7 @@ export function SkillDetail({
         </Card>
         <Card
           size="small"
-          variant={false}
+          variant="borderless"
           style={{ background: "var(--color-bg-secondary)" }}
         >
           <Statistic

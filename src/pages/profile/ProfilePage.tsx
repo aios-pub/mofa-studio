@@ -5,7 +5,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { UserOutlined, LockOutlined, BellOutlined, SafetyOutlined, SaveOutlined } from '@ant-design/icons';
+import { message } from 'antd';
 import { useUserInfo, useUserActions } from '../../stores/useUserStore';
+import { organizationApi, authApi } from '@/services';
 
 type TabKey = 'profile' | 'security' | 'notifications';
 
@@ -36,23 +38,43 @@ export default function ProfilePage() {
     marketing: false,
   });
 
-  const handleSaveProfile = () => {
-    setUserInfo({
-      ...userInfo,
-      ...profileForm,
-    } as any);
-    // TODO: 调用 API 保存
-    alert(t('common.saveSuccess', '保存成功'));
+  const [saving, setSaving] = useState(false);
+
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    try {
+      await organizationApi.updateUser(userInfo.id, {
+        username: profileForm.username,
+        email: profileForm.email,
+        avatar: profileForm.avatar,
+      });
+      setUserInfo({
+        ...userInfo,
+        ...profileForm,
+      } as any);
+      message.success(t('common.saveSuccess', '保存成功'));
+    } catch (err: any) {
+      message.error(err?.message || t('common.saveFailed', '保存失败'));
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     if (securityForm.newPassword !== securityForm.confirmPassword) {
-      alert(t('auth.passwordMismatch', '两次输入的密码不一致'));
+      message.error(t('auth.passwordMismatch', '两次输入的密码不一致'));
       return;
     }
-    // TODO: 调用 API 修改密码
-    setSecurityForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    alert(t('common.saveSuccess', '密码修改成功'));
+    setSaving(true);
+    try {
+      await authApi.changePassword(securityForm.currentPassword, securityForm.newPassword);
+      setSecurityForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      message.success(t('common.saveSuccess', '密码修改成功'));
+    } catch (err: any) {
+      message.error(err?.message || t('common.saveFailed', '密码修改失败'));
+    } finally {
+      setSaving(false);
+    }
   };
 
   const tabs = [
@@ -167,10 +189,11 @@ export default function ProfilePage() {
                   <div className="pt-4">
                     <button
                       onClick={handleSaveProfile}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity"
+                      disabled={saving}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity disabled:opacity-50"
                     >
                       <SaveOutlined />
-                      {t('common.save', '保存')}
+                      {saving ? t('common.saving', '保存中...') : t('common.save', '保存')}
                     </button>
                   </div>
                 </div>
@@ -233,10 +256,11 @@ export default function ProfilePage() {
                   <div className="pt-4">
                     <button
                       onClick={handleChangePassword}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity"
+                      disabled={saving}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity disabled:opacity-50"
                     >
                       <LockOutlined />
-                      {t('profile.changePassword', '修改密码')}
+                      {saving ? t('common.saving', '修改中...') : t('profile.changePassword', '修改密码')}
                     </button>
                   </div>
                 </div>

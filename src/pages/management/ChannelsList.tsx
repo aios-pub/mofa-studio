@@ -94,7 +94,7 @@ export default function ChannelsListPage() {
     try {
       const result = await channelApi.testConnection(channel.id);
       if (result.success) {
-        message.success(`连接测试成功，延迟 ${result.latency}ms`);
+        message.success(`连接测试成功${result.model_count ? `，可用模型 ${result.model_count} 个` : ''}`);
       } else {
         message.error(`连接测试失败: ${result.message}`);
       }

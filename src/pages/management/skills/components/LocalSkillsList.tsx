@@ -3,13 +3,15 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Input, Button, Tag, Select, message, Collapse, Typography } from 'antd';
+import { Input, Button, Tag, Select, message, Collapse, Typography, Modal, Form } from 'antd';
 import {
   PlusOutlined,
   SearchOutlined,
   ThunderboltOutlined,
   PoweroffOutlined,
   FolderOutlined,
+  EditOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
 import type { Skill } from '@/services';
 import { skillApi } from '@/services';
@@ -29,6 +31,12 @@ export function LocalSkillsList({ selectedSkill, onSelectSkill, onRefresh }: Loc
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createForm] = Form.useForm();
+  const [editSkill, setEditSkill] = useState<Skill | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editForm] = Form.useForm();
 
   useEffect(() => {
     loadSkills();
@@ -61,6 +69,67 @@ export function LocalSkillsList({ selectedSkill, onSelectSkill, onRefresh }: Loc
       console.error('Failed to toggle skill:', error);
       message.error('操作失败');
     }
+  };
+
+  const handleCreateSkill = async () => {
+    try {
+      const values = await createForm.validateFields();
+      setCreateLoading(true);
+      const created = await skillApi.create({
+        name: values.name,
+        description: values.description || '',
+        category: values.category || 'general',
+        parameters: [],
+        enabled: true,
+      });
+      setSkills([created, ...skills]);
+      setShowCreateModal(false);
+      createForm.resetFields();
+      message.success('创建成功');
+    } catch (error: any) {
+      if (error?.errorFields) return; // form validation error
+      message.error(error?.message || '创建失败');
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
+  const handleEditSkill = async () => {
+    try {
+      const values = await editForm.validateFields();
+      setEditLoading(true);
+      const updated = await skillApi.update(editSkill!.id, {
+        name: values.name,
+        description: values.description || '',
+        category: values.category || 'general',
+      });
+      setSkills(skills.map((s) => (s.id === updated.id ? updated : s)));
+      if (selectedSkill?.id === updated.id) onSelectSkill(updated);
+      setEditSkill(null);
+      editForm.resetFields();
+      message.success('更新成功');
+    } catch (error: any) {
+      if (error?.errorFields) return;
+      message.error(error?.message || '更新失败');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const handleDeleteSkill = (skill: Skill) => {
+    Modal.confirm({
+      title: '确认删除',
+      content: `确定要删除 Skill「${skill.name}」吗？`,
+      okText: '删除',
+      cancelText: '取消',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        await skillApi.delete(skill.id);
+        setSkills(skills.filter((s) => s.id !== skill.id));
+        if (selectedSkill?.id === skill.id) onSelectSkill(null as any);
+        message.success('已删除');
+      },
+    });
   };
 
   // 获取所有分类
@@ -108,7 +177,7 @@ export function LocalSkillsList({ selectedSkill, onSelectSkill, onRefresh }: Loc
       <div className="p-4 space-y-3 border-b border-[var(--color-border)]">
         <div className="flex items-center justify-between">
           <Title level={5} style={{ margin: 0 }}>本地 Skills</Title>
-          <Button type="primary" icon={<PlusOutlined />} size="small" />
+          <Button type="primary" icon={<PlusOutlined />} size="small" onClick={() => setShowCreateModal(true)} />
         </div>
 
         {/* 搜索 */}
@@ -204,16 +273,39 @@ export function LocalSkillsList({ selectedSkill, onSelectSkill, onRefresh }: Loc
                           {Array.isArray(skill.parameters) ? skill.parameters.length : 0} 个参数 · {(skill.timeout ?? 0) / 1000}s 超时
                         </Text>
                       </div>
-                      <Button
-                        type="text"
-                        size="small"
-                        icon={<PoweroffOutlined />}
-                        className={`flex-shrink-0 ${skill.enabled ? 'text-green-500' : 'text-gray-400'}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleEnabled(skill);
-                        }}
-                      />
+                      <div className="flex flex-col gap-1 flex-shrink-0">
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<EditOutlined />}
+                          className="opacity-0 group-hover:opacity-100"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            editForm.setFieldsValue({ name: skill.name, description: skill.description, category: skill.category });
+                            setEditSkill(skill);
+                          }}
+                        />
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<DeleteOutlined />}
+                          className="opacity-0 group-hover:opacity-100 text-red-400"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteSkill(skill);
+                          }}
+                        />
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<PoweroffOutlined />}
+                          className={`${skill.enabled ? 'text-green-500' : 'text-gray-400'}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleEnabled(skill);
+                          }}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -222,6 +314,64 @@ export function LocalSkillsList({ selectedSkill, onSelectSkill, onRefresh }: Loc
           />
         )}
       </div>
+
+      <Modal
+        title="创建 Skill"
+        open={showCreateModal}
+        onCancel={() => { setShowCreateModal(false); createForm.resetFields(); }}
+        onOk={handleCreateSkill}
+        confirmLoading={createLoading}
+        okText="创建"
+        width={500}
+        destroyOnHidden
+      >
+        <Form form={createForm} layout="vertical" className="pt-2">
+          <Form.Item name="name" label="名称" rules={[{ required: true, message: '请输入名称' }]}>
+            <Input placeholder="输入 Skill 名称" />
+          </Form.Item>
+          <Form.Item name="description" label="描述">
+            <Input.TextArea placeholder="输入描述（可选）" rows={3} />
+          </Form.Item>
+          <Form.Item name="category" label="分类" initialValue="general">
+            <Select options={[
+              { label: '通用', value: 'general' },
+              { label: '数据处理', value: 'data' },
+              { label: '网络', value: 'network' },
+              { label: '文件', value: 'file' },
+              { label: '系统集成', value: 'integration' },
+            ]} />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="编辑 Skill"
+        open={!!editSkill}
+        onCancel={() => { setEditSkill(null); editForm.resetFields(); }}
+        onOk={handleEditSkill}
+        confirmLoading={editLoading}
+        okText="保存"
+        width={500}
+        destroyOnHidden
+      >
+        <Form form={editForm} layout="vertical" className="pt-2">
+          <Form.Item name="name" label="名称" rules={[{ required: true, message: '请输入名称' }]}>
+            <Input placeholder="输入 Skill 名称" />
+          </Form.Item>
+          <Form.Item name="description" label="描述">
+            <Input.TextArea placeholder="输入描述（可选）" rows={3} />
+          </Form.Item>
+          <Form.Item name="category" label="分类">
+            <Select options={[
+              { label: '通用', value: 'general' },
+              { label: '数据处理', value: 'data' },
+              { label: '网络', value: 'network' },
+              { label: '文件', value: 'file' },
+              { label: '系统集成', value: 'integration' },
+            ]} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }

@@ -147,7 +147,10 @@ export const agentRealApi = {
 
   /** 更新 Agent */
   async update(id: string, data: Partial<Agent>): Promise<Agent> {
-    const req = toBackend({ ...data, id }, true);
+    // 后端要求完整字段，先获取现有数据合并
+    const existing = await agentRealApi.getById(id);
+    const merged = { ...existing, ...data };
+    const req = toBackend(merged, true);
     const vo = await apiClient.post<BackendAgentVo>("/api/agent/update", req);
     return fromBackend(vo);
   },

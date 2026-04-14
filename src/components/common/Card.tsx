@@ -43,7 +43,7 @@ export const Card: React.FC<CardProps> = ({
         ${hoverStyles}
         ${className}
       `.trim()}
-      variant={false}
+      variant="borderless"
       {...props}
     >
       {children}

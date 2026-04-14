@@ -5,6 +5,7 @@
 // 导出 API 客户端工具
 export { apiClient } from "../api";
 export { createRestApi } from "./base";
+export { parseDate, toSnakeCase, toCamelCase, convertKeys, mapToCamel, mapToSnake } from "./fieldMapper";
 
 // 导出各服务
 export { agentRealApi } from "./agents";

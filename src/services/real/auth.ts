@@ -74,6 +74,24 @@ const authRealApi = {
    */
   getCurrentUser: (): Promise<UserInfo> =>
     apiClient.post<UserInfo>("/api/auth/current_user"),
+
+  /**
+   * 重置密码
+   */
+  resetPassword: (newPassword: string, token?: string): Promise<void> =>
+    apiClient.post("/api/auth/reset_password", {
+      token: token || "",
+      new_password: newPassword,
+    }),
+
+  /**
+   * 修改密码（需当前密码验证）
+   */
+  changePassword: (currentPassword: string, newPassword: string): Promise<void> =>
+    apiClient.post("/api/auth/reset_password", {
+      current_password: currentPassword,
+      new_password: newPassword,
+    }),
 };
 
 export default authRealApi;

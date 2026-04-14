@@ -17,6 +17,11 @@ import {
   Space,
   Tooltip,
   Typography,
+  Modal,
+  Form,
+  InputNumber,
+  Input,
+  message,
 } from 'antd';
 import {
   StarOutlined,
@@ -27,6 +32,8 @@ import {
   MinusOutlined,
   FilterOutlined,
   ReloadOutlined,
+  PlusOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { EvaluationMetric, EvaluationRecord, AgentEvaluationSummary } from '../../types/evaluation';
@@ -44,6 +51,9 @@ export default function EvaluationPage() {
   const [selectedAgent, setSelectedAgent] = useState<string>('');
   const [agents, setAgents] = useState<Array<{ id: string; name: string }>>([]);
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createForm] = Form.useForm();
 
   // 加载数据
   const loadData = useCallback(async () => {
@@ -57,7 +67,22 @@ export default function EvaluationPage() {
       ]);
       setMetrics(metricsData);
       setSummaries(summariesData);
-      setEvaluations(evalsData.data);
+      // Adapt Evaluation[] → EvaluationRecord[]
+      const records: EvaluationRecord[] = (evalsData as any[]).map((e: any) => ({
+        id: e.id,
+        agentId: e.agentId,
+        conversationId: e.conversationId || '',
+        metrics: e.metrics && typeof e.metrics === 'object' && !Array.isArray(e.metrics)
+          ? Object.entries(e.metrics).map(([metricId, value]) => ({ metricId, value: value as number }))
+          : Array.isArray(e.metrics) ? e.metrics : [],
+        overallScore: e.overallScore ?? 0,
+        evaluatedAt: e.createTime ?? e.createdAt ?? '',
+        evaluator: e.evaluator || 'auto',
+        evaluatorId: e.evaluatorId,
+        evaluatorName: e.evaluator,
+        feedback: e.feedback,
+      }));
+      setEvaluations(records);
       setAgents(agentsData);
     } catch (error) {
       console.error('Failed to load evaluation data:', error);
@@ -69,6 +94,45 @@ export default function EvaluationPage() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // 创建评估
+  const handleCreateEvaluation = async () => {
+    try {
+      const values = await createForm.validateFields();
+      setCreateLoading(true);
+      await evaluationApi.create({
+        agentId: values.agentId,
+        overallScore: values.overallScore,
+        feedback: values.feedback || '',
+        metrics: {},
+      });
+      setShowCreateModal(false);
+      createForm.resetFields();
+      message.success(t('common.createSuccess', '创建成功'));
+      loadData();
+    } catch (error: any) {
+      if (error?.errorFields) return;
+      message.error(error?.message || t('common.createFailed', '创建失败'));
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
+  // 删除评估
+  const handleDeleteEvaluation = (record: EvaluationRecord) => {
+    Modal.confirm({
+      title: t('evaluation.confirmDelete', '确认删除'),
+      content: t('evaluation.deleteContent', '确定要删除该评估记录吗？'),
+      okText: t('common.delete', '删除'),
+      okButtonProps: { danger: true },
+      cancelText: t('common.cancel', '取消'),
+      onOk: async () => {
+        await evaluationApi.delete(record.id);
+        setEvaluations(evaluations.filter((e) => e.id !== record.id));
+        message.success(t('common.deleteSuccess', '已删除'));
+      },
+    });
+  };
 
   // 获取趋势图标
   const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
@@ -164,6 +228,20 @@ export default function EvaluationPage() {
         )
       ),
     },
+    {
+      title: t('common.actions', '操作'),
+      key: 'actions',
+      width: 80,
+      render: (_: unknown, record: EvaluationRecord) => (
+        <Button
+          type="text"
+          danger
+          size="small"
+          icon={<DeleteOutlined />}
+          onClick={() => handleDeleteEvaluation(record)}
+        />
+      ),
+    },
   ];
 
   // 展开行渲染
@@ -215,14 +293,21 @@ export default function EvaluationPage() {
               </Text>
             </div>
           </Space>
-          <Button
-            type="primary"
-            icon={<ReloadOutlined spin={loading} />}
-            onClick={loadData}
-            loading={loading}
-          >
-            {t('common.refresh', '刷新')}
-          </Button>
+          <Space>
+            <Button
+              icon={<PlusOutlined />}
+              onClick={() => setShowCreateModal(true)}
+            >
+              {t('evaluation.createEvaluation', '新建评估')}
+            </Button>
+            <Button
+              icon={<ReloadOutlined spin={loading} />}
+              onClick={loadData}
+              loading={loading}
+            >
+              {t('common.refresh', '刷新')}
+            </Button>
+          </Space>
         </div>
       </Card>
 
@@ -306,6 +391,33 @@ export default function EvaluationPage() {
           }}
         />
       </Card>
+
+      {/* 创建评估 Modal */}
+      <Modal
+        title={t('evaluation.createEvaluation', '新建评估')}
+        open={showCreateModal}
+        onCancel={() => { setShowCreateModal(false); createForm.resetFields(); }}
+        onOk={handleCreateEvaluation}
+        confirmLoading={createLoading}
+        okText={t('common.create', '创建')}
+        width={500}
+        destroyOnHidden
+      >
+        <Form form={createForm} layout="vertical" className="pt-2">
+          <Form.Item name="agentId" label={t('evaluation.agent', 'Agent')} rules={[{ required: true, message: '请选择 Agent' }]}>
+            <Select
+              placeholder={t('evaluation.selectAgent', '选择 Agent')}
+              options={agents.map((a) => ({ label: a.name, value: a.id }))}
+            />
+          </Form.Item>
+          <Form.Item name="overallScore" label={t('evaluation.overallScore', '综合评分')} rules={[{ required: true, message: '请输入评分' }]}>
+            <InputNumber min={0} max={10} step={0.1} style={{ width: '100%' }} placeholder="0 - 10" />
+          </Form.Item>
+          <Form.Item name="feedback" label={t('evaluation.feedback', '反馈')}>
+            <Input.TextArea rows={3} placeholder={t('evaluation.feedbackPlaceholder', '输入评估反馈（可选）')} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }

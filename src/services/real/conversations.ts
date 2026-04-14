@@ -1,36 +1,114 @@
 /**
  * Conversation 真实 API
  * 后端端点: /api/conversation/...
+ *
+ * 后端字段映射 (snake_case → camelCase):
+ *   agent_id       → agentId
+ *   user_id        → userId
+ *   total_tokens   → totalTokens
+ *   create_time    → createdAt
+ *   update_time    → updatedAt
  */
 
-import { createActionApi } from "./base";
 import { apiClient } from "../api/apiClient";
+import { parseDate } from "./fieldMapper";
 import type { Conversation, Message } from "@/types";
 
-const baseApi = createActionApi<Conversation>("/api/conversation", "list");
+// ==================== 后端原始类型 ====================
+
+interface BackendConversation {
+  id: string;
+  agent_id: string;
+  user_id: string;
+  title?: string;
+  total_tokens: number;
+  status?: string;
+  tenant_id?: string;
+  create_time: string;
+  update_time: string;
+}
+
+// ==================== 字段映射 ====================
+
+function mapConversation(raw: BackendConversation): Conversation {
+  return {
+    id: raw.id,
+    agentId: raw.agent_id,
+    title: raw.title || "新对话",
+    messages: [],
+    totalTokens: raw.total_tokens ?? 0,
+    createdAt: parseDate(raw.create_time) ?? new Date(),
+    updatedAt: parseDate(raw.update_time) ?? new Date(),
+  };
+}
+
+// ==================== API 方法 ====================
 
 export const conversationRealApi = {
-  ...baseApi,
+  /** 获取所有会话 */
+  async getAll(): Promise<Conversation[]> {
+    const data = await apiClient.get<BackendConversation[]>("/api/conversation/list");
+    if (!Array.isArray(data)) return [];
+    return data.map(mapConversation);
+  },
 
+  /** 获取单个会话 */
+  async getById(id: string): Promise<Conversation | undefined> {
+    const raw = await apiClient.get<BackendConversation>(`/api/conversation/${id}`);
+    return mapConversation(raw);
+  },
+
+  /** 按 user_id 获取会话 */
   async getByUser(userId: string): Promise<Conversation[]> {
-    return apiClient.get<Conversation[]>(`/api/conversation/by-user?user_id=${userId}`);
+    const data = await apiClient.get<BackendConversation[]>(`/api/conversation/by-user?user_id=${userId}`);
+    if (!Array.isArray(data)) return [];
+    return data.map(mapConversation);
   },
 
+  /** 按 agent_id 获取会话 */
   async getByAgent(agentId: string): Promise<Conversation[]> {
-    return apiClient.get<Conversation[]>(`/api/conversation/by-agent?agent_id=${agentId}`);
+    const data = await apiClient.get<BackendConversation[]>(`/api/conversation/by-agent?agent_id=${agentId}`);
+    if (!Array.isArray(data)) return [];
+    return data.map(mapConversation);
   },
 
+  /** 创建会话 */
+  async create(data: { agentId: string; title?: string }): Promise<Conversation> {
+    const body = {
+      agent_id: data.agentId,
+      title: data.title || "新对话",
+    };
+    const raw = await apiClient.post<BackendConversation>("/api/conversation/create", body);
+    return mapConversation(raw);
+  },
+
+  /** 更新会话 */
+  async update(id: string, data: Partial<Conversation>): Promise<Conversation> {
+    const existing = await conversationRealApi.getById(id);
+    const merged = { ...(existing || {}), ...data };
+    const body: Record<string, unknown> = { id };
+    if (merged.title !== undefined) body.title = merged.title;
+    if (merged.agentId !== undefined) body.agent_id = merged.agentId;
+    const raw = await apiClient.post<BackendConversation>("/api/conversation/update", body);
+    return mapConversation(raw);
+  },
+
+  /** 删除会话 */
+  async delete(id: string): Promise<boolean> {
+    await apiClient.delete(`/api/conversation/delete/${id}`);
+    return true;
+  },
+
+  /** 获取会话消息 - 后端暂无单独消息列表端点 */
   async getMessages(_conversationId: string): Promise<Message[]> {
-    // 后端可能没有单独的消息列表端点，暂时返回空数组
-    // 实际实现需要根据后端API调整
     return [];
   },
 
+  /** 发送消息 */
   async sendMessage(
     _conversationId: string,
-    content: string
+    content: string,
   ): Promise<{ userMessage: Message; assistantMessage: Message }> {
-    // 使用 chat completions API
     return apiClient.post("/v1/chat/completions", {
       messages: [{ role: "user", content }],
     });

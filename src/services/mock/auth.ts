@@ -165,6 +165,20 @@ export const authApi = {
       refreshToken: generateMockRefreshToken(userId),
     };
   },
+
+  /**
+   * 重置密码
+   */
+  resetPassword: async (_newPassword: string, _token?: string): Promise<void> => {
+    await delay(300);
+  },
+
+  /**
+   * 修改密码
+   */
+  changePassword: async (_currentPassword: string, _newPassword: string): Promise<void> => {
+    await delay(300);
+  },
 };
 
 export default authApi;

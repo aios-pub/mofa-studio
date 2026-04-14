@@ -31,6 +31,10 @@ export default function KnowledgeBaseListPage() {
   const [loading, setLoading] = useState(true);
   const [selectedKB, setSelectedKB] = useState<KnowledgeBase | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editKB, setEditKB] = useState<KnowledgeBase | null>(null);
+  const [formName, setFormName] = useState('');
+  const [formDesc, setFormDesc] = useState('');
+  const [formSubmitting, setFormSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<'documents' | 'search' | 'settings'>('documents');
   const [documents, setDocuments] = useState<Document[]>([]);
   const [documentsLoading, setDocumentsLoading] = useState(false);
@@ -94,8 +98,56 @@ export default function KnowledgeBaseListPage() {
     message.success('已删除');
   };
 
+  const handleCreateKB = async () => {
+    if (!formName.trim()) { message.warning('请输入知识库名称'); return; }
+    setFormSubmitting(true);
+    try {
+      const created = await knowledgeApi.createKnowledgeBase({ name: formName, description: formDesc });
+      setKnowledgeBases([created, ...knowledgeBases]);
+      setShowCreateModal(false);
+      setFormName('');
+      setFormDesc('');
+      message.success('创建成功');
+    } catch (e: any) {
+      message.error(e?.message || '创建失败');
+    } finally {
+      setFormSubmitting(false);
+    }
+  };
+
+  const handleEditKB = async () => {
+    if (!editKB || !formName.trim()) { message.warning('请输入知识库名称'); return; }
+    setFormSubmitting(true);
+    try {
+      const updated = await knowledgeApi.updateKnowledgeBase(editKB.id, { name: formName, description: formDesc });
+      setKnowledgeBases(knowledgeBases.map(k => k.id === updated.id ? { ...k, ...updated } : k));
+      if (selectedKB?.id === updated.id) setSelectedKB({ ...selectedKB, ...updated });
+      setEditKB(null);
+      setFormName('');
+      setFormDesc('');
+      message.success('更新成功');
+    } catch (e: any) {
+      message.error(e?.message || '更新失败');
+    } finally {
+      setFormSubmitting(false);
+    }
+  };
+
+  const openEditModal = (kb: KnowledgeBase) => {
+    setFormName(kb.name);
+    setFormDesc(kb.description || '');
+    setEditKB(kb);
+  };
+
+  const closeFormModal = () => {
+    setShowCreateModal(false);
+    setEditKB(null);
+    setFormName('');
+    setFormDesc('');
+  };
+
   const getMenuItems = (kb: KnowledgeBase) => [
-    { key: 'edit', label: '编辑', icon: <EditOutlined />, onClick: () => setSelectedKB(kb) },
+    { key: 'edit', label: '编辑', icon: <EditOutlined />, onClick: () => openEditModal(kb) },
     { key: 'toggle', label: kb.enabled ? '禁用' : '启用', onClick: () => handleToggleEnabled(kb) },
     { type: 'divider' as const },
     { key: 'delete', label: '删除', icon: <DeleteOutlined />, danger: true, onClick: () => handleDelete(kb) },
@@ -234,8 +286,29 @@ export default function KnowledgeBaseListPage() {
           </div>
         )}
       </div>
-      <Modal title="创建知识库" open={showCreateModal} onCancel={() => setShowCreateModal(false)} footer={null} width={600} destroyOnHidden>
-        <div className="p-4 text-center text-[var(--color-text-secondary)]">知识库创建功能开发中...</div>
+      <Modal title="创建知识库" open={showCreateModal} onCancel={closeFormModal} onOk={handleCreateKB} confirmLoading={formSubmitting} okText="创建" width={500} destroyOnHidden>
+        <div className="space-y-4 py-2">
+          <div>
+            <label className="block text-sm font-medium mb-1">名称</label>
+            <Input placeholder="输入知识库名称" value={formName} onChange={e => setFormName(e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">描述</label>
+            <Input.TextArea placeholder="输入知识库描述（可选）" value={formDesc} onChange={e => setFormDesc(e.target.value)} rows={3} />
+          </div>
+        </div>
+      </Modal>
+      <Modal title="编辑知识库" open={!!editKB} onCancel={closeFormModal} onOk={handleEditKB} confirmLoading={formSubmitting} okText="保存" width={500} destroyOnHidden>
+        <div className="space-y-4 py-2">
+          <div>
+            <label className="block text-sm font-medium mb-1">名称</label>
+            <Input placeholder="输入知识库名称" value={formName} onChange={e => setFormName(e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">描述</label>
+            <Input.TextArea placeholder="输入知识库描述（可选）" value={formDesc} onChange={e => setFormDesc(e.target.value)} rows={3} />
+          </div>
+        </div>
       </Modal>
     </div>
   );

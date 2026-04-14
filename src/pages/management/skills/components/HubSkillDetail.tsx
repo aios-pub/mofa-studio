@@ -164,7 +164,7 @@ export function HubSkillDetail({
       <div className="grid grid-cols-4 gap-4 p-6 pb-4">
         <Card
           size="small"
-          variant={false}
+          variant="borderless"
           style={{ background: "var(--color-bg-secondary)" }}
         >
           <Statistic
@@ -179,7 +179,7 @@ export function HubSkillDetail({
         </Card>
         <Card
           size="small"
-          variant={false}
+          variant="borderless"
           style={{ background: "var(--color-bg-secondary)" }}
         >
           <Statistic
@@ -212,7 +212,7 @@ export function HubSkillDetail({
         </Card>
         <Card
           size="small"
-          variant={false}
+          variant="borderless"
           style={{ background: "var(--color-bg-secondary)" }}
         >
           <Statistic

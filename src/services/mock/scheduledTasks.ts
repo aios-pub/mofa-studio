@@ -2,8 +2,8 @@
  * Scheduled Tasks Mock 数据和 API
  */
 
-// 任务类型
-export type TaskType = "agent_test" | "report" | "cleanup" | "backup" | "sync";
+// 任务类型（动态，由后端注册的 handler 决定）
+export type TaskType = string;
 
 // 任务状态
 export type TaskStatus = "enabled" | "disabled";
@@ -44,24 +44,27 @@ export interface ScheduledTask {
 
 // 任务配置
 export interface TaskConfig {
+  // Agent Loop 调度任务（调度单位 = Agent）
+  agentId?: string;
+  prompt?: string;
+  maxIterations?: number;
+  timeoutSeconds?: number;
+
   // Agent 测试任务
   agentIds?: string[];
   testSetId?: string;
 
-  // 报告任务
-  reportType?: "usage" | "performance" | "error";
-  recipients?: string[];
+  // 通用扩展字段
+  [key: string]: unknown;
+}
 
-  // 清理任务
-  retentionDays?: number;
-  cleanupTarget?: "logs" | "conversations" | "temp_files";
-
-  // 备份任务
-  backupTarget?: "database" | "configs" | "all";
-  backupPath?: string;
-
-  // 同步任务
-  syncTarget?: "providers" | "models" | "users";
+// 任务类型描述符 — 由后端注册 handler 时提供
+export interface TaskTypeDescriptor {
+  taskType: string;
+  label: string;
+  description: string;
+  icon: string;
+  configSchema?: Record<string, unknown>;
 }
 
 // 执行记录
@@ -83,30 +86,15 @@ export const taskTypeConfig: Record<
   TaskType,
   { label: string; description: string; icon: string }
 > = {
+  agent_loop: {
+    label: "Agent 调度",
+    description: "定时调度 Agent 自主执行任务",
+    icon: "🔁",
+  },
   agent_test: {
     label: "Agent 测试",
     description: "定期运行 Agent 测试集",
     icon: "🧪",
-  },
-  report: {
-    label: "报告生成",
-    description: "定期生成统计报告",
-    icon: "📊",
-  },
-  cleanup: {
-    label: "数据清理",
-    description: "定期清理过期数据",
-    icon: "🗑️",
-  },
-  backup: {
-    label: "数据备份",
-    description: "定期备份系统数据",
-    icon: "💾",
-  },
-  sync: {
-    label: "数据同步",
-    description: "定期同步外部数据",
-    icon: "🔄",
   },
 };
 
@@ -573,14 +561,13 @@ export const scheduledTaskApi = {
   },
 
   // 获取任务类型列表
-  async getTaskTypes(): Promise<
-    { type: TaskType; label: string; description: string }[]
-  > {
+  async getTaskTypes(): Promise<TaskTypeDescriptor[]> {
     await delay(100);
     return Object.entries(taskTypeConfig).map(([type, config]) => ({
-      type: type as TaskType,
+      taskType: type,
       label: config.label,
       description: config.description,
+      icon: config.icon,
     }));
   },
 };

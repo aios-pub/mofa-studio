@@ -17,16 +17,20 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
 } from '@ant-design/icons';
-import type { ScheduledTask, TaskType, TaskStatus, TaskExecution } from '@/services';
+import type { ScheduledTask, TaskType, TaskStatus, TaskExecution, TaskTypeDescriptor } from '@/services';
 import { scheduledTaskApi, taskTypeConfig, parseCronToText } from '@/services';
-
-// 安全获取任务类型配置（后端返回的 task_type 可能不在预定义列表中）
-function getTaskTypeConfig(type: string) {
-  return taskTypeConfig[type as TaskType] ?? { label: type, description: '', icon: '📋' };
-}
 import { formatDate } from '@/utils';
 import TaskDetail from './TaskDetail';
 import TaskFormModal from './TaskFormModal';
+
+// 合并后端动态类型 + 前端静态 fallback 的配置
+function buildTypeConfig(dynamicTypes: TaskTypeDescriptor[]) {
+  const merged: Record<string, { label: string; description: string; icon: string }> = { ...taskTypeConfig };
+  for (const t of dynamicTypes) {
+    merged[t.taskType] = { label: t.label, description: t.description, icon: t.icon };
+  }
+  return merged;
+}
 
 export default function TasksTab({ initialFilterType, onFilterTypeConsumed }: {
   initialFilterType?: TaskType | '';
@@ -34,6 +38,7 @@ export default function TasksTab({ initialFilterType, onFilterTypeConsumed }: {
 }) {
   const [tasks, setTasks] = useState<ScheduledTask[]>([]);
   const [executions, setExecutions] = useState<TaskExecution[]>([]);
+  const [taskTypes, setTaskTypes] = useState<TaskTypeDescriptor[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<TaskType | ''>('');
@@ -42,18 +47,23 @@ export default function TasksTab({ initialFilterType, onFilterTypeConsumed }: {
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<ScheduledTask | null>(null);
 
+  // 合并后的类型配置
+  const mergedConfig = useMemo(() => buildTypeConfig(taskTypes), [taskTypes]);
+
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [taskList, execList] = await Promise.all([
+      const [taskList, execList, types] = await Promise.all([
         scheduledTaskApi.getTasks({
           type: filterType || undefined,
           search: searchQuery || undefined,
         }),
         scheduledTaskApi.getExecutions({ limit: 100 }),
+        scheduledTaskApi.getTaskTypes(),
       ]);
       setTasks(taskList);
       setExecutions(execList);
+      setTaskTypes(types);
     } catch (error) {
       console.error('Failed to load:', error);
     } finally {
@@ -122,7 +132,7 @@ export default function TasksTab({ initialFilterType, onFilterTypeConsumed }: {
       sorter: (a, b) => a.name.localeCompare(b.name),
       render: (name: string, record: ScheduledTask) => (
         <div className="flex items-center gap-2">
-          <span>{getTaskTypeConfig(record.type).icon}</span>
+          <span>{(mergedConfig[record.type] ?? { icon: '📋' }).icon}</span>
           <span className="font-medium text-[var(--color-text-primary)]">{name}</span>
         </div>
       ),
@@ -244,7 +254,7 @@ export default function TasksTab({ initialFilterType, onFilterTypeConsumed }: {
           allowClear
           style={{ width: 160 }}
           size="small"
-          options={Object.entries(taskTypeConfig).map(([type, cfg]) => ({
+          options={Object.entries(mergedConfig).map(([type, cfg]) => ({
             label: `${cfg.icon} ${cfg.label}`,
             value: type,
           }))}
@@ -315,6 +325,7 @@ export default function TasksTab({ initialFilterType, onFilterTypeConsumed }: {
       {(showModal || editingTask) && (
         <TaskFormModal
           task={editingTask}
+          taskTypes={taskTypes}
           onClose={() => { setShowModal(false); setEditingTask(null); }}
           onSave={handleSave}
         />

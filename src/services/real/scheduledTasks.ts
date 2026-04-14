@@ -28,6 +28,7 @@ import type {
   TaskStatus,
   ExecutionStatus,
   TaskConfig,
+  TaskTypeDescriptor,
 } from "../mock/scheduledTasks";
 
 // ==================== 后端原始类型 ====================
@@ -150,6 +151,9 @@ function mapExecutionFromBackend(raw: BackendExecution): TaskExecution {
 }
 
 // ==================== API 接口 ====================
+
+// 任务类型缓存（仅在页面生命周期内有效，类型随服务器注册而定）
+let cachedTaskTypes: TaskTypeDescriptor[] | null = null;
 
 const scheduledTaskRealApi = {
   async getTasks(filter?: {
@@ -283,6 +287,20 @@ const scheduledTaskRealApi = {
       successRate: executions.length > 0 ? (successCount / executions.length) * 100 : 0,
       executionsToday: todayExecutions.length,
     };
+  },
+
+  async getTaskTypes(): Promise<TaskTypeDescriptor[]> {
+    if (cachedTaskTypes) return cachedTaskTypes;
+    const rawList = await apiClient.get<Record<string, unknown>[]>("/api/task/types");
+    const mapped: TaskTypeDescriptor[] = rawList.map((raw) => ({
+      taskType: (raw.task_type ?? raw.taskType) as string,
+      label: (raw.label ?? "") as string,
+      description: (raw.description ?? "") as string,
+      icon: (raw.icon ?? "") as string,
+      configSchema: (raw.config_schema ?? raw.configSchema) as Record<string, unknown> | undefined,
+    }));
+    cachedTaskTypes = mapped;
+    return mapped;
   },
 };
 

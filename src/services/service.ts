@@ -158,7 +158,7 @@ export { type Department, type User, type User as OrgUser } from "./mock/organiz
 export { type AuditLog, type AuditAction } from "./mock/auditLogs";
 export { mockPermissionTemplates } from "./mock/permissions";
 export { defaultFeaturePermissions, featurePermissionDefinitions, type PermissionConfig, type PermissionTemplate, type PermissionAuditLog, type FeaturePermissions } from "./real/permissions";
-export { type ScheduledTask, type TaskExecution, type TaskType, type TaskStatus, type ExecutionStatus, type TaskConfig, taskTypeConfig, cronPresets, parseCronToText } from "./mock/scheduledTasks";
+export { type ScheduledTask, type TaskExecution, type TaskType, type TaskStatus, type ExecutionStatus, type TaskConfig, type TaskTypeDescriptor, taskTypeConfig, cronPresets, parseCronToText } from "./mock/scheduledTasks";
 export { type ApiKey, type ApiKeyStatus, type ResourceQuota, type ResourceUsageStats, type QuotaLimits } from "./mock/resources";
 
 // 重新导出 isMockEnabled 供外部使用

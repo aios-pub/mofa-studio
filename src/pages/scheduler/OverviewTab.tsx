@@ -10,12 +10,33 @@ import {
   ClockCircleOutlined,
   ThunderboltOutlined,
 } from '@ant-design/icons';
-import type { ScheduledTask, TaskType } from '@/services';
+import type { ScheduledTask, TaskType, TaskExecution, TaskTypeDescriptor } from '@/services';
 import { scheduledTaskApi, taskTypeConfig } from '@/services';
 
-// 安全获取任务类型配置
-function getTaskTypeConfig(type: string) {
-  return taskTypeConfig[type as TaskType] ?? { label: type, description: '', icon: '📋' };
+// 合并后端动态类型 + 前端静态 fallback
+function getTaskTypeConfig(type: string, dynamicTypes: TaskTypeDescriptor[]) {
+  const dynamic = dynamicTypes.find((t) => t.taskType === type);
+  if (dynamic) return { label: dynamic.label, description: dynamic.description, icon: dynamic.icon };
+  return taskTypeConfig[type as keyof typeof taskTypeConfig] ?? { label: type, description: '', icon: '📋' };
+}
+
+// 按日期分组执行记录，返回最近 N 天的执行数量
+function groupExecutionsByDay(executions: TaskExecution[], days: number): number[] {
+  const result: number[] = [];
+  const now = new Date();
+  for (let i = days - 1; i >= 0; i--) {
+    const dayStart = new Date(now);
+    dayStart.setDate(dayStart.getDate() - i);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayEnd.getDate() + 1);
+    const count = executions.filter((e) => {
+      const d = new Date(e.startedAt);
+      return d >= dayStart && d < dayEnd;
+    }).length;
+    result.push(count);
+  }
+  return result;
 }
 
 // 迷你柱状图组件（参考 apalis-board stats_card / queue_card 活动图）
@@ -67,23 +88,19 @@ function StatCard({ title, value, subtitle, icon, data, color }: {
 }
 
 // 任务类型卡片（参考 apalis-board queue_card）
-function TypeCard({ type, tasks, onClick }: {
+function TypeCard({ type, tasks, activityData, dynamicTypes, onClick }: {
   type: string;
   tasks: ScheduledTask[];
+  activityData: number[];
+  dynamicTypes: TaskTypeDescriptor[];
   onClick: () => void;
 }) {
-  const config = getTaskTypeConfig(type);
+  const config = getTaskTypeConfig(type, dynamicTypes);
   const enabled = tasks.filter((t) => t.status === 'enabled').length;
   const totalSuccess = tasks.reduce((s, t) => s + t.successCount, 0);
   const totalFailure = tasks.reduce((s, t) => s + t.failureCount, 0);
   const rate = totalSuccess + totalFailure > 0
     ? (totalSuccess / (totalSuccess + totalFailure)) * 100 : null;
-
-  // 模拟 7 天活动数据
-  const activity = useMemo(() =>
-    Array.from({ length: 7 }, () => Math.floor(Math.random() * 10)),
-    [],
-  );
 
   return (
     <div
@@ -107,7 +124,7 @@ function TypeCard({ type, tasks, onClick }: {
             <div>成功率: <span className={rate >= 90 ? 'text-green-500' : rate >= 70 ? 'text-orange-500' : 'text-red-500'}>{rate.toFixed(0)}%</span></div>
           )}
         </div>
-        <MiniBarChart data={activity} height="h-10" barWidth="w-2.5" color="bg-gray-500" />
+        <MiniBarChart data={activityData} height="h-10" barWidth="w-2.5" color="bg-gray-500" />
       </div>
 
       <p className="text-xs text-[var(--color-text-tertiary)]">{config.description}</p>
@@ -121,13 +138,21 @@ interface Props {
 
 export default function OverviewTab({ onNavigateToTasks }: Props) {
   const [tasks, setTasks] = useState<ScheduledTask[]>([]);
+  const [executions, setExecutions] = useState<TaskExecution[]>([]);
+  const [taskTypes, setTaskTypes] = useState<TaskTypeDescriptor[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await scheduledTaskApi.getTasks();
-      setTasks(data);
+      const [taskList, execList, types] = await Promise.all([
+        scheduledTaskApi.getTasks(),
+        scheduledTaskApi.getExecutions({ limit: 200 }),
+        scheduledTaskApi.getTaskTypes(),
+      ]);
+      setTasks(taskList);
+      setExecutions(execList);
+      setTaskTypes(types);
     } catch (error) {
       console.error('Failed to load:', error);
     } finally {
@@ -155,8 +180,23 @@ export default function OverviewTab({ onNavigateToTasks }: Props) {
     return map;
   }, [tasks]);
 
-  // 模拟统计活动数据
-  const statsActivity = useMemo(() => Array.from({ length: 10 }, () => Math.floor(Math.random() * 20)), []);
+  // 真实活动数据：最近 10 天执行次数
+  const statsActivity = useMemo(() => groupExecutionsByDay(executions, 10), [executions]);
+
+  // 按任务类型分组的活动数据
+  const activityByType = useMemo(() => {
+    const map: Record<string, number[]> = {};
+    // 建立 taskId → type 的映射
+    const taskTypeMap: Record<string, string> = {};
+    tasks.forEach((t) => { taskTypeMap[t.id] = t.type; });
+
+    for (const type of Object.keys(tasksByType)) {
+      const typeTaskIds = new Set(tasksByType[type].map((t) => t.id));
+      const typeExecs = executions.filter((e) => typeTaskIds.has(e.taskId));
+      map[type] = groupExecutionsByDay(typeExecs, 7);
+    }
+    return map;
+  }, [tasks, tasksByType, executions]);
 
   if (loading) {
     return (
@@ -187,20 +227,20 @@ export default function OverviewTab({ onNavigateToTasks }: Props) {
             value={stats.enabled}
             color="text-green-500"
             icon={<CheckCircleOutlined />}
-            data={statsActivity.map((v) => Math.floor(v * 0.7))}
+            data={statsActivity}
           />
           <StatCard
             title="已禁用"
             value={stats.disabled}
             icon={<CloseCircleOutlined />}
-            data={statsActivity.map((v) => Math.floor(v * 0.3))}
+            data={statsActivity}
           />
           <StatCard
             title="成功率"
             value={`${stats.rate.toFixed(1)}%`}
             color={stats.rate >= 90 ? 'text-green-500' : stats.rate >= 70 ? 'text-orange-500' : 'text-red-500'}
             subtitle={`${stats.totalSuccess} 成功 / ${stats.totalFailure} 失败`}
-            data={statsActivity.map(() => stats.rate)}
+            data={statsActivity}
           />
         </div>
       </section>
@@ -215,6 +255,8 @@ export default function OverviewTab({ onNavigateToTasks }: Props) {
               key={type}
               type={type}
               tasks={tasksByType[type] || []}
+              activityData={activityByType[type] || Array(7).fill(0)}
+              dynamicTypes={taskTypes}
               onClick={() => onNavigateToTasks?.(type as TaskType)}
             />
           ))}

@@ -19,6 +19,7 @@ import WorkersTab from './WorkersTab';
 
 export default function SchedulerPage() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [tasksFilterType, setTasksFilterType] = useState<TaskType | ''>('');
 
   // 从 URL query 参数读取初始 tab
   useEffect(() => {
@@ -39,11 +40,8 @@ export default function SchedulerPage() {
 
   // 概览页跳转到任务管理并过滤类型
   const handleNavigateToTasks = (type?: TaskType) => {
+    setTasksFilterType(type || '');
     setActiveTab('tasks');
-    // 通过 URL hash 传递类型过滤参数
-    if (type) {
-      window.location.hash = `#filter-type=${type}`;
-    }
   };
 
   return (
@@ -69,7 +67,7 @@ export default function SchedulerPage() {
                 <ScheduleOutlined />任务管理
               </span>
             ),
-            children: <TasksTab />,
+            children: <TasksTab initialFilterType={tasksFilterType} onFilterTypeConsumed={() => setTasksFilterType('')} />,
           },
           {
             key: 'executions',

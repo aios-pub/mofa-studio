@@ -202,7 +202,7 @@ const scheduledTaskRealApi = {
     return true;
   },
 
-  async toggleTask(id: string): Promise<void> {
+  async toggleTask(id: string): Promise<ScheduledTask | undefined> {
     const raw = await apiClient.get<BackendTask>(`/api/task/${id}`);
     const task = mapTaskFromBackend(raw);
     if (task.status === "enabled") {
@@ -210,6 +210,9 @@ const scheduledTaskRealApi = {
     } else {
       await apiClient.post(`/api/task/enable/${id}`);
     }
+    // 重新获取更新后的任务
+    const updated = await apiClient.get<BackendTask>(`/api/task/${id}`);
+    return mapTaskFromBackend(updated);
   },
 
   async executeTask(id: string): Promise<TaskExecution> {
@@ -246,19 +249,26 @@ const scheduledTaskRealApi = {
     successRate: number;
     executionsToday: number;
   }> {
-    const rawList = await apiClient.get<BackendTask[]>("/api/task/list");
-    const tasks = rawList.map(mapTaskFromBackend);
+    const [rawTaskList, rawExecList] = await Promise.all([
+      apiClient.get<BackendTask[]>("/api/task/list"),
+      apiClient.get<BackendExecution[]>("/api/task/executions"),
+    ]);
+    const tasks = rawTaskList.map(mapTaskFromBackend);
+    const executions = rawExecList.map(mapExecutionFromBackend);
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
+    const todayExecutions = executions.filter((e) => new Date(e.startedAt) >= today);
+    const successCount = executions.filter((e) => e.status === "success").length;
 
     return {
       total: tasks.length,
       enabled: tasks.filter((t) => t.status === "enabled").length,
       disabled: tasks.filter((t) => t.status === "disabled").length,
-      totalExecutions: 0,
-      successRate: 0,
-      executionsToday: 0,
+      totalExecutions: executions.length,
+      successRate: executions.length > 0 ? (successCount / executions.length) * 100 : 0,
+      executionsToday: todayExecutions.length,
     };
   },
 };

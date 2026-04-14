@@ -23,7 +23,10 @@ import { formatDate } from '@/utils';
 import TaskDetail from './TaskDetail';
 import TaskFormModal from './TaskFormModal';
 
-export default function TasksTab() {
+export default function TasksTab({ initialFilterType, onFilterTypeConsumed }: {
+  initialFilterType?: TaskType | '';
+  onFilterTypeConsumed?: () => void;
+}) {
   const [tasks, setTasks] = useState<ScheduledTask[]>([]);
   const [executions, setExecutions] = useState<TaskExecution[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,6 +57,14 @@ export default function TasksTab() {
   }, [filterType, searchQuery]);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  // 从 OverviewTab 跳转时应用类型过滤
+  useEffect(() => {
+    if (initialFilterType) {
+      setFilterType(initialFilterType);
+      onFilterTypeConsumed?.();
+    }
+  }, [initialFilterType, onFilterTypeConsumed]);
 
   const filteredTasks = useMemo(() => {
     switch (statusTab) {

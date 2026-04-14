@@ -82,9 +82,15 @@ const notificationRealApi = {
   },
 
   async update(id: string, data: Partial<Notification>): Promise<Notification> {
+    const existing = await notificationRealApi.getById(id);
+    const merged = { ...existing, ...data };
     const body: Record<string, unknown> = { id };
-    if (data.read !== undefined) body.read = data.read;
-    if (data.title !== undefined) body.title = data.title;
+    body.notification_type = merged.type;
+    body.title = merged.title;
+    body.content = merged.content;
+    body.read = merged.read;
+    if (merged.priority !== undefined) body.priority = merged.priority;
+    if (merged.link !== undefined) body.link = merged.link;
     const raw = await apiClient.post<BackendNotification>("/api/notification/update", body);
     return mapNotification(raw);
   },

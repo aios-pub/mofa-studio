@@ -221,7 +221,9 @@ const knowledgeRealApi = {
   },
 
   async updateDocument(id: string, data: Partial<Document>): Promise<Document> {
-    const body = { id, ...mapDocumentToBackend(data) };
+    const existing = await knowledgeRealApi.getDocument(id);
+    const merged = { ...existing, ...data };
+    const body = { id, ...mapDocumentToBackend(merged) };
     const raw = await apiClient.post<BackendDocument>("/api/knowledge/document/update", body);
     return mapDocument(raw);
   },

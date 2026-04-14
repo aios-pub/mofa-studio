@@ -179,16 +179,18 @@ const testSetRealApi = {
     testSetId: string,
     data: Partial<TestCaseFormData>,
   ): Promise<TestCase> => {
+    const existing = await testSetRealApi.getCase(id);
+    const merged = { ...existing, ...data };
     const raw = await apiClient.post<BackendTestCase>(
       "/api/testset/case/update",
       {
         id,
         test_set_id: testSetId,
-        name: data.name,
-        description: data.description,
-        input: data.input,
-        expected_output: data.expectedOutput,
-        assertions: data.assertions,
+        name: merged.name,
+        description: merged.description,
+        input: merged.input,
+        expected_output: merged.expectedOutput ?? merged.expectedOutput,
+        assertions: merged.assertions,
       },
     );
     return mapTestCase(raw);

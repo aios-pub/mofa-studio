@@ -242,7 +242,9 @@ const permissionRealApi = {
   },
 
   async updateTemplate(id: string, data: Partial<PermissionTemplate>): Promise<PermissionTemplate> {
-    const body = { id, ...mapTemplateToBackend(data) };
+    const existing = await permissionRealApi.getTemplate(id);
+    const merged = { ...existing, ...data };
+    const body = { id, ...mapTemplateToBackend(merged) };
     const raw = await apiClient.post<BackendPermissionTemplate>('/api/permission/template/update', body);
     return mapTemplate(raw);
   },

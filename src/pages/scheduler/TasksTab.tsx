@@ -313,6 +313,7 @@ export default function TasksTab({ initialFilterType, onFilterTypeConsumed }: {
           <TaskDetail
             task={selectedTask}
             executions={executions}
+            taskTypes={taskTypes}
             onExecute={handleExecute}
             onToggle={handleToggle}
             onEdit={(t) => setEditingTask(t)}

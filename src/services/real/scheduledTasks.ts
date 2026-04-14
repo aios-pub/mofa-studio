@@ -78,6 +78,49 @@ function parseDate(value: string | number | null | undefined): Date | undefined 
   return isNaN(d.getTime()) ? undefined : d;
 }
 
+/** camelCase → snake_case */
+function toSnakeCase(str: string): string {
+  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+}
+
+/** snake_case → camelCase */
+function toCamelCase(str: string): string {
+  return str.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase());
+}
+
+/** 递归转换对象所有 key（跳过数组） */
+function convertKeys(obj: unknown, converter: (key: string) => string): unknown {
+  if (!obj || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map((v) => convertKeys(v, converter));
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+    result[converter(key)] = convertKeys(value, converter);
+  }
+  return result;
+}
+
+/** 后端 icon 标识 → 前端 emoji */
+const ICON_MAP: Record<string, string> = {
+  loop: '🔁',
+  test_tube: '🧪',
+  refresh: '🔄',
+  schedule: '⏰',
+  timer: '⏱️',
+  robot: '🤖',
+  brain: '🧠',
+  bolt: '⚡',
+  gear: '⚙️',
+  check: '✅',
+  warning: '⚠️',
+  chart: '📊',
+};
+
+function mapIcon(icon: string): string {
+  // 如果已经是 emoji（非 ASCII 或常见 emoji 范围），直接返回
+  if (icon && /[\u{1F000}-\u{1FFFF}]/u.test(icon)) return icon;
+  return ICON_MAP[icon] || icon;
+}
+
 const STATUS_MAP: Record<string, TaskStatus> = {
   active: "enabled",
   paused: "disabled",
@@ -107,7 +150,7 @@ function mapTaskFromBackend(raw: BackendTask): ScheduledTask {
     type: raw.task_type as TaskType,
     cronExpression: raw.cron_expression,
     status: STATUS_MAP[raw.status] || "disabled",
-    config: (raw.config as TaskConfig) || ({} as TaskConfig),
+    config: (convertKeys(raw.config, toCamelCase) as TaskConfig) || ({} as TaskConfig),
     lastRunAt: parseDate(raw.last_run_at),
     lastRunStatus: raw.last_run_status
       ? (EXECUTION_STATUS_MAP[raw.last_run_status] ?? raw.last_run_status as ExecutionStatus)
@@ -129,7 +172,7 @@ function mapTaskToBackend(task: Partial<ScheduledTask>): Record<string, unknown>
   if (task.type !== undefined) result.task_type = task.type;
   if (task.cronExpression !== undefined) result.cron_expression = task.cronExpression;
   if (task.status !== undefined) result.status = STATUS_REVERSE_MAP[task.status];
-  if (task.config !== undefined) result.config = task.config;
+  if (task.config !== undefined) result.config = convertKeys(task.config, toSnakeCase);
   if (task.createdBy !== undefined) result.created_by = task.createdBy;
 
   return result;
@@ -296,7 +339,7 @@ const scheduledTaskRealApi = {
       taskType: (raw.task_type ?? raw.taskType) as string,
       label: (raw.label ?? "") as string,
       description: (raw.description ?? "") as string,
-      icon: (raw.icon ?? "") as string,
+      icon: mapIcon((raw.icon ?? "") as string),
       configSchema: (raw.config_schema ?? raw.configSchema) as Record<string, unknown> | undefined,
     }));
     cachedTaskTypes = mapped;

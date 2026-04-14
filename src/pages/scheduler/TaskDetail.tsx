@@ -20,6 +20,7 @@ import {
 } from '@ant-design/icons';
 import type { ScheduledTask, TaskExecution, ExecutionStatus } from '@/services';
 import { taskTypeConfig, parseCronToText } from '@/services';
+import type { TaskTypeDescriptor } from '@/services';
 import { formatDate } from '@/utils';
 
 const execStatusColorMap: Record<ExecutionStatus, string> = {
@@ -55,6 +56,7 @@ const formatDuration = (ms: number | undefined) => {
 interface Props {
   task: ScheduledTask;
   executions: TaskExecution[];
+  taskTypes?: TaskTypeDescriptor[];
   onExecute: (id: string) => void;
   onToggle: (id: string) => void;
   onEdit: (task: ScheduledTask) => void;
@@ -65,6 +67,7 @@ interface Props {
 export default function TaskDetail({
   task,
   executions,
+  taskTypes,
   onExecute,
   onToggle,
   onEdit,
@@ -82,7 +85,12 @@ export default function TaskDetail({
 
   // 上下文元数据（参考 apalis-board MetaKey）
   const contextItems = [
-    { key: '任务类型', value: `${taskTypeConfig[task.type].icon} ${taskTypeConfig[task.type].label}` },
+    { key: '任务类型', value: (() => {
+      const dynamic = taskTypes?.find((t) => t.taskType === task.type);
+      const staticCfg = taskTypeConfig[task.type as keyof typeof taskTypeConfig];
+      const cfg = dynamic ? { icon: dynamic.icon, label: dynamic.label } : staticCfg;
+      return cfg ? `${cfg.icon} ${cfg.label}` : task.type;
+    })() },
     { key: 'Cron 表达式', value: task.cronExpression, mono: true },
     { key: '状态', value: task.status === 'enabled' ? '已启用' : '已禁用', tag: true },
     { key: '成功率', value: successRate !== null ? `${successRate.toFixed(1)}%` : '-', highlight: successRate !== null ? (successRate >= 90 ? 'green' : successRate >= 70 ? 'orange' : 'red') : undefined },

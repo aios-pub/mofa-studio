@@ -95,10 +95,16 @@ const menuItems: MenuProps["items"] = [
     icon: <LinkOutlined />,
     label: "渠道管理",
   },
+  { type: "divider" },
   {
-    key: "/management/tasks",
+    key: "scheduler",
+    label: "任务调度",
+    type: "group",
+  },
+  {
+    key: "/scheduler",
     icon: <ClockCircleOutlined />,
-    label: "定时任务",
+    label: "调度管理",
   },
   { type: "divider" },
   {

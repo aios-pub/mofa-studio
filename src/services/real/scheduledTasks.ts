@@ -1,137 +1,261 @@
 /**
  * ScheduledTasks 真实 API
  * 后端端点: /api/task/...
+ *
+ * 后端字段映射 (snake_case → camelCase):
+ *   task_type      → type
+ *   cron_expression → cronExpression
+ *   status(active/paused) → status(enabled/disabled)
+ *   success_count  → successCount
+ *   failure_count  → failureCount
+ *   last_run_at    → lastRunAt
+ *   last_run_status → lastRunStatus
+ *   next_run_at    → nextRunAt
+ *   created_by     → createdBy
+ *   create_time    → createdAt
+ *   update_time    → updatedAt
+ *   started_at     → startedAt
+ *   completed_at   → completedAt
+ *   task_id        → taskId
+ *   task_name      → taskName
  */
 
 import { apiClient } from "../api/apiClient";
+import type {
+  ScheduledTask,
+  TaskExecution,
+  TaskType,
+  TaskStatus,
+  ExecutionStatus,
+  TaskConfig,
+} from "../mock/scheduledTasks";
 
-interface ScheduledTask {
+// ==================== 后端原始类型 ====================
+
+interface BackendTask {
   id: string;
   name: string;
-  type: string;
-  cron: string;
-  enabled: boolean;
-  status?: string; // 'enabled' | 'disabled'
   description?: string;
-  lastRun?: string;
-  nextRun?: string;
+  task_type: string;
+  cron_expression: string;
+  status: string; // "active" | "paused"
+  config?: Record<string, unknown>;
+  last_run_at?: string;
+  last_run_status?: string;
+  next_run_at?: string;
+  success_count: number;
+  failure_count: number;
+  created_by?: string;
+  tenant_id?: string;
+  create_time: string;
+  update_time: string;
 }
 
-interface TaskExecution {
+interface BackendExecution {
   id: string;
-  taskId: string;
-  status: string;
-  startTime: string;
-  endTime?: string;
-  result?: unknown;
+  task_id: string;
+  task_name: string;
+  started_at: string;
+  completed_at?: string;
+  status: string; // "running" | "completed" | "failed"
+  duration?: number;
+  result?: string;
+  error?: string;
+  details?: Record<string, unknown>;
+  create_time: string;
+  update_time: string;
 }
 
-const baseApi = {
-  getAll: (): Promise<ScheduledTask[]> =>
-    apiClient.get<ScheduledTask[]>("/api/task/list"),
+// ==================== 字段映射 ====================
 
-  getById: (id: string): Promise<ScheduledTask> =>
-    apiClient.get<ScheduledTask>(`/api/task/${id}`),
-
-  create: (data: Partial<ScheduledTask>): Promise<ScheduledTask> =>
-    apiClient.post<ScheduledTask>("/api/task/create", data),
-
-  update: (id: string, data: Partial<ScheduledTask>): Promise<ScheduledTask> =>
-    apiClient.post<ScheduledTask>("/api/task/update", { id, ...data }),
-
-  delete: async (id: string): Promise<boolean> => {
-    await apiClient.delete(`/api/task/delete/${id}`);
-    return true;
-  },
+const STATUS_MAP: Record<string, TaskStatus> = {
+  active: "enabled",
+  paused: "disabled",
 };
 
-interface TaskFilter {
-  type?: string;
-  status?: string;
-  search?: string;
+const STATUS_REVERSE_MAP: Record<TaskStatus, string> = {
+  enabled: "active",
+  disabled: "paused",
+};
+
+const EXECUTION_STATUS_MAP: Record<string, ExecutionStatus> = {
+  completed: "success",
+  failed: "failure",
+  running: "running",
+  pending: "pending",
+};
+
+function mapTaskFromBackend(raw: BackendTask): ScheduledTask {
+  return {
+    id: raw.id,
+    name: raw.name,
+    description: raw.description || undefined,
+    type: raw.task_type as TaskType,
+    cronExpression: raw.cron_expression,
+    status: STATUS_MAP[raw.status] || "disabled",
+    config: (raw.config as TaskConfig) || ({} as TaskConfig),
+    lastRunAt: raw.last_run_at ? new Date(raw.last_run_at) : undefined,
+    lastRunStatus: raw.last_run_status
+      ? (EXECUTION_STATUS_MAP[raw.last_run_status] || raw.last_run_status as ExecutionStatus)
+      : undefined,
+    nextRunAt: raw.next_run_at ? new Date(raw.next_run_at) : undefined,
+    successCount: raw.success_count || 0,
+    failureCount: raw.failure_count || 0,
+    createdAt: new Date(raw.create_time),
+    updatedAt: new Date(raw.update_time),
+    createdBy: raw.created_by || "",
+  };
 }
 
-const scheduledTaskRealApi = {
-  ...baseApi,
+function mapTaskToBackend(task: Partial<ScheduledTask>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
 
-  // 别名方法 - 支持客户端过滤
-  getTasks: async (filter?: TaskFilter): Promise<ScheduledTask[]> => {
-    let tasks = await apiClient.get<ScheduledTask[]>("/api/task/list");
+  if (task.name !== undefined) result.name = task.name;
+  if (task.description !== undefined) result.description = task.description;
+  if (task.type !== undefined) result.task_type = task.type;
+  if (task.cronExpression !== undefined) result.cron_expression = task.cronExpression;
+  if (task.status !== undefined) result.status = STATUS_REVERSE_MAP[task.status];
+  if (task.config !== undefined) result.config = task.config;
+  if (task.createdBy !== undefined) result.created_by = task.createdBy;
+
+  return result;
+}
+
+function mapExecutionFromBackend(raw: BackendExecution): TaskExecution {
+  return {
+    id: raw.id,
+    taskId: raw.task_id,
+    taskName: raw.task_name,
+    startedAt: new Date(raw.started_at),
+    completedAt: raw.completed_at ? new Date(raw.completed_at) : undefined,
+    status: EXECUTION_STATUS_MAP[raw.status] || (raw.status as ExecutionStatus),
+    duration: raw.duration,
+    result: raw.result,
+    error: raw.error,
+    details: raw.details,
+  };
+}
+
+// ==================== API 接口 ====================
+
+const scheduledTaskRealApi = {
+  async getTasks(filter?: {
+    type?: TaskType;
+    status?: TaskStatus;
+    search?: string;
+  }): Promise<ScheduledTask[]> {
+    const rawList = await apiClient.get<BackendTask[]>("/api/task/list");
+    let tasks = rawList.map(mapTaskFromBackend);
 
     if (filter?.type) {
-      tasks = tasks.filter((t: ScheduledTask) => t.type === filter.type);
+      tasks = tasks.filter((t) => t.type === filter.type);
     }
     if (filter?.status) {
-      tasks = tasks.filter((t: ScheduledTask) => {
-        // 支持 status 字段或从 enabled 推导
-        const taskStatus = t.status || (t.enabled ? 'enabled' : 'disabled');
-        return taskStatus === filter.status;
-      });
+      tasks = tasks.filter((t) => t.status === filter.status);
     }
     if (filter?.search) {
       const query = filter.search.toLowerCase();
       tasks = tasks.filter(
-        (t: ScheduledTask) =>
+        (t) =>
           t.name.toLowerCase().includes(query) ||
-          (t as ScheduledTask & { description?: string }).description?.toLowerCase().includes(query)
+          t.description?.toLowerCase().includes(query),
       );
     }
 
     return tasks;
   },
 
-  getTask: (id: string): Promise<ScheduledTask> =>
-    apiClient.get<ScheduledTask>(`/api/task/${id}`),
+  async getTask(id: string): Promise<ScheduledTask | undefined> {
+    const raw = await apiClient.get<BackendTask>(`/api/task/${id}`);
+    return mapTaskFromBackend(raw);
+  },
 
-  createTask: (data: Partial<ScheduledTask>): Promise<ScheduledTask> =>
-    apiClient.post<ScheduledTask>("/api/task/create", data),
+  async createTask(
+    data: Omit<
+      ScheduledTask,
+      | "id"
+      | "createdAt"
+      | "updatedAt"
+      | "successCount"
+      | "failureCount"
+      | "lastRunAt"
+      | "lastRunStatus"
+      | "nextRunAt"
+    >,
+  ): Promise<ScheduledTask> {
+    const body = mapTaskToBackend(data);
+    const raw = await apiClient.post<BackendTask>("/api/task/create", body);
+    return mapTaskFromBackend(raw);
+  },
 
-  updateTask: (id: string, data: Partial<ScheduledTask>): Promise<ScheduledTask> =>
-    apiClient.post<ScheduledTask>("/api/task/update", { id, ...data }),
+  async updateTask(
+    id: string,
+    data: Partial<ScheduledTask>,
+  ): Promise<ScheduledTask | undefined> {
+    const body = { id, ...mapTaskToBackend(data) };
+    const raw = await apiClient.post<BackendTask>("/api/task/update", body);
+    return mapTaskFromBackend(raw);
+  },
 
-  deleteTask: async (id: string): Promise<boolean> => {
+  async deleteTask(id: string): Promise<boolean> {
     await apiClient.delete(`/api/task/delete/${id}`);
     return true;
   },
 
-  enable: (taskId: string): Promise<void> =>
-    apiClient.post(`/api/task/enable/${taskId}`),
-
-  disable: (taskId: string): Promise<void> =>
-    apiClient.post(`/api/task/disable/${taskId}`),
-
-  toggleTask: async (taskId: string): Promise<void> => {
-    const task = await baseApi.getById(taskId);
-    if ((task as ScheduledTask).enabled) {
-      await apiClient.post(`/api/task/disable/${taskId}`);
+  async toggleTask(id: string): Promise<void> {
+    const raw = await apiClient.get<BackendTask>(`/api/task/${id}`);
+    const task = mapTaskFromBackend(raw);
+    if (task.status === "enabled") {
+      await apiClient.post(`/api/task/disable/${id}`);
     } else {
-      await apiClient.post(`/api/task/enable/${taskId}`);
+      await apiClient.post(`/api/task/enable/${id}`);
     }
   },
 
-  toggleStatus: async (taskId: string): Promise<void> => {
-    const task = await baseApi.getById(taskId);
-    if ((task as ScheduledTask).enabled) {
-      await apiClient.post(`/api/task/disable/${taskId}`);
-    } else {
-      await apiClient.post(`/api/task/enable/${taskId}`);
-    }
+  async executeTask(id: string): Promise<TaskExecution> {
+    const raw = await apiClient.post<BackendExecution>(`/api/task/execute/${id}`);
+    return mapExecutionFromBackend(raw);
   },
 
-  executeTask: (taskId: string): Promise<{ jobId: string }> =>
-    apiClient.post<{ job_id: string }>(`/api/task/execute/${taskId}`).then((result) => ({
-      jobId: result.job_id,
-    })),
+  async getExecutions(filter?: {
+    taskId?: string;
+    status?: ExecutionStatus;
+    limit?: number;
+  }): Promise<TaskExecution[]> {
+    const params: Record<string, unknown> = {};
+    if (filter?.limit) params.limit = filter.limit;
 
-  getExecutions: (filter?: { taskId?: string; status?: string; limit?: number }): Promise<TaskExecution[]> =>
-    apiClient.get<TaskExecution[]>("/api/task/executions", { params: { limit: filter?.limit } }),
+    const rawList = await apiClient.get<BackendExecution[]>("/api/task/executions", { params });
+    let executions = rawList.map(mapExecutionFromBackend);
 
-  getStats: async (): Promise<{ total: number; enabled: number; disabled: number; totalExecutions: number; successRate: number; executionsToday: number }> => {
-    const tasks = await baseApi.getAll();
+    if (filter?.taskId) {
+      executions = executions.filter((e) => e.taskId === filter.taskId);
+    }
+    if (filter?.status) {
+      executions = executions.filter((e) => e.status === filter.status);
+    }
+
+    return executions;
+  },
+
+  async getStats(): Promise<{
+    total: number;
+    enabled: number;
+    disabled: number;
+    totalExecutions: number;
+    successRate: number;
+    executionsToday: number;
+  }> {
+    const rawList = await apiClient.get<BackendTask[]>("/api/task/list");
+    const tasks = rawList.map(mapTaskFromBackend);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     return {
       total: tasks.length,
-      enabled: tasks.filter(t => (t as ScheduledTask).enabled).length,
-      disabled: tasks.filter(t => !(t as ScheduledTask).enabled).length,
+      enabled: tasks.filter((t) => t.status === "enabled").length,
+      disabled: tasks.filter((t) => t.status === "disabled").length,
       totalExecutions: 0,
       successRate: 0,
       executionsToday: 0,
@@ -140,4 +264,3 @@ const scheduledTaskRealApi = {
 };
 
 export { scheduledTaskRealApi };
-export type { ScheduledTask, TaskExecution };

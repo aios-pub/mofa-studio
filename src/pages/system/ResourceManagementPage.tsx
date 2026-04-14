@@ -58,7 +58,8 @@ import type {
   ResourceUsageStats,
   QuotaLimits,
 } from '@/services';
-import { resourceApi, providerOptions } from '@/services';
+import { resourceApi, providerApi } from '@/services';
+import type { Provider } from '@/services/real/providers';
 import { formatDate } from '@/utils';
 
 const { Text } = Typography;
@@ -74,6 +75,9 @@ export default function ResourceManagementPage() {
   const [activeTab, setActiveTab] = useState('api-keys');
   const [loading, setLoading] = useState(true);
 
+  // Providers state
+  const [providers, setProviders] = useState<Provider[]>([]);
+
   // API Keys state
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [keySearchQuery, setKeySearchQuery] = useState('');
@@ -88,6 +92,15 @@ export default function ResourceManagementPage() {
 
   // Usage stats
   const [usageStats, setUsageStats] = useState<ResourceUsageStats | null>(null);
+
+  const loadProviders = useCallback(async () => {
+    try {
+      const list = await providerApi.getAll();
+      setProviders(list);
+    } catch (error) {
+      console.error('Failed to load providers:', error);
+    }
+  }, []);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -112,8 +125,9 @@ export default function ResourceManagementPage() {
   }, [keyFilterProvider, keyFilterStatus, keySearchQuery]);
 
   useEffect(() => {
+    loadProviders();
     loadData();
-  }, [loadData]);
+  }, [loadProviders, loadData]);
 
   const handleDeleteKey = async (id: string) => {
     try {
@@ -177,7 +191,8 @@ export default function ResourceManagementPage() {
   const formatCurrency = (amount: number) => `¥${amount.toFixed(2)}`;
 
   const getProviderLabel = (provider: string) => {
-    return providerOptions.find((p) => p.value === provider)?.label || provider;
+    const found = providers.find((p) => p.id === provider || p.type === provider || p.name === provider);
+    return found?.name || provider;
   };
 
   const getUsageColor = (percentage: number) => {
@@ -346,7 +361,7 @@ export default function ResourceManagementPage() {
                 onChange={setKeyFilterProvider}
                 allowClear
                 style={{ width: 150 }}
-                options={providerOptions}
+                options={providers.map((p) => ({ label: p.name, value: p.id }))}
               />
               <Select
                 placeholder="选择状态"
@@ -655,6 +670,7 @@ export default function ResourceManagementPage() {
       {/* 创建密钥弹窗 */}
       <CreateKeyModal
         open={createModalOpen}
+        providers={providers}
         onClose={() => setCreateModalOpen(false)}
         onSave={async (data) => {
           const result = await resourceApi.createApiKey({
@@ -682,10 +698,12 @@ export default function ResourceManagementPage() {
 // 创建密钥弹窗
 function CreateKeyModal({
   open,
+  providers,
   onClose,
   onSave,
 }: {
   open: boolean;
+  providers: Provider[];
   onClose: () => void;
   onSave: (data: {
     name: string;
@@ -740,7 +758,7 @@ function CreateKeyModal({
       <Form
         form={form}
         layout="vertical"
-        initialValues={{ provider: 'openai' }}
+        initialValues={{ provider: providers[0]?.id }}
       >
         <Form.Item
           name="name"
@@ -751,7 +769,7 @@ function CreateKeyModal({
         </Form.Item>
 
         <Form.Item name="provider" label="Provider">
-          <Select options={providerOptions} />
+          <Select options={providers.map((p) => ({ label: p.name, value: p.id }))} />
         </Form.Item>
 
         <Form.Item

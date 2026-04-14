@@ -38,7 +38,7 @@ import type {
   TestSetFormData,
   TestCaseFormData,
 } from "../../types/testset";
-import { testSetApi } from "@/services";
+import { testSetApi, agentApi } from "@/services";
 import { showDeleteConfirm } from "@/components/common/Modal";
 import { TestSetFormModal } from "./components/TestSetFormModal";
 import { TestCaseFormModal } from "./components/TestCaseFormModal";
@@ -398,6 +398,8 @@ function TestSetDetail({
   const [isRunning, setIsRunning] = useState(false);
   const [currentReport, setCurrentReport] = useState<TestReport | null>(null);
   const [reports, setReports] = useState<TestReport[]>([]);
+  const [agents, setAgents] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedAgentId, setSelectedAgentId] = useState<string>("");
 
   // 测试用例弹窗
   const [caseModalOpen, setCaseModalOpen] = useState(false);
@@ -432,13 +434,24 @@ function TestSetDetail({
     loadReports();
   }, [loadCases, loadReports]);
 
+  useEffect(() => {
+    agentApi.getAll().then((list) => {
+      setAgents(list.map((a: any) => ({ id: a.id, name: a.name })));
+      if (list.length > 0) setSelectedAgentId(list[0].id);
+    }).catch(() => {});
+  }, []);
+
   // ==================== Test Run ====================
 
   const handleRunAll = async () => {
+    if (!selectedAgentId) {
+      message.warning("请先选择 Agent");
+      return;
+    }
     setIsRunning(true);
     setCurrentReport(null);
     try {
-      const report = await testSetApi.runTestSet("agent-1", testSet.id);
+      const report = await testSetApi.runTestSet(selectedAgentId, testSet.id);
       setCurrentReport(report);
       onUpdate();
       loadReports();
@@ -518,7 +531,14 @@ function TestSetDetail({
           </Title>
           <Text type="secondary">{testSet.description}</Text>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <Select
+            value={selectedAgentId || undefined}
+            onChange={setSelectedAgentId}
+            style={{ width: 180 }}
+            placeholder="选择 Agent"
+            options={agents.map((a) => ({ label: a.name, value: a.id }))}
+          />
           <Button
             type="primary"
             icon={isRunning ? <LoadingOutlined /> : <PlayCircleOutlined />}

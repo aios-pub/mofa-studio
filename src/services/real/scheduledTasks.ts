@@ -319,6 +319,12 @@ const scheduledTaskRealApi = {
     cachedTaskTypes = mapped;
     return mapped;
   },
+
+  async getExecution(id: string): Promise<TaskExecution | undefined> {
+    const raw = await apiClient.get<BackendExecution>(`/api/task/execution/${id}`);
+    if (!raw) return undefined;
+    return mapExecutionFromBackend(raw);
+  },
 };
 
 export { scheduledTaskRealApi };

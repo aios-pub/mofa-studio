@@ -233,10 +233,17 @@ const testSetRealApi = {
   },
 
   runTestCase: async (
-    _testCase: TestCase,
+    testCase: TestCase,
   ): Promise<{ status: string; output: string }> => {
-    console.warn("testSetApi.runTestCase: Using mock response");
-    return { status: "passed", output: "Test case executed successfully" };
+    // 后端无单独运行 test case 的端点，复用 run-test 接口（运行整个测试集）
+    const raw = await apiClient.post<BackendTestReport>("/api/testset/run-test", {
+      test_set_id: testCase.testSetId,
+    });
+    const report = mapTestReport(raw);
+    return {
+      status: report.failedCases === 0 ? "passed" : "failed",
+      output: `通过 ${report.passedCases}/${report.totalCases}, 失败 ${report.failedCases}`,
+    };
   },
 
   // ==================== Test Reports ====================

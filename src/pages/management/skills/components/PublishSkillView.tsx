@@ -56,7 +56,7 @@ export function PublishSkillView() {
     value: unknown
   ) => {
     const newParams = [...parameters];
-    (newParams[index] as any)[field] = value;
+    newParams[index] = { ...newParams[index], [field]: value };
     setParameters(newParams);
   };
 

@@ -30,11 +30,13 @@ import {
   Avatar,
   Descriptions,
   Menu,
+  message,
 } from "antd";
 import type { MenuProps } from "antd";
 import { useAppStore, type SupportedLanguage } from "../../stores/useAppStore";
 import { supportedLanguages } from "../../i18n";
 import { getShortcutDefinitions } from "../../hooks/useKeyboardShortcuts";
+import { agentApi, conversationApi, promptApi } from "@/services";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -316,28 +318,40 @@ function ShortcutsSettings() {
 // 数据设置
 function DataSettings() {
   const { t } = useTranslation();
+  const [exporting, setExporting] = useState(false);
 
-  const handleExport = () => {
-    // 导出所有数据
-    const data = {
-      conversations: JSON.parse(
-        localStorage.getItem("AMOS-claw-conversations") || "[]",
-      ),
-      agents: JSON.parse(localStorage.getItem("AMOS-claw-agents") || "[]"),
-      prompts: JSON.parse(localStorage.getItem("AMOS-claw-prompts") || "[]"),
-      settings: JSON.parse(localStorage.getItem("AMOS-claw-app-store") || "{}"),
-      exportedAt: new Date().toISOString(),
-    };
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const [agents, conversations, prompts] = await Promise.all([
+        agentApi.getAll().catch(() => []),
+        conversationApi.getAll().catch(() => []),
+        promptApi.getAll().catch(() => []),
+      ]);
 
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `AMOS-claw-backup-${new Date().toISOString().split("T")[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+      const data = {
+        agents,
+        conversations,
+        prompts,
+        settings: JSON.parse(localStorage.getItem("AMOS-claw-app-store") || "{}"),
+        exportedAt: new Date().toISOString(),
+      };
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `AMOS-claw-backup-${new Date().toISOString().split("T")[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to export data:", error);
+      message.error("导出数据失败，请重试");
+    } finally {
+      setExporting(false);
+    }
   };
 
   const handleImport = () => {
@@ -352,24 +366,7 @@ function DataSettings() {
       reader.onload = (event) => {
         try {
           const data = JSON.parse(event.target?.result as string);
-          if (data.conversations) {
-            localStorage.setItem(
-              "AMOS-claw-conversations",
-              JSON.stringify(data.conversations),
-            );
-          }
-          if (data.agents) {
-            localStorage.setItem(
-              "AMOS-claw-agents",
-              JSON.stringify(data.agents),
-            );
-          }
-          if (data.prompts) {
-            localStorage.setItem(
-              "AMOS-claw-prompts",
-              JSON.stringify(data.prompts),
-            );
-          }
+          // 导入操作仅恢复客户端设置，后端数据需通过后端 API 导入
           if (data.settings) {
             localStorage.setItem(
               "AMOS-claw-app-store",
@@ -416,6 +413,7 @@ function DataSettings() {
               type="primary"
               icon={<DownloadOutlined />}
               onClick={handleExport}
+              loading={exporting}
             >
               Export Data
             </Button>

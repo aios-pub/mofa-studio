@@ -315,7 +315,7 @@ function buildChannelConfig(
           endpoint: values.endpoint as string,
           method: values.method as "GET" | "POST" | "PUT" | "DELETE",
           headers: values.headers as Record<string, string>,
-          authentication: values.authentication as any,
+          authentication: values.authentication as { type: 'none' | 'bearer' | 'basic' | 'api_key'; token?: string; username?: string; password?: string; apiKey?: string; apiKeyHeader?: string },
           requestTemplate: values.requestTemplate as string,
           responseMapping: values.responseMapping as string,
         },

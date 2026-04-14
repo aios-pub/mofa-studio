@@ -20,7 +20,7 @@ import { testSetApi as testSetMockApi } from "./mock/testsets";
 import { analyticsApi as analyticsMockApi } from "./mock/analytics";
 import { monitoringApi as monitoringMockApi } from "./mock/monitoring";
 import { organizationApi as organizationMockApi } from "./mock/organization";
-import { workflowApi as workflowMockApi, nodeTypeConfig as mockNodeTypeConfig } from "./mock/workflows";
+import { workflowApi as workflowMockApi } from "./mock/workflows";
 import { knowledgeApi as knowledgeMockApi } from "./mock/knowledge";
 import { channelApi as channelMockApi, channelTypeConfig as mockChannelTypeConfig } from "./mock/channels";
 import { providerApi as providerMockApi } from "./mock/providers";
@@ -108,7 +108,8 @@ export const organizationApi = createProxyService(organizationMockApi, organizat
 
 // Workflows
 export const workflowApi = createProxyService(workflowMockApi, workflowRealApi as any);
-export const nodeTypeConfig = isMockEnabled() ? mockNodeTypeConfig : realNodeTypeConfig;
+// nodeTypeConfig 是 UI 常量，始终使用 real 版本
+export const nodeTypeConfig = realNodeTypeConfig;
 
 // Knowledge
 export const knowledgeApi = createProxyService(knowledgeMockApi, knowledgeRealApi as any);

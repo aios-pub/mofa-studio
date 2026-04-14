@@ -8,6 +8,7 @@ import { UserOutlined, LockOutlined, BellOutlined, SafetyOutlined, SaveOutlined 
 import { message } from 'antd';
 import { useUserInfo, useUserActions } from '../../stores/useUserStore';
 import { organizationApi, authApi } from '@/services';
+import type { UserInfo } from '@/types/user';
 
 type TabKey = 'profile' | 'security' | 'notifications';
 
@@ -51,7 +52,7 @@ export default function ProfilePage() {
       setUserInfo({
         ...userInfo,
         ...profileForm,
-      } as any);
+      } as UserInfo);
       message.success(t('common.saveSuccess', '保存成功'));
     } catch (err: any) {
       message.error(err?.message || t('common.saveFailed', '保存失败'));

@@ -58,7 +58,7 @@ export default function TracingPage() {
     try {
       const [tracesResult, statsResult] = await Promise.all([
         tracingApi.getTraces({
-          status: (statusFilter as any) || undefined,
+          status: statusFilter || undefined,
         }),
         tracingApi.getTracingStats(),
       ]);
@@ -119,7 +119,7 @@ export default function TracingPage() {
     try {
       const blob = await tracingApi.exportTraces(
         {
-          status: (statusFilter as any) || undefined,
+          status: statusFilter || undefined,
           trace_id: searchQuery || undefined,
         },
         format

@@ -20,7 +20,7 @@ const { Text, Title } = Typography;
 
 interface LocalSkillsListProps {
   selectedSkill: Skill | null;
-  onSelectSkill: (skill: Skill) => void;
+  onSelectSkill: (skill: Skill | null) => void;
   onRefresh?: () => void;
 }
 
@@ -126,7 +126,7 @@ export function LocalSkillsList({ selectedSkill, onSelectSkill, onRefresh }: Loc
       onOk: async () => {
         await skillApi.delete(skill.id);
         setSkills(skills.filter((s) => s.id !== skill.id));
-        if (selectedSkill?.id === skill.id) onSelectSkill(null as any);
+        if (selectedSkill?.id === skill.id) onSelectSkill(null);
         message.success('已删除');
       },
     });

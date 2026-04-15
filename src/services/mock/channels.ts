@@ -105,12 +105,9 @@ export const mockChannels: Channel[] = [
     description: "公司官方微信公众号渠道",
     status: "active",
     config: {
-      type: "wechat",
-      config: {
-        appId: "wx1234567890",
-        appSecret: "secret***",
-        token: "mytoken",
-      },
+      app_id: "wx1234567890",
+      app_secret: "secr****cret",
+      token: "mytoken",
     },
     stats: {
       totalMessages: 15420,
@@ -132,13 +129,10 @@ export const mockChannels: Channel[] = [
     description: "内部企业微信群机器人",
     status: "active",
     config: {
-      type: "wechat_work",
-      config: {
-        corpId: "ww1234567890",
-        agentId: "100001",
-        secret: "secret***",
-        token: "worktoken",
-      },
+      corp_id: "ww1234567890",
+      agent_id: "100001",
+      secret: "secr****cret",
+      token: "worktoken",
     },
     stats: {
       totalMessages: 8560,
@@ -160,11 +154,8 @@ export const mockChannels: Channel[] = [
     description: "钉钉群消息通知",
     status: "active",
     config: {
-      type: "dingtalk",
-      config: {
-        appKey: "ding123456",
-        appSecret: "secret***",
-      },
+      client_id: "ding123456",
+      client_secret: "secr****cret",
     },
     stats: {
       totalMessages: 3250,
@@ -186,11 +177,8 @@ export const mockChannels: Channel[] = [
     description: "团队 Slack 频道集成",
     status: "inactive",
     config: {
-      type: "slack",
-      config: {
-        botToken: "xoxb-***",
-        signingSecret: "secret***",
-      },
+      bot_token: "xoxb****1234",
+      signing_secret: "secr****cret",
     },
     stats: {
       totalMessages: 0,
@@ -210,13 +198,10 @@ export const mockChannels: Channel[] = [
     description: "通用 Webhook 接口",
     status: "active",
     config: {
-      type: "webhook",
-      config: {
-        url: "https://api.example.com/webhook",
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+      url: "https://api.example.com/webhook",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
     },
     stats: {
@@ -239,10 +224,7 @@ export const mockChannels: Channel[] = [
     description: "Telegram 机器人渠道",
     status: "error",
     config: {
-      type: "telegram",
-      config: {
-        botToken: "123456:ABC***",
-      },
+      bot_token: "1234****BCDE",
     },
     stats: {
       totalMessages: 890,
@@ -264,16 +246,13 @@ export const mockChannels: Channel[] = [
     description: "SMTP 邮件发送服务",
     status: "active",
     config: {
-      type: "email",
-      config: {
-        smtpHost: "smtp.example.com",
-        smtpPort: 587,
-        smtpUser: "noreply@example.com",
-        smtpPassword: "***",
-        fromAddress: "noreply@example.com",
-        fromName: "AMOS",
-        useTLS: true,
-      },
+      smtp_host: "smtp.example.com",
+      smtp_port: 587,
+      smtp_user: "noreply@example.com",
+      smtp_password: "****",
+      from_address: "noreply@example.com",
+      from_name: "AMOS",
+      use_tls: true,
     },
     stats: {
       totalMessages: 5680,

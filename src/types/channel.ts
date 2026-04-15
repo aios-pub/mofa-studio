@@ -41,103 +41,104 @@ export interface ChannelStats {
 
 /** 微信配置 */
 export interface WechatConfig {
-  appId: string;
-  appSecret: string;
+  app_id: string;
+  app_secret: string;
   token: string;
-  encodingAESKey?: string;
+  encoding_aes_key?: string;
 }
 
 /** 企业微信配置 */
 export interface WechatWorkConfig {
-  corpId: string;
-  agentId: string;
+  corp_id: string;
+  agent_id: string;
   secret: string;
   token: string;
-  encodingAESKey?: string;
+  encoding_aes_key?: string;
 }
 
 /** 钉钉配置 */
 export interface DingtalkConfig {
-  appKey: string;
-  appSecret: string;
-  agentId?: string;
+  client_id: string;
+  client_secret: string;
+  agent_id?: string;
 }
 
 /** 飞书配置 */
 export interface FeishuConfig {
-  appId: string;
-  appSecret: string;
-  encryptKey?: string;
-  verificationToken?: string;
+  app_id: string;
+  app_secret: string;
+  encrypt_key?: string;
+  verification_token?: string;
 }
 
 /** Slack 配置 */
 export interface SlackConfig {
-  botToken: string;
-  appToken?: string;
-  signingSecret: string;
-  clientId?: string;
-  clientSecret?: string;
+  bot_token: string;
+  app_token?: string;
+  signing_secret: string;
+  client_id?: string;
+  client_secret?: string;
 }
 
 /** Telegram 配置 */
 export interface TelegramConfig {
-  botToken: string;
-  webhookUrl?: string;
+  bot_token: string;
+  webhook_url?: string;
 }
 
 /** Discord 配置 */
 export interface DiscordConfig {
-  botToken: string;
-  applicationId: string;
-  publicKey?: string;
+  bot_token: string;
+  application_id: string;
+  public_key?: string;
 }
 
 /** WhatsApp 配置 */
 export interface WhatsAppConfig {
-  phoneNumberId: string;
-  businessAccountId: string;
-  accessToken: string;
-  webhookVerifyToken?: string;
-  appId?: string;
-  appSecret?: string;
+  phone_number_id: string;
+  business_account_id: string;
+  access_token: string;
+  webhook_verify_token?: string;
+  app_id?: string;
+  app_secret?: string;
 }
 
 /** Line 配置 */
 export interface LineConfig {
-  channelId: string;
-  channelSecret: string;
-  channelAccessToken: string;
+  channel_id: string;
+  channel_secret: string;
+  channel_access_token: string;
 }
 
 /** Facebook Messenger 配置 */
 export interface MessengerConfig {
-  pageId: string;
-  pageAccessToken: string;
-  appId: string;
-  appSecret: string;
-  verifyToken?: string;
+  page_id: string;
+  page_access_token: string;
+  app_id: string;
+  app_secret: string;
+  verify_token?: string;
 }
 
 /** Instagram 配置 */
 export interface InstagramConfig {
-  accountId: string;
-  accessToken: string;
-  appId: string;
-  appSecret: string;
+  account_id: string;
+  access_token: string;
+  app_id: string;
+  app_secret: string;
 }
 
 /** Microsoft Teams 配置 */
 export interface TeamsConfig {
-  tenantId: string;
-  clientId: string;
-  clientSecret: string;
-  botId?: string;
-  botPassword?: string;
+  tenant_id: string;
+  client_id: string;
+  client_secret: string;
+  bot_id?: string;
+  bot_password?: string;
 }
 
 /** Webhook 配置 */
 export interface WebhookConfig {
+  webhook_key?: string;
   url: string;
   method: 'GET' | 'POST' | 'PUT';
   headers?: Record<string, string>;
@@ -146,22 +147,22 @@ export interface WebhookConfig {
 
 /** 邮件配置 */
 export interface EmailConfig {
-  smtpHost: string;
-  smtpPort: number;
-  smtpUser: string;
-  smtpPassword: string;
-  fromAddress: string;
-  fromName?: string;
-  useTLS: boolean;
+  smtp_host: string;
+  smtp_port: number;
+  smtp_user: string;
+  smtp_password: string;
+  from_address: string;
+  from_name?: string;
+  use_tls: boolean;
 }
 
 /** 短信配置 */
 export interface SmsConfig {
   provider: 'aliyun' | 'tencent' | 'twilio';
-  accessKeyId: string;
-  accessKeySecret: string;
-  signName: string;
-  templateCode?: string;
+  access_key_id: string;
+  access_key_secret: string;
+  sign_name: string;
+  template_code?: string;
   region?: string;
 }
 
@@ -175,31 +176,31 @@ export interface CustomChannelConfig {
     token?: string;
     username?: string;
     password?: string;
-    apiKey?: string;
-    apiKeyHeader?: string;
+    api_key?: string;
+    api_key_header?: string;
   };
-  requestTemplate?: string;
-  responseMapping?: string;
+  request_template?: string;
+  response_mapping?: string;
 }
 
 /** 渠道配置联合类型 */
 export type ChannelConfig =
-  | { type: 'wechat'; config: WechatConfig }
-  | { type: 'wechat_work'; config: WechatWorkConfig }
-  | { type: 'dingtalk'; config: DingtalkConfig }
-  | { type: 'feishu'; config: FeishuConfig }
-  | { type: 'slack'; config: SlackConfig }
-  | { type: 'telegram'; config: TelegramConfig }
-  | { type: 'discord'; config: DiscordConfig }
-  | { type: 'whatsapp'; config: WhatsAppConfig }
-  | { type: 'line'; config: LineConfig }
-  | { type: 'messenger'; config: MessengerConfig }
-  | { type: 'instagram'; config: InstagramConfig }
-  | { type: 'teams'; config: TeamsConfig }
-  | { type: 'webhook'; config: WebhookConfig }
-  | { type: 'email'; config: EmailConfig }
-  | { type: 'sms'; config: SmsConfig }
-  | { type: 'custom'; config: CustomChannelConfig };
+  | WechatConfig
+  | WechatWorkConfig
+  | DingtalkConfig
+  | FeishuConfig
+  | SlackConfig
+  | TelegramConfig
+  | DiscordConfig
+  | WhatsAppConfig
+  | LineConfig
+  | MessengerConfig
+  | InstagramConfig
+  | TeamsConfig
+  | WebhookConfig
+  | EmailConfig
+  | SmsConfig
+  | CustomChannelConfig;
 
 /** 渠道基本信息 */
 export interface Channel {
@@ -208,7 +209,7 @@ export interface Channel {
   type: ChannelType;
   description?: string;
   status: ChannelStatus;
-  config: ChannelConfig;
+  config: Record<string, unknown>;
   stats: ChannelStats;
   enabled: boolean;
   createdAt: Date;

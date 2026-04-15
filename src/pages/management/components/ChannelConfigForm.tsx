@@ -14,7 +14,7 @@ import {
   Space,
 } from "antd";
 import { channelTypeConfig } from "@/services";
-import type { Channel, ChannelType, ChannelConfig } from "../../../types";
+import type { Channel, ChannelType } from "../../../types";
 
 interface ChannelConfigFormProps {
   channel?: Channel;
@@ -39,7 +39,7 @@ export default function ChannelConfigForm({
         name: channel.name,
         description: channel.description,
         type: channel.type,
-        ...channel.config.config,
+        ...channel.config,
       });
     }
   }, [channel, form]);
@@ -146,182 +146,134 @@ export default function ChannelConfigForm({
   );
 }
 
-// 构建渠道配置
+// 构建渠道配置（扁平结构，直接对应后端 JSONB）
 function buildChannelConfig(
   type: ChannelType,
   values: Record<string, unknown>,
-): ChannelConfig {
+): Record<string, unknown> {
   switch (type) {
     case "wechat":
       return {
-        type: "wechat",
-        config: {
-          appId: values.appId as string,
-          appSecret: values.appSecret as string,
-          token: values.token as string,
-          encodingAESKey: values.encodingAESKey as string,
-        },
+        app_id: values.app_id as string,
+        app_secret: values.app_secret as string,
+        token: values.token as string,
+        encoding_aes_key: values.encoding_aes_key as string,
       };
     case "wechat_work":
       return {
-        type: "wechat_work",
-        config: {
-          corpId: values.corpId as string,
-          agentId: values.agentId as string,
-          secret: values.secret as string,
-          token: values.token as string,
-          encodingAESKey: values.encodingAESKey as string,
-        },
+        corp_id: values.corp_id as string,
+        agent_id: values.agent_id as string,
+        secret: values.secret as string,
+        token: values.token as string,
+        encoding_aes_key: values.encoding_aes_key as string,
       };
     case "dingtalk":
       return {
-        type: "dingtalk",
-        config: {
-          appKey: values.appKey as string,
-          appSecret: values.appSecret as string,
-          agentId: values.agentId as string,
-        },
+        client_id: values.client_id as string,
+        client_secret: values.client_secret as string,
+        agent_id: values.agent_id as string,
       };
     case "feishu":
       return {
-        type: "feishu",
-        config: {
-          appId: values.appId as string,
-          appSecret: values.appSecret as string,
-          encryptKey: values.encryptKey as string,
-          verificationToken: values.verificationToken as string,
-        },
+        app_id: values.app_id as string,
+        app_secret: values.app_secret as string,
+        encrypt_key: values.encrypt_key as string,
+        verification_token: values.verification_token as string,
       };
     case "slack":
       return {
-        type: "slack",
-        config: {
-          botToken: values.botToken as string,
-          appToken: values.appToken as string,
-          signingSecret: values.signingSecret as string,
-          clientId: values.clientId as string,
-          clientSecret: values.clientSecret as string,
-        },
+        bot_token: values.bot_token as string,
+        app_token: values.app_token as string,
+        signing_secret: values.signing_secret as string,
+        client_id: values.client_id as string,
+        client_secret: values.client_secret as string,
       };
     case "telegram":
       return {
-        type: "telegram",
-        config: {
-          botToken: values.botToken as string,
-          webhookUrl: values.webhookUrl as string,
-        },
+        bot_token: values.bot_token as string,
+        webhook_url: values.webhook_url as string,
       };
     case "discord":
       return {
-        type: "discord",
-        config: {
-          botToken: values.botToken as string,
-          applicationId: values.applicationId as string,
-          publicKey: values.publicKey as string,
-        },
+        bot_token: values.bot_token as string,
+        application_id: values.application_id as string,
+        public_key: values.public_key as string,
       };
     case "whatsapp":
       return {
-        type: "whatsapp",
-        config: {
-          phoneNumberId: values.phoneNumberId as string,
-          businessAccountId: values.businessAccountId as string,
-          accessToken: values.accessToken as string,
-          webhookVerifyToken: values.webhookVerifyToken as string,
-          appId: values.appId as string,
-          appSecret: values.appSecret as string,
-        },
+        phone_number_id: values.phone_number_id as string,
+        business_account_id: values.business_account_id as string,
+        access_token: values.access_token as string,
+        webhook_verify_token: values.webhook_verify_token as string,
+        app_id: values.app_id as string,
+        app_secret: values.app_secret as string,
       };
     case "line":
       return {
-        type: "line",
-        config: {
-          channelId: values.channelId as string,
-          channelSecret: values.channelSecret as string,
-          channelAccessToken: values.channelAccessToken as string,
-        },
+        channel_id: values.channel_id as string,
+        channel_secret: values.channel_secret as string,
+        channel_access_token: values.channel_access_token as string,
       };
     case "messenger":
       return {
-        type: "messenger",
-        config: {
-          pageId: values.pageId as string,
-          pageAccessToken: values.pageAccessToken as string,
-          appId: values.appId as string,
-          appSecret: values.appSecret as string,
-          verifyToken: values.verifyToken as string,
-        },
+        page_id: values.page_id as string,
+        page_access_token: values.page_access_token as string,
+        app_id: values.app_id as string,
+        app_secret: values.app_secret as string,
+        verify_token: values.verify_token as string,
       };
     case "instagram":
       return {
-        type: "instagram",
-        config: {
-          accountId: values.accountId as string,
-          accessToken: values.accessToken as string,
-          appId: values.appId as string,
-          appSecret: values.appSecret as string,
-        },
+        account_id: values.account_id as string,
+        access_token: values.access_token as string,
+        app_id: values.app_id as string,
+        app_secret: values.app_secret as string,
       };
     case "teams":
       return {
-        type: "teams",
-        config: {
-          tenantId: values.tenantId as string,
-          clientId: values.clientId as string,
-          clientSecret: values.clientSecret as string,
-          botId: values.botId as string,
-          botPassword: values.botPassword as string,
-        },
+        tenant_id: values.tenant_id as string,
+        client_id: values.client_id as string,
+        client_secret: values.client_secret as string,
+        bot_id: values.bot_id as string,
+        bot_password: values.bot_password as string,
       };
     case "webhook":
       return {
-        type: "webhook",
-        config: {
-          url: values.url as string,
-          method: values.method as "GET" | "POST" | "PUT",
-          headers: values.headers as Record<string, string>,
-          secret: values.secret as string,
-        },
+        url: values.url as string,
+        method: values.method as "GET" | "POST" | "PUT",
+        headers: values.headers as Record<string, string>,
+        secret: values.secret as string,
       };
     case "email":
       return {
-        type: "email",
-        config: {
-          smtpHost: values.smtpHost as string,
-          smtpPort: values.smtpPort as number,
-          smtpUser: values.smtpUser as string,
-          smtpPassword: values.smtpPassword as string,
-          fromAddress: values.fromAddress as string,
-          fromName: values.fromName as string,
-          useTLS: values.useTLS as boolean,
-        },
+        smtp_host: values.smtp_host as string,
+        smtp_port: values.smtp_port as number,
+        smtp_user: values.smtp_user as string,
+        smtp_password: values.smtp_password as string,
+        from_address: values.from_address as string,
+        from_name: values.from_name as string,
+        use_tls: values.use_tls as boolean,
       };
     case "sms":
       return {
-        type: "sms",
-        config: {
-          provider: values.provider as "aliyun" | "tencent" | "twilio",
-          accessKeyId: values.accessKeyId as string,
-          accessKeySecret: values.accessKeySecret as string,
-          signName: values.signName as string,
-          templateCode: values.templateCode as string,
-          region: values.region as string,
-        },
+        provider: values.provider as "aliyun" | "tencent" | "twilio",
+        access_key_id: values.access_key_id as string,
+        access_key_secret: values.access_key_secret as string,
+        sign_name: values.sign_name as string,
+        template_code: values.template_code as string,
+        region: values.region as string,
       };
     case "custom":
       return {
-        type: "custom",
-        config: {
-          endpoint: values.endpoint as string,
-          method: values.method as "GET" | "POST" | "PUT" | "DELETE",
-          headers: values.headers as Record<string, string>,
-          authentication: values.authentication as { type: 'none' | 'bearer' | 'basic' | 'api_key'; token?: string; username?: string; password?: string; apiKey?: string; apiKeyHeader?: string },
-          requestTemplate: values.requestTemplate as string,
-          responseMapping: values.responseMapping as string,
-        },
+        endpoint: values.endpoint as string,
+        method: values.method as "GET" | "POST" | "PUT" | "DELETE",
+        headers: values.headers as Record<string, string>,
+        authentication: values.authentication as { type: 'none' | 'bearer' | 'basic' | 'api_key'; token?: string; username?: string; password?: string; api_key?: string; api_key_header?: string },
+        request_template: values.request_template as string,
+        response_mapping: values.response_mapping as string,
       };
     default:
-      return { type: "webhook", config: { url: "", method: "POST" } };
+      return { url: "", method: "POST" };
   }
 }
 
@@ -329,11 +281,11 @@ function buildChannelConfig(
 function WechatConfigForm() {
   return (
     <>
-      <Form.Item name="appId" label="App ID" rules={[{ required: true }]}>
+      <Form.Item name="app_id" label="App ID" rules={[{ required: true }]}>
         <Input placeholder="微信公众号 AppID" />
       </Form.Item>
       <Form.Item
-        name="appSecret"
+        name="app_secret"
         label="App Secret"
         rules={[{ required: true }]}
       >
@@ -342,7 +294,7 @@ function WechatConfigForm() {
       <Form.Item name="token" label="Token" rules={[{ required: true }]}>
         <Input placeholder="消息加密 Token" />
       </Form.Item>
-      <Form.Item name="encodingAESKey" label="EncodingAESKey">
+      <Form.Item name="encoding_aes_key" label="EncodingAESKey">
         <Input placeholder="消息加密密钥（可选）" />
       </Form.Item>
     </>
@@ -353,10 +305,10 @@ function WechatConfigForm() {
 function WechatWorkConfigForm() {
   return (
     <>
-      <Form.Item name="corpId" label="Corp ID" rules={[{ required: true }]}>
+      <Form.Item name="corp_id" label="Corp ID" rules={[{ required: true }]}>
         <Input placeholder="企业 ID" />
       </Form.Item>
-      <Form.Item name="agentId" label="Agent ID" rules={[{ required: true }]}>
+      <Form.Item name="agent_id" label="Agent ID" rules={[{ required: true }]}>
         <Input placeholder="应用 AgentId" />
       </Form.Item>
       <Form.Item name="secret" label="Secret" rules={[{ required: true }]}>
@@ -365,7 +317,7 @@ function WechatWorkConfigForm() {
       <Form.Item name="token" label="Token" rules={[{ required: true }]}>
         <Input placeholder="消息加密 Token" />
       </Form.Item>
-      <Form.Item name="encodingAESKey" label="EncodingAESKey">
+      <Form.Item name="encoding_aes_key" label="EncodingAESKey">
         <Input placeholder="消息加密密钥（可选）" />
       </Form.Item>
     </>
@@ -376,17 +328,17 @@ function WechatWorkConfigForm() {
 function DingtalkConfigForm() {
   return (
     <>
-      <Form.Item name="appKey" label="App Key" rules={[{ required: true }]}>
-        <Input placeholder="钉钉应用 AppKey" />
+      <Form.Item name="client_id" label="Client ID" rules={[{ required: true }]}>
+        <Input placeholder="钉钉应用 Client ID" />
       </Form.Item>
       <Form.Item
-        name="appSecret"
-        label="App Secret"
+        name="client_secret"
+        label="Client Secret"
         rules={[{ required: true }]}
       >
-        <Input.Password placeholder="钉钉应用 AppSecret" />
+        <Input.Password placeholder="钉钉应用 Client Secret" />
       </Form.Item>
-      <Form.Item name="agentId" label="Agent ID">
+      <Form.Item name="agent_id" label="Agent ID">
         <Input placeholder="应用 AgentId（可选）" />
       </Form.Item>
     </>
@@ -397,20 +349,20 @@ function DingtalkConfigForm() {
 function FeishuConfigForm() {
   return (
     <>
-      <Form.Item name="appId" label="App ID" rules={[{ required: true }]}>
+      <Form.Item name="app_id" label="App ID" rules={[{ required: true }]}>
         <Input placeholder="飞书应用 App ID" />
       </Form.Item>
       <Form.Item
-        name="appSecret"
+        name="app_secret"
         label="App Secret"
         rules={[{ required: true }]}
       >
         <Input.Password placeholder="飞书应用 App Secret" />
       </Form.Item>
-      <Form.Item name="encryptKey" label="Encrypt Key">
+      <Form.Item name="encrypt_key" label="Encrypt Key">
         <Input placeholder="加密 Key（可选）" />
       </Form.Item>
-      <Form.Item name="verificationToken" label="Verification Token">
+      <Form.Item name="verification_token" label="Verification Token">
         <Input placeholder="验证 Token（可选）" />
       </Form.Item>
     </>
@@ -421,23 +373,23 @@ function FeishuConfigForm() {
 function SlackConfigForm() {
   return (
     <>
-      <Form.Item name="botToken" label="Bot Token" rules={[{ required: true }]}>
+      <Form.Item name="bot_token" label="Bot Token" rules={[{ required: true }]}>
         <Input.Password placeholder="xoxb-..." />
       </Form.Item>
-      <Form.Item name="appToken" label="App Token">
+      <Form.Item name="app_token" label="App Token">
         <Input.Password placeholder="xapp-...（可选）" />
       </Form.Item>
       <Form.Item
-        name="signingSecret"
+        name="signing_secret"
         label="Signing Secret"
         rules={[{ required: true }]}
       >
         <Input.Password placeholder="签名密钥" />
       </Form.Item>
-      <Form.Item name="clientId" label="Client ID">
+      <Form.Item name="client_id" label="Client ID">
         <Input placeholder="OAuth Client ID（可选）" />
       </Form.Item>
-      <Form.Item name="clientSecret" label="Client Secret">
+      <Form.Item name="client_secret" label="Client Secret">
         <Input.Password placeholder="OAuth Client Secret（可选）" />
       </Form.Item>
     </>
@@ -448,10 +400,10 @@ function SlackConfigForm() {
 function TelegramConfigForm() {
   return (
     <>
-      <Form.Item name="botToken" label="Bot Token" rules={[{ required: true }]}>
+      <Form.Item name="bot_token" label="Bot Token" rules={[{ required: true }]}>
         <Input.Password placeholder="123456:ABC..." />
       </Form.Item>
-      <Form.Item name="webhookUrl" label="Webhook URL">
+      <Form.Item name="webhook_url" label="Webhook URL">
         <Input placeholder="Webhook 地址（可选）" />
       </Form.Item>
     </>
@@ -462,17 +414,17 @@ function TelegramConfigForm() {
 function DiscordConfigForm() {
   return (
     <>
-      <Form.Item name="botToken" label="Bot Token" rules={[{ required: true }]}>
+      <Form.Item name="bot_token" label="Bot Token" rules={[{ required: true }]}>
         <Input.Password placeholder="Discord Bot Token" />
       </Form.Item>
       <Form.Item
-        name="applicationId"
+        name="application_id"
         label="Application ID"
         rules={[{ required: true }]}
       >
         <Input placeholder="Discord Application ID" />
       </Form.Item>
-      <Form.Item name="publicKey" label="Public Key">
+      <Form.Item name="public_key" label="Public Key">
         <Input placeholder="Public Key（可选）" />
       </Form.Item>
     </>
@@ -517,39 +469,39 @@ function WebhookConfigForm() {
 function EmailConfigForm() {
   return (
     <>
-      <Form.Item name="smtpHost" label="SMTP Host" rules={[{ required: true }]}>
+      <Form.Item name="smtp_host" label="SMTP Host" rules={[{ required: true }]}>
         <Input placeholder="smtp.example.com" />
       </Form.Item>
       <Form.Item
-        name="smtpPort"
+        name="smtp_port"
         label="SMTP Port"
         rules={[{ required: true }]}
         initialValue={587}
       >
         <InputNumber min={1} max={65535} className="w-full" />
       </Form.Item>
-      <Form.Item name="smtpUser" label="SMTP User" rules={[{ required: true }]}>
+      <Form.Item name="smtp_user" label="SMTP User" rules={[{ required: true }]}>
         <Input placeholder="用户名" />
       </Form.Item>
       <Form.Item
-        name="smtpPassword"
+        name="smtp_password"
         label="SMTP Password"
         rules={[{ required: true }]}
       >
         <Input.Password placeholder="密码" />
       </Form.Item>
       <Form.Item
-        name="fromAddress"
+        name="from_address"
         label="发件人地址"
         rules={[{ required: true }]}
       >
         <Input placeholder="noreply@example.com" />
       </Form.Item>
-      <Form.Item name="fromName" label="发件人名称">
+      <Form.Item name="from_name" label="发件人名称">
         <Input placeholder="AMOS" />
       </Form.Item>
       <Form.Item
-        name="useTLS"
+        name="use_tls"
         label="使用 TLS"
         valuePropName="checked"
         initialValue={true}
@@ -579,23 +531,23 @@ function SmsConfigForm() {
         />
       </Form.Item>
       <Form.Item
-        name="accessKeyId"
+        name="access_key_id"
         label="Access Key ID"
         rules={[{ required: true }]}
       >
         <Input placeholder="Access Key ID" />
       </Form.Item>
       <Form.Item
-        name="accessKeySecret"
+        name="access_key_secret"
         label="Access Key Secret"
         rules={[{ required: true }]}
       >
         <Input.Password placeholder="Access Key Secret" />
       </Form.Item>
-      <Form.Item name="signName" label="签名名称" rules={[{ required: true }]}>
+      <Form.Item name="sign_name" label="签名名称" rules={[{ required: true }]}>
         <Input placeholder="短信签名" />
       </Form.Item>
-      <Form.Item name="templateCode" label="模板 Code">
+      <Form.Item name="template_code" label="模板 Code">
         <Input placeholder="短信模板 Code（可选）" />
       </Form.Item>
       <Form.Item name="region" label="Region">
@@ -633,13 +585,13 @@ function CustomConfigForm() {
           placeholder='{"Content-Type": "application/json"}'
         />
       </Form.Item>
-      <Form.Item name="requestTemplate" label="请求模板">
+      <Form.Item name="request_template" label="请求模板">
         <Input.TextArea
           rows={4}
           placeholder='{"message": "{{message}}", "user": "{{userId}}"}'
         />
       </Form.Item>
-      <Form.Item name="responseMapping" label="响应映射">
+      <Form.Item name="response_mapping" label="响应映射">
         <Input.TextArea
           rows={3}
           placeholder='{"success": "$.success", "message": "$.data.message"}'
@@ -654,33 +606,33 @@ function WhatsAppConfigForm() {
   return (
     <>
       <Form.Item
-        name="phoneNumberId"
+        name="phone_number_id"
         label="Phone Number ID"
         rules={[{ required: true }]}
       >
         <Input placeholder="WhatsApp Business Phone Number ID" />
       </Form.Item>
       <Form.Item
-        name="businessAccountId"
+        name="business_account_id"
         label="Business Account ID"
         rules={[{ required: true }]}
       >
         <Input placeholder="WhatsApp Business Account ID" />
       </Form.Item>
       <Form.Item
-        name="accessToken"
+        name="access_token"
         label="Access Token"
         rules={[{ required: true }]}
       >
         <Input.Password placeholder="Permanent Access Token" />
       </Form.Item>
-      <Form.Item name="webhookVerifyToken" label="Webhook Verify Token">
+      <Form.Item name="webhook_verify_token" label="Webhook Verify Token">
         <Input placeholder="Webhook 验证 Token（可选）" />
       </Form.Item>
-      <Form.Item name="appId" label="App ID">
+      <Form.Item name="app_id" label="App ID">
         <Input placeholder="Facebook App ID（可选）" />
       </Form.Item>
-      <Form.Item name="appSecret" label="App Secret">
+      <Form.Item name="app_secret" label="App Secret">
         <Input.Password placeholder="Facebook App Secret（可选）" />
       </Form.Item>
     </>
@@ -692,21 +644,21 @@ function LineConfigForm() {
   return (
     <>
       <Form.Item
-        name="channelId"
+        name="channel_id"
         label="Channel ID"
         rules={[{ required: true }]}
       >
         <Input placeholder="Line Channel ID" />
       </Form.Item>
       <Form.Item
-        name="channelSecret"
+        name="channel_secret"
         label="Channel Secret"
         rules={[{ required: true }]}
       >
         <Input.Password placeholder="Line Channel Secret" />
       </Form.Item>
       <Form.Item
-        name="channelAccessToken"
+        name="channel_access_token"
         label="Channel Access Token"
         rules={[{ required: true }]}
       >
@@ -720,27 +672,27 @@ function LineConfigForm() {
 function MessengerConfigForm() {
   return (
     <>
-      <Form.Item name="pageId" label="Page ID" rules={[{ required: true }]}>
+      <Form.Item name="page_id" label="Page ID" rules={[{ required: true }]}>
         <Input placeholder="Facebook Page ID" />
       </Form.Item>
       <Form.Item
-        name="pageAccessToken"
+        name="page_access_token"
         label="Page Access Token"
         rules={[{ required: true }]}
       >
         <Input.Password placeholder="Page Access Token" />
       </Form.Item>
-      <Form.Item name="appId" label="App ID" rules={[{ required: true }]}>
+      <Form.Item name="app_id" label="App ID" rules={[{ required: true }]}>
         <Input placeholder="Facebook App ID" />
       </Form.Item>
       <Form.Item
-        name="appSecret"
+        name="app_secret"
         label="App Secret"
         rules={[{ required: true }]}
       >
         <Input.Password placeholder="Facebook App Secret" />
       </Form.Item>
-      <Form.Item name="verifyToken" label="Verify Token">
+      <Form.Item name="verify_token" label="Verify Token">
         <Input placeholder="Webhook 验证 Token（可选）" />
       </Form.Item>
     </>
@@ -752,24 +704,24 @@ function InstagramConfigForm() {
   return (
     <>
       <Form.Item
-        name="accountId"
+        name="account_id"
         label="Instagram Account ID"
         rules={[{ required: true }]}
       >
         <Input placeholder="Instagram Business Account ID" />
       </Form.Item>
       <Form.Item
-        name="accessToken"
+        name="access_token"
         label="Access Token"
         rules={[{ required: true }]}
       >
         <Input.Password placeholder="Page Access Token with Instagram permissions" />
       </Form.Item>
-      <Form.Item name="appId" label="App ID" rules={[{ required: true }]}>
+      <Form.Item name="app_id" label="App ID" rules={[{ required: true }]}>
         <Input placeholder="Facebook App ID" />
       </Form.Item>
       <Form.Item
-        name="appSecret"
+        name="app_secret"
         label="App Secret"
         rules={[{ required: true }]}
       >
@@ -783,23 +735,23 @@ function InstagramConfigForm() {
 function TeamsConfigForm() {
   return (
     <>
-      <Form.Item name="tenantId" label="Tenant ID" rules={[{ required: true }]}>
+      <Form.Item name="tenant_id" label="Tenant ID" rules={[{ required: true }]}>
         <Input placeholder="Azure AD Tenant ID" />
       </Form.Item>
-      <Form.Item name="clientId" label="Client ID" rules={[{ required: true }]}>
+      <Form.Item name="client_id" label="Client ID" rules={[{ required: true }]}>
         <Input placeholder="Azure AD Application Client ID" />
       </Form.Item>
       <Form.Item
-        name="clientSecret"
+        name="client_secret"
         label="Client Secret"
         rules={[{ required: true }]}
       >
         <Input.Password placeholder="Azure AD Application Client Secret" />
       </Form.Item>
-      <Form.Item name="botId" label="Bot ID">
+      <Form.Item name="bot_id" label="Bot ID">
         <Input placeholder="Microsoft App ID (Bot ID)（可选）" />
       </Form.Item>
-      <Form.Item name="botPassword" label="Bot Password">
+      <Form.Item name="bot_password" label="Bot Password">
         <Input.Password placeholder="Bot Password/Secret（可选）" />
       </Form.Item>
     </>

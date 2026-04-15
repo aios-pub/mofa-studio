@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Input, Button, Dropdown, message, Modal, Tag, Switch, Spin, Empty } from 'antd';
+import { Input, Button, Dropdown, message, Modal, Tag, Switch, Spin, Empty, Alert } from 'antd';
 import {
   PlusOutlined,
   SearchOutlined,
@@ -16,6 +16,7 @@ import {
   ExclamationCircleOutlined,
   SyncOutlined,
   StopOutlined,
+  CloseOutlined,
 } from '@ant-design/icons';
 import { channelApi, channelTypeConfig } from '@/services';
 import { agentApi } from '@/services';
@@ -41,6 +42,7 @@ export default function ChannelsListPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showTypeSelector, setShowTypeSelector] = useState(false);
   const [testLoading, setTestLoading] = useState<string | null>(null);
+  const [testResult, setTestResult] = useState<{ channelId: string; success: boolean; message: string } | null>(null);
 
   // 加载数据
   useEffect(() => {
@@ -91,16 +93,22 @@ export default function ChannelsListPage() {
   // 测试连接
   const handleTestConnection = async (channel: Channel) => {
     setTestLoading(channel.id);
+    setTestResult(null);
     try {
       const result = await channelApi.testConnection(channel.id);
       if (result.success) {
-        message.success(`连接测试成功${result.model_count ? `，可用模型 ${result.model_count} 个` : ''}`);
+        const msg = result.message || '连接测试成功';
+        message.success(msg);
+        setTestResult({ channelId: channel.id, success: true, message: msg });
       } else {
-        message.error(`连接测试失败: ${result.message}`);
+        const msg = result.message || '连接测试失败';
+        message.error(msg);
+        setTestResult({ channelId: channel.id, success: false, message: msg });
       }
     } catch (error) {
       console.error('Failed to test connection:', error);
       message.error('测试失败');
+      setTestResult({ channelId: channel.id, success: false, message: '测试请求失败，请检查网络或后端服务' });
     } finally {
       setTestLoading(null);
     }
@@ -279,6 +287,7 @@ export default function ChannelsListPage() {
             channel={selectedChannel}
             agents={agents}
             testLoading={testLoading === selectedChannel.id}
+            testResult={testResult?.channelId === selectedChannel.id ? testResult : null}
             onTest={() => handleTestConnection(selectedChannel)}
             onToggleStatus={() => handleToggleStatus(selectedChannel)}
             onUpdate={(data) => handleUpdateChannel(selectedChannel.id, data)}
@@ -328,6 +337,7 @@ function ChannelDetail({
   channel,
   agents,
   testLoading,
+  testResult,
   onTest,
   onToggleStatus,
   onUpdate,
@@ -336,6 +346,7 @@ function ChannelDetail({
   channel: Channel;
   agents: Agent[];
   testLoading: boolean;
+  testResult: { success: boolean; message: string } | null;
   onTest: () => void;
   onToggleStatus: () => void;
   onUpdate: (data: Partial<Channel>) => void;
@@ -382,7 +393,7 @@ function ChannelDetail({
       </div>
 
       {/* 快捷操作 */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-4">
         <Button
           type="primary"
           icon={<ApiOutlined />}
@@ -398,6 +409,17 @@ function ChannelDetail({
           编辑配置
         </Button>
       </div>
+
+      {/* 测试结果 */}
+      {testResult && (
+        <Alert
+          type={testResult.success ? 'success' : 'error'}
+          message={testResult.message}
+          showIcon
+          closable
+          className="mb-6"
+        />
+      )}
 
       {/* 统计卡片 */}
       <div className="grid grid-cols-4 gap-4 mb-6">
@@ -500,8 +522,8 @@ function ChannelConfigView({
     );
   }
 
-  const configEntries = Object.entries(channel.config.config).filter(
-    ([key]) => !['appSecret', 'secret', 'password', 'token', 'signingSecret', 'botToken', 'apiKey', 'accessKeySecret', 'smtpPassword'].includes(key)
+  const configEntries = Object.entries(channel.config).filter(
+    ([key]) => !['app_secret', 'secret', 'password', 'token', 'signing_secret', 'bot_token', 'api_key', 'access_key_secret', 'smtp_password', 'client_secret', 'access_token', 'channel_secret', 'channel_access_token', 'bot_password', 'encoding_aes_key', 'encrypt_key', 'verification_token'].includes(key)
   );
 
   return (

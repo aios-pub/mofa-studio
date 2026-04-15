@@ -55,7 +55,7 @@ function mapChannel(raw: BackendChannel): Channel {
     type: raw.channel_type as ChannelType,
     description: raw.description,
     status: raw.enabled ? "active" : "inactive",
-    config: (raw.config as Channel['config']) ?? { type: 'custom', config: { endpoint: '', method: 'POST' } },
+    config: (raw.config as Record<string, unknown>) ?? {},
     stats: { ...DEFAULT_STATS },
     enabled: raw.enabled,
     createdAt: parseDate(raw.create_time) ?? new Date(),

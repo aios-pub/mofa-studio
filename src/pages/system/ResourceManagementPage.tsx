@@ -102,38 +102,68 @@ export default function ResourceManagementPage() {
     }
   }, []);
 
-  const loadData = useCallback(async () => {
+  const loadApiKeys = useCallback(async () => {
     setLoading(true);
     try {
-      const [keys, quotaList, stats] = await Promise.all([
-        resourceApi.getApiKeys({
-          provider: keyFilterProvider || undefined,
-          status: keyFilterStatus || undefined,
-          search: keySearchQuery || undefined,
-        }),
-        resourceApi.getQuotas(),
-        resourceApi.getUsageStats(),
-      ]);
+      const keys = await resourceApi.getApiKeys({
+        provider: keyFilterProvider || undefined,
+        status: keyFilterStatus || undefined,
+        search: keySearchQuery || undefined,
+      });
       setApiKeys(keys);
-      setQuotas(quotaList);
-      setUsageStats(stats);
     } catch (error) {
-      console.error('Failed to load data:', error);
+      console.error('Failed to load api keys:', error);
     } finally {
       setLoading(false);
     }
   }, [keyFilterProvider, keyFilterStatus, keySearchQuery]);
 
+  const loadQuotas = useCallback(async () => {
+    setLoading(true);
+    try {
+      const quotaList = await resourceApi.getQuotas();
+      setQuotas(quotaList);
+    } catch (error) {
+      console.error('Failed to load quotas:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadUsageStats = useCallback(async () => {
+    setLoading(true);
+    try {
+      const stats = await resourceApi.getUsageStats();
+      setUsageStats(stats);
+    } catch (error) {
+      console.error('Failed to load usage stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadDataByTab = useCallback((tab: string) => {
+    if (tab === 'api-keys') loadApiKeys();
+    else if (tab === 'quotas') loadQuotas();
+    else if (tab === 'usage') loadUsageStats();
+  }, [loadApiKeys, loadQuotas, loadUsageStats]);
+
+  const handleTabChange = (key: string) => {
+    setActiveTab(key);
+    loadDataByTab(key);
+  };
+
+  // 初始加载：providers + 当前 tab 数据
   useEffect(() => {
     loadProviders();
-    loadData();
-  }, [loadProviders, loadData]);
+    loadDataByTab(activeTab);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDeleteKey = async (id: string) => {
     try {
       await resourceApi.deleteApiKey(id);
       message.success('密钥已删除');
-      loadData();
+      loadApiKeys();
     } catch (error) {
       console.error('Failed to delete key:', error);
       message.error('删除失败');
@@ -144,7 +174,7 @@ export default function ResourceManagementPage() {
     try {
       await resourceApi.revokeApiKey(id);
       message.success('密钥已撤销');
-      loadData();
+      loadApiKeys();
     } catch (error) {
       console.error('Failed to revoke key:', error);
       message.error('撤销失败');
@@ -175,7 +205,7 @@ export default function ResourceManagementPage() {
       await resourceApi.updateQuota(id, limits);
       setEditingQuota(null);
       message.success('配额已更新');
-      loadData();
+      loadQuotas();
     } catch (error) {
       console.error('Failed to update quota:', error);
       message.error('更新失败');
@@ -568,7 +598,7 @@ export default function ResourceManagementPage() {
             <Col xs={24} lg={12}>
               <Card title="Token 消耗分布">
                 <Space direction="vertical" className="w-full">
-                  {Object.entries(usageStats.tokensByProvider).map(([provider, tokens]) => {
+                  {Object.entries(usageStats.tokensByProvider ?? {}).map(([provider, tokens]) => {
                     const percentage = (tokens / usageStats.totalTokens) * 100 || 0;
                     return (
                       <div key={provider}>
@@ -593,7 +623,7 @@ export default function ResourceManagementPage() {
             <Col xs={24} lg={12}>
               <Card title="费用分布">
                 <Space direction="vertical" className="w-full">
-                  {Object.entries(usageStats.costByProvider).map(([provider, cost]) => {
+                  {Object.entries(usageStats.costByProvider ?? {}).map(([provider, cost]) => {
                     const percentage = (cost / usageStats.totalCost) * 100 || 0;
                     return (
                       <div key={provider}>
@@ -620,8 +650,8 @@ export default function ResourceManagementPage() {
           {/* 每日使用趋势 */}
           <Card title="近 30 天使用趋势">
             <div className="h-48 flex items-end gap-1">
-              {usageStats.dailyUsage.map((day, index) => {
-                const maxTokens = Math.max(...usageStats.dailyUsage.map((d) => d.tokens));
+              {(usageStats.dailyUsage ?? []).map((day, index) => {
+                const maxTokens = Math.max(...(usageStats.dailyUsage ?? []).map((d) => d.tokens));
                 const height = maxTokens > 0 ? (day.tokens / maxTokens) * 100 : 0;
                 return (
                   <Tooltip key={index} title={`${day.date}: ${formatNumber(day.tokens)} tokens`}>
@@ -655,7 +685,7 @@ export default function ResourceManagementPage() {
         actions={
           <Button
             icon={<ReloadOutlined spin={loading} />}
-            onClick={loadData}
+            onClick={() => loadDataByTab(activeTab)}
             loading={loading}
           >
             {t('common.refresh', '刷新')}
@@ -664,7 +694,7 @@ export default function ResourceManagementPage() {
       />
 
       <Card>
-        <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />
+        <Tabs activeKey={activeTab} onChange={handleTabChange} items={tabItems} />
       </Card>
 
       {/* 创建密钥弹窗 */}
@@ -679,7 +709,7 @@ export default function ResourceManagementPage() {
           });
           setCreateModalOpen(false);
           setNewlyCreatedKey(result.fullKey);
-          loadData();
+          loadApiKeys();
         }}
       />
 

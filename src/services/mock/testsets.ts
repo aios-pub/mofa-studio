@@ -9,6 +9,8 @@ import type {
   TestCaseFormData,
   TestReport,
   TestCaseStatus,
+  TestCategory,
+  TestCategoryFormData,
 } from "../../types/testset";
 
 // Mock 测试用例
@@ -65,6 +67,7 @@ let mockTestSets: TestSet[] = [
     name: "基础能力测试集",
     description: "测试 Agent 的基础对话能力",
     category: "基础测试",
+    categoryId: "cat-1",
     status: "idle",
     createTime: "2026-03-01T00:00:00",
     updateTime: "2026-03-14T00:00:00",
@@ -74,6 +77,7 @@ let mockTestSets: TestSet[] = [
     name: "代码能力测试集",
     description: "测试 Agent 的代码相关能力",
     category: "代码测试",
+    categoryId: "cat-2",
     status: "idle",
     createTime: "2026-03-05T00:00:00",
     updateTime: "2026-03-14T00:00:00",
@@ -83,9 +87,32 @@ let mockTestSets: TestSet[] = [
     name: "翻译能力测试集",
     description: "测试 Agent 的多语言翻译能力",
     category: "翻译测试",
+    categoryId: "cat-3",
     status: "idle",
     createTime: "2026-03-10T00:00:00",
     updateTime: "2026-03-14T00:00:00",
+  },
+];
+
+// Mock 测试分类
+let mockCategories: TestCategory[] = [
+  {
+    id: "cat-1",
+    name: "基础测试",
+    createTime: "2026-03-01T00:00:00",
+    updateTime: "2026-03-01T00:00:00",
+  },
+  {
+    id: "cat-2",
+    name: "代码测试",
+    createTime: "2026-03-01T00:00:00",
+    updateTime: "2026-03-01T00:00:00",
+  },
+  {
+    id: "cat-3",
+    name: "翻译测试",
+    createTime: "2026-03-01T00:00:00",
+    updateTime: "2026-03-01T00:00:00",
   },
 ];
 
@@ -126,6 +153,7 @@ export const testSetApi = {
       name: data.name,
       description: data.description,
       category: data.category,
+      categoryId: data.categoryId,
       status: "idle",
       createTime: now,
       updateTime: now,
@@ -144,6 +172,7 @@ export const testSetApi = {
       ...(data.name && { name: data.name }),
       ...(data.description !== undefined && { description: data.description }),
       ...(data.category !== undefined && { category: data.category }),
+      ...(data.categoryId !== undefined && { categoryId: data.categoryId }),
       updateTime: new Date().toISOString(),
     };
     return { ...mockTestSets[index] };
@@ -309,5 +338,57 @@ export const testSetApi = {
     const report = testReports.find((r) => r.id === id);
     if (!report) throw new Error("Report not found");
     return report;
+  },
+
+  // ==================== TestCategory CRUD ====================
+
+  async getAllCategories(): Promise<TestCategory[]> {
+    await delay(200);
+    return [...mockCategories];
+  },
+
+  async createCategory(data: TestCategoryFormData): Promise<TestCategory> {
+    await delay(200);
+    const now = new Date().toISOString();
+    const category: TestCategory = {
+      id: `cat-${Date.now()}`,
+      name: data.name,
+      parentId: data.parentId,
+      createTime: now,
+      updateTime: now,
+    };
+    mockCategories.push(category);
+    return category;
+  },
+
+  async updateCategory(
+    id: string,
+    data: { name: string },
+  ): Promise<TestCategory> {
+    await delay(200);
+    const index = mockCategories.findIndex((c) => c.id === id);
+    if (index === -1) throw new Error("Category not found");
+    mockCategories[index] = {
+      ...mockCategories[index],
+      name: data.name,
+      updateTime: new Date().toISOString(),
+    };
+    return { ...mockCategories[index] };
+  },
+
+  async deleteCategory(id: string): Promise<boolean> {
+    await delay(200);
+    // 检查是否有子分类
+    const hasChildren = mockCategories.some((c) => c.parentId === id);
+    if (hasChildren) {
+      throw new Error("该分类下有子分类，无法删除");
+    }
+    // 检查是否有测试集
+    const hasTestSets = mockTestSets.some((t) => t.categoryId === id);
+    if (hasTestSets) {
+      throw new Error("该分类下有测试集，无法删除");
+    }
+    mockCategories = mockCategories.filter((c) => c.id !== id);
+    return true;
   },
 };

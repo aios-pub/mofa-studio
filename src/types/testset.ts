@@ -23,6 +23,7 @@ export interface TestSet {
   name: string;
   description?: string;
   category?: string;
+  categoryId?: string;
   status: string;
   tenantId?: string;
   createTime: string;
@@ -63,6 +64,23 @@ export interface TestSetFormData {
   name: string;
   description?: string;
   category?: string;
+  categoryId?: string;
+}
+
+/** 测试分类 - 对应后端 TestCategoryDTO */
+export interface TestCategory {
+  id: string;
+  name: string;
+  parentId?: string;
+  tenantId?: string;
+  createTime: string;
+  updateTime: string;
+}
+
+/** 分类创建/编辑表单数据 */
+export interface TestCategoryFormData {
+  name: string;
+  parentId?: string;
 }
 
 /** 测试报告 - 对应后端 TestReportDTO */

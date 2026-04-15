@@ -10,6 +10,8 @@ import type {
   TestCase,
   TestCaseFormData,
   TestReport,
+  TestCategory,
+  TestCategoryFormData,
   Assertion,
 } from "../../types/testset";
 
@@ -20,7 +22,17 @@ interface BackendTestSet {
   name: string;
   description?: string;
   category?: string;
+  category_id?: string;
   status: string;
+  tenant_id?: string;
+  create_time: string;
+  update_time: string;
+}
+
+interface BackendTestCategory {
+  id: string;
+  name: string;
+  parent_id?: string;
   tenant_id?: string;
   create_time: string;
   update_time: string;
@@ -61,7 +73,19 @@ function mapTestSet(raw: BackendTestSet): TestSet {
     name: raw.name,
     description: raw.description,
     category: raw.category,
+    categoryId: raw.category_id,
     status: raw.status,
+    tenantId: raw.tenant_id,
+    createTime: raw.create_time,
+    updateTime: raw.update_time,
+  };
+}
+
+function mapTestCategory(raw: BackendTestCategory): TestCategory {
+  return {
+    id: raw.id,
+    name: raw.name,
+    parentId: raw.parent_id,
     tenantId: raw.tenant_id,
     createTime: raw.create_time,
     updateTime: raw.update_time,
@@ -121,6 +145,7 @@ const testSetRealApi = {
       name: data.name,
       description: data.description,
       category: data.category,
+      category_id: data.categoryId,
     });
     return mapTestSet(raw);
   },
@@ -133,6 +158,7 @@ const testSetRealApi = {
       name: merged.name,
       description: merged.description,
       category: merged.category,
+      category_id: merged.categoryId,
     });
     return mapTestSet(raw);
   },
@@ -267,6 +293,45 @@ const testSetRealApi = {
       `/api/testset/report/${id}`,
     );
     return mapTestReport(raw);
+  },
+
+  // ==================== TestCategory CRUD ====================
+
+  getAllCategories: async (): Promise<TestCategory[]> => {
+    const rawList = await apiClient.get<BackendTestCategory[]>(
+      "/api/testset/categories",
+    );
+    return rawList.map(mapTestCategory);
+  },
+
+  createCategory: async (data: TestCategoryFormData): Promise<TestCategory> => {
+    const raw = await apiClient.post<BackendTestCategory>(
+      "/api/testset/category/create",
+      {
+        name: data.name,
+        parent_id: data.parentId,
+      },
+    );
+    return mapTestCategory(raw);
+  },
+
+  updateCategory: async (
+    id: string,
+    data: { name: string },
+  ): Promise<TestCategory> => {
+    const raw = await apiClient.post<BackendTestCategory>(
+      "/api/testset/category/update",
+      {
+        id,
+        name: data.name,
+      },
+    );
+    return mapTestCategory(raw);
+  },
+
+  deleteCategory: async (id: string): Promise<boolean> => {
+    await apiClient.delete(`/api/testset/category/delete/${id}`);
+    return true;
   },
 };
 

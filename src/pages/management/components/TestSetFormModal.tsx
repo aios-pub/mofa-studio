@@ -2,16 +2,19 @@
  * 测试集创建/编辑表单弹窗
  */
 
-import { useEffect } from "react";
-import { Form, Input } from "antd";
+import { useEffect, useMemo } from "react";
+import { Form, Input, TreeSelect } from "antd";
 import { FormModal } from "@/components/common/Modal";
-import type { TestSet, TestSetFormData } from "@/types/testset";
+import type { TestSet, TestSetFormData, TestCategory } from "@/types/testset";
+import { convertFlatToTree } from "@/utils/tree";
 
 interface TestSetFormModalProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: TestSetFormData) => Promise<void>;
   testSet?: TestSet | null;
+  categories: TestCategory[];
+  defaultCategoryId?: string;
   loading?: boolean;
 }
 
@@ -20,10 +23,31 @@ export function TestSetFormModal({
   onClose,
   onSubmit,
   testSet,
+  categories,
+  defaultCategoryId,
   loading,
 }: TestSetFormModalProps) {
   const [form] = Form.useForm<TestSetFormData>();
   const isEdit = !!testSet;
+
+  // 构建分类树选择数据
+  const categoryTreeData = useMemo(() => {
+    const flatNodes = categories.map((cat) => ({
+      id: cat.id,
+      parentId: cat.parentId || "",
+      title: cat.name,
+      value: cat.id,
+    }));
+    const tree = convertFlatToTree(flatNodes);
+    return tree.map((node) => ({
+      title: node.title,
+      value: node.value,
+      children: node.children?.map((child) => ({
+        title: child.title,
+        value: child.value,
+      })),
+    }));
+  }, [categories]);
 
   useEffect(() => {
     if (open) {
@@ -31,13 +55,16 @@ export function TestSetFormModal({
         form.setFieldsValue({
           name: testSet.name,
           description: testSet.description || "",
-          category: testSet.category || "",
+          categoryId: testSet.categoryId || undefined,
         });
       } else {
         form.resetFields();
+        if (defaultCategoryId) {
+          form.setFieldsValue({ categoryId: defaultCategoryId });
+        }
       }
     }
-  }, [open, testSet, form]);
+  }, [open, testSet, form, defaultCategoryId]);
 
   const handleOk = async () => {
     const values = await form.validateFields();
@@ -63,8 +90,13 @@ export function TestSetFormModal({
           <Input placeholder="请输入测试集名称" />
         </Form.Item>
 
-        <Form.Item name="category" label="分类">
-          <Input placeholder="请输入分类（如：基础测试、代码测试）" />
+        <Form.Item name="categoryId" label="所属分类">
+          <TreeSelect
+            treeData={categoryTreeData}
+            placeholder="选择分类文件夹"
+            allowClear
+            treeDefaultExpandAll
+          />
         </Form.Item>
 
         <Form.Item name="description" label="描述">

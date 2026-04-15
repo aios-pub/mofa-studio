@@ -4,23 +4,19 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  Input,
   Button,
   Tag,
   Select,
   message,
   Tabs,
-  Collapse,
   Typography,
   Card,
   Statistic,
 } from "antd";
 import {
   PlusOutlined,
-  SearchOutlined,
   EditOutlined,
   DeleteOutlined,
-  CopyOutlined,
   ExperimentOutlined,
   LoadingOutlined,
   CheckCircleOutlined,
@@ -29,7 +25,6 @@ import {
   BarChartOutlined,
   FileTextOutlined,
   PlayCircleOutlined,
-  FolderOutlined,
 } from "@ant-design/icons";
 import type {
   TestSet,
@@ -37,29 +32,46 @@ import type {
   TestReport,
   TestSetFormData,
   TestCaseFormData,
+  TestCategory,
+  TestCategoryFormData,
 } from "../../types/testset";
 import { testSetApi, agentApi } from "@/services";
 import { showDeleteConfirm } from "@/components/common/Modal";
 import { TestSetFormModal } from "./components/TestSetFormModal";
 import { TestCaseFormModal } from "./components/TestCaseFormModal";
+import { CategoryFormModal } from "./components/CategoryFormModal";
+import { TestSetTree } from "./components/TestSetTree";
 
 const { Text, Title } = Typography;
 
 export default function TestSetsListPage() {
   const [testSets, setTestSets] = useState<TestSet[]>([]);
+  const [categories, setCategories] = useState<TestCategory[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedTestSet, setSelectedTestSet] = useState<TestSet | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
   // Modal states
   const [testSetModalOpen, setTestSetModalOpen] = useState(false);
   const [editingTestSet, setEditingTestSet] = useState<TestSet | null>(null);
   const [testSetModalLoading, setTestSetModalLoading] = useState(false);
+  const [createTestSetCategoryId, setCreateTestSetCategoryId] = useState<
+    string | undefined
+  >();
+
+  // Category modal states
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<TestCategory | null>(
+    null,
+  );
+  const [createCategoryParentId, setCreateCategoryParentId] = useState<
+    string | undefined
+  >();
+  const [categoryModalLoading, setCategoryModalLoading] = useState(false);
 
   useEffect(() => {
     loadTestSets();
+    loadCategories();
   }, []);
 
   const loadTestSets = async () => {
@@ -74,47 +86,20 @@ export default function TestSetsListPage() {
     }
   };
 
-  // 获取所有分类
-  const categories = [
-    "all",
-    ...new Set(
-      testSets
-        .map((t) => t.category)
-        .filter((c): c is string => !!c),
-    ),
-  ];
-
-  // 过滤测试集
-  const filteredTestSets = testSets.filter((t) => {
-    const matchesSearch =
-      t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (t.description || "").toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "all" || t.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  // 按分类分组
-  const groupedTestSets = filteredTestSets.reduce(
-    (acc, testSet) => {
-      const cat = testSet.category || "未分类";
-      if (!acc[cat]) {
-        acc[cat] = [];
-      }
-      acc[cat].push(testSet);
-      return acc;
-    },
-    {} as Record<string, TestSet[]>,
-  );
-
-  const handleCategoryChange = (keys: string | string[]) => {
-    setExpandedCategories(Array.isArray(keys) ? keys : [keys]);
+  const loadCategories = async () => {
+    try {
+      const data = await testSetApi.getAllCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error("Failed to load categories:", error);
+    }
   };
 
   // ==================== TestSet CRUD ====================
 
-  const handleCreateTestSet = () => {
+  const handleCreateTestSet = (categoryId?: string) => {
     setEditingTestSet(null);
+    setCreateTestSetCategoryId(categoryId);
     setTestSetModalOpen(true);
   };
 
@@ -169,170 +154,104 @@ export default function TestSetsListPage() {
     });
   };
 
-  const handleDuplicateTestSet = async (testSet: TestSet) => {
-    try {
-      const created = await testSetApi.create({
-        name: `${testSet.name} (副本)`,
-        description: testSet.description,
-        category: testSet.category,
-      });
-      setTestSets((prev) => [...prev, created]);
-      message.success("测试集已复制");
-    } catch (error) {
-      console.error("Failed to duplicate test set:", error);
-      message.error("复制失败");
-    }
-  };
-
   const handleSelectTestSet = (testSet: TestSet) => {
     setSelectedTestSet(testSet);
   };
 
+  // ==================== Category CRUD ====================
+
+  const handleCreateCategory = (parentId?: string) => {
+    setEditingCategory(null);
+    setCreateCategoryParentId(parentId);
+    setCategoryModalOpen(true);
+  };
+
+  const handleEditCategory = (category: TestCategory) => {
+    setEditingCategory(category);
+    setCategoryModalOpen(true);
+  };
+
+  const handleDeleteCategory = (category: TestCategory) => {
+    showDeleteConfirm({
+      title: "删除分类",
+      content: `确定要删除分类「${category.name}」吗？`,
+      onOk: async () => {
+        try {
+          await testSetApi.deleteCategory(category.id);
+          setCategories((prev) => prev.filter((c) => c.id !== category.id));
+          message.success("分类已删除");
+        } catch (error: any) {
+          console.error("Failed to delete category:", error);
+          message.error(error?.message || "删除失败");
+        }
+      },
+    });
+  };
+
+  const handleCategorySubmit = async (data: TestCategoryFormData) => {
+    try {
+      setCategoryModalLoading(true);
+      if (editingCategory) {
+        const updated = await testSetApi.updateCategory(editingCategory.id, {
+          name: data.name,
+        });
+        setCategories((prev) =>
+          prev.map((c) => (c.id === editingCategory.id ? updated : c)),
+        );
+        message.success("分类已更新");
+      } else {
+        const created = await testSetApi.createCategory(data);
+        setCategories((prev) => [...prev, created]);
+        message.success("分类已创建");
+      }
+      setCategoryModalOpen(false);
+    } catch (error) {
+      console.error("Failed to save category:", error);
+      message.error("保存失败");
+    } finally {
+      setCategoryModalLoading(false);
+    }
+  };
+
   return (
     <div className="flex h-full">
-      {/* 左侧列表 */}
+      {/* 左侧树形列表 */}
       <div className="w-80 border-r border-[var(--color-border)] flex flex-col bg-[var(--color-bg-secondary)]">
         {/* 头部 */}
-        <div className="p-4 space-y-3 border-b border-[var(--color-border)]">
-          <div className="flex items-center justify-between">
-            <Title level={5} style={{ margin: 0 }}>
-              测试集管理
-            </Title>
+        <div className="p-4 flex items-center justify-between border-b border-[var(--color-border)]">
+          <Title level={5} style={{ margin: 0 }}>
+            测试集管理
+          </Title>
+          <div className="flex gap-1">
             <Button
               type="primary"
               icon={<PlusOutlined />}
               size="small"
-              onClick={handleCreateTestSet}
+              onClick={() => handleCreateTestSet()}
+              title="新建测试集"
             />
           </div>
-
-          {/* 搜索 */}
-          <Input
-            placeholder="搜索测试集..."
-            prefix={<SearchOutlined />}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            allowClear
-          />
-
-          {/* 分类筛选 */}
-          <Select
-            value={selectedCategory}
-            onChange={setSelectedCategory}
-            style={{ width: "100%" }}
-            size="small"
-            options={categories.map((cat) => ({
-              label: cat === "all" ? "全部分类" : cat,
-              value: cat,
-            }))}
-          />
         </div>
 
-        {/* 列表 */}
-        <div className="flex-1 overflow-y-auto">
-          {loading ? (
-            <div className="text-center py-8">
-              <Text type="secondary">加载中...</Text>
-            </div>
-          ) : filteredTestSets.length === 0 ? (
-            <div className="text-center py-8">
-              <ExperimentOutlined
-                style={{
-                  fontSize: 24,
-                  opacity: 0.5,
-                  marginBottom: 8,
-                  display: "block",
-                }}
-              />
-              <Text type="secondary">暂无测试集</Text>
-            </div>
-          ) : (
-            <Collapse
-              activeKey={expandedCategories}
-              onChange={handleCategoryChange}
-              expandIconPosition="start"
-              bordered={false}
-              style={{ background: "transparent" }}
-              items={Object.entries(groupedTestSets).map(
-                ([category, categoryTestSets]) => ({
-                  key: category,
-                  label: (
-                    <div className="flex items-center gap-2">
-                      <FolderOutlined style={{ fontSize: 12 }} />
-                      <Text strong style={{ fontSize: 13 }}>
-                        {category}
-                      </Text>
-                      <Tag style={{ marginLeft: 4, fontSize: 11 }}>
-                        {categoryTestSets.length}
-                      </Tag>
-                    </div>
-                  ),
-                  children: (
-                    <div className="space-y-1">
-                      {categoryTestSets.map((testSet) => (
-                        <div
-                          key={testSet.id}
-                          onClick={() => handleSelectTestSet(testSet)}
-                          className={`group flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all ${
-                            selectedTestSet?.id === testSet.id
-                              ? "bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30"
-                              : "hover:bg-[var(--color-bg-tertiary)] border border-transparent"
-                          }`}
-                        >
-                          <div className="flex-shrink-0 p-1.5 rounded bg-gray-500/10 text-gray-500">
-                            <ExperimentOutlined style={{ fontSize: 12 }} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <Text
-                              strong
-                              ellipsis
-                              style={{ display: "block", fontSize: 13 }}
-                            >
-                              {testSet.name}
-                            </Text>
-                            <Text type="secondary" style={{ fontSize: 12 }}>
-                              {testSet.status === "idle" ? "待测试" : testSet.status === "completed" ? "已完成" : "运行中"}
-                            </Text>
-                          </div>
-                          <div className="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button
-                              type="text"
-                              size="small"
-                              icon={<CopyOutlined />}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDuplicateTestSet(testSet);
-                              }}
-                            />
-                            <Button
-                              type="text"
-                              size="small"
-                              icon={<EditOutlined />}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEditTestSet(testSet);
-                              }}
-                            />
-                            <Button
-                              type="text"
-                              size="small"
-                              danger
-                              icon={<DeleteOutlined />}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteTestSet(testSet);
-                              }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ),
-                }),
-              )}
-            />
-          )}
-        </div>
+        {/* 树形列表 */}
+        {loading ? (
+          <div className="text-center py-8">
+            <Text type="secondary">加载中...</Text>
+          </div>
+        ) : (
+          <TestSetTree
+            testSets={testSets}
+            categories={categories}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedTestSetId={selectedTestSet?.id || null}
+            onSelectTestSet={handleSelectTestSet}
+            onCreateTestSet={handleCreateTestSet}
+            onCreateCategory={handleCreateCategory}
+            onEditCategory={handleEditCategory}
+            onDeleteCategory={handleDeleteCategory}
+          />
+        )}
       </div>
 
       {/* 右侧详情 */}
@@ -357,7 +276,7 @@ export default function TestSetsListPage() {
               <Title level={5} type="secondary">
                 选择一个测试集
               </Title>
-              <Text type="secondary">从左侧列表中选择查看详情</Text>
+              <Text type="secondary">从左侧树形列表中选择查看详情</Text>
             </div>
           </div>
         )}
@@ -369,10 +288,27 @@ export default function TestSetsListPage() {
         onClose={() => {
           setTestSetModalOpen(false);
           setEditingTestSet(null);
+          setCreateTestSetCategoryId(undefined);
         }}
         onSubmit={handleTestSetSubmit}
         testSet={editingTestSet}
+        categories={categories}
+        defaultCategoryId={createTestSetCategoryId}
         loading={testSetModalLoading}
+      />
+
+      {/* 分类创建/编辑弹窗 */}
+      <CategoryFormModal
+        open={categoryModalOpen}
+        onClose={() => {
+          setCategoryModalOpen(false);
+          setEditingCategory(null);
+          setCreateCategoryParentId(undefined);
+        }}
+        onSubmit={handleCategorySubmit}
+        category={editingCategory}
+        parentId={createCategoryParentId}
+        loading={categoryModalLoading}
       />
     </div>
   );

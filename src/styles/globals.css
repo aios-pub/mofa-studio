@@ -372,6 +372,34 @@ body {
     pointer-events: none;
 }
 
+/* ========== 测试集树节点 hover 图标 ========== */
+.test-set-tree .ant-tree-treenode {
+    display: flex !important;
+    align-items: center !important;
+}
+
+.test-set-tree .ant-tree-node-content-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+
+.test-set-tree .ant-tree-treenode .tree-node-add {
+    opacity: 0;
+    transition: opacity 0.15s;
+    color: #22c55e;
+    margin-left: auto;
+}
+
+.test-set-tree .ant-tree-treenode .tree-node-add:hover {
+    color: #16a34a;
+}
+
+.test-set-tree .ant-tree-treenode:hover .tree-node-add {
+    opacity: 1;
+}
+
 /* 文字截断 */
 .truncate-2 {
     display: -webkit-box;

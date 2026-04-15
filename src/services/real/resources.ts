@@ -44,8 +44,18 @@ interface ResourceQuota {
   targetType?: string;
   targetId?: string;
   targetName?: string;
-  limit: number;
-  used: number;
+  limits: {
+    maxTokens: number;
+    maxRequests: number;
+    maxConversations: number;
+    maxCost: number;
+  };
+  usage: {
+    tokens: number;
+    requests: number;
+    conversations: number;
+    cost: number;
+  };
   period?: string;
   resetAt?: Date;
   createdAt?: Date;
@@ -121,8 +131,8 @@ function mapApiKeyToBackend(data: Partial<ApiKey>): Record<string, unknown> {
 }
 
 function mapResourceQuota(raw: BackendResourceQuota): ResourceQuota {
-  const limits = raw.limits as Record<string, unknown> ?? {};
-  const usage = raw.usage as Record<string, unknown> ?? {};
+  const limits = (raw.limits as Record<string, number>) ?? {};
+  const usage = (raw.usage as Record<string, number>) ?? {};
   return {
     id: raw.id,
     name: raw.name,
@@ -130,23 +140,22 @@ function mapResourceQuota(raw: BackendResourceQuota): ResourceQuota {
     targetType: raw.target_type,
     targetId: raw.target_id,
     targetName: raw.target_name,
-    limit: (limits as Record<string, number>).limit ?? 0,
-    used: (usage as Record<string, number>).used ?? 0,
+    limits: {
+      maxTokens: limits.maxTokens ?? limits.max_tokens ?? 0,
+      maxRequests: limits.maxRequests ?? limits.max_requests ?? 0,
+      maxConversations: limits.maxConversations ?? limits.max_conversations ?? 0,
+      maxCost: limits.maxCost ?? limits.max_cost ?? 0,
+    },
+    usage: {
+      tokens: usage.tokens ?? 0,
+      requests: usage.requests ?? 0,
+      conversations: usage.conversations ?? 0,
+      cost: usage.cost ?? 0,
+    },
     period: raw.period,
     resetAt: parseDate(raw.reset_at),
     createdAt: parseDate(raw.create_time),
   };
-}
-
-function mapQuotaToBackend(data: Partial<ResourceQuota>): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-  if (data.name !== undefined) result.name = data.name;
-  if (data.targetType !== undefined) result.target_type = data.targetType;
-  if (data.targetId !== undefined) result.target_id = data.targetId;
-  if (data.limit !== undefined) result.limits = { limit: data.limit };
-  if (data.used !== undefined) result.usage = { used: data.used };
-  if (data.period !== undefined) result.period = data.period;
-  return result;
 }
 
 // ==================== API 方法 ====================
@@ -222,15 +231,34 @@ const resourceRealApi = {
   },
 
   async createQuota(data: Partial<ResourceQuota>): Promise<ResourceQuota> {
-    const body = mapQuotaToBackend(data);
+    const body: Record<string, unknown> = {
+      name: data.name || "",
+      target_type: data.targetType || "global",
+      target_id: data.targetId,
+      target_name: data.targetName,
+      limits: data.limits ?? { maxTokens: 0, maxRequests: 0, maxConversations: 0, maxCost: 0 },
+      usage: { tokens: 0, requests: 0, conversations: 0, cost: 0 },
+      period: data.period || "monthly",
+    };
     const raw = await apiClient.post<BackendResourceQuota>("/api/resource/quota/create", body);
     return mapResourceQuota(raw);
   },
 
   async updateQuota(id: string, data: Partial<ResourceQuota>): Promise<ResourceQuota> {
-    const existing = await resourceRealApi.getQuota(id);
-    const merged = { ...existing, ...data };
-    const body = { id, ...mapQuotaToBackend(merged) };
+    const body: Record<string, unknown> = { id };
+    if (data.name !== undefined) body.name = data.name;
+    if (data.targetType !== undefined) body.target_type = data.targetType;
+    if (data.targetId !== undefined) body.target_id = data.targetId;
+    if (data.targetName !== undefined) body.target_name = data.targetName;
+    if (data.limits !== undefined) {
+      body.limits = {
+        maxTokens: data.limits.maxTokens,
+        maxRequests: data.limits.maxRequests,
+        maxConversations: data.limits.maxConversations,
+        maxCost: data.limits.maxCost,
+      };
+    }
+    if (data.period !== undefined) body.period = data.period;
     const raw = await apiClient.post<BackendResourceQuota>("/api/resource/quota/update", body);
     return mapResourceQuota(raw);
   },

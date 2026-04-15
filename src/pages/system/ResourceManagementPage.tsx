@@ -89,6 +89,7 @@ export default function ResourceManagementPage() {
   // Quotas state
   const [quotas, setQuotas] = useState<ResourceQuota[]>([]);
   const [editingQuota, setEditingQuota] = useState<ResourceQuota | null>(null);
+  const [createQuotaModalOpen, setCreateQuotaModalOpen] = useState(false);
 
   // Usage stats
   const [usageStats, setUsageStats] = useState<ResourceUsageStats | null>(null);
@@ -202,13 +203,42 @@ export default function ResourceManagementPage() {
 
   const handleUpdateQuota = async (id: string, limits: Partial<QuotaLimits>) => {
     try {
-      await resourceApi.updateQuota(id, limits);
+      await resourceApi.updateQuota(id, { limits });
       setEditingQuota(null);
       message.success('配额已更新');
       loadQuotas();
     } catch (error) {
       console.error('Failed to update quota:', error);
       message.error('更新失败');
+    }
+  };
+
+  const handleDeleteQuota = async (id: string) => {
+    try {
+      await resourceApi.deleteQuota(id);
+      message.success('配额已删除');
+      loadQuotas();
+    } catch (error) {
+      console.error('Failed to delete quota:', error);
+      message.error('删除失败');
+    }
+  };
+
+  const handleCreateQuota = async (data: {
+    name: string;
+    targetType: string;
+    targetName?: string;
+    limits: QuotaLimits;
+    period: string;
+  }) => {
+    try {
+      await resourceApi.createQuota(data);
+      setCreateQuotaModalOpen(false);
+      message.success('配额已创建');
+      loadQuotas();
+    } catch (error) {
+      console.error('Failed to create quota:', error);
+      message.error('创建失败');
     }
   };
 
@@ -450,93 +480,119 @@ export default function ResourceManagementPage() {
         </span>
       ),
       children: (
-        <Row gutter={[16, 16]}>
-          {quotas.map((quota) => {
-            const tokenPercentage = (quota.usage.tokens / quota.limits.maxTokens) * 100 || 0;
-            const requestPercentage = (quota.usage.requests / quota.limits.maxRequests) * 100 || 0;
-            const costPercentage = (quota.usage.cost / quota.limits.maxCost) * 100 || 0;
+        <div className="space-y-4">
+          <div className="flex justify-end">
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setCreateQuotaModalOpen(true)}
+            >
+              新建配额
+            </Button>
+          </div>
 
-            return (
-              <Col key={quota.id} xs={24} lg={12}>
-                <Card
-                  size="small"
-                  title={quota.name}
-                  extra={
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<SettingOutlined />}
-                      onClick={() => setEditingQuota(quota)}
-                    />
-                  }
-                >
-                  <p className="text-xs text-[var(--color-text-tertiary)] mb-4">
-                    {quota.targetType === 'global'
-                      ? '全局配额'
-                      : `${quota.targetType === 'user' ? '用户' : quota.targetType === 'department' ? '部门' : 'Agent'}: ${quota.targetName}`}
-                  </p>
+          <Row gutter={[16, 16]}>
+            {quotas.map((quota) => {
+              const tokenPercentage = (quota.usage.tokens / quota.limits.maxTokens) * 100 || 0;
+              const requestPercentage = (quota.usage.requests / quota.limits.maxRequests) * 100 || 0;
+              const costPercentage = (quota.usage.cost / quota.limits.maxCost) * 100 || 0;
 
-                  <Space direction="vertical" className="w-full" size="middle">
-                    {/* Tokens */}
-                    <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span>Tokens</span>
-                        <span>
-                          {formatNumber(quota.usage.tokens)} / {formatNumber(quota.limits.maxTokens)}
-                        </span>
+              return (
+                <Col key={quota.id} xs={24} lg={12}>
+                  <Card
+                    size="small"
+                    title={quota.name}
+                    extra={
+                      <Space>
+                        <Tooltip title="编辑配额">
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<SettingOutlined />}
+                            onClick={() => setEditingQuota(quota)}
+                          />
+                        </Tooltip>
+                        <Popconfirm
+                          title="确定要删除此配额吗？"
+                          onConfirm={() => handleDeleteQuota(quota.id)}
+                          okText="确定"
+                          cancelText="取消"
+                        >
+                          <Tooltip title="删除配额">
+                            <Button type="text" size="small" danger icon={<DeleteOutlined />} />
+                          </Tooltip>
+                        </Popconfirm>
+                      </Space>
+                    }
+                  >
+                    <p className="text-xs text-[var(--color-text-tertiary)] mb-4">
+                      {quota.targetType === 'global'
+                        ? '全局配额'
+                        : `${quota.targetType === 'user' ? '用户' : quota.targetType === 'department' ? '部门' : 'Agent'}: ${quota.targetName}`}
+                    </p>
+
+                    <Space direction="vertical" className="w-full" size="middle">
+                      {/* Tokens */}
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span>Tokens</span>
+                          <span>
+                            {formatNumber(quota.usage.tokens)} / {formatNumber(quota.limits.maxTokens)}
+                          </span>
+                        </div>
+                        <Progress
+                          percent={Math.min(tokenPercentage, 100)}
+                          strokeColor={getUsageColor(tokenPercentage)}
+                          showInfo={false}
+                          size="small"
+                        />
                       </div>
-                      <Progress
-                        percent={Math.min(tokenPercentage, 100)}
-                        strokeColor={getUsageColor(tokenPercentage)}
-                        showInfo={false}
-                        size="small"
-                      />
-                    </div>
 
-                    {/* Requests */}
-                    <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span>请求数</span>
-                        <span>
-                          {formatNumber(quota.usage.requests)} / {formatNumber(quota.limits.maxRequests)}
-                        </span>
+                      {/* Requests */}
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span>请求数</span>
+                          <span>
+                            {formatNumber(quota.usage.requests)} / {formatNumber(quota.limits.maxRequests)}
+                          </span>
+                        </div>
+                        <Progress
+                          percent={Math.min(requestPercentage, 100)}
+                          strokeColor={getUsageColor(requestPercentage)}
+                          showInfo={false}
+                          size="small"
+                        />
                       </div>
-                      <Progress
-                        percent={Math.min(requestPercentage, 100)}
-                        strokeColor={getUsageColor(requestPercentage)}
-                        showInfo={false}
-                        size="small"
-                      />
-                    </div>
 
-                    {/* Cost */}
-                    <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span>费用</span>
-                        <span>
-                          {formatCurrency(quota.usage.cost)} / {formatCurrency(quota.limits.maxCost)}
-                        </span>
+                      {/* Cost */}
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span>费用</span>
+                          <span>
+                            {formatCurrency(quota.usage.cost)} / {formatCurrency(quota.limits.maxCost)}
+                          </span>
+                        </div>
+                        <Progress
+                          percent={Math.min(costPercentage, 100)}
+                          strokeColor={getUsageColor(costPercentage)}
+                          showInfo={false}
+                          size="small"
+                        />
                       </div>
-                      <Progress
-                        percent={Math.min(costPercentage, 100)}
-                        strokeColor={getUsageColor(costPercentage)}
-                        showInfo={false}
-                        size="small"
-                      />
-                    </div>
-                  </Space>
+                    </Space>
 
-                  <div className="flex justify-between text-xs text-[var(--color-text-tertiary)] mt-4 pt-3 border-t border-[var(--color-border)]">
-                    <span>
-                      周期: {quota.period === 'daily' ? '每日' : quota.period === 'weekly' ? '每周' : '每月'}
-                    </span>
-                    <span>重置: {formatDate(quota.resetAt)}</span>
-                  </div>
-                </Card>
-              </Col>
-            );
-          })}
-        </Row>
+                    <div className="flex justify-between text-xs text-[var(--color-text-tertiary)] mt-4 pt-3 border-t border-[var(--color-border)]">
+                      <span>
+                        周期: {quota.period === 'daily' ? '每日' : quota.period === 'weekly' ? '每周' : '每月'}
+                      </span>
+                      <span>重置: {formatDate(quota.resetAt)}</span>
+                    </div>
+                  </Card>
+                </Col>
+              );
+            })}
+          </Row>
+        </div>
       ),
     },
     {
@@ -721,6 +777,13 @@ export default function ResourceManagementPage() {
           onSave={handleUpdateQuota}
         />
       )}
+
+      {/* 创建配额弹窗 */}
+      <CreateQuotaModal
+        open={createQuotaModalOpen}
+        onClose={() => setCreateQuotaModalOpen(false)}
+        onSave={handleCreateQuota}
+      />
     </div>
   );
 }
@@ -896,6 +959,123 @@ function QuotaEditModal({
       destroyOnHidden
     >
       <Form form={form} layout="vertical">
+        <Form.Item name="maxTokens" label="最大 Tokens">
+          <InputNumber min={0} className="w-full" />
+        </Form.Item>
+
+        <Form.Item name="maxRequests" label="最大请求数">
+          <InputNumber min={0} className="w-full" />
+        </Form.Item>
+
+        <Form.Item name="maxConversations" label="最大对话数">
+          <InputNumber min={0} className="w-full" />
+        </Form.Item>
+
+        <Form.Item name="maxCost" label="最大费用（元）">
+          <InputNumber min={0} step={0.01} precision={2} className="w-full" />
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+}
+
+// 创建配额弹窗
+function CreateQuotaModal({
+  open,
+  onClose,
+  onSave,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSave: (data: {
+    name: string;
+    targetType: string;
+    targetName?: string;
+    limits: QuotaLimits;
+    period: string;
+  }) => Promise<void>;
+}) {
+  const [form] = Form.useForm();
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      setSaving(true);
+      await onSave({
+        name: values.name,
+        targetType: values.targetType,
+        targetName: values.targetName,
+        limits: {
+          maxTokens: values.maxTokens ?? 0,
+          maxRequests: values.maxRequests ?? 0,
+          maxConversations: values.maxConversations ?? 0,
+          maxCost: values.maxCost ?? 0,
+        },
+        period: values.period ?? 'monthly',
+      });
+      form.resetFields();
+    } catch (error) {
+      console.error('Failed to save:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleClose = () => {
+    form.resetFields();
+    onClose();
+  };
+
+  return (
+    <Modal
+      title="新建配额"
+      open={open}
+      onCancel={handleClose}
+      onOk={handleSubmit}
+      okText="创建"
+      cancelText="取消"
+      confirmLoading={saving}
+      destroyOnHidden
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{ targetType: 'global', period: 'monthly', maxTokens: 1000000, maxRequests: 10000, maxConversations: 5000, maxCost: 1000 }}
+      >
+        <Form.Item
+          name="name"
+          label="配额名称"
+          rules={[{ required: true, message: '请输入配额名称' }]}
+        >
+          <Input placeholder="如：全局配额" />
+        </Form.Item>
+
+        <Form.Item name="targetType" label="目标类型">
+          <Select
+            options={[
+              { label: '全局', value: 'global' },
+              { label: '用户', value: 'user' },
+              { label: '部门', value: 'department' },
+              { label: 'Agent', value: 'agent' },
+            ]}
+          />
+        </Form.Item>
+
+        <Form.Item name="targetName" label="目标名称">
+          <Input placeholder="用户/部门/Agent 名称（全局配额可留空）" />
+        </Form.Item>
+
+        <Form.Item name="period" label="统计周期">
+          <Select
+            options={[
+              { label: '每日', value: 'daily' },
+              { label: '每周', value: 'weekly' },
+              { label: '每月', value: 'monthly' },
+            ]}
+          />
+        </Form.Item>
+
         <Form.Item name="maxTokens" label="最大 Tokens">
           <InputNumber min={0} className="w-full" />
         </Form.Item>

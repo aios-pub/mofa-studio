@@ -95,6 +95,11 @@ const menuItems: MenuProps["items"] = [
     icon: <LinkOutlined />,
     label: "渠道管理",
   },
+  {
+    key: "/management/claws",
+    icon: <CloudServerOutlined />,
+    label: "Claw 管理",
+  },
   { type: "divider" },
   {
     key: "scheduler",

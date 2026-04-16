@@ -55,6 +55,8 @@ import evaluationRealApi from "./real/evaluation";
 import { resourceRealApi, providerOptions as realProviderOptions } from "./real/resources";
 import { auditLogRealApi } from "./real/auditLogs";
 import { scheduledTaskRealApi } from "./real/scheduledTasks";
+import { clawMockApi } from "./mock/claws";
+import { clawRealApi } from "./real/claws";
 import { permissionRealApi } from "./real/permissions";
 
 /**
@@ -148,6 +150,9 @@ export const scheduledTaskApi = createProxyService(scheduledTaskMockApi, schedul
 // Permissions
 import { permissionApi as permissionMockApi } from "./mock/permissions";
 export const permissionApi = createProxyService(permissionMockApi, permissionRealApi as any);
+
+// Claws
+export const clawApi = createProxyService(clawMockApi, clawRealApi);
 
 // 导出 mock 数据和类型
 export { mockPrompts, type Prompt, type PromptVariable, type PromptVersion, type VersionDiff } from "./mock/prompts";

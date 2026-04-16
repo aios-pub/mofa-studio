@@ -29,6 +29,9 @@ export * from "./system";
 // 通用类型
 export * from "./common";
 
+// Claw 类型
+export * from "./claw";
+
 // Channel 渠道类型
 export * from "./channel";
 

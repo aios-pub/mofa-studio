@@ -31,7 +31,7 @@ import {
 } from "@ant-design/icons";
 import { agentApi, providerApi, promptApi } from "@/services";
 import type { Prompt } from "@/services";
-import { FormModal, showDeleteConfirm } from "@/components/common/Modal";
+import { FormModal, showDeleteConfirm, useFormError } from "@/components/common/Modal";
 import { PermissionConfig } from "../../components/permission";
 import {
   AgentPromptSelector,
@@ -111,6 +111,7 @@ function AgentFormModal({
   const [selectedProviderId, setSelectedProviderId] = useState<string>("");
   const [availableModels, setAvailableModels] = useState<any[]>([]);
   const [selectedPrompts, setSelectedPrompts] = useState<string[]>([]);
+  const { error, handleError, clearError } = useFormError(open);
 
   const isEdit = !!agent;
 
@@ -275,7 +276,7 @@ function AgentFormModal({
     } catch (error: any) {
       if (error?.errorFields) return;
       console.error("Failed to save agent:", error);
-      message.error(error?.message || (isEdit ? "更新失败" : "创建失败"));
+      handleError(error?.message || (isEdit ? "更新失败" : "创建失败"));
     } finally {
       setLoading(false);
     }
@@ -290,6 +291,8 @@ function AgentFormModal({
       loading={loading}
       width={720}
       destroyOnHidden
+      error={error}
+      onClearError={clearError}
     >
       <Form form={form} layout="vertical" className="space-y-1">
         <Form.Item name="avatar" label="头像">

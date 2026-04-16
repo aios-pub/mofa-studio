@@ -4,7 +4,7 @@
 
 import { useEffect, useMemo } from "react";
 import { Form, Input, TreeSelect } from "antd";
-import { FormModal } from "@/components/common/Modal";
+import { FormModal, useFormError } from "@/components/common/Modal";
 import type { TestSet, TestSetFormData, TestCategory } from "@/types/testset";
 import { convertFlatToTree } from "@/utils/tree";
 
@@ -29,6 +29,7 @@ export function TestSetFormModal({
 }: TestSetFormModalProps) {
   const [form] = Form.useForm<TestSetFormData>();
   const isEdit = !!testSet;
+  const { error, handleError, clearError } = useFormError(open);
 
   // 构建分类树选择数据
   const categoryTreeData = useMemo(() => {
@@ -67,9 +68,14 @@ export function TestSetFormModal({
   }, [open, testSet, form, defaultCategoryId]);
 
   const handleOk = async () => {
-    const values = await form.validateFields();
-    await onSubmit(values);
-    form.resetFields();
+    try {
+      const values = await form.validateFields();
+      await onSubmit(values);
+      form.resetFields();
+    } catch (err: any) {
+      if (err?.errorFields) return;
+      handleError(err);
+    }
   };
 
   return (
@@ -80,6 +86,8 @@ export function TestSetFormModal({
       title={isEdit ? "编辑测试集" : "新建测试集"}
       submitText={isEdit ? "保存" : "创建"}
       loading={loading}
+      error={error}
+      onClearError={clearError}
     >
       <Form form={form} layout="vertical" autoComplete="off">
         <Form.Item

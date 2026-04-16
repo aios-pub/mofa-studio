@@ -4,7 +4,7 @@
 
 import { useEffect } from "react";
 import { Form, Input } from "antd";
-import { FormModal } from "@/components/common/Modal";
+import { FormModal, useFormError } from "@/components/common/Modal";
 import type { TestCategory, TestCategoryFormData } from "@/types/testset";
 
 interface CategoryFormModalProps {
@@ -26,6 +26,7 @@ export function CategoryFormModal({
 }: CategoryFormModalProps) {
   const [form] = Form.useForm<TestCategoryFormData>();
   const isEdit = !!category;
+  const { error, handleError, clearError } = useFormError(open);
 
   useEffect(() => {
     if (open) {
@@ -38,9 +39,14 @@ export function CategoryFormModal({
   }, [open, category, form]);
 
   const handleOk = async () => {
-    const values = await form.validateFields();
-    await onSubmit({ ...values, parentId: parentId });
-    form.resetFields();
+    try {
+      const values = await form.validateFields();
+      await onSubmit({ ...values, parentId: parentId });
+      form.resetFields();
+    } catch (err: any) {
+      if (err?.errorFields) return;
+      handleError(err);
+    }
   };
 
   return (
@@ -51,6 +57,8 @@ export function CategoryFormModal({
       title={isEdit ? "编辑分类" : "新建分类"}
       submitText={isEdit ? "保存" : "创建"}
       loading={loading}
+      error={error}
+      onClearError={clearError}
     >
       <Form form={form} layout="vertical" autoComplete="off">
         <Form.Item

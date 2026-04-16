@@ -128,7 +128,7 @@ export default function TestSetsListPage() {
       setTestSetModalOpen(false);
     } catch (error) {
       console.error("Failed to save test set:", error);
-      message.error("保存失败");
+      throw error;
     } finally {
       setTestSetModalLoading(false);
     }
@@ -207,7 +207,7 @@ export default function TestSetsListPage() {
       setCategoryModalOpen(false);
     } catch (error) {
       console.error("Failed to save category:", error);
-      message.error("保存失败");
+      throw error;
     } finally {
       setCategoryModalLoading(false);
     }
@@ -425,7 +425,7 @@ function TestSetDetail({
       loadCases();
     } catch (error) {
       console.error("Failed to save test case:", error);
-      message.error("保存失败");
+      throw error;
     } finally {
       setCaseModalLoading(false);
     }

@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Input, Button, Dropdown, message, Modal, Tag, Empty, Spin } from 'antd';
+import { Input, Button, Dropdown, message, Modal, Tag, Empty, Spin, Alert } from 'antd';
 import {
   PlusOutlined,
   SearchOutlined,
@@ -35,6 +35,7 @@ export default function KnowledgeBaseListPage() {
   const [formName, setFormName] = useState('');
   const [formDesc, setFormDesc] = useState('');
   const [formSubmitting, setFormSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'documents' | 'search' | 'settings'>('documents');
   const [documents, setDocuments] = useState<Document[]>([]);
   const [documentsLoading, setDocumentsLoading] = useState(false);
@@ -101,6 +102,7 @@ export default function KnowledgeBaseListPage() {
   const handleCreateKB = async () => {
     if (!formName.trim()) { message.warning('请输入知识库名称'); return; }
     setFormSubmitting(true);
+    setFormError(null);
     try {
       const created = await knowledgeApi.createKnowledgeBase({ name: formName, description: formDesc });
       setKnowledgeBases([created, ...knowledgeBases]);
@@ -109,7 +111,7 @@ export default function KnowledgeBaseListPage() {
       setFormDesc('');
       message.success('创建成功');
     } catch (e: any) {
-      message.error(e?.message || '创建失败');
+      setFormError(e?.message || '创建失败');
     } finally {
       setFormSubmitting(false);
     }
@@ -118,6 +120,7 @@ export default function KnowledgeBaseListPage() {
   const handleEditKB = async () => {
     if (!editKB || !formName.trim()) { message.warning('请输入知识库名称'); return; }
     setFormSubmitting(true);
+    setFormError(null);
     try {
       const updated = await knowledgeApi.updateKnowledgeBase(editKB.id, { name: formName, description: formDesc });
       setKnowledgeBases(knowledgeBases.map(k => k.id === updated.id ? { ...k, ...updated } : k));
@@ -127,7 +130,7 @@ export default function KnowledgeBaseListPage() {
       setFormDesc('');
       message.success('更新成功');
     } catch (e: any) {
-      message.error(e?.message || '更新失败');
+      setFormError(e?.message || '更新失败');
     } finally {
       setFormSubmitting(false);
     }
@@ -144,6 +147,7 @@ export default function KnowledgeBaseListPage() {
     setEditKB(null);
     setFormName('');
     setFormDesc('');
+    setFormError(null);
   };
 
   const getMenuItems = (kb: KnowledgeBase) => [
@@ -314,6 +318,9 @@ export default function KnowledgeBaseListPage() {
             <label className="block text-sm font-medium mb-1">描述</label>
             <Input.TextArea placeholder="输入知识库描述（可选）" value={formDesc} onChange={e => setFormDesc(e.target.value)} rows={3} />
           </div>
+          {formError && (
+            <Alert type="error" message={formError} showIcon closable onClose={() => setFormError(null)} />
+          )}
         </div>
       </Modal>
       <Modal title="编辑知识库" open={!!editKB} onCancel={closeFormModal} onOk={handleEditKB} confirmLoading={formSubmitting} okText="保存" width={500} destroyOnHidden>
@@ -326,6 +333,9 @@ export default function KnowledgeBaseListPage() {
             <label className="block text-sm font-medium mb-1">描述</label>
             <Input.TextArea placeholder="输入知识库描述（可选）" value={formDesc} onChange={e => setFormDesc(e.target.value)} rows={3} />
           </div>
+          {formError && (
+            <Alert type="error" message={formError} showIcon closable onClose={() => setFormError(null)} />
+          )}
         </div>
       </Modal>
     </div>

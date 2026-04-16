@@ -5,7 +5,7 @@
 import { useEffect } from "react";
 import { Form, Input, Select, Button, Space } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
-import { FormModal } from "@/components/common/Modal";
+import { FormModal, useFormError } from "@/components/common/Modal";
 import type { TestCase, TestCaseFormData, Assertion, AssertionType } from "@/types/testset";
 
 interface TestCaseFormModalProps {
@@ -32,6 +32,7 @@ export function TestCaseFormModal({
 }: TestCaseFormModalProps) {
   const [form] = Form.useForm<TestCaseFormData>();
   const isEdit = !!testCase;
+  const { error, handleError, clearError } = useFormError(open);
 
   useEffect(() => {
     if (open) {
@@ -57,16 +58,21 @@ export function TestCaseFormModal({
   }, [open, testCase, form]);
 
   const handleOk = async () => {
-    const values = await form.validateFields();
-    // 转换断言数据，添加 id
-    const assertions: Assertion[] = (values.assertions || []).map((a, i) => ({
-      id: `a-${Date.now()}-${i}`,
-      type: a.type,
-      value: a.value,
-      description: a.description,
-    }));
-    await onSubmit({ ...values, assertions });
-    form.resetFields();
+    try {
+      const values = await form.validateFields();
+      // 转换断言数据，添加 id
+      const assertions: Assertion[] = (values.assertions || []).map((a, i) => ({
+        id: `a-${Date.now()}-${i}`,
+        type: a.type,
+        value: a.value,
+        description: a.description,
+      }));
+      await onSubmit({ ...values, assertions });
+      form.resetFields();
+    } catch (err: any) {
+      if (err?.errorFields) return;
+      handleError(err);
+    }
   };
 
   return (
@@ -77,6 +83,8 @@ export function TestCaseFormModal({
       title={isEdit ? "编辑测试用例" : "新建测试用例"}
       submitText={isEdit ? "保存" : "创建"}
       loading={loading}
+      error={error}
+      onClearError={clearError}
     >
       <Form form={form} layout="vertical" autoComplete="off">
         <Form.Item

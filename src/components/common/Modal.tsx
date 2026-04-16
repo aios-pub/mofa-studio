@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Modal, Drawer, Button } from 'antd';
+import { Modal, Drawer, Button, Alert } from 'antd';
 import type { ModalProps, DrawerProps } from 'antd';
 import {
   ExclamationCircleOutlined,
@@ -39,6 +39,10 @@ export interface BaseModalProps extends Omit<ModalProps, 'footer'> {
   onCancel?: () => void;
   /** 底部按钮对齐方式 */
   footerAlign?: 'left' | 'center' | 'right';
+  /** 表单错误信息，显示在表单下方 */
+  error?: string | null;
+  /** 错误信息关闭回调 */
+  onClearError?: () => void;
 }
 
 /**
@@ -56,6 +60,8 @@ export const BaseModal: React.FC<BaseModalProps> = ({
   onSubmit,
   onCancel,
   footerAlign = 'right',
+  error,
+  onClearError,
   children,
   className = '',
   ...modalProps
@@ -97,6 +103,16 @@ export const BaseModal: React.FC<BaseModalProps> = ({
       {...modalProps}
     >
       {children}
+      {error && (
+        <Alert
+          type="error"
+          message={error}
+          showIcon
+          closable
+          onClose={onClearError}
+          className="mt-3"
+        />
+      )}
     </Modal>
   );
 };
@@ -115,11 +131,15 @@ export interface FormModalProps extends BaseModalProps {
 export const FormModal: React.FC<FormModalProps> = ({
   className = '',
   children,
+  error,
+  onClearError,
   ...props
 }) => {
   return (
     <BaseModal
       className={`form-modal ${className}`}
+      error={error}
+      onClearError={onClearError}
       {...props}
     >
       <div className="py-2">
@@ -210,6 +230,10 @@ export interface BaseDrawerProps extends Omit<DrawerProps, 'footer'> {
   disabled?: boolean;
   /** 提交回调 */
   onSubmit?: () => void;
+  /** 表单错误信息，显示在表单下方 */
+  error?: string | null;
+  /** 错误信息关闭回调 */
+  onClearError?: () => void;
 }
 
 /**
@@ -224,6 +248,8 @@ export const BaseDrawer: React.FC<BaseDrawerProps> = ({
   disabled = false,
   onSubmit,
   onClose,
+  error,
+  onClearError,
   children,
   className = '',
   width = 480,
@@ -260,6 +286,16 @@ export const BaseDrawer: React.FC<BaseDrawerProps> = ({
       {...drawerProps}
     >
       {children}
+      {error && (
+        <Alert
+          type="error"
+          message={error}
+          showIcon
+          closable
+          onClose={onClearError}
+          className="mt-3"
+        />
+      )}
     </Drawer>
   );
 };
@@ -276,11 +312,15 @@ export interface FormDrawerProps extends BaseDrawerProps {
 export const FormDrawer: React.FC<FormDrawerProps> = ({
   className = '',
   children,
+  error,
+  onClearError,
   ...props
 }) => {
   return (
     <BaseDrawer
       className={`form-drawer ${className}`}
+      error={error}
+      onClearError={onClearError}
       {...props}
     >
       <div className="space-y-4">
@@ -289,5 +329,38 @@ export const FormDrawer: React.FC<FormDrawerProps> = ({
     </BaseDrawer>
   );
 };
+
+// ==================== 表单错误管理 Hook ====================
+
+/**
+ * 管理表单提交错误的 Hook
+ * - 自动在 open 变化时清除错误
+ * - 提供 setError / clearError / handleError 方法
+ */
+export function useFormError(open?: boolean) {
+  const [error, setError] = React.useState<string | null>(null);
+  const prevOpenRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (open && !prevOpenRef.current) {
+      setError(null);
+    }
+    prevOpenRef.current = !!open;
+  }, [open]);
+
+  const clearError = React.useCallback(() => setError(null), []);
+
+  const handleError = React.useCallback((err: unknown) => {
+    const msg =
+      err instanceof Error
+        ? err.message
+        : typeof err === 'string'
+          ? err
+          : '操作失败，请重试';
+    setError(msg);
+  }, []);
+
+  return { error, setError, clearError, handleError };
+}
 
 export default BaseModal;

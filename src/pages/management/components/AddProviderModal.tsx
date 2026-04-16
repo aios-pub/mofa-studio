@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { Modal, Button, Steps, Result } from 'antd';
+import { Modal, Button, Steps, Result, Alert } from 'antd';
 import type { ProviderConfig, ProviderType, CreateProviderFormData } from '../../../types/provider';
 import { ProviderTypeSelector } from './ProviderTypeSelector';
 import { ProviderConfigForm } from './ProviderConfigForm';
@@ -255,8 +255,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
     if (currentStep === 2) return null;
 
     return (
-      <div className="flex items-center justify-between">
-        <div className="text-red-500 text-sm">{error}</div>
+      <div className="flex items-center justify-end">
         <div className="flex gap-2">
           {!isEditMode && currentStep > 0 && (
             <Button onClick={handlePrev} disabled={loading}>
@@ -307,6 +306,18 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
 
       {/* 步骤内容 */}
       {renderStepContent()}
+
+      {/* 错误提示 */}
+      {error && currentStep !== 2 && (
+        <Alert
+          type="error"
+          message={error}
+          showIcon
+          closable
+          onClose={() => setError(null)}
+          className="mt-3"
+        />
+      )}
     </Modal>
   );
 };

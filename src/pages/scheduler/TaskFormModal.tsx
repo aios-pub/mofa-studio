@@ -15,6 +15,7 @@ import {
   Checkbox,
   Tabs,
   Tag,
+  Alert,
 } from "antd";
 import { FieldTimeOutlined } from "@ant-design/icons";
 import { Cron } from "react-js-cron";
@@ -355,6 +356,7 @@ export default function TaskFormModal({
   const [cronMode, setCronMode] = useState<"visual" | "preset" | "custom">(
     "visual",
   );
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     if (!formData.name.trim()) {
@@ -388,12 +390,13 @@ export default function TaskFormModal({
       }
     }
     setSaving(true);
+    setSubmitError(null);
     try {
       await onSave(formData);
       message.success(task ? "任务已更新" : "任务已创建");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save task:", error);
-      message.error(task ? "更新失败" : "创建失败");
+      setSubmitError(error?.message || (task ? "更新失败" : "创建失败"));
     } finally {
       setSaving(false);
     }
@@ -415,6 +418,16 @@ export default function TaskFormModal({
       destroyOnHidden
     >
       <Form layout="vertical" className="mt-4">
+        {submitError && (
+          <Alert
+            type="error"
+            message={submitError}
+            showIcon
+            closable
+            onClose={() => setSubmitError(null)}
+            className="mb-4"
+          />
+        )}
         <Form.Item label="任务名称" required>
           <Input
             value={formData.name}

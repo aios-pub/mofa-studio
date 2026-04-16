@@ -258,7 +258,7 @@ export default function PromptListPage() {
         return;
       }
       console.error('Failed to save prompt:', error);
-      message.error('保存失败');
+      message.error(error instanceof Error ? error.message : '保存失败');
     } finally {
       setSaving(false);
     }

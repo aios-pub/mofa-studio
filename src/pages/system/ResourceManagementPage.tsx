@@ -810,11 +810,13 @@ function CreateKeyModal({
   const [showKey, setShowKey] = useState(false);
   const [saving, setSaving] = useState(false);
   const [hasExpiry, setHasExpiry] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
       setSaving(true);
+      setError(null);
       await onSave({
         name: values.name,
         provider: values.provider,
@@ -824,8 +826,10 @@ function CreateKeyModal({
       });
       form.resetFields();
       setHasExpiry(false);
-    } catch (error) {
-      console.error('Failed to save:', error);
+    } catch (err: any) {
+      if (err?.errorFields) return;
+      console.error('Failed to save:', err);
+      setError(err instanceof Error ? err.message : '保存失败');
     } finally {
       setSaving(false);
     }
@@ -834,6 +838,7 @@ function CreateKeyModal({
   const handleClose = () => {
     form.resetFields();
     setHasExpiry(false);
+    setError(null);
     onClose();
   };
 
@@ -908,6 +913,9 @@ function CreateKeyModal({
           </Space>
         </Form.Item>
       </Form>
+      {error && (
+        <Alert type="error" message={error} showIcon closable onClose={() => setError(null)} className="mt-3" />
+      )}
     </Modal>
   );
 }
@@ -924,6 +932,7 @@ function QuotaEditModal({
 }) {
   const [form] = Form.useForm();
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     form.setFieldsValue({
@@ -938,10 +947,13 @@ function QuotaEditModal({
     try {
       const values = await form.validateFields();
       setSaving(true);
+      setError(null);
       await onSave(quota.id, values);
       form.resetFields();
-    } catch (error) {
-      console.error('Failed to save:', error);
+    } catch (err: any) {
+      if (err?.errorFields) return;
+      console.error('Failed to save:', err);
+      setError(err instanceof Error ? err.message : '保存失败');
     } finally {
       setSaving(false);
     }
@@ -975,6 +987,9 @@ function QuotaEditModal({
           <InputNumber min={0} step={0.01} precision={2} className="w-full" />
         </Form.Item>
       </Form>
+      {error && (
+        <Alert type="error" message={error} showIcon closable onClose={() => setError(null)} className="mt-3" />
+      )}
     </Modal>
   );
 }
@@ -997,11 +1012,13 @@ function CreateQuotaModal({
 }) {
   const [form] = Form.useForm();
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
       setSaving(true);
+      setError(null);
       await onSave({
         name: values.name,
         targetType: values.targetType,
@@ -1015,8 +1032,10 @@ function CreateQuotaModal({
         period: values.period ?? 'monthly',
       });
       form.resetFields();
-    } catch (error) {
-      console.error('Failed to save:', error);
+    } catch (err: any) {
+      if (err?.errorFields) return;
+      console.error('Failed to save:', err);
+      setError(err instanceof Error ? err.message : '创建失败');
     } finally {
       setSaving(false);
     }
@@ -1024,6 +1043,7 @@ function CreateQuotaModal({
 
   const handleClose = () => {
     form.resetFields();
+    setError(null);
     onClose();
   };
 
@@ -1092,6 +1112,9 @@ function CreateQuotaModal({
           <InputNumber min={0} step={0.01} precision={2} className="w-full" />
         </Form.Item>
       </Form>
+      {error && (
+        <Alert type="error" message={error} showIcon closable onClose={() => setError(null)} className="mt-3" />
+      )}
     </Modal>
   );
 }

@@ -21,6 +21,7 @@ import {
   Tooltip,
   Popconfirm,
   message,
+  Alert,
 } from 'antd';
 import {
   SearchOutlined,
@@ -72,6 +73,7 @@ export default function UsersPage() {
   const [filterRole, setFilterRole] = useState<string>('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [form] = Form.useForm();
 
   const loadUsers = useCallback(async () => {
@@ -127,6 +129,7 @@ export default function UsersPage() {
 
   const handleEdit = (user: UserType) => {
     setEditingUser(user);
+    setFormError(null);
     form.setFieldsValue({
       name: user.name,
       email: user.email,
@@ -140,12 +143,14 @@ export default function UsersPage() {
   const handleModalClose = () => {
     setModalOpen(false);
     setEditingUser(null);
+    setFormError(null);
     form.resetFields();
   };
 
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
+      setFormError(null);
       if (editingUser) {
         await organizationApi.updateUser(editingUser.id, values);
         message.success('用户已更新');
@@ -155,8 +160,10 @@ export default function UsersPage() {
       }
       handleModalClose();
       loadUsers();
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.errorFields) return;
       console.error('Failed to save user:', error);
+      setFormError(error instanceof Error ? error.message : '保存失败');
     }
   };
 
@@ -451,6 +458,9 @@ export default function UsersPage() {
             </Form.Item>
           )}
         </Form>
+        {formError && (
+          <Alert type="error" message={formError} showIcon closable onClose={() => setFormError(null)} className="mt-3" />
+        )}
       </Modal>
     </div>
   );

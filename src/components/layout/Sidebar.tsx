@@ -100,6 +100,11 @@ const menuItems: MenuProps["items"] = [
     icon: <CloudServerOutlined />,
     label: "Claw 管理",
   },
+  {
+    key: "/system/resources",
+    icon: <FolderOutlined />,
+    label: "资源管理",
+  },
   { type: "divider" },
   {
     key: "scheduler",
@@ -185,11 +190,6 @@ const menuItems: MenuProps["items"] = [
     key: "system",
     label: "系统",
     type: "group",
-  },
-  {
-    key: "/system/resources",
-    icon: <FolderOutlined />,
-    label: "资源管理",
   },
   {
     key: "/system/audit-logs",

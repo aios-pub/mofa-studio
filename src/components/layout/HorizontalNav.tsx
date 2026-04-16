@@ -53,6 +53,11 @@ const horizontalMenuItems: MenuProps["items"] = [
         label: "定时任务",
         icon: <span className="i-lucide-clock w-4 h-4" />,
       },
+      {
+        key: "/system/resources",
+        label: "资源管理",
+        icon: <span className="i-lucide-file-box w-4 h-4" />,
+      },
     ],
   },
   {
@@ -111,11 +116,6 @@ const horizontalMenuItems: MenuProps["items"] = [
     label: "系统",
     icon: <span className="i-lucide-settings w-4 h-4" />,
     children: [
-      {
-        key: "/system/resources",
-        label: "资源管理",
-        icon: <span className="i-lucide-file-box w-4 h-4" />,
-      },
       {
         key: "/system/audit-logs",
         label: "审计日志",

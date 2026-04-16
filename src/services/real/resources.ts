@@ -127,6 +127,7 @@ function mapApiKeyToBackend(data: Partial<ApiKey>): Record<string, unknown> {
   if (data.provider !== undefined) result.provider = data.provider;
   if (data.status !== undefined) result.status = data.status;
   if (data.description !== undefined) result.description = data.description;
+  if (data.key !== undefined) result.key = data.key;
   return result;
 }
 

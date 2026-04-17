@@ -5,7 +5,7 @@
   "identifier": "com.aios.AMOS",
   "build": {
     "beforeDevCommand": "deno task dev",
-    "devUrl": "http://localhost:1420",
+    "devUrl": "http://localhost:3000",
     "beforeBuildCommand": "deno task build",
     "frontendDist": "../dist"
   },

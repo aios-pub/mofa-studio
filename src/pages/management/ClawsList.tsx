@@ -35,7 +35,7 @@ import {
   SendOutlined,
   BookOutlined,
 } from "@ant-design/icons";
-import { clawApi, providerApi, channelApi } from "@/services";
+import { clawApi, providerApi, channelApi, channelTypeConfig } from "@/services";
 import OctosManagementPanel from "./components/octos/OctosManagementPanel";
 import { showDeleteConfirm } from "@/components/common/Modal";
 import type { ClawInstance, ClawType, ClawInstanceReq } from "@/types";
@@ -739,7 +739,7 @@ function ClawCreateModal({
               <Select
                 placeholder="选择模型"
                 options={models.map((m: any) => ({
-                  label: m.modelId || m.name,
+                  label: m.name || m.modelId,
                   value: m.id,
                 }))}
               />
@@ -770,6 +770,7 @@ function ClawEditModal({
 }) {
   const [form] = Form.useForm();
   const [providers, setProviders] = useState<any[]>([]);
+  const [models, setModels] = useState<any[]>([]);
 
   useEffect(() => {
     if (open) {
@@ -785,8 +786,24 @@ function ClawEditModal({
         modelId: claw.modelId,
         enabled: claw.enabled,
       });
+      // Load models for current provider
+      if (claw.providerId) {
+        providerApi.getById(claw.providerId).then((prov: any) => {
+          setModels(prov.models || []);
+        }).catch(() => setModels([]));
+      }
     }
   }, [open, claw, form]);
+
+  const handleProviderChange = async (providerId: string) => {
+    form.setFieldValue("modelId", undefined);
+    try {
+      const prov = await providerApi.getById(providerId);
+      setModels(prov.models || []);
+    } catch {
+      setModels([]);
+    }
+  };
 
   return (
     <Modal
@@ -834,6 +851,7 @@ function ClawEditModal({
         <div className="grid grid-cols-2 gap-4">
           <Form.Item name="providerId" label="供应商" rules={[{ required: true }]}>
             <Select
+              onChange={handleProviderChange}
               options={providers.map((p: any) => ({
                 label: p.name || p.providerName,
                 value: p.id,
@@ -842,7 +860,13 @@ function ClawEditModal({
           </Form.Item>
 
           <Form.Item name="modelId" label="模型" rules={[{ required: true }]}>
-            <Select placeholder="选择模型" />
+            <Select
+              placeholder="选择模型"
+              options={models.map((m: any) => ({
+                label: m.name || m.modelId,
+                value: m.id,
+              }))}
+            />
           </Form.Item>
         </div>
 
@@ -1102,6 +1126,14 @@ function ChannelAssignModal({
     }
   }, [open]);
 
+  // Auto-fill remoteChannelType when channel is selected
+  const handleChannelChange = (channelId: string) => {
+    const ch = channels.find((c: any) => c.id === channelId);
+    if (ch) {
+      form.setFieldValue("remoteChannelType", ch.type);
+    }
+  };
+
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
@@ -1123,6 +1155,14 @@ function ChannelAssignModal({
     }
   };
 
+  // Build channel type options from channelTypeConfig
+  const channelTypeOptions = Object.entries(channelTypeConfig).map(
+    ([type, cfg]) => ({
+      label: `${cfg.icon} ${cfg.name}`,
+      value: type,
+    }),
+  );
+
   return (
     <Modal
       title="分配渠道"
@@ -1140,10 +1180,20 @@ function ChannelAssignModal({
         >
           <Select
             placeholder="选择本地渠道"
-            options={channels.map((c: any) => ({
-              label: c.name || c.channelType,
-              value: c.id,
-            }))}
+            onChange={handleChannelChange}
+            options={channels.map((c: any) => {
+              const typeCfg = channelTypeConfig[c.type as keyof typeof channelTypeConfig];
+              return {
+                label: (
+                  <div className="flex items-center gap-2">
+                    <span>{typeCfg?.icon || "📡"}</span>
+                    <span>{c.name || c.channelType}</span>
+                    <Tag>{typeCfg?.name || c.type}</Tag>
+                  </div>
+                ),
+                value: c.id,
+              };
+            })}
           />
         </Form.Item>
 
@@ -1161,19 +1211,8 @@ function ChannelAssignModal({
           rules={[{ required: true }]}
         >
           <Select
-            placeholder="选择渠道类型"
-            options={[
-              { label: "Telegram", value: "telegram" },
-              { label: "Discord", value: "discord" },
-              { label: "Slack", value: "slack" },
-              { label: "WeChat", value: "wechat" },
-              { label: "WeChat Work", value: "wechat_work" },
-              { label: "DingTalk", value: "dingtalk" },
-              { label: "飞书 Feishu", value: "feishu" },
-              { label: "Webhook", value: "webhook" },
-              { label: "HTTP API", value: "http" },
-              { label: "其他", value: "other" },
-            ]}
+            placeholder="选择渠道类型（选择渠道后自动填充）"
+            options={channelTypeOptions}
           />
         </Form.Item>
 

@@ -29,7 +29,10 @@ import type { CreateProviderFormData } from "../../types/provider";
 import type { Provider, ExternalModel } from "../../services/real/providers";
 import { providerApi } from "@/services";
 import { getProviderTypeConfig } from "../../services/provider/providerConfigs";
-import { AddProviderModal, type ProviderWithModels } from "./components/AddProviderModal";
+import {
+  AddProviderModal,
+  type ProviderWithModels,
+} from "./components/AddProviderModal";
 import { ModelSelectionStep } from "./components/ModelSelectionStep";
 import { formatDate } from "@/utils";
 import { fuzzyMatch } from "@/utils/fuzzySearch";
@@ -52,9 +55,13 @@ export default function ProvidersListPage() {
 
   // 刷新模型选择对话框状态
   const [refreshModalOpen, setRefreshModalOpen] = useState(false);
-  const [refreshingProviderId, setRefreshingProviderId] = useState<string | null>(null);
+  const [refreshingProviderId, setRefreshingProviderId] = useState<
+    string | null
+  >(null);
   const [refreshedModels, setRefreshedModels] = useState<ExternalModel[]>([]);
-  const [refreshSelectedIds, setRefreshSelectedIds] = useState<Set<string>>(new Set());
+  const [refreshSelectedIds, setRefreshSelectedIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   useEffect(() => {
     loadProviders();
@@ -143,7 +150,10 @@ export default function ProvidersListPage() {
   const handleRefreshConfirm = async () => {
     if (!refreshingProviderId) return;
     try {
-      await providerApi.selectModels(refreshingProviderId, Array.from(refreshSelectedIds));
+      await providerApi.selectModels(
+        refreshingProviderId,
+        Array.from(refreshSelectedIds),
+      );
       setRefreshModalOpen(false);
       await loadProviders();
       const updated = providers.find((p) => p.id === refreshingProviderId);
@@ -209,7 +219,9 @@ export default function ProvidersListPage() {
   };
 
   // 处理新增 Provider
-  const handleAddProvider = async (formData: CreateProviderFormData): Promise<ProviderWithModels | void> => {
+  const handleAddProvider = async (
+    formData: CreateProviderFormData,
+  ): Promise<ProviderWithModels | void> => {
     const newProvider = await providerApi.createFromFormData(formData);
     message.success(`Provider "${newProvider.name}" 添加成功`);
     return {
@@ -224,7 +236,10 @@ export default function ProvidersListPage() {
   };
 
   // 处理编辑 Provider
-  const handleEditProvider = async (id: string, formData: CreateProviderFormData) => {
+  const handleEditProvider = async (
+    id: string,
+    formData: CreateProviderFormData,
+  ) => {
     const updateData: Record<string, unknown> = {
       name: formData.name,
       baseUrl: formData.baseUrl,
@@ -319,7 +334,7 @@ export default function ProvidersListPage() {
                         {getStatusIcon(provider.status)}
                       </div>
                       <p className="text-sm text-[var(--color-text-tertiary)]">
-                        {(provider.models?.length ?? 0)} 个模型
+                        {provider.models?.length ?? 0} 个模型
                       </p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-[var(--color-text-tertiary)]">
@@ -329,7 +344,10 @@ export default function ProvidersListPage() {
                           •
                         </span>
                         <span className="text-xs text-[var(--color-text-tertiary)]">
-                          {provider.usage?.totalTokens ? (provider.usage.totalTokens / 1000).toFixed(0) + "K" : "-"}
+                          {provider.usage?.totalTokens
+                            ? (provider.usage.totalTokens / 1000).toFixed(0) +
+                              "K"
+                            : "-"}
                           tokens
                         </span>
                       </div>
@@ -371,7 +389,9 @@ export default function ProvidersListPage() {
                           )}
                         </div>
                         <span className="text-xs text-[var(--color-text-tertiary)]">
-                          {model.pricing.input > 0 ? `$${model.pricing.input.toFixed(4)}/1K` : "-"}
+                          {model.pricing.input > 0
+                            ? `$${model.pricing.input.toFixed(4)}/1K`
+                            : "-"}
                         </span>
                       </div>
                     ))}
@@ -446,10 +466,13 @@ export default function ProvidersListPage() {
       >
         <div className="h-[400px]">
           <ModelSelectionStep
-            availableModels={refreshedModels.map(m => ({ id: m.model_id, name: m.model_id }))}
+            availableModels={refreshedModels.map((m) => ({
+              id: m.model_id,
+              name: m.model_id,
+            }))}
             selectedIds={refreshSelectedIds}
             onToggle={(id) => {
-              setRefreshSelectedIds(prev => {
+              setRefreshSelectedIds((prev) => {
                 const next = new Set(prev);
                 if (next.has(id)) next.delete(id);
                 else next.add(id);
@@ -458,7 +481,9 @@ export default function ProvidersListPage() {
             }}
             onToggleAll={(all) => {
               if (all) {
-                setRefreshSelectedIds(new Set(refreshedModels.map(m => m.model_id)));
+                setRefreshSelectedIds(
+                  new Set(refreshedModels.map((m) => m.model_id)),
+                );
               } else {
                 setRefreshSelectedIds(new Set());
               }
@@ -513,7 +538,7 @@ function ProviderDetail({
 
   // 计算预估费用
   const estimatedCost =
-    (provider.usage?.totalTokens ?? 0) / 1000 *
+    ((provider.usage?.totalTokens ?? 0) / 1000) *
     (provider.models?.[0]?.pricing.input || 0);
 
   const tabs = [
@@ -552,7 +577,11 @@ function ProviderDetail({
           >
             删除
           </Button>
-          <Button type="primary" icon={<EditOutlined />} onClick={() => onEdit(provider)}>
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(provider)}
+          >
             编辑
           </Button>
         </div>
@@ -651,7 +680,7 @@ function ProviderDetail({
                   onClick={() => onRefreshModels(provider.id)}
                   disabled={refreshingModels}
                 >
-                  刷新模型
+                  获取模型
                 </Button>
               </div>
             </div>
@@ -669,49 +698,51 @@ function ProviderDetail({
               {provider.models
                 .filter((m) => !modelSearch || fuzzyMatch(modelSearch, m.name))
                 .map((model) => (
-                <div
-                  key={model.id}
-                  className="flex items-center justify-between p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-2 h-2 rounded-full ${model.enabled ? "bg-green-500" : "bg-gray-400"}`}
-                    />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-[var(--color-text-primary)]">
-                          {model.name || "-"}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3 mt-1 text-xs text-[var(--color-text-tertiary)]">
-                        <span>
-                          {model.maxTokens ? `最大 ${model.maxTokens.toLocaleString()} tokens` : ""}
-                        </span>
-                        <span>•</span>
-                        <span>
-                          输入: {formatCurrency(model.pricing.input)}/1K
-                        </span>
-                        <span>•</span>
-                        <span>
-                          输出: {formatCurrency(model.pricing.output)}/1K
-                        </span>
+                  <div
+                    key={model.id}
+                    className="flex items-center justify-between p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-2 h-2 rounded-full ${model.enabled ? "bg-green-500" : "bg-gray-400"}`}
+                      />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-[var(--color-text-primary)]">
+                            {model.name || "-"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 mt-1 text-xs text-[var(--color-text-tertiary)]">
+                          <span>
+                            {model.maxTokens
+                              ? `最大 ${model.maxTokens.toLocaleString()} tokens`
+                              : ""}
+                          </span>
+                          <span>•</span>
+                          <span>
+                            输入: {formatCurrency(model.pricing.input)}/1K
+                          </span>
+                          <span>•</span>
+                          <span>
+                            输出: {formatCurrency(model.pricing.output)}/1K
+                          </span>
+                        </div>
                       </div>
                     </div>
+                    <Button
+                      size="small"
+                      type={model.enabled ? "primary" : "default"}
+                      onClick={() =>
+                        onToggleModel(provider.id, model.id, !model.enabled)
+                      }
+                      className={
+                        model.enabled ? "bg-green-500 hover:bg-green-600" : ""
+                      }
+                    >
+                      {model.enabled ? "已启用" : "已禁用"}
+                    </Button>
                   </div>
-                  <Button
-                    size="small"
-                    type={model.enabled ? "primary" : "default"}
-                    onClick={() =>
-                      onToggleModel(provider.id, model.id, !model.enabled)
-                    }
-                    className={
-                      model.enabled ? "bg-green-500 hover:bg-green-600" : ""
-                    }
-                  >
-                    {model.enabled ? "已启用" : "已禁用"}
-                  </Button>
-                </div>
-              ))}
+                ))}
             </div>
 
             {/* 添加模型弹窗 */}

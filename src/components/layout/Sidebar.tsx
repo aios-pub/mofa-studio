@@ -96,11 +96,6 @@ const menuItems: MenuProps["items"] = [
     label: "渠道管理",
   },
   {
-    key: "/management/claws",
-    icon: <CloudServerOutlined />,
-    label: "Claw 管理",
-  },
-  {
     key: "/system/resources",
     icon: <FolderOutlined />,
     label: "资源管理",

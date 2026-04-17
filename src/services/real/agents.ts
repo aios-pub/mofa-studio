@@ -25,11 +25,12 @@ interface BackendAgentReq {
   context_limit?: number;
   custom_params?: Record<string, unknown>;
   temperature?: number;
-  thinking?: unknown; // jsonb: 前端传 boolean，后端存为 jsonb
+  thinking?: unknown;
   stream?: boolean;
   response_format?: string;
   max_completion_tokens?: number;
   platform?: number;
+  agent_type?: string;
 }
 
 /** 后端 AgentVo (响应) */
@@ -42,18 +43,24 @@ interface BackendAgentVo {
   };
   agent_name: string;
   agent_code: string;
+  agent_category: string;
   system_prompt: string;
   enabled: boolean;
   agent_order?: number;
   custom_params?: Record<string, unknown>;
   temperature?: number;
-  thinking?: unknown; // jsonb
+  thinking?: unknown;
   stream?: boolean;
   context_limit?: number;
   response_format?: string;
   max_completion_tokens?: number;
   created_at?: string;
   updated_at?: string;
+  // Unified endpoint extra fields (claw metadata)
+  claw_instance_id?: string;
+  claw_status?: string;
+  claw_version?: string;
+  endpoint_url?: string;
 }
 
 // ==================== 转换函数 ====================
@@ -77,6 +84,7 @@ function toBackend(data: Partial<Agent>, isUpdate = false): BackendAgentReq {
     custom_params: data.customParams,
     agent_order: data.order,
     agent_status: data.enabled,
+    agent_type: data.agentType || 'native',
   };
 
   if (isUpdate && data.id) {
@@ -86,7 +94,6 @@ function toBackend(data: Partial<Agent>, isUpdate = false): BackendAgentReq {
   return req;
 }
 
-/** 后端 → 前端 */
 /** jsonb thinking → boolean */
 function parseThinking(val: unknown): boolean {
   if (typeof val === 'boolean') return val;
@@ -95,7 +102,9 @@ function parseThinking(val: unknown): boolean {
   return !!val;
 }
 
+/** 后端 → 前端 */
 function fromBackend(vo: BackendAgentVo): Agent {
+  const agentType = vo.agent_category || 'native';
   return {
     id: vo.id,
     name: vo.agent_name,
@@ -103,7 +112,7 @@ function fromBackend(vo: BackendAgentVo): Agent {
     systemPrompt: vo.system_prompt,
     enabled: vo.enabled,
     order: vo.agent_order,
-    modelId: '', // 需要从 custom_params 或其他字段获取
+    modelId: '',
     modelName: vo.model,
     providerId: vo.provider?.id || '',
     providerName: vo.provider?.provider_name || '',
@@ -115,6 +124,12 @@ function fromBackend(vo: BackendAgentVo): Agent {
     maxCompletionTokens: vo.max_completion_tokens,
     customParams: vo.custom_params,
     status: vo.enabled ? 'idle' : 'offline',
+    agentType,
+    // Claw-specific fields
+    clawInstanceId: vo.claw_instance_id,
+    clawStatus: vo.claw_status,
+    clawVersion: vo.claw_version,
+    endpointUrl: vo.endpoint_url,
     createdAt: vo.created_at ? new Date(vo.created_at) : undefined,
     updatedAt: vo.updated_at ? new Date(vo.updated_at) : undefined,
   };
@@ -123,9 +138,9 @@ function fromBackend(vo: BackendAgentVo): Agent {
 // ==================== API 方法 ====================
 
 export const agentRealApi = {
-  /** 获取所有 Agent */
+  /** 获取所有 Agent（包含 claw 元数据） */
   async getAll(): Promise<Agent[]> {
-    const data = await apiClient.get<BackendAgentVo[]>("/api/agent/fetch");
+    const data = await apiClient.get<BackendAgentVo[]>("/api/agent/fetch-unified");
     if (!Array.isArray(data)) return [];
     return data.map(fromBackend);
   },
@@ -147,7 +162,6 @@ export const agentRealApi = {
 
   /** 更新 Agent */
   async update(id: string, data: Partial<Agent>): Promise<Agent> {
-    // 后端要求完整字段，先获取现有数据合并
     const existing = await agentRealApi.getById(id);
     const merged = { ...existing, ...data };
     const req = toBackend(merged, true);

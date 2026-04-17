@@ -48,6 +48,16 @@ export interface Agent {
   platform?: number;
   /** 状态（前端用） */
   status?: AgentStatus;
+  /** Agent 类型: 'native' | 'openclaw' | 'zeroclaw' | 'octos' | 'claude_code' | 'codex' */
+  agentType: string;
+  /** Claw 实例 ID（仅 claw 类型 Agent） */
+  clawInstanceId?: string;
+  /** Claw 状态（仅 claw 类型 Agent） */
+  clawStatus?: string;
+  /** Claw 版本（仅 claw 类型 Agent） */
+  clawVersion?: string;
+  /** Claw 端点地址（仅 claw 类型 Agent） */
+  endpointUrl?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

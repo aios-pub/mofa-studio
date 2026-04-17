@@ -1,11 +1,11 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import './i18n'; // Initialize i18n
 import MainLayout from './components/layout/MainLayout';
 import { RouteGuard } from './components/auth';
 import { ToastProvider } from './components/common';
 import Dashboard from './pages/workbench/Dashboard';
 import Conversation from './pages/workbench/Conversation';
-import { AgentListPage, ClawsListPage, PromptListPage, SkillsListPage, TestSetsListPage, ProvidersListPage, ChannelsListPage } from './pages/management';
+import { AgentListPage, PromptListPage, SkillsListPage, TestSetsListPage, ProvidersListPage, ChannelsListPage } from './pages/management';
 import SchedulerPage from './pages/scheduler';
 import AnalyticsPage from './pages/analytics/AnalyticsPage';
 import MonitoringPage from './pages/monitoring/MonitoringPage';
@@ -50,7 +50,7 @@ function App() {
                   <Route path="/conversation/:id" element={<Conversation />} />
 
                   {/* 管理模块 */}
-                  <Route path="/management/claws" element={<ClawsListPage />} />
+                  <Route path="/management/claws" element={<Navigate to="/management/agents" replace />} />
                   <Route path="/management/agents" element={<AgentListPage />} />
                   <Route path="/management/prompts" element={<PromptListPage />} />
                   <Route path="/management/skills" element={<SkillsListPage />} />

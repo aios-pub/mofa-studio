@@ -14,6 +14,11 @@ import {
   Tag,
   InputNumber,
   Switch,
+  Card,
+  Space,
+  Empty,
+  Typography,
+  Modal,
 } from "antd";
 import {
   PlusOutlined,
@@ -28,8 +33,11 @@ import {
   SaveOutlined,
   UndoOutlined,
   PlayCircleOutlined,
+  ApiOutlined,
+  LinkOutlined,
+  CloudServerOutlined,
 } from "@ant-design/icons";
-import { agentApi, providerApi, promptApi } from "@/services";
+import { agentApi, providerApi, promptApi, clawApi } from "@/services";
 import type { Prompt } from "@/services";
 import { FormModal, showDeleteConfirm, useFormError } from "@/components/common/Modal";
 import { PermissionConfig } from "../../components/permission";
@@ -39,6 +47,9 @@ import {
   AgentTestSetSelector,
 } from "../../components/agent";
 import type { Agent, AgentPermission } from "../../types";
+import type { ClawType, ClawStatus, ClawInstanceReq, ClawChannelMapping } from "@/types/claw";
+import { clawTypeConfig } from "@/types/claw";
+import OctosManagementPanel from "./components/octos/OctosManagementPanel";
 
 // ==================== Avatar 选择器 ====================
 
@@ -1031,11 +1042,13 @@ function AgentPermissionTab({ agent }: { agent: Agent }) {
 export default function AgentListPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
+  const [clawCreateOpen, setClawCreateOpen] = useState(false);
 
   const loadAgents = useCallback(async () => {
     try {
@@ -1157,11 +1170,13 @@ export default function AgentListPage() {
     },
   ];
 
-  const filteredAgents = agents.filter(
-    (a) =>
+  const filteredAgents = agents.filter((a) => {
+    const matchSearch =
       a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (a.agentCode || "").toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+      (a.agentCode || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const matchType = typeFilter === "all" || a.agentType === typeFilter;
+    return matchSearch && matchType;
+  });
 
   const statusColors: Record<string, string> = {
     idle: "bg-green-500",
@@ -1170,6 +1185,37 @@ export default function AgentListPage() {
     waiting: "bg-orange-500",
     error: "bg-red-500",
     offline: "bg-gray-400",
+  };
+
+  // Claw status colors for list display
+  const clawStatusDot: Record<string, string> = {
+    online: "bg-green-500",
+    offline: "bg-red-500",
+    degraded: "bg-orange-500",
+    unknown: "bg-gray-400",
+  };
+
+  const isClawAgent = (agent: Agent) => agent.agentType && agent.agentType !== 'native';
+
+  // Create button dropdown items
+  const createMenuItems = [
+    { key: 'native', label: 'Native Agent', icon: <RobotOutlined /> },
+    { type: 'divider' as const },
+    ...(Object.entries(clawTypeConfig) as [ClawType, typeof clawTypeConfig[ClawType]][]).map(
+      ([type, cfg]) => ({
+        key: type,
+        label: cfg.label,
+        icon: <span>{cfg.icon}</span>,
+      })
+    ),
+  ];
+
+  const handleCreateMenu = ({ key }: { key: string }) => {
+    if (key === 'native') {
+      handleOpenCreate();
+    } else {
+      setClawCreateOpen(true);
+    }
   };
 
   return (
@@ -1181,11 +1227,12 @@ export default function AgentListPage() {
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
               Agent 管理
             </h2>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleOpenCreate}
-            />
+            <Dropdown
+              menu={{ items: createMenuItems, onClick: handleCreateMenu }}
+              trigger={['click']}
+            >
+              <Button type="primary" icon={<PlusOutlined />} />
+            </Dropdown>
           </div>
           <Input
             placeholder="搜索 Agent..."
@@ -1193,6 +1240,19 @@ export default function AgentListPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             allowClear
+          />
+          <Select
+            value={typeFilter}
+            onChange={setTypeFilter}
+            className="w-full"
+            options={[
+              { label: '全部', value: 'all' },
+              { label: 'Native Agent', value: 'native' },
+              ...Object.entries(clawTypeConfig).map(([type, cfg]) => ({
+                label: `${cfg.icon} ${cfg.label}`,
+                value: type,
+              })),
+            ]}
           />
         </div>
 
@@ -1204,8 +1264,8 @@ export default function AgentListPage() {
           ) : filteredAgents.length === 0 ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">
               <RobotOutlined className="text-3xl mb-2 opacity-50" />
-              <p>{searchQuery ? "无匹配结果" : "暂无 Agent"}</p>
-              {!searchQuery && (
+              <p>{searchQuery || typeFilter !== 'all' ? "无匹配结果" : "暂无 Agent"}</p>
+              {!searchQuery && typeFilter === 'all' && (
                 <Button
                   type="link"
                   icon={<PlusOutlined />}
@@ -1217,8 +1277,12 @@ export default function AgentListPage() {
             </div>
           ) : (
             filteredAgents.map((agent) => {
-              const status =
-                agent.status || (agent.enabled ? "idle" : "offline");
+              const clawConfig = isClawAgent(agent) ? clawTypeConfig[agent.agentType as ClawType] : null;
+              const icon = clawConfig?.icon || agent.avatar || "🤖";
+              const statusDot = isClawAgent(agent)
+                ? clawStatusDot[agent.clawStatus || 'unknown']
+                : statusColors[agent.status || (agent.enabled ? "idle" : "offline")];
+
               return (
                 <div
                   key={agent.id}
@@ -1230,19 +1294,24 @@ export default function AgentListPage() {
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="text-2xl">{agent.avatar || "🤖"}</div>
+                    <div className="text-2xl">{icon}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-[var(--color-text-primary)] truncate">
                           {agent.name}
                         </span>
-                        <span
-                          className={`w-2 h-2 rounded-full flex-shrink-0 ${statusColors[status]}`}
-                        />
+                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${statusDot}`} />
                       </div>
-                      <p className="text-sm text-[var(--color-text-tertiary)] truncate">
-                        {agent.modelName || agent.agentCode}
-                      </p>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        {clawConfig ? (
+                          <Tag color={clawConfig.color} className="text-xs leading-tight px-1">
+                            {clawConfig.label}
+                          </Tag>
+                        ) : null}
+                        <p className="text-sm text-[var(--color-text-tertiary)] truncate">
+                          {agent.modelName || agent.agentCode}
+                        </p>
+                      </div>
                     </div>
                     <Dropdown
                       menu={{ items: getActionMenuItems(agent) }}
@@ -1268,11 +1337,19 @@ export default function AgentListPage() {
       {/* 右侧详情 */}
       <div className="flex-1 overflow-y-auto">
         {selectedAgent ? (
-          <AgentDetail
-            key={selectedAgent.id}
-            agent={selectedAgent}
-            onUpdate={loadAgents}
-          />
+          isClawAgent(selectedAgent) ? (
+            <ClawAgentDetail
+              key={selectedAgent.id}
+              agent={selectedAgent}
+              onUpdate={loadAgents}
+            />
+          ) : (
+            <AgentDetail
+              key={selectedAgent.id}
+              agent={selectedAgent}
+              onUpdate={loadAgents}
+            />
+          )
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -1302,6 +1379,564 @@ export default function AgentListPage() {
         onClose={() => setModalOpen(false)}
         onSuccess={handleModalSuccess}
       />
+
+      <ClawCreateModal
+        open={clawCreateOpen}
+        onClose={() => setClawCreateOpen(false)}
+        onSuccess={() => { setClawCreateOpen(false); loadAgents(); }}
+      />
     </div>
+  );
+}
+
+// ==================== Claw Agent 详情（claw 类型 Agent 的详情面板）====================
+
+function ClawAgentDetail({
+  agent,
+  onUpdate,
+}: {
+  agent: Agent;
+  onUpdate: () => void;
+}) {
+  const [activeTab, setActiveTab] = useState<"basic" | "connection" | "channel" | "octos">("basic");
+  const [mappings, setMappings] = useState<ClawChannelMapping[]>([]);
+  const [editOpen, setEditOpen] = useState(false);
+  const [connectOpen, setConnectOpen] = useState(false);
+
+  const clawType = agent.agentType as ClawType;
+  const config = clawTypeConfig[clawType];
+
+  useEffect(() => {
+    if (agent.clawInstanceId) {
+      clawApi.listChannelMappings(agent.clawInstanceId!).then(setMappings).catch(() => {});
+    }
+  }, [agent.clawInstanceId]);
+
+  const handleTest = async () => {
+    if (!agent.clawInstanceId) return;
+    try {
+      const result = await clawApi.test(agent.clawInstanceId);
+      message.success(result ? "连接成功" : "连接失败");
+    } catch {
+      message.error("测试失败");
+    }
+  };
+
+  const handleDelete = () => {
+    showDeleteConfirm({
+      title: "删除 Agent",
+      content: `确定要删除 ${agent.name} 吗？此操作不可恢复。`,
+      onOk: async () => {
+        await agentApi.delete(agent.id);
+        message.success("已删除");
+        onUpdate();
+      },
+    });
+  };
+
+  const tabs = [
+    { key: "basic", label: "基本信息", icon: RobotOutlined },
+    { key: "connection", label: "连接信息", icon: LinkOutlined },
+    ...(agent.clawInstanceId ? [{ key: "channel" as const, label: "渠道代理", icon: CloudServerOutlined }] : []),
+    ...(clawType === "octos" ? [{ key: "octos" as const, label: "Octos 管理", icon: ApiOutlined }] : []),
+  ];
+
+  return (
+    <div className="p-6">
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex items-start gap-4">
+          <div className="text-4xl">{config?.icon || "🤖"}</div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
+                {agent.name}
+              </h2>
+              <Tag color={config?.color}>{config?.label}</Tag>
+              <Tag color={agent.enabled ? "green" : "red"}>
+                {agent.enabled ? "已启用" : "已禁用"}
+              </Tag>
+              {agent.clawStatus && (
+                <Tag color={agent.clawStatus === "online" ? "green" : agent.clawStatus === "offline" ? "red" : "default"}>
+                  {agent.clawStatus === "online" ? "在线" : agent.clawStatus === "offline" ? "离线" : agent.clawStatus}
+                </Tag>
+              )}
+            </div>
+            <p className="text-sm text-[var(--color-text-tertiary)] mt-1">
+              {agent.modelName} · {agent.providerName}
+            </p>
+          </div>
+        </div>
+        <Space>
+          <Button icon={<LinkOutlined />} onClick={() => setConnectOpen(true)}>
+            连接信息
+          </Button>
+          <Button icon={<ApiOutlined />} onClick={handleTest}>
+            测试连接
+          </Button>
+          <Button icon={<EditOutlined />} onClick={() => setEditOpen(true)}>
+            编辑
+          </Button>
+          <Button danger icon={<DeleteOutlined />} onClick={handleDelete}>
+            删除
+          </Button>
+        </Space>
+      </div>
+
+      <Tabs
+        activeKey={activeTab}
+        onChange={(key) => setActiveTab(key as typeof activeTab)}
+        items={tabs.map((tab) => ({
+          key: tab.key,
+          label: (
+            <span className="flex items-center gap-2">
+              <tab.icon className="w-4 h-4" />
+              {tab.label}
+            </span>
+          ),
+        }))}
+      />
+
+      <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
+        {activeTab === "basic" && (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">名称</label>
+              <Input value={agent.name} readOnly />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">编码</label>
+              <Input value={agent.agentCode} readOnly />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">类型</label>
+              <Input value={config?.label || clawType} readOnly />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">版本</label>
+              <Input value={agent.clawVersion || "-"} readOnly />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">供应商</label>
+              <Input value={agent.providerName || "-"} readOnly />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">模型</label>
+              <Input value={agent.modelName || "-"} readOnly />
+            </div>
+            {agent.endpointUrl && (
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">端点地址</label>
+                <Input value={agent.endpointUrl} readOnly />
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "connection" && (
+          <div className="space-y-4">
+            <Card size="small" title="LLM 代理配置">
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <Typography.Text type="secondary">代理地址</Typography.Text>
+                  <Typography.Text code>http://localhost:3001/proxy/v1</Typography.Text>
+                </div>
+                <div className="flex justify-between">
+                  <Typography.Text type="secondary">模式</Typography.Text>
+                  <Typography.Text>{config?.mode === "server" ? "Server 模式" : "CLI 模式"}</Typography.Text>
+                </div>
+              </div>
+            </Card>
+            <Card size="small" title="环境变量配置">
+              <div className="bg-[var(--color-bg-base)] rounded-lg p-3 font-mono text-sm">
+                {(config?.setupGuide || []).map((line, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="text-[var(--color-text-tertiary)] select-none">$</span>
+                    <span className="flex-1">{line}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === "channel" && (
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium">已分配渠道</h4>
+            {mappings.length === 0 ? (
+              <Empty description="暂无渠道代理" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            ) : (
+              mappings.map((m) => (
+                <div
+                  key={m.id}
+                  className="p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)]"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Typography.Text strong>{m.channelName || m.remoteChannelId}</Typography.Text>
+                      <Tag>{m.remoteChannelType}</Tag>
+                    </div>
+                    <Space size="small">
+                      <Button
+                        size="small"
+                        type="link"
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={async () => {
+                          await clawApi.unassignChannel(m.id);
+                          onUpdate();
+                        }}
+                      >
+                        移除
+                      </Button>
+                    </Space>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {activeTab === "octos" && clawType === "octos" && agent.clawInstanceId && (
+          <OctosManagementPanel claw={{
+            id: agent.clawInstanceId,
+            agentId: agent.id,
+            instanceName: agent.name,
+            clawType,
+            status: (agent.clawStatus || 'unknown') as ClawStatus,
+            enabled: agent.enabled,
+            tenantId: '',
+            createTime: '',
+            updateTime: '',
+            providerId: agent.providerId,
+            providerName: agent.providerName,
+            modelId: agent.modelId,
+            modelName: agent.modelName,
+          }} />
+        )}
+      </div>
+
+      {agent.clawInstanceId && (
+        <ClawEditModal
+          open={editOpen}
+          agent={agent}
+          onClose={() => setEditOpen(false)}
+          onSuccess={() => { setEditOpen(false); onUpdate(); }}
+        />
+      )}
+
+      <ConnectionGuideDialog
+        open={connectOpen}
+        agent={agent}
+        onClose={() => setConnectOpen(false)}
+      />
+    </div>
+  );
+}
+
+// ==================== Claw Create Modal ====================
+
+function ClawCreateModal({
+  open,
+  onClose,
+  onSuccess,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSuccess: (result: any) => void;
+}) {
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const [providers, setProviders] = useState<any[]>([]);
+  const [models, setModels] = useState<any[]>([]);
+  const [selectedType, setSelectedType] = useState<ClawType | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      providerApi.getAll().then(setProviders).catch(() => {});
+    }
+  }, [open]);
+
+  const clawCfg = selectedType ? clawTypeConfig[selectedType] : null;
+
+  const handleProviderChange = async (providerId: string) => {
+    form.setFieldValue("modelId", undefined);
+    try {
+      const prov = await providerApi.getById(providerId);
+      setModels(prov.models || []);
+    } catch {
+      setModels([]);
+    }
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      setLoading(true);
+      const payload: ClawInstanceReq = {
+        instanceName: values.instanceName,
+        clawType: selectedType!,
+        version: values.version,
+        endpointUrl: values.endpointUrl,
+        authConfig: values.authToken ? { authToken: values.authToken } : undefined,
+        providerId: values.providerId,
+        modelId: values.modelId,
+        enabled: values.enabled ?? true,
+      };
+      const result = await clawApi.create(payload);
+      message.success("Claw Agent 创建成功");
+      onSuccess(result);
+    } catch (error: any) {
+      if (error?.errorFields) return;
+      message.error("创建失败");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Modal
+      title="创建 Claw Agent"
+      open={open}
+      onCancel={onClose}
+      onOk={handleSubmit}
+      width={600}
+      okText="创建"
+      confirmLoading={loading}
+      destroyOnHidden
+    >
+      <div className="mb-4">
+        <Typography.Text strong className="block mb-2">选择类型</Typography.Text>
+        <div className="flex flex-wrap gap-2">
+          {(Object.entries(clawTypeConfig) as [ClawType, typeof clawTypeConfig[ClawType]][]).map(
+            ([type, cfg]) => (
+              <div
+                key={type}
+                className={`p-3 rounded-lg border-2 cursor-pointer transition-all w-28 text-center ${
+                  selectedType === type
+                    ? "border-[var(--color-primary)] bg-[var(--color-primary-bg)]"
+                    : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                }`}
+                onClick={() => {
+                  setSelectedType(type);
+                  form.setFieldValue("clawType", type);
+                }}
+              >
+                <div className="text-2xl mb-1">{cfg.icon}</div>
+                <div className="font-medium text-xs">{cfg.label}</div>
+              </div>
+            ),
+          )}
+        </div>
+      </div>
+      <Form form={form} layout="vertical" initialValues={{ enabled: true }}>
+        <div className="grid grid-cols-2 gap-4">
+          <Form.Item name="instanceName" label="实例名称" rules={[{ required: true, message: "请输入名称" }]}>
+            <Input placeholder={`如：生产环境 ${clawCfg?.label || "Claw"}`} />
+          </Form.Item>
+          <Form.Item name="version" label="版本">
+            <Input placeholder="1.0.0（可选）" />
+          </Form.Item>
+        </div>
+        {clawCfg?.mode === "server" && (
+          <Form.Item name="endpointUrl" label="端点地址">
+            <Input placeholder="http://localhost:8080" />
+          </Form.Item>
+        )}
+        {selectedType === "octos" && (
+          <Form.Item name="authToken" label="Auth Token" rules={[{ required: true, message: "请输入 Auth Token" }]}>
+            <Input.Password placeholder="Octos 服务启动时的 auth-token" />
+          </Form.Item>
+        )}
+        <div className="grid grid-cols-2 gap-4">
+          <Form.Item name="providerId" label="供应商" rules={[{ required: true, message: "请选择供应商" }]}>
+            <Select
+              placeholder="选择供应商"
+              onChange={handleProviderChange}
+              options={providers.map((p: any) => ({ label: p.name, value: p.id }))}
+            />
+          </Form.Item>
+          <Form.Item name="modelId" label="模型" rules={[{ required: true, message: "请选择模型" }]}>
+            <Select
+              placeholder="选择模型"
+              options={models.map((m: any) => ({ label: m.name, value: m.id }))}
+            />
+          </Form.Item>
+        </div>
+        <Form.Item name="enabled" label="启用" valuePropName="checked">
+          <Switch />
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+}
+
+// ==================== Claw Edit Modal ====================
+
+function ClawEditModal({
+  open,
+  agent,
+  onClose,
+  onSuccess,
+}: {
+  open: boolean;
+  agent: Agent;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const [providers, setProviders] = useState<any[]>([]);
+  const [models, setModels] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (open) {
+      providerApi.getAll().then(setProviders).catch(() => {});
+      form.setFieldsValue({
+        instanceName: agent.name,
+        version: agent.clawVersion,
+        endpointUrl: agent.endpointUrl,
+        providerId: agent.providerId,
+        modelId: agent.modelId,
+        enabled: agent.enabled,
+      });
+      if (agent.providerId) {
+        providerApi.getById(agent.providerId).then((prov: any) => {
+          setModels(prov.models || []);
+        }).catch(() => setModels([]));
+      }
+    }
+  }, [open, agent, form]);
+
+  const handleProviderChange = async (providerId: string) => {
+    form.setFieldValue("modelId", undefined);
+    try {
+      const prov = await providerApi.getById(providerId);
+      setModels(prov.models || []);
+    } catch {
+      setModels([]);
+    }
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      setLoading(true);
+      await clawApi.update({
+        id: agent.clawInstanceId,
+        instanceName: values.instanceName,
+        clawType: agent.agentType as ClawType,
+        version: values.version,
+        endpointUrl: values.endpointUrl,
+        providerId: values.providerId,
+        modelId: values.modelId,
+        enabled: values.enabled,
+      });
+      message.success("更新成功");
+      onSuccess();
+    } catch (error: any) {
+      if (error?.errorFields) return;
+      message.error("更新失败");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Modal
+      title="编辑 Claw Agent"
+      open={open}
+      onCancel={onClose}
+      onOk={handleSubmit}
+      width={600}
+      okText="保存"
+      confirmLoading={loading}
+      destroyOnHidden
+    >
+      <Form form={form} layout="vertical">
+        <Form.Item name="instanceName" label="实例名称" rules={[{ required: true }]}>
+          <Input />
+        </Form.Item>
+        <Form.Item name="version" label="版本">
+          <Input />
+        </Form.Item>
+        <Form.Item name="endpointUrl" label="端点地址">
+          <Input />
+        </Form.Item>
+        <div className="grid grid-cols-2 gap-4">
+          <Form.Item name="providerId" label="供应商" rules={[{ required: true }]}>
+            <Select
+              onChange={handleProviderChange}
+              options={providers.map((p: any) => ({ label: p.name, value: p.id }))}
+            />
+          </Form.Item>
+          <Form.Item name="modelId" label="模型" rules={[{ required: true }]}>
+            <Select options={models.map((m: any) => ({ label: m.name, value: m.id }))} />
+          </Form.Item>
+        </div>
+        <Form.Item name="enabled" label="启用" valuePropName="checked">
+          <Switch />
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+}
+
+// ==================== Connection Guide Dialog ====================
+
+function ConnectionGuideDialog({
+  open,
+  agent,
+  onClose,
+}: {
+  open: boolean;
+  agent: Agent;
+  onClose: () => void;
+}) {
+  const config = clawTypeConfig[agent.agentType as ClawType];
+  const proxyBase = "http://localhost:3001/proxy/v1";
+
+  return (
+    <Modal
+      title="连接信息"
+      open={open}
+      onCancel={onClose}
+      footer={<Button onClick={onClose}>关闭</Button>}
+      width={600}
+    >
+      <div className="space-y-4">
+        <Card size="small" title="LLM 代理配置">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Typography.Text type="secondary">API Base</Typography.Text>
+              <div className="flex items-center gap-2">
+                <Typography.Text code>{proxyBase}</Typography.Text>
+                <Button size="small" icon={<CopyOutlined />} onClick={() => {
+                  navigator.clipboard.writeText(proxyBase);
+                  message.success("已复制");
+                }} />
+              </div>
+            </div>
+          </div>
+        </Card>
+        <div className="mb-2">
+          <Typography.Text strong>环境变量配置</Typography.Text>
+        </div>
+        <div className="bg-[var(--color-bg-secondary)] rounded-lg p-3 font-mono text-sm">
+          {(config?.setupGuide || []).map((line, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="text-[var(--color-text-tertiary)] select-none">$</span>
+              <span className="flex-1">{line}</span>
+              <CopyOutlined
+                className="cursor-pointer text-[var(--color-text-tertiary)] hover:text-[var(--color-primary)]"
+                onClick={() => {
+                  navigator.clipboard.writeText(line);
+                  message.success("已复制");
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </Modal>
   );
 }

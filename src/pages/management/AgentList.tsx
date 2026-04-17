@@ -52,7 +52,218 @@ import type { ClawType, ClawInstanceReq, ClawChannelMapping } from "@/types/claw
 import { clawTypeConfig } from "@/types/claw";
 import OctosManagementPanel from "./components/octos/OctosManagementPanel";
 
-// ==================== 自定义参数编辑器 ====================
+// ==================== 自定义参数编辑器（JSON 可视化）===================
+
+type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
+
+/** 获取 JSON 值的类型标签 */
+function jsonTypeOf(v: JsonValue): string {
+  if (v === null) return "null";
+  if (Array.isArray(v)) return "array";
+  return typeof v; // string | number | boolean | object
+}
+
+const TYPE_COLOR: Record<string, string> = {
+  string: "green",
+  number: "blue",
+  boolean: "orange",
+  null: "default",
+  object: "purple",
+  array: "cyan",
+};
+
+const TYPE_OPTIONS = [
+  { label: "字符串", value: "string" },
+  { label: "数字", value: "number" },
+  { label: "布尔", value: "boolean" },
+  { label: "空值", value: "null" },
+  { label: "对象", value: "object" },
+  { label: "数组", value: "array" },
+];
+
+/** 将任意 JSON 值转为指定类型的默认值 */
+function castType(val: JsonValue, targetType: string): JsonValue {
+  if (targetType === "string") return typeof val === "string" ? val : String(val ?? "");
+  if (targetType === "number") {
+    const n = Number(val);
+    return isNaN(n) ? 0 : n;
+  }
+  if (targetType === "boolean") return !!val;
+  if (targetType === "null") return null;
+  if (targetType === "array") return Array.isArray(val) ? val : [];
+  // object
+  if (val && typeof val === "object" && !Array.isArray(val)) return val;
+  return {};
+}
+
+/** 单行值编辑器：根据当前类型渲染合适的输入控件 */
+function ValueInput({
+  value,
+  onChange,
+  compact,
+}: {
+  value: JsonValue;
+  onChange: (v: JsonValue) => void;
+  compact?: boolean;
+}) {
+  const t = jsonTypeOf(value);
+  if (t === "string")
+    return <Input size="small" value={value as string} onChange={(e) => onChange(e.target.value)} placeholder="字符串值" className={compact ? "flex-1" : "w-full"} />;
+  if (t === "number")
+    return <InputNumber size="small" value={value as number} onChange={(v) => onChange(v ?? 0)} className={compact ? "flex-1" : "w-full"} />;
+  if (t === "boolean")
+    return <Switch size="small" checked={value as boolean} onChange={(v) => onChange(v)} />;
+  // null / object / array — 不可在此行内编辑，交给子节点
+  return <Typography.Text type="secondary" className="text-xs">{t === "null" ? "null" : t === "array" ? `[${(value as JsonValue[]).length} 项]` : `{${Object.keys(value as object).length} 项}`}</Typography.Text>;
+}
+
+/** 递归节点：渲染一个 key-value 对，对象/数组可展开子节点 */
+function JsonNode({
+  path,
+  keyName,
+  value,
+  depth,
+  root,
+  onChange,
+  onRemove,
+}: {
+  path: string[];
+  keyName: string;
+  value: JsonValue;
+  depth: number;
+  root?: boolean;
+  onChange: (path: string[], val: JsonValue) => void;
+  onRemove: (path: string[]) => void;
+}) {
+  const t = jsonTypeOf(value);
+  const isContainer = t === "object" || t === "array";
+  const [expanded, setExpanded] = useState(depth < 1);
+  const entries = isContainer
+    ? t === "object"
+      ? Object.entries(value as Record<string, JsonValue>)
+      : (value as JsonValue[]).map((v, i) => [String(i), v] as [string, JsonValue])
+    : [];
+
+  const handleAddChild = () => {
+    if (t === "object") {
+      const obj = { ...(value as Record<string, JsonValue>) };
+      let newKey = "key";
+      let n = 1;
+      while (newKey in obj) { newKey = `key${n}`; n++; }
+      obj[newKey] = "";
+      onChange(path, obj);
+      if (!expanded) setExpanded(true);
+    } else if (t === "array") {
+      onChange(path, [...(value as JsonValue[]), ""]);
+      if (!expanded) setExpanded(true);
+    }
+  };
+
+  const handleChildChange = (childPath: string[], val: JsonValue) => {
+    if (t === "object") {
+      onChange(path, { ...(value as Record<string, JsonValue>), [childPath[childPath.length - 1]]: val });
+    } else {
+      const arr = [...(value as JsonValue[])];
+      arr[Number(childPath[childPath.length - 1])] = val;
+      onChange(path, arr);
+    }
+  };
+
+  const handleChildRemove = (childPath: string[]) => {
+    if (t === "object") {
+      const obj = { ...(value as Record<string, JsonValue>) };
+      delete obj[childPath[childPath.length - 1]];
+      onChange(path, obj);
+    } else {
+      const arr = [...(value as JsonValue[])];
+      arr.splice(Number(childPath[childPath.length - 1]), 1);
+      onChange(path, arr);
+    }
+  };
+
+  const handleTypeChange = (newType: string) => {
+    onChange(path, castType(value, newType));
+  };
+
+  return (
+    <div style={{ marginLeft: depth > 0 ? 16 : 0 }}>
+      <div className="flex items-center gap-1.5 py-0.5 group">
+        {/* 展开/折叠 */}
+        {isContainer ? (
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            className="w-4 h-4 flex items-center justify-center text-[var(--color-text-tertiary)] hover:text-[var(--color-primary)] transition-colors text-xs flex-shrink-0"
+          >
+            {expanded ? "▼" : "▶"}
+          </button>
+        ) : (
+          <span className="w-4 flex-shrink-0" />
+        )}
+
+        {/* 键名 */}
+        {!root && (
+          <Typography.Text strong className="text-xs w-28 flex-shrink-0 truncate" title={keyName}>
+            {keyName}
+          </Typography.Text>
+        )}
+
+        {/* 类型选择 */}
+        <Tag color={TYPE_COLOR[t]} className="text-xs leading-tight px-1 cursor-pointer m-0">
+          <Select
+            size="small"
+            variant="borderless"
+            value={t}
+            onChange={handleTypeChange}
+            options={TYPE_OPTIONS}
+            className="w-16 [&_.ant-select-selector]:!pr-0 [&_.ant-select-selector]:!pl-0 [&_.ant-select-selector]:!min-h-0 h-4 [&_.ant-select-arrow]:!text-[8px]"
+            popupMatchSelectWidth={false}
+          />
+        </Tag>
+
+        {/* 值 */}
+        <div className="flex-1 min-w-0">
+          <ValueInput value={value} onChange={(v) => onChange(path, v)} compact />
+        </div>
+
+        {/* 删除按钮 */}
+        {!root && (
+          <Button
+            size="small"
+            type="text"
+            danger
+            icon={<DeleteOutlined />}
+            className="opacity-0 group-hover:opacity-100 flex-shrink-0"
+            style={{ minWidth: 20, width: 20, height: 20 }}
+            onClick={() => onRemove(path)}
+          />
+        )}
+      </div>
+
+      {/* 子节点 */}
+      {isContainer && expanded && (
+        <div>
+          {entries.map(([k, v]) => (
+            <JsonNode
+              key={k}
+              path={[...path, k]}
+              keyName={k}
+              value={v}
+              depth={depth + 1}
+              onChange={handleChildChange}
+              onRemove={handleChildRemove}
+            />
+          ))}
+          <div style={{ marginLeft: 16 }} className="py-0.5">
+            <Button size="small" type="dashed" icon={<PlusOutlined />} onClick={handleAddChild}>
+              {t === "object" ? "添加属性" : "添加项"}
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function CustomParamsEditor({
   value,
@@ -61,70 +272,130 @@ function CustomParamsEditor({
   value?: Record<string, unknown>;
   onChange?: (v: Record<string, unknown>) => void;
 }) {
-  const [newKey, setNewKey] = useState("");
-  const params = value || {};
+  const [mode, setMode] = useState<"visual" | "raw">("visual");
+  const [rawText, setRawText] = useState("");
+  const [rawError, setRawError] = useState<string | null>(null);
 
-  const handleUpdate = (key: string, val: string) => {
-    onChange?.({ ...params, [key]: val });
+  const data = (value || {}) as Record<string, JsonValue>;
+
+  const handleChange = (path: string[], val: JsonValue) => {
+    const rootKey = path[0];
+    if (path.length === 1) {
+      onChange?.({ ...data, [rootKey]: val });
+    } else {
+      // 深层修改：构建新对象
+      const newObj = { ...data };
+      newObj[rootKey] = val;
+      onChange?.(newObj);
+    }
   };
 
-  const handleRemove = (key: string) => {
-    const next = { ...params };
-    delete next[key];
+  const handleRemove = (path: string[]) => {
+    if (path.length !== 1) return;
+    const next = { ...data };
+    delete next[path[0]];
     onChange?.(next);
   };
 
-  const handleAdd = () => {
-    const trimmed = newKey.trim();
-    if (!trimmed || trimmed in params) return;
-    onChange?.({ ...params, [trimmed]: "" });
-    setNewKey("");
+  const handleAddRoot = () => {
+    let newKey = "key";
+    let n = 1;
+    while (newKey in data) { newKey = `key${n}`; n++; }
+    onChange?.({ ...data, [newKey]: "" });
+  };
+
+  // Raw mode
+  useEffect(() => {
+    if (mode === "raw") {
+      setRawText(JSON.stringify(data, null, 2));
+      setRawError(null);
+    }
+  }, [mode, value]);
+
+  const handleRawApply = () => {
+    try {
+      const parsed = JSON.parse(rawText);
+      if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+        setRawError("必须是 JSON 对象 {}");
+        return;
+      }
+      setRawError(null);
+      onChange?.(parsed as Record<string, unknown>);
+      message.success("已应用");
+    } catch (e: any) {
+      setRawError(e.message);
+    }
   };
 
   return (
-    <div className="space-y-2">
-      {Object.entries(params).map(([key, val]) => (
-        <div key={key} className="flex items-center gap-2">
-          <Input
-            value={key}
-            readOnly
-            size="small"
-            className="w-36 flex-shrink-0"
-          />
-          <Input
-            value={typeof val === "string" ? val : JSON.stringify(val)}
-            onChange={(e) => handleUpdate(key, e.target.value)}
-            size="small"
-            className="flex-1"
-            placeholder="值"
-          />
+    <div className="border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-base)]">
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)] rounded-t-lg">
+        <span className="text-xs text-[var(--color-text-secondary)]">自定义参数</span>
+        <div className="flex items-center gap-2">
           <Button
             size="small"
             type="text"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleRemove(key)}
-          />
+            className={`text-xs ${mode === "visual" ? "text-[var(--color-primary)]" : ""}`}
+            onClick={() => setMode("visual")}
+          >
+            可视化
+          </Button>
+          <Button
+            size="small"
+            type="text"
+            className={`text-xs ${mode === "raw" ? "text-[var(--color-primary)]" : ""}`}
+            onClick={() => setMode("raw")}
+          >
+            JSON
+          </Button>
         </div>
-      ))}
-      <div className="flex items-center gap-2">
-        <Input
-          value={newKey}
-          onChange={(e) => setNewKey(e.target.value)}
-          size="small"
-          className="w-36 flex-shrink-0"
-          placeholder="参数名"
-          onPressEnter={handleAdd}
-        />
-        <Button
-          size="small"
-          type="dashed"
-          icon={<PlusOutlined />}
-          onClick={handleAdd}
-          disabled={!newKey.trim() || newKey.trim() in params}
-        >
-          添加
-        </Button>
+      </div>
+      <div className="p-2">
+        {mode === "visual" ? (
+          <>
+            {Object.entries(data).map(([k, v]) => (
+              <JsonNode
+                key={k}
+                path={[k]}
+                keyName={k}
+                value={v as JsonValue}
+                depth={0}
+                root
+                onChange={handleChange}
+                onRemove={handleRemove}
+              />
+            ))}
+            {Object.keys(data).length === 0 && (
+              <Typography.Text type="secondary" className="text-xs block py-2 text-center">
+                暂无参数
+              </Typography.Text>
+            )}
+            <Button size="small" type="dashed" icon={<PlusOutlined />} onClick={handleAddRoot} className="mt-1">
+              添加属性
+            </Button>
+          </>
+        ) : (
+          <div className="space-y-2">
+            <Input.TextArea
+              value={rawText}
+              onChange={(e) => { setRawText(e.target.value); setRawError(null); }}
+              rows={8}
+              className="font-mono text-xs"
+              placeholder="{}"
+              status={rawError ? "error" : undefined}
+            />
+            <div className="flex items-center justify-between">
+              {rawError ? (
+                <Typography.Text type="danger" className="text-xs">{rawError}</Typography.Text>
+              ) : (
+                <span />
+              )}
+              <Button size="small" type="primary" onClick={handleRawApply}>
+                应用
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -52,7 +52,7 @@ import { clawTypeConfig, channelProxyTypeConfig } from "@/types/claw";
 import { channelTypeConfig } from "@/services/mock/channels";
 import OctosManagementPanel from "./components/octos/OctosManagementPanel";
 
-/** 从 agent.customParams.claw 提取配置 */
+/** 从 agent.customParams.claw 提取 Agent 类型配置 */
 function getClaw(agent: Agent): Record<string, unknown> {
   return ((agent.customParams as Record<string, unknown>)?.claw as Record<string, unknown>) || {};
 }
@@ -1450,6 +1450,7 @@ export default function AgentListPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
   const [clawCreateOpen, setClawCreateOpen] = useState(false);
+  const [preselectedAgentType, setPreselectedAgentType] = useState<ClawType | null>(null);
 
   const loadAgents = useCallback(async () => {
     try {
@@ -1615,6 +1616,7 @@ export default function AgentListPage() {
     if (key === 'native') {
       handleOpenCreate();
     } else {
+      setPreselectedAgentType(key as ClawType);
       setClawCreateOpen(true);
     }
   };
@@ -1783,14 +1785,15 @@ export default function AgentListPage() {
 
       <ClawCreateModal
         open={clawCreateOpen}
-        onClose={() => setClawCreateOpen(false)}
-        onSuccess={() => { setClawCreateOpen(false); loadAgents(); }}
+        onClose={() => { setClawCreateOpen(false); setPreselectedAgentType(null); }}
+        onSuccess={() => { setClawCreateOpen(false); setPreselectedAgentType(null); loadAgents(); }}
+        preselectedType={preselectedAgentType}
       />
     </div>
   );
 }
 
-// ==================== Claw Agent 详情（claw 类型 Agent 的详情面板）====================
+// ==================== Agent 详情面板（外部 Agent 类型）====================
 
 function ClawAgentDetail({
   agent,
@@ -1807,8 +1810,8 @@ function ClawAgentDetail({
   const [proxyGuideOpen, setProxyGuideOpen] = useState(false);
   const [proxyGuideMapping, setProxyGuideMapping] = useState<ClawChannelMapping | null>(null);
 
-  const clawType = agent.agentType as ClawType;
-  const config = clawTypeConfig[clawType];
+  const agentType = agent.agentType as ClawType;
+  const config = clawTypeConfig[agentType];
   const clawParams = getClaw(agent);
 
   useEffect(() => {
@@ -1845,7 +1848,7 @@ function ClawAgentDetail({
     { key: "basic", label: "基本信息", icon: RobotOutlined },
     { key: "connection", label: "连接信息", icon: LinkOutlined },
     ...(agent.agentType !== 'native' ? [{ key: "channel" as const, label: "渠道代理", icon: CloudServerOutlined }] : []),
-    ...(clawType === "octos" ? [{ key: "octos" as const, label: "Octos 管理", icon: ApiOutlined }] : []),
+    ...(agentType === "octos" ? [{ key: "octos" as const, label: "Octos 管理", icon: ApiOutlined }] : []),
   ];
 
   return (
@@ -2072,7 +2075,7 @@ function ClawAgentDetail({
           </div>
         )}
 
-        {activeTab === "octos" && clawType === "octos" && (
+        {activeTab === "octos" && agentType === "octos" && (
           <OctosManagementPanel agent={agent} />
         )}
       </div>
@@ -2114,16 +2117,18 @@ function ClawAgentDetail({
   );
 }
 
-// ==================== Claw Create Modal ====================
+// ==================== Agent Create Modal (Claw 类型) ====================
 
 function ClawCreateModal({
   open,
   onClose,
   onSuccess,
+  preselectedType,
 }: {
   open: boolean;
   onClose: () => void;
   onSuccess: (result: any) => void;
+  preselectedType?: ClawType | null;
 }) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -2134,8 +2139,17 @@ function ClawCreateModal({
   useEffect(() => {
     if (open) {
       providerApi.getAll().then(setProviders).catch(() => {});
+      // 预设置 Agent 类型（如果有）
+      if (preselectedType && !selectedType) {
+        setSelectedType(preselectedType);
+        form.setFieldValue("clawType", preselectedType);
+      }
+    } else {
+      // 关闭时清除选中状态
+      setSelectedType(null);
+      form.resetFields();
     }
-  }, [open]);
+  }, [open, preselectedType]);
 
   const clawCfg = selectedType ? clawTypeConfig[selectedType] : null;
 
@@ -2159,8 +2173,8 @@ function ClawCreateModal({
       const shortId = crypto.randomUUID().slice(0, 8);
       const agentData: Partial<Agent> = {
         name: values.instanceName,
-        agentCode: `CLAW-${clawType.toUpperCase()}-${shortId}`,
-        agentType: clawType,
+        agentCode: `CLAW-${agentType.toUpperCase()}-${shortId}`,
+        agentType: agentType,
         systemPrompt: `Claw proxy agent: ${values.instanceName}`,
         providerId: values.providerId,
         modelId: values.modelId,
@@ -2170,7 +2184,7 @@ function ClawCreateModal({
         stream: true,
         customParams: {
           claw: {
-            clawType,
+            clawType: agentType,
             endpointUrl: values.endpointUrl,
             version: values.version,
             authConfig: values.authToken ? { authToken: values.authToken } : undefined,
@@ -2178,7 +2192,7 @@ function ClawCreateModal({
         },
       };
       const result = await agentApi.create(agentData);
-      message.success("Claw Agent 创建成功");
+      message.success("Agent 创建成功");
       onSuccess(result);
     } catch (error: any) {
       if (error?.errorFields) return;
@@ -2190,7 +2204,7 @@ function ClawCreateModal({
 
   return (
     <Modal
-      title="创建 Claw Agent"
+      title="创建 Agent"
       open={open}
       onCancel={onClose}
       onOk={handleSubmit}
@@ -2265,7 +2279,7 @@ function ClawCreateModal({
   );
 }
 
-// ==================== Claw Edit Modal ====================
+// ==================== Agent Edit Modal (Claw 类型) ====================
 
 function ClawEditModal({
   open,
@@ -2283,8 +2297,8 @@ function ClawEditModal({
   const [providers, setProviders] = useState<any[]>([]);
   const [models, setModels] = useState<any[]>([]);
 
-  const clawType = agent.agentType as ClawType;
-  const isOctos = clawType === "octos";
+  const agentType = agent.agentType as ClawType;
+  const isOctos = agentType === "octos";
   const clawParams = getClaw(agent);
   const existingAuthConfig = clawParams?.authConfig as Record<string, unknown> | undefined;
 
@@ -2326,7 +2340,7 @@ function ClawEditModal({
       const model = provider?.models?.find((m: any) => m.id === values.modelId);
       await agentApi.update(agent.id, {
         name: values.instanceName,
-        agentType: clawType,
+        agentType: agentType,
         providerId: values.providerId,
         modelId: values.modelId,
         modelName: model?.name || values.modelId,
@@ -2335,7 +2349,7 @@ function ClawEditModal({
         customParams: {
           ...(agent.customParams || {}),
           claw: {
-            clawType,
+            clawType: agentType,
             endpointUrl: values.endpointUrl,
             version: values.version,
             authConfig: values.authToken ? { authToken: values.authToken } : undefined,
@@ -2354,7 +2368,7 @@ function ClawEditModal({
 
   return (
     <Modal
-      title="编辑 Claw Agent"
+      title="编辑 Agent"
       open={open}
       onCancel={onClose}
       onOk={handleSubmit}
@@ -2401,7 +2415,7 @@ function ClawEditModal({
   );
 }
 
-// ==================== Connection Guide Dialog ====================
+// ==================== Agent 连接指南 ====================
 
 function ConnectionGuideDialog({
   open,
@@ -2412,7 +2426,8 @@ function ConnectionGuideDialog({
   agent: Agent;
   onClose: () => void;
 }) {
-  const config = clawTypeConfig[agent.agentType as ClawType];
+  const agentType = agent.agentType as ClawType;
+  const config = clawTypeConfig[agentType];
   const proxyBase = "http://localhost:3001/proxy/v1";
 
   return (
@@ -2461,7 +2476,7 @@ function ConnectionGuideDialog({
   );
 }
 
-// ==================== Channel Assign Modal ====================
+// ==================== 渠道分配 ====================
 
 function ChannelAssignModal({
   open,
@@ -2560,7 +2575,7 @@ function ChannelAssignModal({
   );
 }
 
-// ==================== Channel Proxy Guide Modal ====================
+// ==================== 渠道代理配置指南 ====================
 
 function ChannelProxyGuideModal({
   open,

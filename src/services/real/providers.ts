@@ -16,6 +16,7 @@ interface ProviderRaw {
   enabled: boolean;
   models: ProviderModelRaw[];
   model_count: number;
+  available_models?: ProviderModelRaw[];
 }
 
 /** 后端原始 ProviderModel VO */
@@ -58,6 +59,8 @@ export interface Provider {
     lastUsed: Date;
   };
   apiKey?: string;
+  /** 创建时返回的厂商全部可用模型列表（未选择启用） */
+  availableModels?: ProviderModel[];
 }
 
 /** 将后端 model 映射为前端 model */
@@ -92,6 +95,7 @@ function mapProvider(raw: ProviderRaw): Provider {
       totalTokens: 0,
       lastUsed: new Date(raw.update_time),
     },
+    availableModels: raw.available_models?.map(mapModel),
   };
 }
 
@@ -155,9 +159,18 @@ const providerRealApi = {
     apiClient.post(`/api/provider/validate/${providerId}`),
 
   // 刷新模型列表
-  refreshModels: async (providerId: string): Promise<string[]> => {
-    const result = await apiClient.post<{ models: string[] }>(`/api/provider/refresh-models/${providerId}`);
-    return result.models || [];
+  refreshModels: async (providerId: string): Promise<ProviderModel[]> => {
+    const result = await apiClient.post<{ models: ProviderModelRaw[] }>(`/api/provider/refresh-models/${providerId}`);
+    return (result.models || []).map(mapModel);
+  },
+
+  // 选择模型：启用指定模型，禁用其他模型
+  selectModels: async (providerId: string, modelIds: string[]): Promise<ProviderModel[]> => {
+    const result = await apiClient.post<ProviderModelRaw[]>(
+      `/api/provider/${providerId}/select-models`,
+      { model_ids: modelIds },
+    );
+    return result.map(mapModel);
   },
 
   /**

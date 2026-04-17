@@ -35,5 +35,8 @@ export * from "./claw";
 // Channel 渠道类型
 export * from "./channel";
 
+// Octos 类型
+export * from "./octos";
+
 // Workflow 工作流类型
 export * from "./workflow";

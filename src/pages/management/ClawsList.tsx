@@ -20,6 +20,7 @@ import {
   Typography,
   Dropdown,
   Alert,
+  Tabs,
 } from "antd";
 import {
   PlusOutlined,
@@ -31,11 +32,14 @@ import {
   CheckCircleOutlined,
   LinkOutlined,
   MoreOutlined,
+  SendOutlined,
+  BookOutlined,
 } from "@ant-design/icons";
 import { clawApi, providerApi, channelApi } from "@/services";
+import OctosManagementPanel from "./components/octos/OctosManagementPanel";
 import { showDeleteConfirm } from "@/components/common/Modal";
 import type { ClawInstance, ClawType, ClawInstanceReq } from "@/types";
-import { clawTypeConfig } from "@/types/claw";
+import { clawTypeConfig, channelProxyTypeConfig } from "@/types/claw";
 import type { ClawChannelMapping } from "@/types/claw";
 
 const { Text } = Typography;
@@ -77,6 +81,8 @@ export default function ClawsList() {
   const [connectClaw, setConnectClaw] = useState<ClawInstance | null>(null);
   const [assignOpen, setAssignOpen] = useState(false);
   const [mappings, setMappings] = useState<ClawChannelMapping[]>([]);
+  const [proxyGuideOpen, setProxyGuideOpen] = useState(false);
+  const [proxyGuideMapping, setProxyGuideMapping] = useState<ClawChannelMapping | null>(null);
 
   const selected = claws.find((c) => c.id === selectedId);
 
@@ -114,9 +120,14 @@ export default function ClawsList() {
 
   // ==================== Handlers ====================
 
-  const handleCreate = async (values: ClawInstanceReq) => {
+  const handleCreate = async (values: ClawInstanceReq & { authToken?: string }) => {
     try {
-      const result = await clawApi.create(values);
+      const { authToken, ...rest } = values;
+      const payload: ClawInstanceReq = {
+        ...rest,
+        authConfig: authToken ? { authToken } : undefined,
+      };
+      const result = await clawApi.create(payload);
       message.success("Claw 注册成功");
       setCreateOpen(false);
       // Show connection guide
@@ -128,9 +139,14 @@ export default function ClawsList() {
     }
   };
 
-  const handleUpdate = async (values: ClawInstanceReq) => {
+  const handleUpdate = async (values: ClawInstanceReq & { authToken?: string }) => {
     try {
-      await clawApi.update(values);
+      const { authToken, ...rest } = values;
+      const payload: ClawInstanceReq = {
+        ...rest,
+        authConfig: authToken ? { authToken } : undefined,
+      };
+      await clawApi.update(payload);
       message.success("更新成功");
       setEditOpen(false);
       loadClaws();
@@ -256,6 +272,10 @@ export default function ClawsList() {
             }}
             onAssignChannel={() => setAssignOpen(true)}
             onRefresh={loadClaws}
+            onShowProxyGuide={(mapping) => {
+              setProxyGuideMapping(mapping);
+              setProxyGuideOpen(true);
+            }}
           />
         ) : (
           <div className="flex items-center justify-center h-full">
@@ -306,6 +326,17 @@ export default function ClawsList() {
           }}
         />
       )}
+
+      {/* Channel Proxy Guide Modal */}
+      <ChannelProxyGuideModal
+        open={proxyGuideOpen}
+        mapping={proxyGuideMapping}
+        onClose={() => {
+          setProxyGuideOpen(false);
+          setProxyGuideMapping(null);
+        }}
+        onCopy={handleCopy}
+      />
     </div>
   );
 }
@@ -321,6 +352,7 @@ function ClawDetail({
   onShowConnect,
   onAssignChannel,
   onRefresh,
+  onShowProxyGuide,
 }: {
   claw: ClawInstance;
   mappings: ClawChannelMapping[];
@@ -330,6 +362,7 @@ function ClawDetail({
   onShowConnect: () => void;
   onAssignChannel: () => void;
   onRefresh: () => void;
+  onShowProxyGuide: (mapping: ClawChannelMapping) => void;
 }) {
   const config = clawTypeConfig[claw.clawType];
 
@@ -379,7 +412,12 @@ function ClawDetail({
         </div>
       </Card>
 
-      {/* Info Cards */}
+      {/* Octos 管理面板 */}
+      {claw.clawType === "octos" && <OctosManagementPanel claw={claw} />}
+
+      {/* Info Cards — 非 Octos 类型显示 */}
+      {claw.clawType !== "octos" && (
+      <>
       <div className="grid grid-cols-2 gap-4">
         <Card title="LLM 配置" size="small">
           <div className="space-y-2">
@@ -423,11 +461,11 @@ function ClawDetail({
         </Card>
       </div>
 
-      {/* Channel Mappings */}
+      {/* Channel Proxy */}
       <Card
         title={
           <div className="flex items-center justify-between">
-            <span>渠道映射</span>
+            <span>渠道代理</span>
             <Button size="small" icon={<PlusOutlined />} onClick={onAssignChannel}>
               分配渠道
             </Button>
@@ -436,37 +474,122 @@ function ClawDetail({
         size="small"
       >
         {mappings.length === 0 ? (
-          <Empty description="暂无渠道映射" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          <Empty description="暂无渠道代理，请先分配渠道" image={Empty.PRESENTED_IMAGE_SIMPLE} />
         ) : (
-          <div className="space-y-2">
-            {mappings.map((m) => (
-              <div
-                key={m.id}
-                className="flex items-center justify-between p-2 rounded bg-[var(--color-bg-secondary)]"
-              >
-                <div>
-                  <Text strong>{m.remoteChannelId}</Text>
-                  <Tag className="ml-2">{m.remoteChannelType}</Tag>
+          <div className="space-y-3">
+            {mappings.map((m) => {
+              const proxyCfg = channelProxyTypeConfig[m.remoteChannelType] || channelProxyTypeConfig[m.channelType || ""];
+              return (
+                <div
+                  key={m.id}
+                  className="p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)]"
+                >
+                  {/* Header row */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span>{proxyCfg?.icon || "📡"}</span>
+                      <Text strong>{m.channelName || m.remoteChannelId}</Text>
+                      <Tag>{proxyCfg?.label || m.remoteChannelType}</Tag>
+                      <Tag color={
+                        m.proxyStatus === "active" ? "green"
+                          : m.proxyStatus === "error" ? "red"
+                            : "default"
+                      }>
+                        {m.proxyStatus === "active" ? "代理中"
+                          : m.proxyStatus === "error" ? "异常"
+                            : "未激活"}
+                      </Tag>
+                    </div>
+                    <Space size="small">
+                      {m.messageCount !== undefined && (
+                        <Text type="secondary" className="text-xs">
+                          {m.messageCount} 条消息
+                        </Text>
+                      )}
+                    </Space>
+                  </div>
+
+                  {/* Proxy URLs */}
+                  {m.proxyInfo && (
+                    <div className="space-y-1 text-xs">
+                      <div className="flex items-center gap-2">
+                        <SendOutlined className="text-[var(--color-text-tertiary)]" />
+                        <Text type="secondary" className="w-16 flex-shrink-0">发送地址</Text>
+                        <Text code className="flex-1 truncate">{m.proxyInfo.sendUrl}</Text>
+                        <CopyOutlined
+                          className="cursor-pointer text-[var(--color-text-tertiary)] hover:text-[var(--color-primary)]"
+                          onClick={() => {
+                            navigator.clipboard.writeText(m.proxyInfo!.sendUrl);
+                            message.success("已复制发送地址");
+                          }}
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <LinkOutlined className="text-[var(--color-text-tertiary)]" />
+                        <Text type="secondary" className="w-16 flex-shrink-0">Webhook</Text>
+                        <Text code className="flex-1 truncate">{m.proxyInfo.receiveUrl}</Text>
+                        <CopyOutlined
+                          className="cursor-pointer text-[var(--color-text-tertiary)] hover:text-[var(--color-primary)]"
+                          onClick={() => {
+                            navigator.clipboard.writeText(m.proxyInfo!.receiveUrl);
+                            message.success("已复制 Webhook 地址");
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-[var(--color-border)]">
+                    <Text type="secondary" className="text-xs">
+                      {m.lastActivity || "无活动记录"}
+                    </Text>
+                    <Space size="small">
+                      <Button
+                        size="small"
+                        type="link"
+                        icon={<BookOutlined />}
+                        onClick={() => onShowProxyGuide(m)}
+                      >
+                        配置指南
+                      </Button>
+                      <Button
+                        size="small"
+                        type="link"
+                        icon={<ApiOutlined />}
+                        onClick={async () => {
+                          try {
+                            const ok = await clawApi.testChannelProxy(m.id);
+                            message.success(ok ? "渠道代理连接正常" : "渠道代理连接失败");
+                          } catch {
+                            message.error("测试失败");
+                          }
+                        }}
+                      >
+                        测试
+                      </Button>
+                      <Button
+                        size="small"
+                        type="link"
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={async () => {
+                          await clawApi.unassignChannel(m.id);
+                          onRefresh();
+                        }}
+                      >
+                        移除
+                      </Button>
+                    </Space>
+                  </div>
                 </div>
-                <Space>
-                  <Tag color={m.syncStatus === "synced" ? "green" : "orange"}>
-                    {m.syncStatus}
-                  </Tag>
-                  <Button
-                    size="small"
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={async () => {
-                      await clawApi.unassignChannel(m.id);
-                      onRefresh();
-                    }}
-                  />
-                </Space>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </Card>
+      </>
+      )}
     </div>
   );
 }
@@ -572,7 +695,19 @@ function ClawCreateModal({
         {/* Server mode: show endpoint */}
         {clawType?.mode === "server" && (
           <Form.Item name="endpointUrl" label="端点地址">
-            <Input placeholder="http://localhost:3001" />
+            <Input placeholder="http://localhost:8080" />
+          </Form.Item>
+        )}
+
+        {/* Octos / Server 模式: Auth Token */}
+        {selectedType === "octos" && (
+          <Form.Item
+            name="authToken"
+            label="Auth Token"
+            tooltip="Octos 服务启动时 --auth-token 参数指定的令牌"
+            rules={[{ required: selectedType === "octos", message: "请输入 Octos Auth Token" }]}
+          >
+            <Input.Password placeholder="如：szZX5LqA2EmjCKhB" />
           </Form.Item>
         )}
 
@@ -645,6 +780,7 @@ function ClawEditModal({
         clawType: claw.clawType,
         version: claw.version,
         endpointUrl: claw.endpointUrl,
+        authToken: claw.authConfig?.authToken || claw.authConfig?.token || "",
         providerId: claw.providerId,
         modelId: claw.modelId,
         enabled: claw.enabled,
@@ -685,6 +821,16 @@ function ClawEditModal({
           <Input />
         </Form.Item>
 
+        {claw.clawType === "octos" && (
+          <Form.Item
+            name="authToken"
+            label="Auth Token"
+            tooltip="Octos 服务启动时 --auth-token 参数指定的令牌"
+          >
+            <Input.Password placeholder="如：szZX5LqA2EmjCKhB" />
+          </Form.Item>
+        )}
+
         <div className="grid grid-cols-2 gap-4">
           <Form.Item name="providerId" label="供应商" rules={[{ required: true }]}>
             <Select
@@ -721,6 +867,14 @@ function ConnectionGuideModal({
   onClose: () => void;
   onCopy: (text: string) => void;
 }) {
+  const [mappings, setMappings] = useState<ClawChannelMapping[]>([]);
+
+  useEffect(() => {
+    if (open && claw) {
+      clawApi.listChannelMappings(claw.id).then(setMappings).catch(() => {});
+    }
+  }, [open, claw]);
+
   if (!claw) return null;
 
   const config = clawTypeConfig[claw.clawType];
@@ -733,6 +887,172 @@ function ConnectionGuideModal({
 
   const isNew = !!claw.proxyApiKey;
 
+  // Build channel proxy guide for each mapping
+  const channelGuideItems = mappings.filter((m) => m.proxyInfo).map((m) => {
+    const proxyCfg = channelProxyTypeConfig[m.remoteChannelType] || channelProxyTypeConfig[m.channelType || ""];
+    const proxyInfo = m.proxyInfo!;
+    const setupLines = (proxyCfg?.setupGuide || []).map((line) =>
+      line
+        .replace(/\{proxyApiBase\}/g, proxyBase)
+        .replace(/\{mappingId\}/g, m.id)
+        .replace(/\{proxyToken\}/g, proxyInfo.proxyToken),
+    );
+    return { mapping: m, proxyCfg, proxyInfo, setupLines };
+  });
+
+  const tabItems = [
+    {
+      key: "llm",
+      label: "LLM 代理",
+      children: (
+        <>
+          {/* LLM Connection Info */}
+          <Card size="small" className="mb-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Text type="secondary">API Base</Text>
+                <div className="flex items-center gap-2">
+                  <Text code>{proxyBase}</Text>
+                  <Button size="small" icon={<CopyOutlined />} onClick={() => onCopy(proxyBase)} />
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <Text type="secondary">API Key</Text>
+                <div className="flex items-center gap-2">
+                  <Text code>
+                    {proxyKey.substring(0, 12)}****{proxyKey.substring(proxyKey.length - 4)}
+                  </Text>
+                  <Button size="small" icon={<CopyOutlined />} onClick={() => onCopy(proxyKey)} />
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* LLM Setup Guide */}
+          <div className="mb-2">
+            <Text strong>配置方法</Text>
+          </div>
+          <div className="bg-[var(--color-bg-secondary)] rounded-lg p-3 font-mono text-sm">
+            {envLines.map((line, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="text-[var(--color-text-tertiary)] select-none">$</span>
+                <span className="flex-1">{line}</span>
+                <CopyOutlined
+                  className="cursor-pointer text-[var(--color-text-tertiary)] hover:text-[var(--color-primary)]"
+                  onClick={() => onCopy(line)}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Config file alternative */}
+          {config?.mode === "server" && (
+            <>
+              <div className="mt-4 mb-2">
+                <Text strong>或修改配置文件</Text>
+              </div>
+              <div className="bg-[var(--color-bg-secondary)] rounded-lg p-3 font-mono text-xs">
+                <pre>{`{
+  "providers": {
+    "openai": {
+      "apiKey": "${proxyKey}",
+      "apiBase": "${proxyBase}"
+    }
+  }
+}`}</pre>
+              </div>
+            </>
+          )}
+        </>
+      ),
+    },
+    {
+      key: "channel",
+      label: `渠道代理${channelGuideItems.length > 0 ? ` (${channelGuideItems.length})` : ""}`,
+      children: channelGuideItems.length === 0 ? (
+        <Empty description="暂无渠道代理，请先在详情页分配渠道" />
+      ) : (
+        <div className="space-y-4">
+          {channelGuideItems.map(({ mapping, proxyCfg, proxyInfo, setupLines }) => (
+            <Card
+              key={mapping.id}
+              size="small"
+              title={
+                <div className="flex items-center gap-2">
+                  <span>{proxyCfg?.icon || "📡"}</span>
+                  <span>{mapping.channelName || mapping.remoteChannelId}</span>
+                  <Tag>{proxyCfg?.label || mapping.remoteChannelType}</Tag>
+                </div>
+              }
+            >
+              {/* Proxy Connection Info */}
+              <div className="space-y-2 mb-3">
+                <div className="flex items-center justify-between">
+                  <Text type="secondary">发送地址</Text>
+                  <div className="flex items-center gap-2">
+                    <Text code>{proxyInfo.sendUrl}</Text>
+                    <Button size="small" icon={<CopyOutlined />} onClick={() => onCopy(proxyInfo.sendUrl)} />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <Text type="secondary">Webhook 地址</Text>
+                  <div className="flex items-center gap-2">
+                    <Text code>{proxyInfo.receiveUrl}</Text>
+                    <Button size="small" icon={<CopyOutlined />} onClick={() => onCopy(proxyInfo.receiveUrl)} />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <Text type="secondary">代理 Token</Text>
+                  <div className="flex items-center gap-2">
+                    <Text code>
+                      {proxyInfo.proxyToken.substring(0, 8)}****{proxyInfo.proxyToken.substring(proxyInfo.proxyToken.length - 4)}
+                    </Text>
+                    <Button size="small" icon={<CopyOutlined />} onClick={() => onCopy(proxyInfo.proxyToken)} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Setup Guide */}
+              <div className="mb-2">
+                <Text strong>配置方法</Text>
+              </div>
+              <div className="bg-[var(--color-bg-base)] rounded-lg p-3 font-mono text-sm">
+                {setupLines.map((line, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="text-[var(--color-text-tertiary)] select-none">$</span>
+                    <span className="flex-1">{line}</span>
+                    <CopyOutlined
+                      className="cursor-pointer text-[var(--color-text-tertiary)] hover:text-[var(--color-primary)]"
+                      onClick={() => onCopy(line)}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Curl examples */}
+              <div className="mt-3 mb-2">
+                <Text strong>API 示例</Text>
+              </div>
+              <div className="bg-[var(--color-bg-base)] rounded-lg p-3 font-mono text-xs">
+                <pre>{`# 发送消息到渠道
+curl -X POST ${proxyInfo.sendUrl} \\
+  -H "Authorization: Bearer ${proxyInfo.proxyToken}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"content": "Hello!", "chat_id": "${mapping.remoteChannelId}"}'
+
+# 注册 Webhook 回调
+curl -X POST ${proxyInfo.receiveUrl} \\
+  -H "Authorization: Bearer ${proxyInfo.proxyToken}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"callback_url": "https://your-claw.example.com/webhook"}'`}</pre>
+              </div>
+            </Card>
+          ))}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <Modal
       title={
@@ -744,7 +1064,7 @@ function ConnectionGuideModal({
       open={open}
       onCancel={onClose}
       footer={<Button onClick={onClose}>完成</Button>}
-      width={640}
+      width={680}
     >
       {isNew && (
         <Alert
@@ -754,64 +1074,7 @@ function ConnectionGuideModal({
           showIcon
         />
       )}
-
-      {/* Connection Info */}
-      <Card size="small" className="mb-4">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Text type="secondary">API Base</Text>
-            <div className="flex items-center gap-2">
-              <Text code>{proxyBase}</Text>
-              <Button size="small" icon={<CopyOutlined />} onClick={() => onCopy(proxyBase)} />
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <Text type="secondary">API Key</Text>
-            <div className="flex items-center gap-2">
-              <Text code>
-                {proxyKey.substring(0, 12)}****{proxyKey.substring(proxyKey.length - 4)}
-              </Text>
-              <Button size="small" icon={<CopyOutlined />} onClick={() => onCopy(proxyKey)} />
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Setup Guide */}
-      <div className="mb-2">
-        <Text strong>配置方法</Text>
-      </div>
-      <div className="bg-[var(--color-bg-secondary)] rounded-lg p-3 font-mono text-sm">
-        {envLines.map((line, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <span className="text-[var(--color-text-tertiary)] select-none">$</span>
-            <span className="flex-1">{line}</span>
-            <CopyOutlined
-              className="cursor-pointer text-[var(--color-text-tertiary)] hover:text-[var(--color-primary)]"
-              onClick={() => onCopy(line)}
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* Config file alternative */}
-      {config?.mode === "server" && (
-        <>
-          <div className="mt-4 mb-2">
-            <Text strong>或修改配置文件</Text>
-          </div>
-          <div className="bg-[var(--color-bg-secondary)] rounded-lg p-3 font-mono text-xs">
-            <pre>{`{
-  "providers": {
-    "openai": {
-      "apiKey": "${proxyKey}",
-      "apiBase": "${proxyBase}"
-    }
-  }
-}`}</pre>
-          </div>
-        </>
-      )}
+      <Tabs items={tabItems} />
     </Modal>
   );
 }
@@ -848,6 +1111,7 @@ function ChannelAssignModal({
         values.channelId,
         values.remoteChannelId,
         values.remoteChannelType,
+        values.callbackUrl,
       );
       message.success("渠道分配成功");
       form.resetFields();
@@ -903,14 +1167,157 @@ function ChannelAssignModal({
               { label: "Discord", value: "discord" },
               { label: "Slack", value: "slack" },
               { label: "WeChat", value: "wechat" },
+              { label: "WeChat Work", value: "wechat_work" },
               { label: "DingTalk", value: "dingtalk" },
-              { label: "Feishu", value: "feishu" },
+              { label: "飞书 Feishu", value: "feishu" },
+              { label: "Webhook", value: "webhook" },
               { label: "HTTP API", value: "http" },
               { label: "其他", value: "other" },
             ]}
           />
         </Form.Item>
+
+        <Form.Item
+          name="callbackUrl"
+          label="回调地址"
+          tooltip="Claw 的消息接收地址，AgentOS 将渠道消息转发到此 URL"
+        >
+          <Input placeholder="https://your-claw.example.com/webhook（可选）" />
+        </Form.Item>
       </Form>
+    </Modal>
+  );
+}
+
+// ==================== Channel Proxy Guide Modal ====================
+
+function ChannelProxyGuideModal({
+  open,
+  mapping,
+  onClose,
+  onCopy,
+}: {
+  open: boolean;
+  mapping: ClawChannelMapping | null;
+  onClose: () => void;
+  onCopy: (text: string) => void;
+}) {
+  if (!mapping) return null;
+
+  const proxyCfg = channelProxyTypeConfig[mapping.remoteChannelType]
+    || channelProxyTypeConfig[mapping.channelType || ""];
+  const proxyInfo = mapping.proxyInfo;
+
+  return (
+    <Modal
+      title={
+        <div className="flex items-center gap-2">
+          <BookOutlined />
+          <span>{mapping.channelName || mapping.remoteChannelId} — 代理配置指南</span>
+        </div>
+      }
+      open={open}
+      onCancel={onClose}
+      footer={<Button onClick={onClose}>关闭</Button>}
+      width={640}
+    >
+      {/* Channel Info */}
+      <Card size="small" className="mb-4">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-xl">{proxyCfg?.icon || "📡"}</span>
+          <Text strong>{mapping.channelName || mapping.remoteChannelId}</Text>
+          <Tag>{proxyCfg?.label || mapping.remoteChannelType}</Tag>
+          <Tag color={mapping.proxyStatus === "active" ? "green" : "default"}>
+            {mapping.proxyStatus === "active" ? "代理中" : "未激活"}
+          </Tag>
+        </div>
+        {proxyInfo && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Text type="secondary">发送地址 (Send)</Text>
+              <div className="flex items-center gap-2">
+                <Text code>{proxyInfo.sendUrl}</Text>
+                <Button size="small" icon={<CopyOutlined />} onClick={() => onCopy(proxyInfo.sendUrl)} />
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <Text type="secondary">接收地址 (Webhook)</Text>
+              <div className="flex items-center gap-2">
+                <Text code>{proxyInfo.receiveUrl}</Text>
+                <Button size="small" icon={<CopyOutlined />} onClick={() => onCopy(proxyInfo.receiveUrl)} />
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <Text type="secondary">代理 Token</Text>
+              <div className="flex items-center gap-2">
+                <Text code>
+                  {proxyInfo.proxyToken.substring(0, 8)}****{proxyInfo.proxyToken.substring(proxyInfo.proxyToken.length - 4)}
+                </Text>
+                <Button size="small" icon={<CopyOutlined />} onClick={() => onCopy(proxyInfo.proxyToken)} />
+              </div>
+            </div>
+          </div>
+        )}
+      </Card>
+
+      {/* API Usage */}
+      {proxyInfo && (
+        <>
+          <div className="mb-2">
+            <Text strong>发送消息到渠道</Text>
+          </div>
+          <div className="bg-[var(--color-bg-secondary)] rounded-lg p-3 font-mono text-xs mb-4">
+            <pre>{`curl -X POST ${proxyInfo.sendUrl} \\
+  -H "Authorization: Bearer ${proxyInfo.proxyToken}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "content": "Hello from Claw!",
+    "chat_id": "${mapping.remoteChannelId}"
+  }'`}</pre>
+          </div>
+
+          <div className="mb-2">
+            <Text strong>接收渠道消息</Text>
+          </div>
+          <div className="bg-[var(--color-bg-secondary)] rounded-lg p-3 font-mono text-xs mb-4">
+            <pre>{`# 1. 注册回调地址（Claw 的消息接收端点）
+curl -X POST ${proxyInfo.receiveUrl} \\
+  -H "Authorization: Bearer ${proxyInfo.proxyToken}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "callback_url": "https://your-claw.example.com/webhook"
+  }'
+
+# 2. Claw 的 webhook 端点接收数据格式
+# POST https://your-claw.example.com/webhook
+# {
+#   "message_id": "msg-xxx",
+#   "channel_type": "${mapping.remoteChannelType}",
+#   "chat_id": "${mapping.remoteChannelId}",
+#   "content": "用户消息内容",
+#   "sender": { "id": "user-xxx", "name": "用户名" },
+#   "timestamp": "2026-04-16T10:00:00Z"
+# }`}</pre>
+          </div>
+
+          <div className="mb-2">
+            <Text strong>环境变量配置</Text>
+          </div>
+          <div className="bg-[var(--color-bg-secondary)] rounded-lg p-3 font-mono text-sm">
+            {(proxyCfg?.setupGuide || []).map((line, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="text-[var(--color-text-tertiary)] select-none">$</span>
+                <span className="flex-1">
+                  {line
+                    .replace(/\{proxyApiBase\}/g, "http://localhost:3001/proxy/v1")
+                    .replace(/\{mappingId\}/g, mapping.id)
+                    .replace(/\{proxyToken\}/g, proxyInfo.proxyToken)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </Modal>
   );
 }

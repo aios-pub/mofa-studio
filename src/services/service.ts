@@ -154,6 +154,11 @@ export const permissionApi = createProxyService(permissionMockApi, permissionRea
 // Claws
 export const clawApi = createProxyService(clawMockApi, clawRealApi);
 
+// Octos — 工厂函数，不使用代理模式
+export { createOctosApiClient } from "./real/octos";
+export { octosMockApi } from "./mock/octos";
+export { OCTOS_PROVIDER_CATALOG, OCTOS_PROVIDER_NAMES } from "./real/octosProviderCatalog";
+
 // 导出 mock 数据和类型
 export { mockPrompts, type Prompt, type PromptVariable, type PromptVersion, type VersionDiff } from "./mock/prompts";
 export { mockSkills, type Skill, type SkillParameter } from "./mock/skills";

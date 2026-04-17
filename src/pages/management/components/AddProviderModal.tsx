@@ -1,19 +1,21 @@
 /**
  * 新增 Provider 弹窗组件
- * 步骤式流程：选择厂商 -> 配置信息 -> 完成确认
+ * 步骤式流程：选择厂商 -> 配置信息 -> 模型选择 -> 完成确认
  */
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { Modal, Button, Steps, Result, Alert } from 'antd';
 import type { ProviderConfig, ProviderType, CreateProviderFormData } from '../../../types/provider';
+import type { ProviderModel } from '../../../services/real/providers';
 import { ProviderTypeSelector } from './ProviderTypeSelector';
 import { ProviderConfigForm } from './ProviderConfigForm';
+import { ModelSelectionStep } from './ModelSelectionStep';
 import { getProviderConfig } from '../../../services/provider/providerConfigs';
 
 interface AddProviderModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateProviderFormData) => Promise<void>;
+  onSubmit: (data: CreateProviderFormData) => Promise<ProviderWithModels | void>;
   /** 传入 Provider 时进入编辑模式 */
   provider?: {
     id: string;
@@ -25,12 +27,24 @@ interface AddProviderModalProps {
   onEdit?: (id: string, data: CreateProviderFormData) => Promise<void>;
 }
 
+/** 创建 Provider 后返回的结构（含可用模型列表） */
+export interface ProviderWithModels {
+  id: string;
+  name: string;
+  type: string;
+  baseUrl: string;
+  apiKey?: string;
+  availableModels?: ProviderModel[];
+  models: ProviderModel[];
+}
+
 // 步骤定义
-type StepKey = 'select' | 'config' | 'complete';
+type StepKey = 'select' | 'config' | 'select_models' | 'complete';
 
 const steps: { key: StepKey; title: string; description: string }[] = [
   { key: 'select', title: '选择厂商', description: '选择要添加的模型厂商' },
-  { key: 'config', title: '配置信息', description: '填写 API 配置和模型选择' },
+  { key: 'config', title: '配置信息', description: '填写 API 配置' },
+  { key: 'select_models', title: '模型选择', description: '选择要启用的模型' },
   { key: 'complete', title: '完成', description: 'Provider 添加成功' },
 ];
 
@@ -57,6 +71,11 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 模型选择相关状态
+  const [createdProviderId, setCreatedProviderId] = useState<string | null>(null);
+  const [availableModels, setAvailableModels] = useState<ProviderModel[]>([]);
+  const [selectedModelIds, setSelectedModelIds] = useState<Set<string>>(new Set());
 
   // 编辑模式：初始化 selectedConfig
   useEffect(() => {
@@ -132,7 +151,9 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
     if (!validateCurrentStep()) return;
 
     if (currentStep === 1) {
-      handleSubmit();
+      handleCreate();
+    } else if (currentStep === 2) {
+      handleSelectModels();
     } else {
       setCurrentStep(prev => prev + 1);
     }
@@ -144,28 +165,77 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
     setError(null);
   };
 
-  // 提交
-  const handleSubmit = async () => {
+  // 创建 Provider（步骤 1 -> 2）
+  const handleCreate = async () => {
     setLoading(true);
     setError(null);
     try {
       if (isEditMode && onEdit && provider) {
-        // 如果 apiKey 未被修改（与原始 masked 值相同），则不发送 apiKey
         const submitData = { ...formData };
         if (submitData.apiKey === originalApiKey) {
           delete submitData.apiKey;
         }
         await onEdit(provider.id, submitData);
-        setCurrentStep(2);
+        setCurrentStep(3); // 编辑模式直接到完成
       } else {
-        await onSubmit(formData);
-        setCurrentStep(2); // 跳转到完成步骤
+        const result = await onSubmit(formData);
+        if (result?.id) {
+          setCreatedProviderId(result.id);
+          const models = result.availableModels || [];
+          setAvailableModels(models);
+          // 默认不选中任何模型，用户手动选择
+          setSelectedModelIds(new Set());
+          setCurrentStep(2); // 进入模型选择步骤
+        } else {
+          setCurrentStep(3); // 无模型列表则直接完成
+        }
       }
     } catch (err) {
       console.error('Failed to save provider:', err);
       setError(err instanceof Error ? err.message : (isEditMode ? '更新失败，请重试' : '添加失败，请重试'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 确认模型选择（步骤 2 -> 3）
+  const handleSelectModels = async () => {
+    if (!createdProviderId) {
+      setCurrentStep(3);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { providerApi } = await import('../../../services');
+      await providerApi.selectModels(createdProviderId, Array.from(selectedModelIds));
+      setCurrentStep(3);
+    } catch (err) {
+      console.error('Failed to select models:', err);
+      setError(err instanceof Error ? err.message : '模型选择失败，请重试');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 模型选择操作
+  const handleToggleModel = (modelId: string) => {
+    setSelectedModelIds(prev => {
+      const next = new Set(prev);
+      if (next.has(modelId)) {
+        next.delete(modelId);
+      } else {
+        next.add(modelId);
+      }
+      return next;
+    });
+  };
+
+  const handleToggleAllModels = (selectAll: boolean) => {
+    if (selectAll) {
+      setSelectedModelIds(new Set(availableModels.map(m => m.id)));
+    } else {
+      setSelectedModelIds(new Set());
     }
   };
 
@@ -183,6 +253,9 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
     });
     setLoading(false);
     setError(null);
+    setCreatedProviderId(null);
+    setAvailableModels([]);
+    setSelectedModelIds(new Set());
     onClose();
   };
 
@@ -211,6 +284,17 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
         );
       case 2:
         return (
+          <div className="h-[400px]">
+            <ModelSelectionStep
+              availableModels={availableModels.map(m => ({ id: m.id, name: m.name }))}
+              selectedIds={selectedModelIds}
+              onToggle={handleToggleModel}
+              onToggleAll={handleToggleAllModels}
+            />
+          </div>
+        );
+      case 3:
+        return (
           <div className="py-8">
             <Result
               status="success"
@@ -218,7 +302,11 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
               subTitle={
                 <div className="text-[var(--color-text-secondary)]">
                   <p className="text-lg font-medium mb-2">{formData.name}</p>
-                  <p>您现在可以使用此 Provider 的模型进行对话</p>
+                  <p>
+                    {selectedModelIds.size > 0
+                      ? `已选择 ${selectedModelIds.size} 个模型`
+                      : '您可以稍后在 Provider 详情中选择要启用的模型'}
+                  </p>
                 </div>
               }
               extra={[
@@ -237,6 +325,9 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
                       config: {},
                       selectedModels: [],
                     });
+                    setCreatedProviderId(null);
+                    setAvailableModels([]);
+                    setSelectedModelIds(new Set());
                   }}>
                     继续添加
                   </Button>,
@@ -252,12 +343,22 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
 
   // 底部按钮
   const renderFooter = () => {
-    if (currentStep === 2) return null;
+    if (currentStep === 3) return null;
+
+    const nextLabel = (() => {
+      if (currentStep === 1) {
+        return loading ? (isEditMode ? '更新中...' : '添加中...') : (isEditMode ? '保存修改' : '添加 Provider');
+      }
+      if (currentStep === 2) {
+        return loading ? '保存中...' : '确认选择';
+      }
+      return '下一步';
+    })();
 
     return (
       <div className="flex items-center justify-end">
         <div className="flex gap-2">
-          {!isEditMode && currentStep > 0 && (
+          {currentStep > 0 && !(isEditMode && currentStep === 1) && (
             <Button onClick={handlePrev} disabled={loading}>
               上一步
             </Button>
@@ -268,7 +369,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
             loading={loading}
             disabled={currentStep === 0 && !selectedConfig}
           >
-            {currentStep === 1 ? (loading ? (isEditMode ? '更新中...' : '添加中...') : (isEditMode ? '保存修改' : '添加 Provider')) : '下一步'}
+            {nextLabel}
           </Button>
         </div>
       </div>
@@ -278,7 +379,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
   return (
     <Modal
       open={open}
-      onCancel={currentStep === 2 ? handleClose : onClose}
+      onCancel={currentStep === 3 ? handleClose : onClose}
       title={
         <div className="flex items-center gap-3">
           <span>{isEditMode ? '编辑 Provider' : '新增 Provider'}</span>
@@ -308,7 +409,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
       {renderStepContent()}
 
       {/* 错误提示 */}
-      {error && currentStep !== 2 && (
+      {error && currentStep !== 3 && (
         <Alert
           type="error"
           message={error}

@@ -2,7 +2,7 @@
  * Claw Mock API
  */
 
-import type { ClawInstance, ClawChannelMapping, CliToolSession } from "@/types";
+import type { ClawInstance, ClawChannelMapping, CliToolSession, ChannelProxyInfo } from "@/types";
 
 const mockClaws: ClawInstance[] = [
   {
@@ -64,6 +64,7 @@ const mockClaws: ClawInstance[] = [
     clawType: "octos",
     status: "offline",
     endpointUrl: "http://localhost:8080",
+    authConfig: { authToken: "szZX5LqA2EmjCKhB" },
     enabled: false,
     tenantId: "tenant-001",
     providerId: "prov-003",
@@ -86,6 +87,57 @@ const mockMappings: ClawChannelMapping[] = [
     tenantId: "tenant-001",
     createTime: "2026-04-15T10:30:00",
     updateTime: "2026-04-15T10:30:00",
+    channelName: "Telegram 客服",
+    channelType: "telegram",
+    messageCount: 1284,
+    lastActivity: "2026-04-16T09:45:00",
+    proxyStatus: "active",
+    proxyInfo: {
+      sendUrl: "http://localhost:3001/proxy/v1/channel/map-001/send",
+      receiveUrl: "http://localhost:3001/proxy/v1/channel/map-001/webhook",
+      proxyToken: "cpt-telegram-xxxx-xxxx",
+    },
+  },
+  {
+    id: "map-002",
+    clawInstanceId: "claw-001",
+    channelId: "ch-002",
+    remoteChannelId: "feishu-bot-001",
+    remoteChannelType: "feishu",
+    syncStatus: "synced",
+    tenantId: "tenant-001",
+    createTime: "2026-04-15T11:00:00",
+    updateTime: "2026-04-15T11:00:00",
+    channelName: "飞书工作群",
+    channelType: "feishu",
+    messageCount: 567,
+    lastActivity: "2026-04-16T10:00:00",
+    proxyStatus: "active",
+    proxyInfo: {
+      sendUrl: "http://localhost:3001/proxy/v1/channel/map-002/send",
+      receiveUrl: "http://localhost:3001/proxy/v1/channel/map-002/webhook",
+      proxyToken: "cpt-feishu-xxxx-xxxx",
+    },
+  },
+  {
+    id: "map-003",
+    clawInstanceId: "claw-002",
+    channelId: "ch-003",
+    remoteChannelId: "discord-server-001",
+    remoteChannelType: "discord",
+    syncStatus: "pending",
+    tenantId: "tenant-001",
+    createTime: "2026-04-16T08:00:00",
+    updateTime: "2026-04-16T08:00:00",
+    channelName: "Discord 社区",
+    channelType: "discord",
+    messageCount: 0,
+    proxyStatus: "inactive",
+    proxyInfo: {
+      sendUrl: "http://localhost:3001/proxy/v1/channel/map-003/send",
+      receiveUrl: "http://localhost:3001/proxy/v1/channel/map-003/webhook",
+      proxyToken: "cpt-discord-xxxx-xxxx",
+    },
   },
 ];
 
@@ -161,9 +213,36 @@ export const clawMockApi = {
     return true;
   },
 
-  async assignChannel(): Promise<ClawChannelMapping> {
+  async assignChannel(
+    _clawInstanceId: string,
+    _channelId: string,
+    remoteChannelId: string,
+    remoteChannelType: string,
+    _callbackUrl?: string,
+  ): Promise<ClawChannelMapping> {
     await new Promise((r) => setTimeout(r, 300));
-    return mockMappings[0];
+    const id = `map-${Date.now()}`;
+    return {
+      id,
+      clawInstanceId: _clawInstanceId,
+      channelId: _channelId,
+      remoteChannelId,
+      remoteChannelType,
+      syncStatus: "synced",
+      tenantId: "tenant-001",
+      createTime: new Date().toISOString(),
+      updateTime: new Date().toISOString(),
+      channelName: remoteChannelId,
+      channelType: remoteChannelType,
+      messageCount: 0,
+      proxyStatus: "active",
+      proxyInfo: {
+        sendUrl: `http://localhost:3001/proxy/v1/channel/${id}/send`,
+        receiveUrl: `http://localhost:3001/proxy/v1/channel/${id}/webhook`,
+        callbackUrl: _callbackUrl,
+        proxyToken: `cpt-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
+      },
+    };
   },
 
   async unassignChannel(): Promise<void> {
@@ -178,6 +257,28 @@ export const clawMockApi = {
   async listCliSessions(clawInstanceId: string): Promise<CliToolSession[]> {
     await new Promise((r) => setTimeout(r, 200));
     return mockSessions.filter((s) => s.clawInstanceId === clawInstanceId);
+  },
+
+  async getChannelProxyConfig(mappingId: string): Promise<ChannelProxyInfo> {
+    await new Promise((r) => setTimeout(r, 200));
+    const mapping = mockMappings.find((m) => m.id === mappingId);
+    if (!mapping?.proxyInfo) throw new Error("Not found");
+    return mapping.proxyInfo;
+  },
+
+  async testChannelProxy(mappingId: string): Promise<boolean> {
+    await new Promise((r) => setTimeout(r, 800));
+    return mockMappings.some((m) => m.id === mappingId);
+  },
+
+  async regenerateProxyToken(mappingId: string): Promise<ChannelProxyInfo> {
+    await new Promise((r) => setTimeout(r, 300));
+    const mapping = mockMappings.find((m) => m.id === mappingId);
+    if (!mapping?.proxyInfo) throw new Error("Not found");
+    return {
+      ...mapping.proxyInfo,
+      proxyToken: `cpt-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
+    };
   },
 };
 

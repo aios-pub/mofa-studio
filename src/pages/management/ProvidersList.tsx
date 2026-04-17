@@ -29,8 +29,9 @@ import type { CreateProviderFormData } from "../../types/provider";
 import type { Provider } from "../../services/real/providers";
 import { providerApi } from "@/services";
 import { getProviderTypeConfig } from "../../services/provider/providerConfigs";
-import { AddProviderModal } from "./components/AddProviderModal";
+import { AddProviderModal, type ProviderWithModels } from "./components/AddProviderModal";
 import { formatDate } from "@/utils";
+import { fuzzyMatch } from "@/utils/fuzzySearch";
 
 export default function ProvidersListPage() {
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -163,11 +164,22 @@ export default function ProvidersListPage() {
   };
 
   // 处理新增 Provider
-  const handleAddProvider = async (formData: CreateProviderFormData) => {
+  const handleAddProvider = async (formData: CreateProviderFormData): Promise<ProviderWithModels | void> => {
     const newProvider = await providerApi.createFromFormData(formData);
-    setProviders([...providers, newProvider]);
-    setSelectedProvider(newProvider);
+    // 创建后重新加载列表以获取最新状态
+    await loadProviders();
+    const updated = providers.find(p => p.id === newProvider.id) || newProvider;
+    setSelectedProvider(updated);
     message.success(`Provider "${newProvider.name}" 添加成功`);
+    return {
+      id: newProvider.id,
+      name: newProvider.name,
+      type: newProvider.type,
+      baseUrl: newProvider.baseUrl,
+      apiKey: newProvider.apiKey,
+      availableModels: newProvider.availableModels,
+      models: newProvider.models,
+    };
   };
 
   // 处理编辑 Provider
@@ -411,6 +423,7 @@ function ProviderDetail({
   const [activeTab, setActiveTab] = useState<"models" | "usage" | "settings">(
     "models",
   );
+  const [modelSearch, setModelSearch] = useState("");
 
   const typeConfig = getProviderTypeConfig(provider.type);
 
@@ -552,8 +565,19 @@ function ProviderDetail({
               </Button>
             </div>
 
+            <Input
+              placeholder="搜索模型..."
+              prefix={<SearchOutlined />}
+              value={modelSearch}
+              onChange={(e) => setModelSearch(e.target.value)}
+              allowClear
+              className="mb-3"
+            />
+
             <div className="space-y-2">
-              {provider.models.map((model) => (
+              {provider.models
+                .filter((m) => !modelSearch || fuzzyMatch(modelSearch, m.name))
+                .map((model) => (
                 <div
                   key={model.id}
                   className="flex items-center justify-between p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]"

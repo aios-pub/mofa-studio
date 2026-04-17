@@ -221,6 +221,17 @@ export const providerApi = {
     return provider?.models || [];
   },
 
+  // 选择模型：启用指定模型，禁用其他模型
+  async selectModels(providerId: string, modelIds: string[]): Promise<ProviderModel[]> {
+    await delay(300);
+    const provider = mockProviders.find((p) => p.id === providerId);
+    if (!provider) return [];
+    provider.models.forEach((m) => {
+      m.enabled = modelIds.includes(m.id);
+    });
+    return provider.models.filter((m) => m.enabled);
+  },
+
   // 获取使用统计
   async getUsageStats(id: string): Promise<Provider['usage']> {
     await delay(200);

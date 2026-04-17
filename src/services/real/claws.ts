@@ -4,7 +4,7 @@
  */
 
 import { apiClient } from "../api/apiClient";
-import type { ClawInstance, ClawInstanceReq, ClawChannelMapping, CliToolSession } from "@/types";
+import type { ClawInstance, ClawInstanceReq, ClawChannelMapping, CliToolSession, ChannelProxyInfo } from "@/types";
 
 // ==================== 后端响应类型 ====================
 
@@ -46,6 +46,15 @@ interface BackendChannelMapping {
   tenant_id: string;
   create_time: string;
   update_time: string;
+  channel_name?: string;
+  channel_type?: string;
+  message_count?: number;
+  last_activity?: string;
+  proxy_send_url?: string;
+  proxy_receive_url?: string;
+  proxy_callback_url?: string;
+  proxy_token?: string;
+  proxy_status?: string;
 }
 
 interface BackendCliSession {
@@ -101,6 +110,16 @@ function fromBackend(vo: BackendClawInstance): ClawInstance {
 }
 
 function fromBackendMapping(vo: BackendChannelMapping): ClawChannelMapping {
+  const proxyInfo: ChannelProxyInfo | undefined =
+    vo.proxy_send_url
+      ? {
+          sendUrl: vo.proxy_send_url,
+          receiveUrl: vo.proxy_receive_url || '',
+          callbackUrl: vo.proxy_callback_url,
+          proxyToken: vo.proxy_token || '',
+        }
+      : undefined;
+
   return {
     id: vo.id,
     clawInstanceId: vo.claw_instance_id,
@@ -113,6 +132,12 @@ function fromBackendMapping(vo: BackendChannelMapping): ClawChannelMapping {
     tenantId: vo.tenant_id,
     createTime: vo.create_time,
     updateTime: vo.update_time,
+    channelName: vo.channel_name,
+    channelType: vo.channel_type,
+    messageCount: vo.message_count,
+    lastActivity: vo.last_activity,
+    proxyInfo,
+    proxyStatus: vo.proxy_status as ClawChannelMapping['proxyStatus'],
   };
 }
 
@@ -208,12 +233,14 @@ export const clawRealApi = {
     channelId: string,
     remoteChannelId: string,
     remoteChannelType: string,
+    callbackUrl?: string,
   ): Promise<ClawChannelMapping> {
     const vo = await apiClient.post<BackendChannelMapping>("/api/claw/channel/assign", {
       claw_instance_id: clawInstanceId,
       channel_id: channelId,
       remote_channel_id: remoteChannelId,
       remote_channel_type: remoteChannelType,
+      callback_url: callbackUrl,
     });
     return fromBackendMapping(vo);
   },
@@ -239,5 +266,42 @@ export const clawRealApi = {
     );
     if (!Array.isArray(data)) return [];
     return data.map(fromBackendSession);
+  },
+
+  /** 获取渠道映射的代理配置 */
+  async getChannelProxyConfig(mappingId: string): Promise<ChannelProxyInfo> {
+    const data = await apiClient.get<{
+      proxy_send_url: string;
+      proxy_receive_url?: string;
+      proxy_callback_url?: string;
+      proxy_token: string;
+    }>(`/api/claw/channel-proxy/config/${mappingId}`);
+    return {
+      sendUrl: data.proxy_send_url,
+      receiveUrl: data.proxy_receive_url || '',
+      callbackUrl: data.proxy_callback_url,
+      proxyToken: data.proxy_token,
+    };
+  },
+
+  /** 测试渠道代理连通性 */
+  async testChannelProxy(mappingId: string): Promise<boolean> {
+    return apiClient.post<boolean>(`/api/claw/channel-proxy/test/${mappingId}`);
+  },
+
+  /** 重新生成渠道代理 Token */
+  async regenerateProxyToken(mappingId: string): Promise<ChannelProxyInfo> {
+    const data = await apiClient.post<{
+      proxy_send_url: string;
+      proxy_receive_url?: string;
+      proxy_callback_url?: string;
+      proxy_token: string;
+    }>(`/api/claw/channel-proxy/regenerate-token/${mappingId}`);
+    return {
+      sendUrl: data.proxy_send_url,
+      receiveUrl: data.proxy_receive_url || '',
+      callbackUrl: data.proxy_callback_url,
+      proxyToken: data.proxy_token,
+    };
   },
 };

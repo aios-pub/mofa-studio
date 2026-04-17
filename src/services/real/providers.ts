@@ -93,6 +93,7 @@ function mapProvider(raw: ProviderRaw): Provider {
     type: raw.provider_type,
     baseUrl: raw.api_base,
     enabled: raw.enabled,
+    apiKey: raw.api_key,
     models: (raw.models ?? []).map(mapModel),
     modelCount: raw.model_count ?? (raw.models ?? []).length,
     createdAt: raw.create_time,

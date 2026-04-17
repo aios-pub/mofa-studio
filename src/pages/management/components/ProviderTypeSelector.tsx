@@ -49,8 +49,7 @@ export const ProviderTypeSelector: React.FC<ProviderTypeSelectorProps> = ({
     return providers.filter(
       (p) =>
         p.name.toLowerCase().includes(query) ||
-        p.description.toLowerCase().includes(query) ||
-        p.defaultModels.some((m) => m.name.toLowerCase().includes(query)),
+        p.description.toLowerCase().includes(query),
     );
   }, [providers, searchQuery]);
 
@@ -159,7 +158,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
           </p>
           <div className="flex items-center gap-1 mt-1.5">
             <span className="text-xs text-[var(--color-text-tertiary)]">
-              {config.defaultModels.length} 个模型
+              {config.api.authType === 'none' ? '无需密钥' : 'API Key 认证'}
             </span>
           </div>
         </div>

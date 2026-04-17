@@ -122,6 +122,7 @@ export const channelTypeConfig = isMockEnabled() ? mockChannelTypeConfig : realC
 
 // Providers
 export const providerApi = createProxyService(providerMockApi, providerRealApi as any);
+export type { ExternalModel, ProviderModel } from "./real/providers";
 
 // System
 export const roleApi = createProxyService(roleMockApi, roleRealApi as any);

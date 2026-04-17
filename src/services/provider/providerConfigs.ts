@@ -28,35 +28,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "sk-...",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "qwen-max",
-        name: "通义千问-Max",
-        maxTokens: 32000,
-        pricing: { input: 0.04, output: 0.12 },
-        capabilities: { vision: true, streaming: true, functionCalling: true },
-      },
-      {
-        id: "qwen-plus",
-        name: "通义千问-Plus",
-        maxTokens: 128000,
-        pricing: { input: 0.0008, output: 0.002 },
-        capabilities: { vision: true, streaming: true, functionCalling: true },
-      },
-      {
-        id: "qwen-turbo",
-        name: "通义千问-Turbo",
-        maxTokens: 128000,
-        pricing: { input: 0.0003, output: 0.0006 },
-      },
-      {
-        id: "qwen-vl-max",
-        name: "通义千问-VL-Max",
-        maxTokens: 8192,
-        pricing: { input: 0.02, output: 0.02 },
-        capabilities: { vision: true, streaming: true },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: true,
       streaming: true,
@@ -79,34 +51,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "智谱 API Key",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "glm-4-plus",
-        name: "GLM-4-Plus",
-        maxTokens: 128000,
-        pricing: { input: 0.05, output: 0.05 },
-        capabilities: { vision: true, streaming: true, functionCalling: true },
-      },
-      {
-        id: "glm-4-0520",
-        name: "GLM-4-0520",
-        maxTokens: 128000,
-        pricing: { input: 0.1, output: 0.1 },
-      },
-      {
-        id: "glm-4-air",
-        name: "GLM-4-Air",
-        maxTokens: 128000,
-        pricing: { input: 0.001, output: 0.001 },
-      },
-      {
-        id: "glm-4-flash",
-        name: "GLM-4-Flash",
-        maxTokens: 128000,
-        pricing: { input: 0, output: 0 },
-        capabilities: { vision: true, streaming: true },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: true,
       streaming: true,
@@ -137,20 +82,7 @@ const cloudProviders: ProviderConfig[] = [
         description: "推理接入点 ID",
       },
     ],
-    defaultModels: [
-      {
-        id: "doubao-pro-32k",
-        name: "豆包 Pro 32K",
-        maxTokens: 32768,
-        pricing: { input: 0.0008, output: 0.002 },
-      },
-      {
-        id: "doubao-lite-32k",
-        name: "豆包 Lite 32K",
-        maxTokens: 32768,
-        pricing: { input: 0.0003, output: 0.0006 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -174,26 +106,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "sk-...",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "moonshot-v1-8k",
-        name: "Moonshot V1 8K",
-        maxTokens: 8192,
-        pricing: { input: 0.012, output: 0.012 },
-      },
-      {
-        id: "moonshot-v1-32k",
-        name: "Moonshot V1 32K",
-        maxTokens: 32768,
-        pricing: { input: 0.024, output: 0.024 },
-      },
-      {
-        id: "moonshot-v1-128k",
-        name: "Moonshot V1 128K",
-        maxTokens: 131072,
-        pricing: { input: 0.06, output: 0.06 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -224,26 +137,7 @@ const cloudProviders: ProviderConfig[] = [
         description: "MiniMax Group ID",
       },
     ],
-    defaultModels: [
-      {
-        id: "abab6.5s-chat",
-        name: "ABAB 6.5s",
-        maxTokens: 245760,
-        pricing: { input: 0.001, output: 0.001 },
-      },
-      {
-        id: "abab6.5g-chat",
-        name: "ABAB 6.5g",
-        maxTokens: 8192,
-        pricing: { input: 0.003, output: 0.003 },
-      },
-      {
-        id: "abab6.5t-chat",
-        name: "ABAB 6.5t",
-        maxTokens: 245760,
-        pricing: { input: 0.015, output: 0.015 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: true,
       streaming: true,
@@ -267,57 +161,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "sk-...",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "deepseek-ai/DeepSeek-V3",
-        name: "DeepSeek V3",
-        maxTokens: 64000,
-        pricing: { input: 0.0008, output: 0.0008 },
-        capabilities: { vision: false, streaming: true, functionCalling: true },
-      },
-      {
-        id: "deepseek-ai/DeepSeek-R1",
-        name: "DeepSeek R1",
-        maxTokens: 64000,
-        pricing: { input: 0.001, output: 0.001 },
-        capabilities: { vision: false, streaming: true, functionCalling: true },
-      },
-      {
-        id: "Qwen/Qwen2.5-72B-Instruct",
-        name: "Qwen 2.5 72B",
-        maxTokens: 32768,
-        pricing: { input: 0.001, output: 0.001 },
-        capabilities: { streaming: true },
-      },
-      {
-        id: "Qwen/Qwen2.5-32B-Instruct",
-        name: "Qwen 2.5 32B",
-        maxTokens: 32768,
-        pricing: { input: 0.0005, output: 0.0005 },
-        capabilities: { streaming: true },
-      },
-      {
-        id: "meta-llama/Llama-3.3-70B-Instruct",
-        name: "Llama 3.3 70B",
-        maxTokens: 128000,
-        pricing: { input: 0.0006, output: 0.0008 },
-        capabilities: { streaming: true },
-      },
-      {
-        id: "THUDM/glm-4-9b-chat",
-        name: "GLM-4 9B",
-        maxTokens: 128000,
-        pricing: { input: 0.0001, output: 0.0001 },
-        capabilities: { streaming: true },
-      },
-      {
-        id: "deepseek-ai/DeepSeek-Coder-V2",
-        name: "DeepSeek Coder V2",
-        maxTokens: 64000,
-        pricing: { input: 0.001, output: 0.001 },
-        capabilities: { streaming: true },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -350,26 +194,7 @@ const cloudProviders: ProviderConfig[] = [
         description: "百度 Secret Key",
       },
     ],
-    defaultModels: [
-      {
-        id: "ernie-4.0-8k",
-        name: "文心一言 4.0",
-        maxTokens: 8192,
-        pricing: { input: 0.12, output: 0.12 },
-      },
-      {
-        id: "ernie-3.5-8k",
-        name: "文心一言 3.5",
-        maxTokens: 8192,
-        pricing: { input: 0.004, output: 0.008 },
-      },
-      {
-        id: "ernie-speed-8k",
-        name: "文心 Speed",
-        maxTokens: 8192,
-        pricing: { input: 0.001, output: 0.001 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -400,26 +225,7 @@ const cloudProviders: ProviderConfig[] = [
         required: true,
       },
     ],
-    defaultModels: [
-      {
-        id: "hunyuan-lite",
-        name: "混元 Lite",
-        maxTokens: 256000,
-        pricing: { input: 0, output: 0 },
-      },
-      {
-        id: "hunyuan-standard",
-        name: "混元 Standard",
-        maxTokens: 32000,
-        pricing: { input: 0.004, output: 0.008 },
-      },
-      {
-        id: "hunyuan-pro",
-        name: "混元 Pro",
-        maxTokens: 32000,
-        pricing: { input: 0.03, output: 0.06 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: true,
       streaming: true,
@@ -442,26 +248,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "百川 API Key",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "Baichuan4",
-        name: "Baichuan 4",
-        maxTokens: 128000,
-        pricing: { input: 0.012, output: 0.012 },
-      },
-      {
-        id: "Baichuan3-Turbo",
-        name: "Baichuan 3 Turbo",
-        maxTokens: 32000,
-        pricing: { input: 0.008, output: 0.008 },
-      },
-      {
-        id: "Baichuan2-Turbo",
-        name: "Baichuan 2 Turbo",
-        maxTokens: 32000,
-        pricing: { input: 0.004, output: 0.004 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -484,26 +271,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "Yi API Key",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "yi-large",
-        name: "Yi Large",
-        maxTokens: 32768,
-        pricing: { input: 0.015, output: 0.015 },
-      },
-      {
-        id: "yi-medium",
-        name: "Yi Medium",
-        maxTokens: 16384,
-        pricing: { input: 0.0025, output: 0.0025 },
-      },
-      {
-        id: "yi-spark",
-        name: "Yi Spark",
-        maxTokens: 16384,
-        pricing: { input: 0.0006, output: 0.0006 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -526,20 +294,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "商汤 API Key",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "nova-ptc-xl-v1",
-        name: "日日新 PTC XL",
-        maxTokens: 128000,
-        pricing: { input: 0.06, output: 0.06 },
-      },
-      {
-        id: "nova-ptc-s-v1",
-        name: "日日新 PTC S",
-        maxTokens: 8000,
-        pricing: { input: 0.002, output: 0.002 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: true,
       streaming: true,
@@ -569,26 +324,7 @@ const cloudProviders: ProviderConfig[] = [
         required: true,
       },
     ],
-    defaultModels: [
-      {
-        id: "generalv3.5",
-        name: "星火 3.5",
-        maxTokens: 8192,
-        pricing: { input: 0.003, output: 0.003 },
-      },
-      {
-        id: "generalv3",
-        name: "星火 3.0",
-        maxTokens: 8192,
-        pricing: { input: 0.002, output: 0.002 },
-      },
-      {
-        id: "generalv2",
-        name: "星火 2.0",
-        maxTokens: 4096,
-        pricing: { input: 0.001, output: 0.001 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -611,26 +347,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "Step API Key",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "step-1-8k",
-        name: "Step 1 8K",
-        maxTokens: 8192,
-        pricing: { input: 0.005, output: 0.02 },
-      },
-      {
-        id: "step-1-32k",
-        name: "Step 1 32K",
-        maxTokens: 32768,
-        pricing: { input: 0.015, output: 0.07 },
-      },
-      {
-        id: "step-1-128k",
-        name: "Step 1 128K",
-        maxTokens: 131072,
-        pricing: { input: 0.04, output: 0.12 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: true,
       streaming: true,
@@ -653,14 +370,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "快手 API Key",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "kwyi-large",
-        name: "KwYii Large",
-        maxTokens: 8192,
-        pricing: { input: 0.003, output: 0.003 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -683,20 +393,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "ModelScope API Key",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "qwen-turbo",
-        name: "Qwen Turbo",
-        maxTokens: 8192,
-        pricing: { input: 0.0003, output: 0.0006 },
-      },
-      {
-        id: "chatglm3-6b",
-        name: "ChatGLM3 6B",
-        maxTokens: 8192,
-        pricing: { input: 0, output: 0 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -729,36 +426,7 @@ const cloudProviders: ProviderConfig[] = [
         description: "可选，用于组织计费",
       },
     ],
-    defaultModels: [
-      {
-        id: "gpt-4o",
-        name: "GPT-4o",
-        maxTokens: 128000,
-        pricing: { input: 0.005, output: 0.015 },
-        capabilities: { vision: true, streaming: true, functionCalling: true },
-      },
-      {
-        id: "gpt-4-turbo",
-        name: "GPT-4 Turbo",
-        maxTokens: 128000,
-        pricing: { input: 0.01, output: 0.03 },
-        capabilities: { vision: true, streaming: true, functionCalling: true },
-      },
-      {
-        id: "gpt-4",
-        name: "GPT-4",
-        maxTokens: 8192,
-        pricing: { input: 0.03, output: 0.06 },
-        capabilities: { streaming: true, functionCalling: true },
-      },
-      {
-        id: "gpt-3.5-turbo",
-        name: "GPT-3.5 Turbo",
-        maxTokens: 16384,
-        pricing: { input: 0.0005, output: 0.0015 },
-        capabilities: { streaming: true, functionCalling: true },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: true,
       streaming: true,
@@ -783,29 +451,7 @@ const cloudProviders: ProviderConfig[] = [
       headers: { "anthropic-version": "2023-06-01" },
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "claude-3-5-sonnet-20241022",
-        name: "Claude 3.5 Sonnet",
-        maxTokens: 200000,
-        pricing: { input: 0.003, output: 0.015 },
-        capabilities: { vision: true, streaming: true, functionCalling: true },
-      },
-      {
-        id: "claude-3-opus-20240229",
-        name: "Claude 3 Opus",
-        maxTokens: 200000,
-        pricing: { input: 0.015, output: 0.075 },
-        capabilities: { vision: true, streaming: true, functionCalling: true },
-      },
-      {
-        id: "claude-3-haiku-20240307",
-        name: "Claude 3 Haiku",
-        maxTokens: 200000,
-        pricing: { input: 0.00025, output: 0.00125 },
-        capabilities: { vision: true, streaming: true, functionCalling: true },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: true,
       streaming: true,
@@ -828,29 +474,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "AIza...",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "gemini-1.5-pro",
-        name: "Gemini 1.5 Pro",
-        maxTokens: 1000000,
-        pricing: { input: 0.00125, output: 0.005 },
-        capabilities: { vision: true, streaming: true, functionCalling: true },
-      },
-      {
-        id: "gemini-1.5-flash",
-        name: "Gemini 1.5 Flash",
-        maxTokens: 1000000,
-        pricing: { input: 0.000075, output: 0.0003 },
-        capabilities: { vision: true, streaming: true, functionCalling: true },
-      },
-      {
-        id: "gemini-pro",
-        name: "Gemini Pro",
-        maxTokens: 32760,
-        pricing: { input: 0.00025, output: 0.0005 },
-        capabilities: { vision: true, streaming: true, functionCalling: true },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: true,
       streaming: true,
@@ -889,26 +513,7 @@ const cloudProviders: ProviderConfig[] = [
         description: "Azure OpenAI API 版本",
       },
     ],
-    defaultModels: [
-      {
-        id: "gpt-4o",
-        name: "GPT-4o",
-        maxTokens: 128000,
-        pricing: { input: 0.005, output: 0.015 },
-      },
-      {
-        id: "gpt-4",
-        name: "GPT-4",
-        maxTokens: 8192,
-        pricing: { input: 0.03, output: 0.06 },
-      },
-      {
-        id: "gpt-35-turbo",
-        name: "GPT-3.5 Turbo",
-        maxTokens: 16384,
-        pricing: { input: 0.0005, output: 0.0015 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: true,
       streaming: true,
@@ -957,20 +562,7 @@ const cloudProviders: ProviderConfig[] = [
         required: true,
       },
     ],
-    defaultModels: [
-      {
-        id: "anthropic.claude-3-sonnet",
-        name: "Claude 3 Sonnet",
-        maxTokens: 200000,
-        pricing: { input: 0.003, output: 0.015 },
-      },
-      {
-        id: "anthropic.claude-3-haiku",
-        name: "Claude 3 Haiku",
-        maxTokens: 200000,
-        pricing: { input: 0.00025, output: 0.00125 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: true,
       streaming: true,
@@ -993,32 +585,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "Mistral API Key",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "mistral-large-latest",
-        name: "Mistral Large",
-        maxTokens: 128000,
-        pricing: { input: 0.004, output: 0.012 },
-      },
-      {
-        id: "mistral-medium-latest",
-        name: "Mistral Medium",
-        maxTokens: 32000,
-        pricing: { input: 0.0027, output: 0.0081 },
-      },
-      {
-        id: "open-mixtral-8x22b",
-        name: "Mixtral 8x22B",
-        maxTokens: 65536,
-        pricing: { input: 0.00065, output: 0.00065 },
-      },
-      {
-        id: "open-mistral-7b",
-        name: "Mistral 7B",
-        maxTokens: 32000,
-        pricing: { input: 0.00025, output: 0.00025 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -1041,26 +608,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "Cohere API Key",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "command-r-plus",
-        name: "Command R+",
-        maxTokens: 128000,
-        pricing: { input: 0.003, output: 0.015 },
-      },
-      {
-        id: "command-r",
-        name: "Command R",
-        maxTokens: 128000,
-        pricing: { input: 0.0005, output: 0.0015 },
-      },
-      {
-        id: "command",
-        name: "Command",
-        maxTokens: 4096,
-        pricing: { input: 0.001, output: 0.002 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -1084,20 +632,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "sk-...",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "deepseek-chat",
-        name: "DeepSeek Chat",
-        maxTokens: 64000,
-        pricing: { input: 0.0001, output: 0.0002 },
-      },
-      {
-        id: "deepseek-coder",
-        name: "DeepSeek Coder",
-        maxTokens: 64000,
-        pricing: { input: 0.0001, output: 0.0002 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -1121,26 +656,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "gsk_...",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "llama-3.3-70b-versatile",
-        name: "Llama 3.3 70B",
-        maxTokens: 128000,
-        pricing: { input: 0.00059, output: 0.00079 },
-      },
-      {
-        id: "llama-3.1-8b-instant",
-        name: "Llama 3.1 8B",
-        maxTokens: 128000,
-        pricing: { input: 0.00002, output: 0.00002 },
-      },
-      {
-        id: "mixtral-8x7b-32768",
-        name: "Mixtral 8x7B",
-        maxTokens: 32768,
-        pricing: { input: 0.00027, output: 0.00027 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -1164,20 +680,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "pplx-...",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "llama-3.1-sonar-large-128k-online",
-        name: "Sonar Large Online",
-        maxTokens: 127072,
-        pricing: { input: 0.001, output: 0.001 },
-      },
-      {
-        id: "llama-3.1-sonar-small-128k-online",
-        name: "Sonar Small Online",
-        maxTokens: 127072,
-        pricing: { input: 0.0002, output: 0.0002 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -1200,20 +703,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "Together API Key",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "meta-llama/Llama-3-70b-chat-hf",
-        name: "Llama 3 70B",
-        maxTokens: 8192,
-        pricing: { input: 0.0008, output: 0.0008 },
-      },
-      {
-        id: "mistralai/Mixtral-8x7B-Instruct-v0.1",
-        name: "Mixtral 8x7B",
-        maxTokens: 32768,
-        pricing: { input: 0.0006, output: 0.0006 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -1246,20 +736,7 @@ const cloudProviders: ProviderConfig[] = [
         description: "Hugging Face 模型 ID",
       },
     ],
-    defaultModels: [
-      {
-        id: "meta-llama/Llama-2-70b-chat-hf",
-        name: "Llama 2 70B",
-        maxTokens: 4096,
-        pricing: { input: 0, output: 0 },
-      },
-      {
-        id: "mistralai/Mistral-7B-Instruct-v0.2",
-        name: "Mistral 7B",
-        maxTokens: 32768,
-        pricing: { input: 0, output: 0 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -1283,20 +760,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "r8_...",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "meta/llama-2-70b-chat",
-        name: "Llama 2 70B",
-        maxTokens: 4096,
-        pricing: { input: 0.001, output: 0.001 },
-      },
-      {
-        id: "mistralai/mistral-7b-instruct-v0.2",
-        name: "Mistral 7B",
-        maxTokens: 32768,
-        pricing: { input: 0.0001, output: 0.0001 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: true,
       streaming: true,
@@ -1319,20 +783,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "NVIDIA API Key",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "meta/llama-3.1-405b-instruct",
-        name: "Llama 3.1 405B",
-        maxTokens: 128000,
-        pricing: { input: 0.003, output: 0.003 },
-      },
-      {
-        id: "meta/llama-3.1-70b-instruct",
-        name: "Llama 3.1 70B",
-        maxTokens: 128000,
-        pricing: { input: 0.0007, output: 0.0007 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -1355,20 +806,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "AI21 API Key",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "jamba-1-5-large",
-        name: "Jamba 1.5 Large",
-        maxTokens: 256000,
-        pricing: { input: 0.002, output: 0.008 },
-      },
-      {
-        id: "jamba-1-5-mini",
-        name: "Jamba 1.5 Mini",
-        maxTokens: 256000,
-        pricing: { input: 0.0002, output: 0.0004 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -1391,14 +829,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "xAI API Key",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "grok-beta",
-        name: "Grok Beta",
-        maxTokens: 131072,
-        pricing: { input: 0.005, output: 0.015 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -1421,14 +852,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "Cognition API Key",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "devin-2",
-        name: "Devin 2",
-        maxTokens: 128000,
-        pricing: { input: 0.01, output: 0.03 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -1451,20 +875,7 @@ const cloudProviders: ProviderConfig[] = [
       apiKeyPlaceholder: "Meta API Key",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "llama-3.3-70b",
-        name: "Llama 3.3 70B",
-        maxTokens: 128000,
-        pricing: { input: 0, output: 0 },
-      },
-      {
-        id: "llama-3.2-90b",
-        name: "Llama 3.2 90B",
-        maxTokens: 128000,
-        pricing: { input: 0, output: 0 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: true,
       streaming: true,
@@ -1491,38 +902,7 @@ const opensourceProviders: ProviderConfig[] = [
       authType: "none",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "llama3.3",
-        name: "Llama 3.3 70B",
-        maxTokens: 128000,
-        pricing: { input: 0, output: 0 },
-      },
-      {
-        id: "llama3.2",
-        name: "Llama 3.2 3B",
-        maxTokens: 128000,
-        pricing: { input: 0, output: 0 },
-      },
-      {
-        id: "mistral",
-        name: "Mistral 7B",
-        maxTokens: 32768,
-        pricing: { input: 0, output: 0 },
-      },
-      {
-        id: "qwen2.5",
-        name: "Qwen 2.5",
-        maxTokens: 32768,
-        pricing: { input: 0, output: 0 },
-      },
-      {
-        id: "deepseek-coder-v2",
-        name: "DeepSeek Coder V2",
-        maxTokens: 32768,
-        pricing: { input: 0, output: 0 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: true,
       streaming: true,
@@ -1544,14 +924,7 @@ const opensourceProviders: ProviderConfig[] = [
       authType: "none",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "custom-model",
-        name: "Custom Model",
-        maxTokens: 4096,
-        pricing: { input: 0, output: 0 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -1573,14 +946,7 @@ const opensourceProviders: ProviderConfig[] = [
       authType: "none",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "local-model",
-        name: "Local Model",
-        maxTokens: 4096,
-        pricing: { input: 0, output: 0 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -1602,14 +968,7 @@ const opensourceProviders: ProviderConfig[] = [
       authType: "none",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "local-model",
-        name: "Local Model",
-        maxTokens: 4096,
-        pricing: { input: 0, output: 0 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -1631,14 +990,7 @@ const opensourceProviders: ProviderConfig[] = [
       authType: "none",
     },
     configFields: [],
-    defaultModels: [
-      {
-        id: "local-model",
-        name: "Local Model",
-        maxTokens: 4096,
-        pricing: { input: 0, output: 0 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,
@@ -1670,26 +1022,7 @@ const opensourceProviders: ProviderConfig[] = [
         description: "可选，用于排名",
       },
     ],
-    defaultModels: [
-      {
-        id: "openai/gpt-4o",
-        name: "GPT-4o",
-        maxTokens: 128000,
-        pricing: { input: 0.005, output: 0.015 },
-      },
-      {
-        id: "anthropic/claude-3.5-sonnet",
-        name: "Claude 3.5 Sonnet",
-        maxTokens: 200000,
-        pricing: { input: 0.003, output: 0.015 },
-      },
-      {
-        id: "meta-llama/llama-3.1-70b-instruct",
-        name: "Llama 3.1 70B",
-        maxTokens: 128000,
-        pricing: { input: 0.0003, output: 0.0003 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: true,
       streaming: true,
@@ -1734,14 +1067,7 @@ const customProviders: ProviderConfig[] = [
         description: "模型名称",
       },
     ],
-    defaultModels: [
-      {
-        id: "custom-model",
-        name: "Custom Model",
-        maxTokens: 4096,
-        pricing: { input: 0, output: 0 },
-      },
-    ],
+    defaultModels: [],
     capabilities: {
       vision: false,
       streaming: true,

@@ -163,8 +163,8 @@ export interface ProviderConfig {
   };
   // 配置字段
   configFields: ConfigField[];
-  // 默认模型列表
-  defaultModels: ProviderModel[];
+  // 默认模型列表（已废弃，模型从厂商 API 实时获取）
+  defaultModels?: ProviderModel[];
   // 能力
   capabilities: ModelCapabilities;
 }

@@ -6,6 +6,13 @@
 export type { Provider, ProviderType, ProviderModel } from '../../types/provider';
 import type { Provider, ProviderModel, CreateProviderFormData } from '../../types/provider';
 
+/** 外部模型（来自厂商 API） */
+export interface ExternalModel {
+  model_id: string;
+  model_type: string | null;
+  owned_by: string | null;
+}
+
 // 兼容旧类型
 export interface Model {
   id: string;
@@ -146,25 +153,19 @@ export const providerApi = {
     return newProvider;
   },
 
-  // 从表单数据创建 Provider
-  async createFromFormData(formData: CreateProviderFormData): Promise<Provider> {
+  // 从表单数据创建 Provider（返回外部可用模型列表）
+  async createFromFormData(formData: CreateProviderFormData): Promise<Provider & { availableModels?: ExternalModel[] }> {
     await delay(500);
     const { getProviderConfig } = await import('../provider/providerConfigs');
     const config = getProviderConfig(formData.type);
 
-    // 根据选中的模型 ID 过滤模型
-    const selectedModels = formData.selectedModels || [];
-    const models = config?.defaultModels
-      .filter(m => selectedModels.includes(m.id))
-      .map(m => ({ ...m, enabled: true })) || [];
-
-    const newProvider: Provider = {
+    const newProvider: Provider & { availableModels?: ExternalModel[] } = {
       id: `provider-${Date.now()}`,
       name: formData.name || config?.name || '新 Provider',
       type: formData.type,
       apiKey: formData.apiKey,
       baseUrl: formData.baseUrl || config?.api.defaultBaseUrl,
-      models,
+      models: [],
       config: formData.config || {},
       status: 'active',
       usage: {
@@ -174,6 +175,11 @@ export const providerApi = {
       },
       createdAt: new Date(),
       updatedAt: new Date(),
+      availableModels: [
+        { model_id: 'gpt-4o', model_type: 'model', owned_by: 'openai' },
+        { model_id: 'gpt-4o-mini', model_type: 'model', owned_by: 'openai' },
+        { model_id: 'gpt-3.5-turbo', model_type: 'model', owned_by: 'openai' },
+      ],
     };
     mockProviders.push(newProvider);
     return newProvider;
@@ -214,22 +220,30 @@ export const providerApi = {
     return provider?.models || [];
   },
 
-  // 刷新模型列表
-  async refreshModels(id: string): Promise<ProviderModel[]> {
+  // 获取外部可用模型列表（模拟厂商 API 返回）
+  async refreshModels(_id: string): Promise<ExternalModel[]> {
     await delay(1500);
-    const provider = mockProviders.find((p) => p.id === id);
-    return provider?.models || [];
+    return [
+      { model_id: 'gpt-4o', model_type: 'model', owned_by: 'openai' },
+      { model_id: 'gpt-4o-mini', model_type: 'model', owned_by: 'openai' },
+      { model_id: 'gpt-3.5-turbo', model_type: 'model', owned_by: 'openai' },
+      { model_id: 'o1-preview', model_type: 'model', owned_by: 'openai' },
+    ];
   },
 
-  // 选择模型：启用指定模型，禁用其他模型
+  // 选择模型：为选中的模型创建记录
   async selectModels(providerId: string, modelIds: string[]): Promise<ProviderModel[]> {
     await delay(300);
     const provider = mockProviders.find((p) => p.id === providerId);
     if (!provider) return [];
-    provider.models.forEach((m) => {
-      m.enabled = modelIds.includes(m.id);
-    });
-    return provider.models.filter((m) => m.enabled);
+    provider.models = modelIds.map(id => ({
+      id: `model-${Date.now()}-${id}`,
+      name: id,
+      maxTokens: 0,
+      pricing: { input: 0, output: 0 },
+      enabled: true,
+    }));
+    return provider.models;
   },
 
   // 获取使用统计

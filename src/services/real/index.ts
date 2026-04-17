@@ -21,7 +21,7 @@ export { organizationRealApi } from "./organization";
 export { workflowRealApi, nodeTypeConfig } from "./workflows";
 export { knowledgeRealApi } from "./knowledge";
 export { channelRealApi, channelTypeConfig } from "./channels";
-export { providerRealApi } from "./providers";
+export { providerRealApi, type ExternalModel, type ProviderModel } from "./providers";
 export { roleRealApi, menuRealApi } from "./system";
 export { notificationRealApi } from "./notification";
 export { tracingRealApi } from "./tracing";

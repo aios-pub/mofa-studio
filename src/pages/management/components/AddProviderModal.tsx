@@ -6,7 +6,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Modal, Button, Steps, Result, Alert } from 'antd';
 import type { ProviderConfig, ProviderType, CreateProviderFormData } from '../../../types/provider';
-import type { ProviderModel } from '../../../services/real/providers';
+import type { ExternalModel } from '../../../services/real/providers';
 import { ProviderTypeSelector } from './ProviderTypeSelector';
 import { ProviderConfigForm } from './ProviderConfigForm';
 import { ModelSelectionStep } from './ModelSelectionStep';
@@ -34,8 +34,8 @@ export interface ProviderWithModels {
   type: string;
   baseUrl: string;
   apiKey?: string;
-  availableModels?: ProviderModel[];
-  models: ProviderModel[];
+  availableModels?: ExternalModel[];
+  models: { id: string; name: string; enabled: boolean; pricing: { input: number; output: number }; maxTokens: number }[];
 }
 
 // 步骤定义
@@ -74,7 +74,8 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
 
   // 模型选择相关状态
   const [createdProviderId, setCreatedProviderId] = useState<string | null>(null);
-  const [availableModels, setAvailableModels] = useState<ProviderModel[]>([]);
+  const [availableModels, setAvailableModels] = useState<ExternalModel[]>([]);
+  const [customModelIds, setCustomModelIds] = useState<string[]>([]);
   const [selectedModelIds, setSelectedModelIds] = useState<Set<string>>(new Set());
 
   // 编辑模式：初始化 selectedConfig
@@ -111,7 +112,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
       type: config.type,
       name: config.name,
       baseUrl: config.api.defaultBaseUrl,
-      selectedModels: config.defaultModels.map(m => m.id),
+      selectedModels: [],
     }));
   }, []);
 
@@ -233,7 +234,10 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
 
   const handleToggleAllModels = (selectAll: boolean) => {
     if (selectAll) {
-      setSelectedModelIds(new Set(availableModels.map(m => m.id)));
+      setSelectedModelIds(new Set([
+        ...availableModels.map(m => m.model_id),
+        ...customModelIds,
+      ]));
     } else {
       setSelectedModelIds(new Set());
     }
@@ -255,6 +259,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
     setError(null);
     setCreatedProviderId(null);
     setAvailableModels([]);
+    setCustomModelIds([]);
     setSelectedModelIds(new Set());
     onClose();
   };
@@ -286,10 +291,17 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
         return (
           <div className="h-[400px]">
             <ModelSelectionStep
-              availableModels={availableModels.map(m => ({ id: m.id, name: m.name }))}
+              availableModels={[
+                ...availableModels.map(m => ({ id: m.model_id, name: m.model_id })),
+                ...customModelIds.map(id => ({ id, name: id, isCustom: true })),
+              ]}
               selectedIds={selectedModelIds}
               onToggle={handleToggleModel}
               onToggleAll={handleToggleAllModels}
+              onAddCustomModel={(model) => {
+                setCustomModelIds(prev => [...prev, model.id]);
+                setSelectedModelIds(prev => new Set([...prev, model.id]));
+              }}
             />
           </div>
         );
@@ -327,6 +339,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
                     });
                     setCreatedProviderId(null);
                     setAvailableModels([]);
+                    setCustomModelIds([]);
                     setSelectedModelIds(new Set());
                   }}>
                     继续添加

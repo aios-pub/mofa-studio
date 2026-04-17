@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { Input, Button, Tag, message } from "antd";
+import { Input, Button, Tag, Modal, message } from "antd";
 import {
   PlusOutlined,
   SearchOutlined,
@@ -26,10 +26,11 @@ import {
   CloudServerOutlined,
 } from "@ant-design/icons";
 import type { CreateProviderFormData } from "../../types/provider";
-import type { Provider } from "../../services/real/providers";
+import type { Provider, ExternalModel } from "../../services/real/providers";
 import { providerApi } from "@/services";
 import { getProviderTypeConfig } from "../../services/provider/providerConfigs";
 import { AddProviderModal, type ProviderWithModels } from "./components/AddProviderModal";
+import { ModelSelectionStep } from "./components/ModelSelectionStep";
 import { formatDate } from "@/utils";
 import { fuzzyMatch } from "@/utils/fuzzySearch";
 
@@ -48,6 +49,12 @@ export default function ProvidersListPage() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
+
+  // 刷新模型选择对话框状态
+  const [refreshModalOpen, setRefreshModalOpen] = useState(false);
+  const [refreshingProviderId, setRefreshingProviderId] = useState<string | null>(null);
+  const [refreshedModels, setRefreshedModels] = useState<ExternalModel[]>([]);
+  const [refreshSelectedIds, setRefreshSelectedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadProviders();
@@ -117,20 +124,36 @@ export default function ProvidersListPage() {
   const handleRefreshModels = async (id: string) => {
     setRefreshingModels(id);
     try {
-      await providerApi.refreshModels(id);
-      // 刷新后重新加载全部列表以获取最新模型数据
-      await loadProviders();
-      // 重新设置选中的 provider
-      const updated = providers.find((p) => p.id === id);
-      if (selectedProvider?.id === id && updated) {
-        setSelectedProvider(updated);
-      }
-      message.success("模型列表已刷新");
+      const models = await providerApi.refreshModels(id);
+      setRefreshedModels(models);
+      setRefreshingProviderId(id);
+      // 预选当前已启用的模型
+      const provider = providers.find((p) => p.id === id);
+      const enabledIds = new Set(provider?.models.map((m) => m.name) ?? []);
+      setRefreshSelectedIds(enabledIds);
+      setRefreshModalOpen(true);
     } catch (error) {
       console.error("Failed to refresh models:", error);
-      message.error("刷新失败");
+      message.error("获取模型列表失败");
     } finally {
       setRefreshingModels(null);
+    }
+  };
+
+  const handleRefreshConfirm = async () => {
+    if (!refreshingProviderId) return;
+    try {
+      await providerApi.selectModels(refreshingProviderId, Array.from(refreshSelectedIds));
+      setRefreshModalOpen(false);
+      await loadProviders();
+      const updated = providers.find((p) => p.id === refreshingProviderId);
+      if (selectedProvider?.id === refreshingProviderId && updated) {
+        setSelectedProvider(updated);
+      }
+      message.success("模型列表已更新");
+    } catch (error) {
+      console.error("Failed to save model selection:", error);
+      message.error("保存失败");
     }
   };
 
@@ -142,19 +165,17 @@ export default function ProvidersListPage() {
     const provider = providers.find((p) => p.id === providerId);
     if (!provider) return;
 
-    const updatedModels = provider.models.map((m) =>
-      m.id === modelId ? { ...m, enabled } : m,
-    );
+    const currentIds = provider.models.map((m) => m.name);
+    const updatedIds = enabled
+      ? [...currentIds, modelId]
+      : currentIds.filter((id) => id !== modelId);
 
     try {
-      await providerApi.update(providerId, { models: updatedModels });
-      setProviders(
-        providers.map((p) =>
-          p.id === providerId ? { ...p, models: updatedModels } : p,
-        ),
-      );
-      if (selectedProvider?.id === providerId) {
-        setSelectedProvider({ ...selectedProvider, models: updatedModels });
+      await providerApi.selectModels(providerId, updatedIds);
+      await loadProviders();
+      const updated = providers.find((p) => p.id === providerId);
+      if (selectedProvider?.id === providerId && updated) {
+        setSelectedProvider(updated);
       }
       message.success(enabled ? "模型已启用" : "模型已禁用");
     } catch (error) {
@@ -166,10 +187,6 @@ export default function ProvidersListPage() {
   // 处理新增 Provider
   const handleAddProvider = async (formData: CreateProviderFormData): Promise<ProviderWithModels | void> => {
     const newProvider = await providerApi.createFromFormData(formData);
-    // 创建后重新加载列表以获取最新状态
-    await loadProviders();
-    const updated = providers.find(p => p.id === newProvider.id) || newProvider;
-    setSelectedProvider(updated);
     message.success(`Provider "${newProvider.name}" 添加成功`);
     return {
       id: newProvider.id,
@@ -391,6 +408,39 @@ export default function ProvidersListPage() {
         provider={editingProvider}
         onEdit={handleEditProvider}
       />
+
+      {/* 刷新模型选择对话框 */}
+      <Modal
+        open={refreshModalOpen}
+        title="选择要启用的模型"
+        onCancel={() => setRefreshModalOpen(false)}
+        onOk={handleRefreshConfirm}
+        okText="确认选择"
+        cancelText="取消"
+        width={560}
+      >
+        <div className="h-[400px]">
+          <ModelSelectionStep
+            availableModels={refreshedModels.map(m => ({ id: m.model_id, name: m.model_id }))}
+            selectedIds={refreshSelectedIds}
+            onToggle={(id) => {
+              setRefreshSelectedIds(prev => {
+                const next = new Set(prev);
+                if (next.has(id)) next.delete(id);
+                else next.add(id);
+                return next;
+              });
+            }}
+            onToggleAll={(all) => {
+              if (all) {
+                setRefreshSelectedIds(new Set(refreshedModels.map(m => m.model_id)));
+              } else {
+                setRefreshSelectedIds(new Set());
+              }
+            }}
+          />
+        </div>
+      </Modal>
     </div>
   );
 }

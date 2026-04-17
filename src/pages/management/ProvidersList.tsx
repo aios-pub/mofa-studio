@@ -184,6 +184,30 @@ export default function ProvidersListPage() {
     }
   };
 
+  // 单独添加模型到 Provider
+  const handleAddModel = async (providerId: string, modelId: string) => {
+    const provider = providers.find((p) => p.id === providerId);
+    if (!provider) return;
+    const currentIds = provider.models.map((m) => m.name);
+    if (currentIds.includes(modelId)) {
+      message.warning("该模型已存在");
+      return;
+    }
+    const updatedIds = [...currentIds, modelId];
+    try {
+      await providerApi.selectModels(providerId, updatedIds);
+      await loadProviders();
+      const updated = providers.find((p) => p.id === providerId);
+      if (selectedProvider?.id === providerId && updated) {
+        setSelectedProvider(updated);
+      }
+      message.success(`模型 "${modelId}" 添加成功`);
+    } catch (error) {
+      console.error("Failed to add model:", error);
+      message.error("添加失败");
+    }
+  };
+
   // 处理新增 Provider
   const handleAddProvider = async (formData: CreateProviderFormData): Promise<ProviderWithModels | void> => {
     const newProvider = await providerApi.createFromFormData(formData);
@@ -368,6 +392,7 @@ export default function ProvidersListPage() {
             onValidateKey={handleValidateKey}
             onRefreshModels={handleRefreshModels}
             onToggleModel={handleToggleModel}
+            onAddModel={handleAddModel}
             onEdit={(provider) => {
               setEditingProvider(provider);
               setEditModalOpen(true);
@@ -452,6 +477,7 @@ function ProviderDetail({
   onValidateKey,
   onRefreshModels,
   onToggleModel,
+  onAddModel,
   onEdit,
   validatingKey,
   refreshingModels,
@@ -465,6 +491,7 @@ function ProviderDetail({
     modelId: string,
     enabled: boolean,
   ) => void;
+  onAddModel: (providerId: string, modelId: string) => Promise<void>;
   onEdit: (provider: Provider) => void;
   validatingKey: boolean;
   refreshingModels: boolean;
@@ -474,6 +501,9 @@ function ProviderDetail({
     "models",
   );
   const [modelSearch, setModelSearch] = useState("");
+  const [addModelOpen, setAddModelOpen] = useState(false);
+  const [addModelId, setAddModelId] = useState("");
+  const [addingModel, setAddingModel] = useState(false);
 
   const typeConfig = getProviderTypeConfig(provider.type);
 
@@ -600,19 +630,30 @@ function ProviderDetail({
               <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
                 可用模型
               </h3>
-              <Button
-                icon={
-                  refreshingModels ? (
-                    <LoadingOutlined />
-                  ) : (
-                    <SyncOutlined spin={refreshingModels} />
-                  )
-                }
-                onClick={() => onRefreshModels(provider.id)}
-                disabled={refreshingModels}
-              >
-                刷新模型
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setAddModelId("");
+                    setAddModelOpen(true);
+                  }}
+                >
+                  添加模型
+                </Button>
+                <Button
+                  icon={
+                    refreshingModels ? (
+                      <LoadingOutlined />
+                    ) : (
+                      <SyncOutlined spin={refreshingModels} />
+                    )
+                  }
+                  onClick={() => onRefreshModels(provider.id)}
+                  disabled={refreshingModels}
+                >
+                  刷新模型
+                </Button>
+              </div>
             </div>
 
             <Input
@@ -672,6 +713,48 @@ function ProviderDetail({
                 </div>
               ))}
             </div>
+
+            {/* 添加模型弹窗 */}
+            <Modal
+              title="添加模型"
+              open={addModelOpen}
+              onCancel={() => {
+                setAddModelOpen(false);
+                setAddModelId("");
+              }}
+              onOk={async () => {
+                const id = addModelId.trim();
+                if (!id) return;
+                setAddingModel(true);
+                try {
+                  await onAddModel(provider.id, id);
+                  setAddModelOpen(false);
+                  setAddModelId("");
+                } catch {
+                  // error handled by caller
+                } finally {
+                  setAddingModel(false);
+                }
+              }}
+              okText="添加"
+              cancelText="取消"
+              confirmLoading={addingModel}
+              okButtonProps={{ disabled: !addModelId.trim() }}
+            >
+              <div className="py-2">
+                <label className="block text-xs text-[var(--color-text-secondary)] mb-1">
+                  模型 ID <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  placeholder="例如: gpt-4o, claude-3-opus"
+                  value={addModelId}
+                  onChange={(e) => setAddModelId(e.target.value)}
+                />
+                <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
+                  输入模型标识符，将与已有模型一起保存
+                </p>
+              </div>
+            </Modal>
           </div>
         )}
 

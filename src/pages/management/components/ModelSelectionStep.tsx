@@ -6,7 +6,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Input, Checkbox, Tag, Button, Modal, message } from 'antd';
-import { SearchOutlined, ThunderboltOutlined, PlusOutlined } from '@ant-design/icons';
+import { SearchOutlined, ThunderboltOutlined, PlusOutlined, SyncOutlined, LoadingOutlined } from '@ant-design/icons';
 import { fuzzyMatch } from '../../../utils/fuzzySearch';
 
 export interface SelectableModel {
@@ -21,6 +21,8 @@ interface ModelSelectionStepProps {
   onToggle: (modelId: string) => void;
   onToggleAll: (selectAll: boolean) => void;
   onAddCustomModel?: (model: SelectableModel) => void;
+  /** 刷新外部模型列表回调（编辑模式下可用） */
+  onRefreshModels?: () => Promise<void>;
 }
 
 export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
@@ -29,10 +31,12 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
   onToggle,
   onToggleAll,
   onAddCustomModel,
+  onRefreshModels,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddCustom, setShowAddCustom] = useState(false);
   const [customModelId, setCustomModelId] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
   const filteredModels = useMemo(
     () =>
@@ -58,6 +62,18 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
     setShowAddCustom(false);
   };
 
+  const handleRefresh = async () => {
+    if (!onRefreshModels) return;
+    setRefreshing(true);
+    try {
+      await onRefreshModels();
+    } catch {
+      message.error('获取模型列表失败');
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* 搜索栏 */}
@@ -70,6 +86,16 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
           allowClear
           className="flex-1"
         />
+        {onRefreshModels && (
+          <Button
+            icon={refreshing ? <LoadingOutlined /> : <SyncOutlined spin={refreshing} />}
+            onClick={handleRefresh}
+            disabled={refreshing}
+            size="small"
+          >
+            刷新
+          </Button>
+        )}
         <span className="text-xs text-[var(--color-text-tertiary)] whitespace-nowrap">
           已选 {selectedIds.size} / {availableModels.length} 个模型
         </span>

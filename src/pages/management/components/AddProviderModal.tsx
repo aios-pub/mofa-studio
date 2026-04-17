@@ -11,6 +11,7 @@ import { ProviderTypeSelector } from './ProviderTypeSelector';
 import { ProviderConfigForm } from './ProviderConfigForm';
 import { ModelSelectionStep } from './ModelSelectionStep';
 import { getProviderConfig } from '../../../services/provider/providerConfigs';
+import { providerApi } from '@/services';
 
 interface AddProviderModalProps {
   open: boolean;
@@ -23,6 +24,7 @@ interface AddProviderModalProps {
     type: string;
     apiKey?: string;
     baseUrl?: string;
+    models: { id: string; name: string; enabled: boolean }[];
   } | null;
   onEdit?: (id: string, data: CreateProviderFormData) => Promise<void>;
 }
@@ -166,7 +168,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
     setError(null);
   };
 
-  // 创建 Provider（步骤 1 -> 2）
+  // 创建/更新 Provider（步骤 1 -> 2）
   const handleCreate = async () => {
     setLoading(true);
     setError(null);
@@ -177,18 +179,28 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
           delete submitData.apiKey;
         }
         await onEdit(provider.id, submitData);
-        setCurrentStep(3); // 编辑模式直接到完成
+        setCreatedProviderId(provider.id);
+        // 编辑模式：获取外部模型，预选已有模型
+        try {
+          const models = await providerApi.refreshModels(provider.id);
+          setAvailableModels(models);
+        } catch {
+          setAvailableModels([]);
+        }
+        const existingIds = new Set(provider.models.map(m => m.name));
+        setSelectedModelIds(existingIds);
+        setCustomModelIds([]);
+        setCurrentStep(2); // 进入模型选择步骤
       } else {
         const result = await onSubmit(formData);
         if (result?.id) {
           setCreatedProviderId(result.id);
           const models = result.availableModels || [];
           setAvailableModels(models);
-          // 默认不选中任何模型，用户手动选择
           setSelectedModelIds(new Set());
-          setCurrentStep(2); // 进入模型选择步骤
+          setCurrentStep(2);
         } else {
-          setCurrentStep(3); // 无模型列表则直接完成
+          setCurrentStep(3);
         }
       }
     } catch (err) {
@@ -302,6 +314,10 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
                 setCustomModelIds(prev => [...prev, model.id]);
                 setSelectedModelIds(prev => new Set([...prev, model.id]));
               }}
+              onRefreshModels={createdProviderId ? async () => {
+                const models = await providerApi.refreshModels(createdProviderId);
+                setAvailableModels(models);
+              } : undefined}
             />
           </div>
         );
@@ -360,7 +376,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
 
     const nextLabel = (() => {
       if (currentStep === 1) {
-        return loading ? (isEditMode ? '更新中...' : '添加中...') : (isEditMode ? '保存修改' : '添加 Provider');
+        return loading ? (isEditMode ? '保存中...' : '添加中...') : (isEditMode ? '保存并继续' : '添加 Provider');
       }
       if (currentStep === 2) {
         return loading ? '保存中...' : '确认选择';
@@ -371,7 +387,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
     return (
       <div className="flex items-center justify-end">
         <div className="flex gap-2">
-          {currentStep > 0 && !(isEditMode && currentStep === 1) && (
+          {currentStep > (isEditMode ? 1 : 0) && (
             <Button onClick={handlePrev} disabled={loading}>
               上一步
             </Button>
@@ -404,19 +420,17 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
       maskClosable={false}
     >
       {/* 步骤条 */}
-      {!isEditMode && (
-        <div className="mb-6">
-          <Steps
-            current={currentStep}
-            size="small"
-            items={steps.map((step, index) => ({
-              title: step.title,
-              description: currentStep >= index ? step.description : undefined,
-              status: currentStep === index ? 'process' : currentStep > index ? 'finish' : 'wait',
-            }))}
-          />
-        </div>
-      )}
+      <div className="mb-6">
+        <Steps
+          current={isEditMode ? currentStep - 1 : currentStep}
+          size="small"
+          items={(isEditMode ? steps.slice(1) : steps).map((step, index) => ({
+            title: step.title,
+            description: (isEditMode ? currentStep - 1 : currentStep) >= index ? step.description : undefined,
+            status: (isEditMode ? currentStep - 1 : currentStep) === index ? 'process' : (isEditMode ? currentStep - 1 : currentStep) > index ? 'finish' : 'wait',
+          }))}
+        />
+      </div>
 
       {/* 步骤内容 */}
       {renderStepContent()}

@@ -9,6 +9,7 @@ import { apiClient } from "../api/apiClient";
 interface ProviderRaw {
   id: string;
   api_base: string;
+  api_key?: string;
   provider_name: string;
   provider_type: string;
   create_time: string;

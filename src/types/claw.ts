@@ -12,50 +12,6 @@ export type ClawMode = 'server' | 'cli';
 /** Claw 状态 */
 export type ClawStatus = 'online' | 'offline' | 'degraded' | 'unknown';
 
-/** Claw 实例 */
-export interface ClawInstance {
-  id: string;
-  agentId: string;
-  instanceName: string;
-  clawType: ClawType;
-  version?: string;
-  status: ClawStatus;
-  endpointUrl?: string;
-  authConfig?: Record<string, unknown>;
-  connectionConfig?: Record<string, unknown>;
-  capabilities?: Record<string, unknown>;
-  lastHealthCheck?: string;
-  lastSyncTime?: string;
-  metadata?: Record<string, unknown>;
-  tenantId: string;
-  enabled: boolean;
-  createTime: string;
-  updateTime: string;
-  // Agent-related
-  providerId: string;
-  providerName?: string;
-  modelId: string;
-  modelName?: string;
-  // Connection info (only on creation)
-  proxyApiKey?: string;
-  proxyApiBase?: string;
-}
-
-/** 创建/更新 Claw 请求 */
-export interface ClawInstanceReq {
-  id?: string;
-  instanceName: string;
-  clawType: ClawType;
-  version?: string;
-  endpointUrl?: string;
-  authConfig?: Record<string, unknown>;
-  connectionConfig?: Record<string, unknown>;
-  capabilities?: Record<string, unknown>;
-  enabled?: boolean;
-  providerId: string;
-  modelId: string;
-  systemPrompt?: string;
-}
 
 /** 渠道代理状态 */
 export type ChannelProxyStatus = 'active' | 'inactive' | 'error';
@@ -75,7 +31,7 @@ export interface ChannelProxyInfo {
 /** 渠道映射 */
 export interface ClawChannelMapping {
   id: string;
-  clawInstanceId: string;
+  agentId: string;
   channelId: string;
   remoteChannelId: string;
   remoteChannelType: string;
@@ -102,7 +58,7 @@ export interface ClawChannelMapping {
 /** CLI 工具会话 */
 export interface CliToolSession {
   id: string;
-  clawInstanceId: string;
+  agentId: string;
   sessionId: string;
   userId?: string;
   workingDirectory?: string;

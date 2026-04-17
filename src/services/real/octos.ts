@@ -11,7 +11,7 @@ import type {
   OctosTestProviderResponse,
   OctosProfileConfig,
 } from "@/types/octos";
-import type { ClawInstance } from "@/types/claw";
+import type { Agent } from "@/types";
 
 export class OctosApiClient {
   private http: AxiosInstance;
@@ -153,12 +153,14 @@ export class OctosApiClient {
 }
 
 /**
- * 从 ClawInstance 创建 OctosApiClient
- * authToken 优先级：authConfig.authToken > authConfig.token
+ * 从 Agent 创建 OctosApiClient
+ * 读取 customParams.claw 中的 endpointUrl 和 authConfig
  */
-export function createOctosApiClient(claw: ClawInstance): OctosApiClient {
-  const baseUrl = claw.endpointUrl || claw.proxyApiBase || "";
-  const authToken = (claw.authConfig?.authToken as string) ||
-    (claw.authConfig?.token as string) || "";
+export function createOctosApiClient(agent: Agent): OctosApiClient {
+  const claw = ((agent.customParams as Record<string, unknown>)?.claw as Record<string, unknown>) || {};
+  const baseUrl = (claw.endpointUrl as string) || "";
+  const authConfig = (claw.authConfig as Record<string, unknown>) || {};
+  const authToken = (authConfig.authToken as string) ||
+    (authConfig.token as string) || "";
   return new OctosApiClient(baseUrl, authToken);
 }

@@ -1,5 +1,5 @@
 /**
- * Octos 管理面板 — 嵌入 ClawsList 的 Octos 类型详情视图
+ * Octos 管理面板 — 嵌入 AgentList 的 Octos 类型详情视图
  * 通过 Octos API 直接管理 Profile、Provider、Channel 等
  */
 
@@ -29,7 +29,7 @@ import {
   MessageOutlined,
   ThunderboltOutlined,
 } from "@ant-design/icons";
-import type { ClawInstance } from "@/types/claw";
+import type { Agent } from "@/types";
 import type { OctosProfileResponse, OctosProfileConfig } from "@/types/octos";
 import { createOctosApiClient } from "@/services";
 import { isMockEnabled, octosMockApi } from "@/services";
@@ -39,10 +39,14 @@ import OctosChannelsTab from "./OctosChannelsTab";
 import OctosGatewaySettingsTab from "./OctosGatewaySettingsTab";
 
 interface Props {
-  claw: ClawInstance;
+  agent: Agent;
 }
 
-export default function OctosManagementPanel({ claw }: Props) {
+function getClaw(agent: Agent): Record<string, unknown> {
+  return ((agent.customParams as Record<string, unknown>)?.claw as Record<string, unknown>) || {};
+}
+
+export default function OctosManagementPanel({ agent }: Props) {
   const [profiles, setProfiles] = useState<OctosProfileResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [connected, setConnected] = useState<boolean | null>(null);
@@ -53,8 +57,8 @@ export default function OctosManagementPanel({ claw }: Props) {
 
   const api = useMemo(() => {
     if (isMockEnabled()) return null;
-    return createOctosApiClient(claw);
-  }, [claw]);
+    return createOctosApiClient(agent);
+  }, [agent]);
 
   // Mock or real API call wrapper
   const callApi = useCallback(
@@ -166,7 +170,7 @@ export default function OctosManagementPanel({ claw }: Props) {
 
   // Not connected
   if (connected === false) {
-    const hasToken = !!(claw.authConfig?.authToken || claw.authConfig?.token);
+    const hasToken = !!((getClaw(agent).authConfig as Record<string, unknown>)?.authToken || (getClaw(agent).authConfig as Record<string, unknown>)?.token);
     return (
       <Alert
         type="error"
@@ -174,7 +178,7 @@ export default function OctosManagementPanel({ claw }: Props) {
         message="无法连接 Octos 服务"
         description={
           <div className="space-y-2 mt-2">
-            <p>端点地址：<Typography.Text code>{claw.endpointUrl || "未配置"}</Typography.Text></p>
+            <p>端点地址：<Typography.Text code>{(getClaw(agent).endpointUrl as string) || "未配置"}</Typography.Text></p>
             <p>Auth Token：{hasToken ? <Tag color="green">已配置</Tag> : <Tag color="red">未配置</Tag>}</p>
             {!hasToken && (
               <p className="text-xs">

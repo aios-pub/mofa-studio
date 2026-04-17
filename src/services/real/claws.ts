@@ -1,42 +1,18 @@
 /**
- * Claw 真实 API
- * 后端端点: /api/claw/...
+ * Claw 相关 API（非 CRUD 部分）
+ * CRUD 已统一到 agentApi，此处保留渠道代理、CLI 会话、测试等操作
+ *
+ * 所有 claw_instance_id 参数已替换为 agent_id（agent.id）
  */
 
 import { apiClient } from "../api/apiClient";
-import type { ClawInstance, ClawInstanceReq, ClawChannelMapping, CliToolSession, ChannelProxyInfo } from "@/types";
+import type { ClawChannelMapping, CliToolSession, ChannelProxyInfo } from "@/types";
 
 // ==================== 后端响应类型 ====================
 
-interface BackendClawInstance {
-  id: string;
-  agent_id: string;
-  instance_name: string;
-  claw_type: string;
-  version?: string;
-  status: string;
-  endpoint_url?: string;
-  auth_config?: Record<string, unknown>;
-  connection_config?: Record<string, unknown>;
-  capabilities?: Record<string, unknown>;
-  last_health_check?: string;
-  last_sync_time?: string;
-  metadata?: Record<string, unknown>;
-  tenant_id: string;
-  enabled: boolean;
-  create_time: string;
-  update_time: string;
-  provider_id: string;
-  provider_name?: string;
-  model_id: string;
-  model_name?: string;
-  proxy_api_key?: string;
-  proxy_api_base?: string;
-}
-
 interface BackendChannelMapping {
   id: string;
-  claw_instance_id: string;
+  agent_id: string;
   channel_id: string;
   remote_channel_id: string;
   remote_channel_type: string;
@@ -59,7 +35,7 @@ interface BackendChannelMapping {
 
 interface BackendCliSession {
   id: string;
-  claw_instance_id: string;
+  agent_id: string;
   session_id: string;
   user_id?: string;
   working_directory?: string;
@@ -81,34 +57,6 @@ interface BackendCliSession {
 
 // ==================== 转换函数 ====================
 
-function fromBackend(vo: BackendClawInstance): ClawInstance {
-  return {
-    id: vo.id,
-    agentId: vo.agent_id,
-    instanceName: vo.instance_name,
-    clawType: vo.claw_type as ClawInstance['clawType'],
-    version: vo.version,
-    status: vo.status as ClawInstance['status'],
-    endpointUrl: vo.endpoint_url,
-    authConfig: vo.auth_config,
-    connectionConfig: vo.connection_config,
-    capabilities: vo.capabilities,
-    lastHealthCheck: vo.last_health_check,
-    lastSyncTime: vo.last_sync_time,
-    metadata: vo.metadata,
-    tenantId: vo.tenant_id,
-    enabled: vo.enabled,
-    createTime: vo.create_time,
-    updateTime: vo.update_time,
-    providerId: vo.provider_id,
-    providerName: vo.provider_name,
-    modelId: vo.model_id,
-    modelName: vo.model_name,
-    proxyApiKey: vo.proxy_api_key,
-    proxyApiBase: vo.proxy_api_base,
-  };
-}
-
 function fromBackendMapping(vo: BackendChannelMapping): ClawChannelMapping {
   const proxyInfo: ChannelProxyInfo | undefined =
     vo.proxy_send_url
@@ -122,7 +70,7 @@ function fromBackendMapping(vo: BackendChannelMapping): ClawChannelMapping {
 
   return {
     id: vo.id,
-    clawInstanceId: vo.claw_instance_id,
+    agentId: vo.agent_id,
     channelId: vo.channel_id,
     remoteChannelId: vo.remote_channel_id,
     remoteChannelType: vo.remote_channel_type,
@@ -144,7 +92,7 @@ function fromBackendMapping(vo: BackendChannelMapping): ClawChannelMapping {
 function fromBackendSession(vo: BackendCliSession): CliToolSession {
   return {
     id: vo.id,
-    clawInstanceId: vo.claw_instance_id,
+    agentId: vo.agent_id,
     sessionId: vo.session_id,
     userId: vo.user_id,
     workingDirectory: vo.working_directory,
@@ -168,75 +116,21 @@ function fromBackendSession(vo: BackendCliSession): CliToolSession {
 // ==================== API 方法 ====================
 
 export const clawRealApi = {
-  /** 列出所有 Claw 实例 */
-  async getAll(): Promise<ClawInstance[]> {
-    const data = await apiClient.get<BackendClawInstance[]>("/api/claw/list");
-    if (!Array.isArray(data)) return [];
-    return data.map(fromBackend);
+  /** 测试连通性（id 为 agent.id） */
+  async test(agentId: string): Promise<boolean> {
+    return apiClient.post<boolean>(`/api/claw/test/${agentId}`);
   },
 
-  /** 获取单个 Claw 实例 */
-  async getById(id: string): Promise<ClawInstance> {
-    return apiClient.get<BackendClawInstance>(`/api/claw/${id}`).then(fromBackend);
-  },
-
-  /** 创建 Claw 实例 */
-  async create(data: ClawInstanceReq): Promise<ClawInstance> {
-    const vo = await apiClient.post<BackendClawInstance>("/api/claw/create", {
-      instance_name: data.instanceName,
-      claw_type: data.clawType,
-      version: data.version,
-      endpoint_url: data.endpointUrl,
-      auth_config: data.authConfig,
-      connection_config: data.connectionConfig,
-      capabilities: data.capabilities,
-      enabled: data.enabled,
-      provider_id: data.providerId,
-      model_id: data.modelId,
-      system_prompt: data.systemPrompt,
-    });
-    return fromBackend(vo);
-  },
-
-  /** 更新 Claw 实例 */
-  async update(data: ClawInstanceReq): Promise<ClawInstance> {
-    const vo = await apiClient.post<BackendClawInstance>("/api/claw/update", {
-      id: data.id,
-      instance_name: data.instanceName,
-      claw_type: data.clawType,
-      version: data.version,
-      endpoint_url: data.endpointUrl,
-      auth_config: data.authConfig,
-      connection_config: data.connectionConfig,
-      capabilities: data.capabilities,
-      enabled: data.enabled,
-      provider_id: data.providerId,
-      model_id: data.modelId,
-      system_prompt: data.systemPrompt,
-    });
-    return fromBackend(vo);
-  },
-
-  /** 删除 Claw 实例 */
-  async delete(id: string): Promise<void> {
-    await apiClient.delete(`/api/claw/delete/${id}`);
-  },
-
-  /** 测试连通性 */
-  async test(id: string): Promise<boolean> {
-    return apiClient.post<boolean>(`/api/claw/test/${id}`);
-  },
-
-  /** 分配渠道 */
+  /** 分配渠道（agentId 为 agent.id） */
   async assignChannel(
-    clawInstanceId: string,
+    agentId: string,
     channelId: string,
     remoteChannelId: string,
     remoteChannelType: string,
     callbackUrl?: string,
   ): Promise<ClawChannelMapping> {
     const vo = await apiClient.post<BackendChannelMapping>("/api/claw/channel/assign", {
-      claw_instance_id: clawInstanceId,
+      agent_id: agentId,
       channel_id: channelId,
       remote_channel_id: remoteChannelId,
       remote_channel_type: remoteChannelType,
@@ -250,19 +144,19 @@ export const clawRealApi = {
     await apiClient.delete(`/api/claw/channel/unassign/${mappingId}`);
   },
 
-  /** 列出渠道映射 */
-  async listChannelMappings(clawInstanceId: string): Promise<ClawChannelMapping[]> {
+  /** 列出渠道映射（agentId 为 agent.id） */
+  async listChannelMappings(agentId: string): Promise<ClawChannelMapping[]> {
     const data = await apiClient.get<BackendChannelMapping[]>(
-      `/api/claw/channel/mappings?claw_instance_id=${clawInstanceId}`,
+      `/api/claw/channel/mappings?agent_id=${agentId}`,
     );
     if (!Array.isArray(data)) return [];
     return data.map(fromBackendMapping);
   },
 
-  /** 列出 CLI 会话 */
-  async listCliSessions(clawInstanceId: string): Promise<CliToolSession[]> {
+  /** 列出 CLI 会话（agentId 为 agent.id） */
+  async listCliSessions(agentId: string): Promise<CliToolSession[]> {
     const data = await apiClient.get<BackendCliSession[]>(
-      `/api/claw/cli/sessions?claw_instance_id=${clawInstanceId}`,
+      `/api/claw/cli/sessions?agent_id=${agentId}`,
     );
     if (!Array.isArray(data)) return [];
     return data.map(fromBackendSession);

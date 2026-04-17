@@ -1,85 +1,14 @@
 /**
- * Claw Mock API
+ * Claw Mock API（非 CRUD 部分）
+ * CRUD 已统一到 agentApi，此处保留渠道代理、CLI 会话、测试等操作
  */
 
-import type { ClawInstance, ClawChannelMapping, CliToolSession, ChannelProxyInfo } from "@/types";
-
-const mockClaws: ClawInstance[] = [
-  {
-    id: "claw-001",
-    agentId: "agent-001",
-    instanceName: "生产环境 OpenClaw",
-    clawType: "openclaw",
-    version: "1.2.0",
-    status: "online",
-    endpointUrl: "http://localhost:3001",
-    enabled: true,
-    tenantId: "tenant-001",
-    providerId: "prov-001",
-    providerName: "OpenAI",
-    modelId: "model-001",
-    modelName: "gpt-4o",
-    createTime: "2026-04-15T10:30:00",
-    updateTime: "2026-04-16T08:00:00",
-    lastHealthCheck: "2026-04-16T08:00:00",
-  },
-  {
-    id: "claw-002",
-    agentId: "agent-002",
-    instanceName: "开发环境 ZeroClaw",
-    clawType: "zeroclaw",
-    version: "0.3.1",
-    status: "online",
-    endpointUrl: "http://localhost:3000",
-    enabled: true,
-    tenantId: "tenant-001",
-    providerId: "prov-002",
-    providerName: "Anthropic",
-    modelId: "model-002",
-    modelName: "claude-sonnet-4-20250514",
-    createTime: "2026-04-14T14:00:00",
-    updateTime: "2026-04-16T07:30:00",
-    lastHealthCheck: "2026-04-16T07:30:00",
-  },
-  {
-    id: "claw-003",
-    agentId: "agent-003",
-    instanceName: "开发团队 Claude Code",
-    clawType: "claude_code",
-    version: "1.0.0",
-    status: "unknown",
-    enabled: true,
-    tenantId: "tenant-001",
-    providerId: "prov-002",
-    providerName: "Anthropic",
-    modelId: "model-002",
-    modelName: "claude-sonnet-4-20250514",
-    createTime: "2026-04-13T09:00:00",
-    updateTime: "2026-04-15T18:00:00",
-  },
-  {
-    id: "claw-004",
-    agentId: "agent-004",
-    instanceName: "测试 Octos",
-    clawType: "octos",
-    status: "offline",
-    endpointUrl: "http://localhost:8080",
-    authConfig: { authToken: "szZX5LqA2EmjCKhB" },
-    enabled: false,
-    tenantId: "tenant-001",
-    providerId: "prov-003",
-    providerName: "Google",
-    modelId: "model-003",
-    modelName: "gemini-2.0-flash",
-    createTime: "2026-04-12T11:00:00",
-    updateTime: "2026-04-14T16:00:00",
-  },
-];
+import type { ClawChannelMapping, CliToolSession, ChannelProxyInfo } from "@/types";
 
 const mockMappings: ClawChannelMapping[] = [
   {
     id: "map-001",
-    clawInstanceId: "claw-001",
+    agentId: "agent-6",
     channelId: "ch-001",
     remoteChannelId: "tg-bot-001",
     remoteChannelType: "telegram",
@@ -100,7 +29,7 @@ const mockMappings: ClawChannelMapping[] = [
   },
   {
     id: "map-002",
-    clawInstanceId: "claw-001",
+    agentId: "agent-6",
     channelId: "ch-002",
     remoteChannelId: "feishu-bot-001",
     remoteChannelType: "feishu",
@@ -121,7 +50,7 @@ const mockMappings: ClawChannelMapping[] = [
   },
   {
     id: "map-003",
-    clawInstanceId: "claw-002",
+    agentId: "agent-2",
     channelId: "ch-003",
     remoteChannelId: "discord-server-001",
     remoteChannelType: "discord",
@@ -144,7 +73,7 @@ const mockMappings: ClawChannelMapping[] = [
 const mockSessions: CliToolSession[] = [
   {
     id: "sess-001",
-    clawInstanceId: "claw-003",
+    agentId: "agent-3",
     sessionId: "sess-abc123",
     workingDirectory: "/home/user/project",
     command: "claude --model sonnet",
@@ -164,57 +93,13 @@ const mockSessions: CliToolSession[] = [
 ];
 
 export const clawMockApi = {
-  async getAll(): Promise<ClawInstance[]> {
-    await new Promise((r) => setTimeout(r, 300));
-    return mockClaws;
-  },
-
-  async getById(id: string): Promise<ClawInstance> {
-    await new Promise((r) => setTimeout(r, 200));
-    const claw = mockClaws.find((c) => c.id === id);
-    if (!claw) throw new Error("Not found");
-    return claw;
-  },
-
-  async create(data: any): Promise<ClawInstance> {
-    await new Promise((r) => setTimeout(r, 500));
-    return {
-      id: `claw-${Date.now()}`,
-      agentId: `agent-${Date.now()}`,
-      instanceName: data.instanceName,
-      clawType: data.clawType,
-      version: data.version,
-      status: "unknown",
-      endpointUrl: data.endpointUrl,
-      enabled: data.enabled ?? true,
-      tenantId: "tenant-001",
-      providerId: data.providerId,
-      modelId: data.modelId,
-      createTime: new Date().toISOString(),
-      updateTime: new Date().toISOString(),
-      proxyApiKey: `ap-${crypto.randomUUID()}`,
-      proxyApiBase: "http://localhost:3001/proxy/v1",
-    };
-  },
-
-  async update(data: any): Promise<ClawInstance> {
-    await new Promise((r) => setTimeout(r, 300));
-    const existing = mockClaws.find((c) => c.id === data.id);
-    if (!existing) throw new Error("Not found");
-    return { ...existing, ...data, updateTime: new Date().toISOString() };
-  },
-
-  async delete(_id: string): Promise<void> {
-    await new Promise((r) => setTimeout(r, 300));
-  },
-
-  async test(_id: string): Promise<boolean> {
+  async test(_agentId: string): Promise<boolean> {
     await new Promise((r) => setTimeout(r, 1000));
     return true;
   },
 
   async assignChannel(
-    _clawInstanceId: string,
+    _agentId: string,
     _channelId: string,
     remoteChannelId: string,
     remoteChannelType: string,
@@ -224,7 +109,7 @@ export const clawMockApi = {
     const id = `map-${Date.now()}`;
     return {
       id,
-      clawInstanceId: _clawInstanceId,
+      agentId: _agentId,
       channelId: _channelId,
       remoteChannelId,
       remoteChannelType,
@@ -249,14 +134,14 @@ export const clawMockApi = {
     await new Promise((r) => setTimeout(r, 200));
   },
 
-  async listChannelMappings(clawInstanceId: string): Promise<ClawChannelMapping[]> {
+  async listChannelMappings(agentId: string): Promise<ClawChannelMapping[]> {
     await new Promise((r) => setTimeout(r, 200));
-    return mockMappings.filter((m) => m.clawInstanceId === clawInstanceId);
+    return mockMappings.filter((m) => m.agentId === agentId);
   },
 
-  async listCliSessions(clawInstanceId: string): Promise<CliToolSession[]> {
+  async listCliSessions(agentId: string): Promise<CliToolSession[]> {
     await new Promise((r) => setTimeout(r, 200));
-    return mockSessions.filter((s) => s.clawInstanceId === clawInstanceId);
+    return mockSessions.filter((s) => s.agentId === agentId);
   },
 
   async getChannelProxyConfig(mappingId: string): Promise<ChannelProxyInfo> {
@@ -281,5 +166,3 @@ export const clawMockApi = {
     };
   },
 };
-
-export { mockClaws };

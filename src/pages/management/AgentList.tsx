@@ -37,7 +37,7 @@ import {
   LinkOutlined,
   CloudServerOutlined,
 } from "@ant-design/icons";
-import { agentApi, providerApi, promptApi, clawApi } from "@/services";
+import { agentApi, providerApi, promptApi, clawApi, channelApi } from "@/services";
 import type { Prompt } from "@/services";
 import { FormModal, showDeleteConfirm, useFormError } from "@/components/common/Modal";
 import { PermissionConfig } from "../../components/permission";
@@ -48,7 +48,8 @@ import {
 } from "../../components/agent";
 import type { Agent, AgentPermission } from "../../types";
 import type { ClawType, ClawChannelMapping } from "@/types/claw";
-import { clawTypeConfig } from "@/types/claw";
+import { clawTypeConfig, channelProxyTypeConfig } from "@/types/claw";
+import { channelTypeConfig } from "@/services/mock/channels";
 import OctosManagementPanel from "./components/octos/OctosManagementPanel";
 
 /** 从 agent.customParams.claw 提取配置 */
@@ -1802,28 +1803,13 @@ function ClawAgentDetail({
   const [mappings, setMappings] = useState<ClawChannelMapping[]>([]);
   const [editOpen, setEditOpen] = useState(false);
   const [connectOpen, setConnectOpen] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [proxyGuideOpen, setProxyGuideOpen] = useState(false);
+  const [proxyGuideMapping, setProxyGuideMapping] = useState<ClawChannelMapping | null>(null);
 
   const clawType = agent.agentType as ClawType;
   const config = clawTypeConfig[clawType];
   const clawParams = getClaw(agent);
-
-  // Build ClawInstance from customParams.claw for Octos panel
-  const clawInstance: import("@/types/claw").ClawInstance | null = {
-    id: agent.id,
-    agentId: agent.id,
-    instanceName: agent.name,
-    clawType: clawType,
-    version: clawVal(agent, 'version') || undefined,
-    status: (clawVal(agent, 'clawStatus') || 'unknown') as any,
-    endpointUrl: clawVal(agent, 'endpointUrl') || undefined,
-    authConfig: clawParams.authConfig as Record<string, unknown> | undefined,
-    enabled: agent.enabled,
-    tenantId: '',
-    providerId: agent.providerId,
-    modelId: agent.modelId,
-    createTime: agent.createdAt?.toISOString() || '',
-    updateTime: agent.updatedAt?.toISOString() || '',
-  };
 
   useEffect(() => {
     clawApi.listChannelMappings(agent.id).then(setMappings).catch(() => {});
@@ -2029,43 +2015,65 @@ function ClawAgentDetail({
 
         {activeTab === "channel" && (
           <div className="space-y-3">
-            <h4 className="text-sm font-medium">已分配渠道</h4>
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-medium">已分配渠道</h4>
+              <Button size="small" type="primary" icon={<PlusOutlined />} onClick={() => setAssignOpen(true)}>
+                分配渠道
+              </Button>
+            </div>
             {mappings.length === 0 ? (
               <Empty description="暂无渠道代理" image={Empty.PRESENTED_IMAGE_SIMPLE} />
             ) : (
-              mappings.map((m) => (
-                <div
-                  key={m.id}
-                  className="p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)]"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Typography.Text strong>{m.channelName || m.remoteChannelId}</Typography.Text>
-                      <Tag>{m.remoteChannelType}</Tag>
+              mappings.map((m) => {
+                const proxyCfg = channelProxyTypeConfig[m.remoteChannelType] || channelProxyTypeConfig[m.channelType || ""];
+                return (
+                  <div
+                    key={m.id}
+                    className="p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)]"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span>{proxyCfg?.icon || "📡"}</span>
+                        <Typography.Text strong>{m.channelName || m.remoteChannelId}</Typography.Text>
+                        <Tag>{proxyCfg?.label || m.remoteChannelType}</Tag>
+                      </div>
+                      <Space size="small">
+                        <Button
+                          size="small"
+                          type="link"
+                          onClick={() => { setProxyGuideMapping(m); setProxyGuideOpen(true); }}
+                        >
+                          配置指南
+                        </Button>
+                        <Button
+                          size="small"
+                          type="link"
+                          danger
+                          icon={<DeleteOutlined />}
+                          onClick={async () => {
+                            await clawApi.unassignChannel(m.id);
+                            onUpdate();
+                          }}
+                        >
+                          移除
+                        </Button>
+                      </Space>
                     </div>
-                    <Space size="small">
-                      <Button
-                        size="small"
-                        type="link"
-                        danger
-                        icon={<DeleteOutlined />}
-                        onClick={async () => {
-                          await clawApi.unassignChannel(m.id);
-                          onUpdate();
-                        }}
-                      >
-                        移除
-                      </Button>
-                    </Space>
+                    {m.proxyInfo && (
+                      <div className="text-xs space-y-1">
+                        <div><Typography.Text type="secondary">发送:</Typography.Text> <Typography.Text code copyable>{m.proxyInfo.sendUrl}</Typography.Text></div>
+                        <div><Typography.Text type="secondary">Webhook:</Typography.Text> <Typography.Text code copyable>{m.proxyInfo.receiveUrl}</Typography.Text></div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         )}
 
-        {activeTab === "octos" && clawType === "octos" && clawInstance && (
-          <OctosManagementPanel claw={clawInstance} />
+        {activeTab === "octos" && clawType === "octos" && (
+          <OctosManagementPanel agent={agent} />
         )}
       </div>
 
@@ -2081,6 +2089,27 @@ function ClawAgentDetail({
         agent={agent}
         onClose={() => setConnectOpen(false)}
       />
+
+      <ChannelAssignModal
+        open={assignOpen}
+        agentId={agent.id}
+        onClose={() => setAssignOpen(false)}
+        onAssigned={() => {
+          clawApi.listChannelMappings(agent.id).then(setMappings).catch(() => {});
+          setAssignOpen(false);
+        }}
+      />
+
+      {proxyGuideMapping && (
+        <ChannelProxyGuideModal
+          open={proxyGuideOpen}
+          mapping={proxyGuideMapping}
+          onClose={() => {
+            setProxyGuideOpen(false);
+            setProxyGuideMapping(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -2428,6 +2457,166 @@ function ConnectionGuideDialog({
           ))}
         </div>
       </div>
+    </Modal>
+  );
+}
+
+// ==================== Channel Assign Modal ====================
+
+function ChannelAssignModal({
+  open,
+  agentId,
+  onClose,
+  onAssigned,
+}: {
+  open: boolean;
+  agentId: string;
+  onClose: () => void;
+  onAssigned: () => void;
+}) {
+  const [form] = Form.useForm();
+  const [channels, setChannels] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      channelApi.getAll().then(setChannels).catch(() => {});
+    }
+  }, [open]);
+
+  const handleChannelChange = (channelId: string) => {
+    const ch = channels.find((c: any) => c.id === channelId);
+    if (ch) {
+      form.setFieldValue("remoteChannelType", ch.type);
+    }
+  };
+
+  const handleOk = async () => {
+    try {
+      const values = await form.validateFields();
+      setLoading(true);
+      await clawApi.assignChannel(
+        agentId,
+        values.channelId,
+        values.remoteChannelId,
+        values.remoteChannelType,
+        values.callbackUrl
+      );
+      message.success("渠道分配成功");
+      form.resetFields();
+      onAssigned();
+    } catch {
+      // Validation or API error - already handled by form/validation
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const channelTypeOptions = Object.entries(channelTypeConfig).map(([type, cfg]) => ({
+    label: `${cfg.icon} ${cfg.name}`,
+    value: type,
+  })) as { label: string; value: string }[];
+
+  return (
+    <Modal
+      title="分配渠道"
+      open={open}
+      onCancel={onClose}
+      onOk={handleOk}
+      confirmLoading={loading}
+      okText="分配"
+      destroyOnHidden
+    >
+      <Form form={form} layout="vertical">
+        <Form.Item name="channelId" label="AgentOS 渠道" rules={[{ required: true, message: "请选择渠道" }]}>
+          <Select
+            placeholder="选择本地渠道"
+            onChange={handleChannelChange}
+            options={channels.map((c: any) => {
+              const typeCfg = channelTypeConfig[c.type as keyof typeof channelTypeConfig];
+              return {
+                label: (
+                  <div className="flex items-center gap-2">
+                    <span>{typeCfg?.icon || "📡"}</span>
+                    <span>{c.name || c.channelType}</span>
+                  </div>
+                ),
+                value: c.id,
+              };
+            })}
+          />
+        </Form.Item>
+        <Form.Item name="remoteChannelId" label="远端渠道 ID" rules={[{ required: true, message: "请输入远端渠道ID" }]}>
+          <Input placeholder="如：tg-bot-001" />
+        </Form.Item>
+        <Form.Item name="remoteChannelType" label="远端渠道类型" rules={[{ required: true, message: "请选择渠道类型" }]}>
+          <Select placeholder="选择渠道类型" options={channelTypeOptions} />
+        </Form.Item>
+        <Form.Item name="callbackUrl" label="回调地址">
+          <Input placeholder="https://your-claw.example.com/webhook（可选）" />
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+}
+
+// ==================== Channel Proxy Guide Modal ====================
+
+function ChannelProxyGuideModal({
+  open,
+  mapping,
+  onClose,
+}: {
+  open: boolean;
+  mapping: ClawChannelMapping | null;
+  onClose: () => void;
+}) {
+  if (!mapping) return null;
+  const proxyCfg = channelProxyTypeConfig[mapping.remoteChannelType] || channelProxyTypeConfig[mapping.channelType || ""];
+  const proxyInfo = mapping.proxyInfo;
+
+  return (
+    <Modal
+      title={
+        <div className="flex items-center gap-2">
+          <span>{mapping.channelName || mapping.remoteChannelId} — 代理配置指南</span>
+        </div>
+      }
+      open={open}
+      onCancel={onClose}
+      footer={<Button onClick={onClose}>关闭</Button>}
+      width={640}
+      destroyOnHidden
+    >
+      <Card size="small" className="mb-4">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-xl">{proxyCfg?.icon || "📡"}</span>
+          <Typography.Text strong>{mapping.channelName || mapping.remoteChannelId}</Typography.Text>
+          <Tag>{proxyCfg?.label || mapping.remoteChannelType}</Tag>
+        </div>
+        {proxyInfo && (
+          <div className="space-y-2">
+            <div>
+              <Typography.Text type="secondary">发送地址:</Typography.Text>{" "}
+              <Typography.Text code copyable>
+                {proxyInfo.sendUrl}
+              </Typography.Text>
+            </div>
+            <div>
+              <Typography.Text type="secondary">Webhook:</Typography.Text>{" "}
+              <Typography.Text code copyable>
+                {proxyInfo.receiveUrl}
+              </Typography.Text>
+            </div>
+            <div>
+              <Typography.Text type="secondary">代理 Token:</Typography.Text>{" "}
+              <Typography.Text code copyable>
+                {proxyInfo.proxyToken}
+              </Typography.Text>
+            </div>
+          </div>
+        )}
+      </Card>
     </Modal>
   );
 }

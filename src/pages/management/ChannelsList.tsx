@@ -16,7 +16,6 @@ import {
   ExclamationCircleOutlined,
   SyncOutlined,
   StopOutlined,
-  CloseOutlined,
 } from '@ant-design/icons';
 import { channelApi, channelTypeConfig } from '@/services';
 import { agentApi } from '@/services';

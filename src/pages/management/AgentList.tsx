@@ -19,6 +19,7 @@ import {
   Empty,
   Typography,
   Modal,
+  Spin,
 } from "antd";
 import {
   PlusOutlined,
@@ -47,9 +48,87 @@ import {
   AgentTestSetSelector,
 } from "../../components/agent";
 import type { Agent, AgentPermission } from "../../types";
-import type { ClawType, ClawStatus, ClawInstanceReq, ClawChannelMapping } from "@/types/claw";
+import type { ClawType, ClawInstanceReq, ClawChannelMapping } from "@/types/claw";
 import { clawTypeConfig } from "@/types/claw";
 import OctosManagementPanel from "./components/octos/OctosManagementPanel";
+
+// ==================== 自定义参数编辑器 ====================
+
+function CustomParamsEditor({
+  value,
+  onChange,
+}: {
+  value?: Record<string, unknown>;
+  onChange?: (v: Record<string, unknown>) => void;
+}) {
+  const [newKey, setNewKey] = useState("");
+  const params = value || {};
+
+  const handleUpdate = (key: string, val: string) => {
+    onChange?.({ ...params, [key]: val });
+  };
+
+  const handleRemove = (key: string) => {
+    const next = { ...params };
+    delete next[key];
+    onChange?.(next);
+  };
+
+  const handleAdd = () => {
+    const trimmed = newKey.trim();
+    if (!trimmed || trimmed in params) return;
+    onChange?.({ ...params, [trimmed]: "" });
+    setNewKey("");
+  };
+
+  return (
+    <div className="space-y-2">
+      {Object.entries(params).map(([key, val]) => (
+        <div key={key} className="flex items-center gap-2">
+          <Input
+            value={key}
+            readOnly
+            size="small"
+            className="w-36 flex-shrink-0"
+          />
+          <Input
+            value={typeof val === "string" ? val : JSON.stringify(val)}
+            onChange={(e) => handleUpdate(key, e.target.value)}
+            size="small"
+            className="flex-1"
+            placeholder="值"
+          />
+          <Button
+            size="small"
+            type="text"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleRemove(key)}
+          />
+        </div>
+      ))}
+      <div className="flex items-center gap-2">
+        <Input
+          value={newKey}
+          onChange={(e) => setNewKey(e.target.value)}
+          size="small"
+          className="w-36 flex-shrink-0"
+          placeholder="参数名"
+          onPressEnter={handleAdd}
+        />
+        <Button
+          size="small"
+          type="dashed"
+          icon={<PlusOutlined />}
+          onClick={handleAdd}
+          disabled={!newKey.trim() || newKey.trim() in params}
+        >
+          添加
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 // ==================== Avatar 选择器 ====================
 
@@ -154,6 +233,7 @@ function AgentFormModal({
         stream: agent.stream ?? true,
         thinking: agent.thinking ?? false,
         enabled: agent.enabled,
+        customParams: agent.customParams || {},
       });
       setSelectedProviderId(agent.providerId);
       // 加载已有的提示词关联
@@ -167,6 +247,7 @@ function AgentFormModal({
         stream: true,
         thinking: false,
         enabled: true,
+        customParams: {},
       });
       setSelectedProviderId("");
     }
@@ -231,6 +312,9 @@ function AgentFormModal({
         stream: values.stream,
         thinking: values.thinking,
         enabled: values.enabled ?? true,
+        customParams: values.customParams && Object.keys(values.customParams).length > 0
+          ? values.customParams
+          : undefined,
       };
 
       let savedAgent: Agent | undefined;
@@ -387,6 +471,10 @@ function AgentFormModal({
             <Switch />
           </Form.Item>
         </div>
+
+        <Form.Item name="customParams" label="自定义参数">
+          <CustomParamsEditor />
+        </Form.Item>
       </Form>
     </FormModal>
   );
@@ -431,6 +519,7 @@ function AgentBasicInfo({
         stream: agent.stream ?? true,
         thinking: agent.thinking ?? false,
         enabled: agent.enabled,
+        customParams: agent.customParams || {},
       });
       loadEditPrompts(agent.id);
     }
@@ -502,6 +591,9 @@ function AgentBasicInfo({
         stream: values.stream,
         thinking: values.thinking,
         enabled: values.enabled,
+        customParams: values.customParams && Object.keys(values.customParams).length > 0
+          ? values.customParams
+          : undefined,
       });
 
       // 保存提示词关联
@@ -634,6 +726,10 @@ function AgentBasicInfo({
               onChange={setSelectedPrompts}
             />
           </Form.Item>
+
+          <Form.Item name="customParams" label="自定义参数">
+            <CustomParamsEditor />
+          </Form.Item>
         </Form>
 
         <div className="flex justify-end gap-2">
@@ -730,6 +826,27 @@ function AgentBasicInfo({
           <span className="text-[var(--color-text-tertiary)]">暂未关联</span>
         )}
       </div>
+
+      {agent.customParams && Object.keys(agent.customParams).length > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+            自定义参数
+          </label>
+          <div className="space-y-1">
+            {Object.entries(agent.customParams).map(([key, value]) => (
+              <div key={key} className="flex items-center gap-2">
+                <Typography.Text className="text-sm text-[var(--color-text-secondary)] w-32 flex-shrink-0">{key}</Typography.Text>
+                <Input
+                  value={typeof value === 'string' ? value : JSON.stringify(value)}
+                  readOnly
+                  size="small"
+                  className="flex-1"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="text-xs text-[var(--color-text-tertiary)]">
         {agent.createdAt &&
@@ -1402,9 +1519,18 @@ function ClawAgentDetail({
   const [mappings, setMappings] = useState<ClawChannelMapping[]>([]);
   const [editOpen, setEditOpen] = useState(false);
   const [connectOpen, setConnectOpen] = useState(false);
+  // Full ClawInstance for Octos panel (needs authConfig)
+  const [fullClawInstance, setFullClawInstance] = useState<import("@/types/claw").ClawInstance | null>(null);
 
   const clawType = agent.agentType as ClawType;
   const config = clawTypeConfig[clawType];
+
+  // Load full claw instance when needed (for auth config + Octos panel)
+  useEffect(() => {
+    if (agent.clawInstanceId && !fullClawInstance) {
+      clawApi.getById(agent.clawInstanceId).then(setFullClawInstance).catch(() => {});
+    }
+  }, [agent.clawInstanceId, fullClawInstance]);
 
   useEffect(() => {
     if (agent.clawInstanceId) {
@@ -1498,6 +1624,7 @@ function ClawAgentDetail({
 
       <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
         {activeTab === "basic" && (
+          <>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">名称</label>
@@ -1530,6 +1657,52 @@ function ClawAgentDetail({
               </div>
             )}
           </div>
+
+          {/* Auth Config from full ClawInstance */}
+          {fullClawInstance?.authConfig && Object.keys(fullClawInstance.authConfig).length > 0 && (
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+                认证配置
+              </label>
+              <div className="space-y-1">
+                {Object.entries(fullClawInstance.authConfig).map(([key, value]) => (
+                  <div key={key} className="flex items-center gap-2">
+                    <Typography.Text className="text-sm text-[var(--color-text-secondary)] w-32 flex-shrink-0">{key}</Typography.Text>
+                    <Input
+                      value={typeof value === 'string' ? value : JSON.stringify(value)}
+                      readOnly
+                      size="small"
+                      className="flex-1"
+                      type={key.toLowerCase().includes('token') || key.toLowerCase().includes('key') || key.toLowerCase().includes('secret') ? 'password' : undefined}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Connection Config */}
+          {fullClawInstance?.connectionConfig && Object.keys(fullClawInstance.connectionConfig).length > 0 && (
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+                连接配置
+              </label>
+              <div className="space-y-1">
+                {Object.entries(fullClawInstance.connectionConfig).map(([key, value]) => (
+                  <div key={key} className="flex items-center gap-2">
+                    <Typography.Text className="text-sm text-[var(--color-text-secondary)] w-32 flex-shrink-0">{key}</Typography.Text>
+                    <Input
+                      value={typeof value === 'string' ? value : JSON.stringify(value)}
+                      readOnly
+                      size="small"
+                      className="flex-1"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          </>
         )}
 
         {activeTab === "connection" && (
@@ -1596,22 +1769,13 @@ function ClawAgentDetail({
           </div>
         )}
 
-        {activeTab === "octos" && clawType === "octos" && agent.clawInstanceId && (
-          <OctosManagementPanel claw={{
-            id: agent.clawInstanceId,
-            agentId: agent.id,
-            instanceName: agent.name,
-            clawType,
-            status: (agent.clawStatus || 'unknown') as ClawStatus,
-            enabled: agent.enabled,
-            tenantId: '',
-            createTime: '',
-            updateTime: '',
-            providerId: agent.providerId,
-            providerName: agent.providerName,
-            modelId: agent.modelId,
-            modelName: agent.modelName,
-          }} />
+        {activeTab === "octos" && clawType === "octos" && fullClawInstance && (
+          <OctosManagementPanel claw={fullClawInstance} />
+        )}
+        {activeTab === "octos" && clawType === "octos" && !fullClawInstance && agent.clawInstanceId && (
+          <div className="flex items-center justify-center py-8">
+            <Spin />
+          </div>
         )}
       </div>
 
@@ -1788,6 +1952,9 @@ function ClawEditModal({
   const [providers, setProviders] = useState<any[]>([]);
   const [models, setModels] = useState<any[]>([]);
 
+  const clawType = agent.agentType as ClawType;
+  const isOctos = clawType === "octos";
+
   useEffect(() => {
     if (open) {
       providerApi.getAll().then(setProviders).catch(() => {});
@@ -1795,6 +1962,7 @@ function ClawEditModal({
         instanceName: agent.name,
         version: agent.clawVersion,
         endpointUrl: agent.endpointUrl,
+        authToken: (agent as any).fullClawAuthConfig?.authToken || (agent as any).fullClawAuthConfig?.token || "",
         providerId: agent.providerId,
         modelId: agent.modelId,
         enabled: agent.enabled,
@@ -1806,6 +1974,18 @@ function ClawEditModal({
       }
     }
   }, [open, agent, form]);
+
+  // Load full claw instance to get authConfig
+  useEffect(() => {
+    if (open && agent.clawInstanceId) {
+      clawApi.getById(agent.clawInstanceId).then((claw) => {
+        const token = claw?.authConfig?.authToken || claw?.authConfig?.token || "";
+        if (token) {
+          form.setFieldValue("authToken", token);
+        }
+      }).catch(() => {});
+    }
+  }, [open, agent.clawInstanceId, form]);
 
   const handleProviderChange = async (providerId: string) => {
     form.setFieldValue("modelId", undefined);
@@ -1821,16 +2001,18 @@ function ClawEditModal({
     try {
       const values = await form.validateFields();
       setLoading(true);
-      await clawApi.update({
+      const payload: ClawInstanceReq = {
         id: agent.clawInstanceId,
         instanceName: values.instanceName,
-        clawType: agent.agentType as ClawType,
+        clawType,
         version: values.version,
         endpointUrl: values.endpointUrl,
+        authConfig: values.authToken ? { authToken: values.authToken } : undefined,
         providerId: values.providerId,
         modelId: values.modelId,
         enabled: values.enabled,
-      });
+      };
+      await clawApi.update(payload);
       message.success("更新成功");
       onSuccess();
     } catch (error: any) {
@@ -1862,6 +2044,15 @@ function ClawEditModal({
         <Form.Item name="endpointUrl" label="端点地址">
           <Input />
         </Form.Item>
+        {isOctos && (
+          <Form.Item
+            name="authToken"
+            label="Auth Token"
+            tooltip="Octos 服务启动时 --auth-token 参数指定的令牌"
+          >
+            <Input.Password placeholder="输入 Auth Token" />
+          </Form.Item>
+        )}
         <div className="grid grid-cols-2 gap-4">
           <Form.Item name="providerId" label="供应商" rules={[{ required: true }]}>
             <Select

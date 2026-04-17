@@ -5,6 +5,12 @@
 /** Agent 状态 */
 export type AgentStatus = 'idle' | 'thinking' | 'tool' | 'waiting' | 'error' | 'offline';
 
+/** 思考模式配置（对应后端 jsonb 字段） */
+export interface ThinkingConfig {
+  enabled: boolean;
+  budget_tokens?: number;
+}
+
 /** Agent 基本信息 */
 export interface Agent {
   id: string;
@@ -32,8 +38,8 @@ export interface Agent {
   contextLimit?: number;
   /** 温度参数 */
   temperature?: number;
-  /** 是否启用思考模式 */
-  thinking?: boolean;
+  /** 思考模式配置（后端 jsonb 存储） */
+  thinking?: ThinkingConfig;
   /** 是否流式输出 */
   stream?: boolean;
   /** 响应格式 */
@@ -50,14 +56,6 @@ export interface Agent {
   status?: AgentStatus;
   /** Agent 类型: 'native' | 'openclaw' | 'zeroclaw' | 'octos' | 'claude_code' | 'codex' */
   agentType: string;
-  /** Claw 实例 ID（仅 claw 类型 Agent） */
-  clawInstanceId?: string;
-  /** Claw 状态（仅 claw 类型 Agent） */
-  clawStatus?: string;
-  /** Claw 版本（仅 claw 类型 Agent） */
-  clawVersion?: string;
-  /** Claw 端点地址（仅 claw 类型 Agent） */
-  endpointUrl?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

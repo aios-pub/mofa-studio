@@ -7,7 +7,7 @@
  */
 
 import { apiClient } from "../api/apiClient";
-import type { Agent, AgentPermission } from "@/types";
+import type { Agent, AgentPermission, ThinkingConfig } from "@/types";
 
 // ==================== 后端请求/响应类型 ====================
 
@@ -54,19 +54,13 @@ interface BackendAgentVo {
   context_limit?: number;
   response_format?: string;
   max_completion_tokens?: number;
-  created_at?: string;
-  updated_at?: string;
-  // Unified endpoint extra fields (claw metadata)
-  claw_instance_id?: string;
-  claw_status?: string;
-  claw_version?: string;
-  endpoint_url?: string;
 }
 
 // ==================== 转换函数 ====================
 
 /** 前端 → 后端 */
 function toBackend(data: Partial<Agent>, isUpdate = false): BackendAgentReq {
+  const agentType = data.agentType || 'native';
   const req: BackendAgentReq = {
     provider_id: data.providerId || '',
     model_id: data.modelId || '',
@@ -84,7 +78,7 @@ function toBackend(data: Partial<Agent>, isUpdate = false): BackendAgentReq {
     custom_params: data.customParams,
     agent_order: data.order,
     agent_status: data.enabled,
-    agent_type: data.agentType || 'native',
+    agent_type: agentType,
   };
 
   if (isUpdate && data.id) {
@@ -94,17 +88,24 @@ function toBackend(data: Partial<Agent>, isUpdate = false): BackendAgentReq {
   return req;
 }
 
-/** jsonb thinking → boolean */
-function parseThinking(val: unknown): boolean {
-  if (typeof val === 'boolean') return val;
-  if (val === null || val === undefined) return false;
-  if (typeof val === 'object' && val !== null && 'enabled' in (val as any)) return !!(val as any).enabled;
-  return !!val;
+/** jsonb thinking → ThinkingConfig */
+function parseThinking(val: unknown): ThinkingConfig | undefined {
+  if (val === null || val === undefined) return undefined;
+  if (typeof val === 'boolean') return { enabled: val };
+  if (typeof val === 'object' && val !== null && 'enabled' in (val as any)) {
+    const obj = val as { enabled?: unknown; budget_tokens?: unknown };
+    return {
+      enabled: !!obj.enabled,
+      ...(obj.budget_tokens != null ? { budget_tokens: Number(obj.budget_tokens) } : {}),
+    };
+  }
+  return undefined;
 }
 
 /** 后端 → 前端 */
 function fromBackend(vo: BackendAgentVo): Agent {
   const agentType = vo.agent_category || 'native';
+  const cp = vo.custom_params;
   return {
     id: vo.id,
     name: vo.agent_name,
@@ -122,25 +123,18 @@ function fromBackend(vo: BackendAgentVo): Agent {
     contextLimit: vo.context_limit,
     responseFormat: vo.response_format,
     maxCompletionTokens: vo.max_completion_tokens,
-    customParams: vo.custom_params,
+    customParams: cp,
     status: vo.enabled ? 'idle' : 'offline',
     agentType,
-    // Claw-specific fields
-    clawInstanceId: vo.claw_instance_id,
-    clawStatus: vo.claw_status,
-    clawVersion: vo.claw_version,
-    endpointUrl: vo.endpoint_url,
-    createdAt: vo.created_at ? new Date(vo.created_at) : undefined,
-    updatedAt: vo.updated_at ? new Date(vo.updated_at) : undefined,
   };
 }
 
 // ==================== API 方法 ====================
 
 export const agentRealApi = {
-  /** 获取所有 Agent（包含 claw 元数据） */
+  /** 获取所有 Agent */
   async getAll(): Promise<Agent[]> {
-    const data = await apiClient.get<BackendAgentVo[]>("/api/agent/fetch-unified");
+    const data = await apiClient.get<BackendAgentVo[]>("/api/agent/fetch");
     if (!Array.isArray(data)) return [];
     return data.map(fromBackend);
   },
@@ -162,9 +156,7 @@ export const agentRealApi = {
 
   /** 更新 Agent */
   async update(id: string, data: Partial<Agent>): Promise<Agent> {
-    const existing = await agentRealApi.getById(id);
-    const merged = { ...existing, ...data };
-    const req = toBackend(merged, true);
+    const req = toBackend({ ...data, id }, true);
     const vo = await apiClient.post<BackendAgentVo>("/api/agent/update", req);
     return fromBackend(vo);
   },

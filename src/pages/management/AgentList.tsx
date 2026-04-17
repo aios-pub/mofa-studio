@@ -19,7 +19,6 @@ import {
   Empty,
   Typography,
   Modal,
-  Spin,
 } from "antd";
 import {
   PlusOutlined,
@@ -48,9 +47,18 @@ import {
   AgentTestSetSelector,
 } from "../../components/agent";
 import type { Agent, AgentPermission } from "../../types";
-import type { ClawType, ClawInstanceReq, ClawChannelMapping } from "@/types/claw";
+import type { ClawType, ClawChannelMapping } from "@/types/claw";
 import { clawTypeConfig } from "@/types/claw";
 import OctosManagementPanel from "./components/octos/OctosManagementPanel";
+
+/** 从 agent.customParams.claw 提取配置 */
+function getClaw(agent: Agent): Record<string, unknown> {
+  return ((agent.customParams as Record<string, unknown>)?.claw as Record<string, unknown>) || {};
+}
+function clawVal(agent: Agent, key: string): string | undefined {
+  const v = getClaw(agent)[key];
+  return typeof v === 'string' ? v : undefined;
+}
 
 // ==================== 自定义参数编辑器（JSON 可视化）===================
 
@@ -502,7 +510,7 @@ function AgentFormModal({
         modelId: agent.modelId,
         temperature: agent.temperature ?? 0.7,
         stream: agent.stream ?? true,
-        thinking: agent.thinking ?? false,
+        thinking: agent.thinking ?? { enabled: false },
         enabled: agent.enabled,
         customParams: agent.customParams || {},
       });
@@ -516,7 +524,7 @@ function AgentFormModal({
         avatar: "🤖",
         temperature: 0.7,
         stream: true,
-        thinking: false,
+        thinking: { enabled: false },
         enabled: true,
         customParams: {},
       });
@@ -581,7 +589,9 @@ function AgentFormModal({
         providerName: provider?.name,
         temperature: values.temperature,
         stream: values.stream,
-        thinking: values.thinking,
+        thinking: values.thinking && typeof values.thinking === 'object'
+          ? values.thinking
+          : { enabled: !!values.thinking },
         enabled: values.enabled ?? true,
         customParams: values.customParams && Object.keys(values.customParams).length > 0
           ? values.customParams
@@ -738,7 +748,7 @@ function AgentFormModal({
             <Switch />
           </Form.Item>
 
-          <Form.Item name="thinking" label="思考模式" valuePropName="checked">
+          <Form.Item name={["thinking", "enabled"]} label="思考模式" valuePropName="checked">
             <Switch />
           </Form.Item>
         </div>
@@ -788,7 +798,7 @@ function AgentBasicInfo({
         modelId: agent.modelId,
         temperature: agent.temperature ?? 0.7,
         stream: agent.stream ?? true,
-        thinking: agent.thinking ?? false,
+        thinking: agent.thinking ?? { enabled: false },
         enabled: agent.enabled,
         customParams: agent.customParams || {},
       });
@@ -860,7 +870,9 @@ function AgentBasicInfo({
         providerName: provider?.name,
         temperature: values.temperature,
         stream: values.stream,
-        thinking: values.thinking,
+        thinking: values.thinking && typeof values.thinking === 'object'
+          ? values.thinking
+          : { enabled: !!values.thinking },
         enabled: values.enabled,
         customParams: values.customParams && Object.keys(values.customParams).length > 0
           ? values.customParams
@@ -980,7 +992,7 @@ function AgentBasicInfo({
                 <Switch />
               </Form.Item>
               <Form.Item
-                name="thinking"
+                name={["thinking", "enabled"]}
                 label="思考模式"
                 valuePropName="checked"
                 className="mb-0"
@@ -1668,7 +1680,7 @@ export default function AgentListPage() {
               const clawConfig = isClawAgent(agent) ? clawTypeConfig[agent.agentType as ClawType] : null;
               const icon = clawConfig?.icon || agent.avatar || "🤖";
               const statusDot = isClawAgent(agent)
-                ? clawStatusDot[agent.clawStatus || 'unknown']
+                ? clawStatusDot[clawVal(agent, 'clawStatus') || 'unknown']
                 : statusColors[agent.status || (agent.enabled ? "idle" : "offline")];
 
               return (
@@ -1790,29 +1802,36 @@ function ClawAgentDetail({
   const [mappings, setMappings] = useState<ClawChannelMapping[]>([]);
   const [editOpen, setEditOpen] = useState(false);
   const [connectOpen, setConnectOpen] = useState(false);
-  // Full ClawInstance for Octos panel (needs authConfig)
-  const [fullClawInstance, setFullClawInstance] = useState<import("@/types/claw").ClawInstance | null>(null);
 
   const clawType = agent.agentType as ClawType;
   const config = clawTypeConfig[clawType];
+  const clawParams = getClaw(agent);
 
-  // Load full claw instance when needed (for auth config + Octos panel)
-  useEffect(() => {
-    if (agent.clawInstanceId && !fullClawInstance) {
-      clawApi.getById(agent.clawInstanceId).then(setFullClawInstance).catch(() => {});
-    }
-  }, [agent.clawInstanceId, fullClawInstance]);
+  // Build ClawInstance from customParams.claw for Octos panel
+  const clawInstance: import("@/types/claw").ClawInstance | null = {
+    id: agent.id,
+    agentId: agent.id,
+    instanceName: agent.name,
+    clawType: clawType,
+    version: clawVal(agent, 'version') || undefined,
+    status: (clawVal(agent, 'clawStatus') || 'unknown') as any,
+    endpointUrl: clawVal(agent, 'endpointUrl') || undefined,
+    authConfig: clawParams.authConfig as Record<string, unknown> | undefined,
+    enabled: agent.enabled,
+    tenantId: '',
+    providerId: agent.providerId,
+    modelId: agent.modelId,
+    createTime: agent.createdAt?.toISOString() || '',
+    updateTime: agent.updatedAt?.toISOString() || '',
+  };
 
   useEffect(() => {
-    if (agent.clawInstanceId) {
-      clawApi.listChannelMappings(agent.clawInstanceId!).then(setMappings).catch(() => {});
-    }
-  }, [agent.clawInstanceId]);
+    clawApi.listChannelMappings(agent.id).then(setMappings).catch(() => {});
+  }, [agent.id]);
 
   const handleTest = async () => {
-    if (!agent.clawInstanceId) return;
     try {
-      const result = await clawApi.test(agent.clawInstanceId);
+      const result = await clawApi.test(agent.id);
       message.success(result ? "连接成功" : "连接失败");
     } catch {
       message.error("测试失败");
@@ -1824,9 +1843,14 @@ function ClawAgentDetail({
       title: "删除 Agent",
       content: `确定要删除 ${agent.name} 吗？此操作不可恢复。`,
       onOk: async () => {
-        await agentApi.delete(agent.id);
-        message.success("已删除");
-        onUpdate();
+        try {
+          await agentApi.delete(agent.id);
+          message.success("已删除");
+          onUpdate();
+        } catch (error) {
+          console.error("Failed to delete agent:", error);
+          message.error("删除失败");
+        }
       },
     });
   };
@@ -1834,7 +1858,7 @@ function ClawAgentDetail({
   const tabs = [
     { key: "basic", label: "基本信息", icon: RobotOutlined },
     { key: "connection", label: "连接信息", icon: LinkOutlined },
-    ...(agent.clawInstanceId ? [{ key: "channel" as const, label: "渠道代理", icon: CloudServerOutlined }] : []),
+    ...(agent.agentType !== 'native' ? [{ key: "channel" as const, label: "渠道代理", icon: CloudServerOutlined }] : []),
     ...(clawType === "octos" ? [{ key: "octos" as const, label: "Octos 管理", icon: ApiOutlined }] : []),
   ];
 
@@ -1852,9 +1876,9 @@ function ClawAgentDetail({
               <Tag color={agent.enabled ? "green" : "red"}>
                 {agent.enabled ? "已启用" : "已禁用"}
               </Tag>
-              {agent.clawStatus && (
-                <Tag color={agent.clawStatus === "online" ? "green" : agent.clawStatus === "offline" ? "red" : "default"}>
-                  {agent.clawStatus === "online" ? "在线" : agent.clawStatus === "offline" ? "离线" : agent.clawStatus}
+              {clawVal(agent, 'clawStatus') && (
+                <Tag color={clawVal(agent, 'clawStatus') === "online" ? "green" : clawVal(agent, 'clawStatus') === "offline" ? "red" : "default"}>
+                  {clawVal(agent, 'clawStatus') === "online" ? "在线" : clawVal(agent, 'clawStatus') === "offline" ? "离线" : clawVal(agent, 'clawStatus')}
                 </Tag>
               )}
             </div>
@@ -1911,7 +1935,7 @@ function ClawAgentDetail({
             </div>
             <div>
               <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">版本</label>
-              <Input value={agent.clawVersion || "-"} readOnly />
+              <Input value={clawVal(agent, 'version') || "-"} readOnly />
             </div>
             <div>
               <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">供应商</label>
@@ -1921,22 +1945,22 @@ function ClawAgentDetail({
               <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">模型</label>
               <Input value={agent.modelName || "-"} readOnly />
             </div>
-            {agent.endpointUrl && (
+            {clawVal(agent, 'endpointUrl') && (
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">端点地址</label>
-                <Input value={agent.endpointUrl} readOnly />
+                <Input value={clawVal(agent, 'endpointUrl')} readOnly />
               </div>
             )}
           </div>
 
-          {/* Auth Config from full ClawInstance */}
-          {fullClawInstance?.authConfig && Object.keys(fullClawInstance.authConfig).length > 0 && (
+          {/* Auth Config from customParams.claw */}
+          {clawParams?.authConfig && typeof clawParams.authConfig === 'object' && Object.keys(clawParams.authConfig as Record<string, unknown>).length > 0 && (
             <div className="mt-4">
               <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
                 认证配置
               </label>
               <div className="space-y-1">
-                {Object.entries(fullClawInstance.authConfig).map(([key, value]) => (
+                {Object.entries(clawParams.authConfig as Record<string, unknown>).map(([key, value]) => (
                   <div key={key} className="flex items-center gap-2">
                     <Typography.Text className="text-sm text-[var(--color-text-secondary)] w-32 flex-shrink-0">{key}</Typography.Text>
                     <Input
@@ -1953,13 +1977,13 @@ function ClawAgentDetail({
           )}
 
           {/* Connection Config */}
-          {fullClawInstance?.connectionConfig && Object.keys(fullClawInstance.connectionConfig).length > 0 && (
+          {clawParams?.connectionConfig && typeof clawParams.connectionConfig === 'object' && Object.keys(clawParams.connectionConfig as Record<string, unknown>).length > 0 && (
             <div className="mt-4">
               <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
                 连接配置
               </label>
               <div className="space-y-1">
-                {Object.entries(fullClawInstance.connectionConfig).map(([key, value]) => (
+                {Object.entries(clawParams.connectionConfig as Record<string, unknown>).map(([key, value]) => (
                   <div key={key} className="flex items-center gap-2">
                     <Typography.Text className="text-sm text-[var(--color-text-secondary)] w-32 flex-shrink-0">{key}</Typography.Text>
                     <Input
@@ -2040,24 +2064,17 @@ function ClawAgentDetail({
           </div>
         )}
 
-        {activeTab === "octos" && clawType === "octos" && fullClawInstance && (
-          <OctosManagementPanel claw={fullClawInstance} />
-        )}
-        {activeTab === "octos" && clawType === "octos" && !fullClawInstance && agent.clawInstanceId && (
-          <div className="flex items-center justify-center py-8">
-            <Spin />
-          </div>
+        {activeTab === "octos" && clawType === "octos" && clawInstance && (
+          <OctosManagementPanel claw={clawInstance} />
         )}
       </div>
 
-      {agent.clawInstanceId && (
-        <ClawEditModal
-          open={editOpen}
-          agent={agent}
-          onClose={() => setEditOpen(false)}
-          onSuccess={() => { setEditOpen(false); onUpdate(); }}
-        />
-      )}
+      <ClawEditModal
+        open={editOpen}
+        agent={agent}
+        onClose={() => setEditOpen(false)}
+        onSuccess={() => { setEditOpen(false); onUpdate(); }}
+      />
 
       <ConnectionGuideDialog
         open={connectOpen}
@@ -2107,17 +2124,31 @@ function ClawCreateModal({
     try {
       const values = await form.validateFields();
       setLoading(true);
-      const payload: ClawInstanceReq = {
-        instanceName: values.instanceName,
-        clawType: selectedType!,
-        version: values.version,
-        endpointUrl: values.endpointUrl,
-        authConfig: values.authToken ? { authToken: values.authToken } : undefined,
+      const provider = providers.find((p: any) => p.id === values.providerId);
+      const model = provider?.models?.find((m: any) => m.id === values.modelId);
+      const clawType = selectedType!;
+      const shortId = crypto.randomUUID().slice(0, 8);
+      const agentData: Partial<Agent> = {
+        name: values.instanceName,
+        agentCode: `CLAW-${clawType.toUpperCase()}-${shortId}`,
+        agentType: clawType,
+        systemPrompt: `Claw proxy agent: ${values.instanceName}`,
         providerId: values.providerId,
         modelId: values.modelId,
+        modelName: model?.name || values.modelId,
+        providerName: provider?.name,
         enabled: values.enabled ?? true,
+        stream: true,
+        customParams: {
+          claw: {
+            clawType,
+            endpointUrl: values.endpointUrl,
+            version: values.version,
+            authConfig: values.authToken ? { authToken: values.authToken } : undefined,
+          },
+        },
       };
-      const result = await clawApi.create(payload);
+      const result = await agentApi.create(agentData);
       message.success("Claw Agent 创建成功");
       onSuccess(result);
     } catch (error: any) {
@@ -2225,15 +2256,17 @@ function ClawEditModal({
 
   const clawType = agent.agentType as ClawType;
   const isOctos = clawType === "octos";
+  const clawParams = getClaw(agent);
+  const existingAuthConfig = clawParams?.authConfig as Record<string, unknown> | undefined;
 
   useEffect(() => {
     if (open) {
       providerApi.getAll().then(setProviders).catch(() => {});
       form.setFieldsValue({
         instanceName: agent.name,
-        version: agent.clawVersion,
-        endpointUrl: agent.endpointUrl,
-        authToken: (agent as any).fullClawAuthConfig?.authToken || (agent as any).fullClawAuthConfig?.token || "",
+        version: clawVal(agent, 'version') || "",
+        endpointUrl: clawVal(agent, 'endpointUrl') || "",
+        authToken: (existingAuthConfig?.authToken || existingAuthConfig?.token || "") as string,
         providerId: agent.providerId,
         modelId: agent.modelId,
         enabled: agent.enabled,
@@ -2245,18 +2278,6 @@ function ClawEditModal({
       }
     }
   }, [open, agent, form]);
-
-  // Load full claw instance to get authConfig
-  useEffect(() => {
-    if (open && agent.clawInstanceId) {
-      clawApi.getById(agent.clawInstanceId).then((claw) => {
-        const token = claw?.authConfig?.authToken || claw?.authConfig?.token || "";
-        if (token) {
-          form.setFieldValue("authToken", token);
-        }
-      }).catch(() => {});
-    }
-  }, [open, agent.clawInstanceId, form]);
 
   const handleProviderChange = async (providerId: string) => {
     form.setFieldValue("modelId", undefined);
@@ -2272,18 +2293,26 @@ function ClawEditModal({
     try {
       const values = await form.validateFields();
       setLoading(true);
-      const payload: ClawInstanceReq = {
-        id: agent.clawInstanceId,
-        instanceName: values.instanceName,
-        clawType,
-        version: values.version,
-        endpointUrl: values.endpointUrl,
-        authConfig: values.authToken ? { authToken: values.authToken } : undefined,
+      const provider = providers.find((p: any) => p.id === values.providerId);
+      const model = provider?.models?.find((m: any) => m.id === values.modelId);
+      await agentApi.update(agent.id, {
+        name: values.instanceName,
+        agentType: clawType,
         providerId: values.providerId,
         modelId: values.modelId,
+        modelName: model?.name || values.modelId,
+        providerName: provider?.name,
         enabled: values.enabled,
-      };
-      await clawApi.update(payload);
+        customParams: {
+          ...(agent.customParams || {}),
+          claw: {
+            clawType,
+            endpointUrl: values.endpointUrl,
+            version: values.version,
+            authConfig: values.authToken ? { authToken: values.authToken } : undefined,
+          },
+        },
+      });
       message.success("更新成功");
       onSuccess();
     } catch (error: any) {

@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Modal, Drawer, Button, Alert } from 'antd';
+import { Modal, Drawer, Button, Alert, App } from 'antd';
 import type { ModalProps, DrawerProps } from 'antd';
 import {
   ExclamationCircleOutlined,
@@ -180,11 +180,14 @@ const iconMap = {
 
 /**
  * 显示确认对话框
+ * 注意：建议使用 App.useApp() 获取 modal 实例后调用，以避免上下文警告
  */
-export function showConfirm(options: ConfirmModalOptions) {
+export function showConfirm(options: ConfirmModalOptions, modal?: ReturnType<typeof App.useApp>['modal']) {
   const { type = 'confirm', title, content, okText, cancelText, onOk, onCancel } = options;
 
-  return Modal.confirm({
+  const confirmMethod = modal ? modal.confirm : Modal.confirm;
+
+  return confirmMethod({
     title,
     content: (
       <div className="flex items-start gap-4">
@@ -203,14 +206,15 @@ export function showConfirm(options: ConfirmModalOptions) {
 
 /**
  * 显示删除确认对话框
+ * 注意：建议使用 App.useApp() 获取 modal 实例后调用，以避免上下文警告
  */
-export function showDeleteConfirm(options: Omit<ConfirmModalOptions, 'type'>) {
+export function showDeleteConfirm(options: Omit<ConfirmModalOptions, 'type'>, modal?: ReturnType<typeof App.useApp>['modal']) {
   return showConfirm({
     type: 'error',
     title: options.title || '确认删除',
     okText: options.okText || '删除',
     ...options,
-  });
+  }, modal);
 }
 
 // ==================== Drawer 弹窗 ====================

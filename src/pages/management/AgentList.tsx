@@ -7,7 +7,6 @@ import {
   Input,
   Button,
   Dropdown,
-  message,
   Tabs,
   Select,
   Form,
@@ -19,6 +18,7 @@ import {
   Empty,
   Typography,
   Modal,
+  App,
 } from "antd";
 import {
   PlusOutlined,
@@ -281,6 +281,7 @@ function CustomParamsEditor({
   value?: Record<string, unknown>;
   onChange?: (v: Record<string, unknown>) => void;
 }) {
+  const { message } = App.useApp();
   const [mode, setMode] = useState<"visual" | "raw">("visual");
   const [rawText, setRawText] = useState("");
   const [rawError, setRawError] = useState<string | null>(null);
@@ -475,6 +476,7 @@ function AgentFormModal({
   onClose,
   onSuccess,
 }: AgentFormModalProps) {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [providers, setProviders] = useState<any[]>([]);
@@ -667,8 +669,7 @@ function AgentFormModal({
       onSubmit={handleSubmit}
       loading={loading}
       width={720}
-      destroyOnHidden
-      error={error}
+            error={error}
       onClearError={clearError}
     >
       <Form form={form} layout="vertical" className="space-y-1">
@@ -771,6 +772,7 @@ function AgentBasicInfo({
   agent: Agent;
   onUpdate: () => void;
 }) {
+  const { message } = App.useApp();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form] = Form.useForm();
@@ -1151,6 +1153,7 @@ function AgentPromptsTab({
   agent: Agent;
   onUpdate: () => void;
 }) {
+  const { message } = App.useApp();
   const [permission, setPermission] = useState<AgentPermission | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -1224,6 +1227,7 @@ function AgentSkillsTab({
   agent: Agent;
   onUpdate: () => void;
 }) {
+  const { message } = App.useApp();
   const [permission, setPermission] = useState<AgentPermission | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -1441,6 +1445,7 @@ function AgentPermissionTab({ agent }: { agent: Agent }) {
 // ==================== 主页面 ====================
 
 export default function AgentListPage() {
+  const { modal, message } = App.useApp();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -1498,7 +1503,7 @@ export default function AgentListPage() {
           message.error("删除失败");
         }
       },
-    });
+    }, modal);
   };
 
   const handleDuplicate = async (agent: Agent) => {
@@ -1745,6 +1750,7 @@ export default function AgentListPage() {
               key={selectedAgent.id}
               agent={selectedAgent}
               onUpdate={loadAgents}
+              onDelete={() => setSelectedAgent(null)}
             />
           ) : (
             <AgentDetail
@@ -1795,13 +1801,18 @@ export default function AgentListPage() {
 
 // ==================== Agent 详情面板（外部 Agent 类型）====================
 
+interface ClawAgentDetailProps {
+  agent: Agent;
+  onUpdate: () => void;
+  onDelete?: () => void;
+}
+
 function ClawAgentDetail({
   agent,
   onUpdate,
-}: {
-  agent: Agent;
-  onUpdate: () => void;
-}) {
+  onDelete,
+}: ClawAgentDetailProps) {
+  const { modal, message } = App.useApp();
   const [activeTab, setActiveTab] = useState<"basic" | "connection" | "channel" | "octos">("basic");
   const [mappings, setMappings] = useState<ClawChannelMapping[]>([]);
   const [editOpen, setEditOpen] = useState(false);
@@ -1835,13 +1846,13 @@ function ClawAgentDetail({
         try {
           await agentApi.delete(agent.id);
           message.success("已删除");
-          onUpdate();
+          onDelete?.();
         } catch (error) {
           console.error("Failed to delete agent:", error);
           message.error("删除失败");
         }
       },
-    });
+    }, modal);
   };
 
   const tabs = [
@@ -2130,6 +2141,7 @@ function ClawCreateModal({
   onSuccess: (result: any) => void;
   preselectedType?: ClawType | null;
 }) {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [providers, setProviders] = useState<any[]>([]);
@@ -2147,7 +2159,6 @@ function ClawCreateModal({
     } else {
       // 关闭时清除选中状态
       setSelectedType(null);
-      form.resetFields();
     }
   }, [open, preselectedType]);
 
@@ -2211,8 +2222,7 @@ function ClawCreateModal({
       width={600}
       okText="创建"
       confirmLoading={loading}
-      destroyOnHidden
-    >
+          >
       <div className="mb-4">
         <Typography.Text strong className="block mb-2">选择类型</Typography.Text>
         <div className="flex flex-wrap gap-2">
@@ -2292,6 +2302,7 @@ function ClawEditModal({
   onClose: () => void;
   onSuccess: () => void;
 }) {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [providers, setProviders] = useState<any[]>([]);
@@ -2375,8 +2386,7 @@ function ClawEditModal({
       width={600}
       okText="保存"
       confirmLoading={loading}
-      destroyOnHidden
-    >
+          >
       <Form form={form} layout="vertical">
         <Form.Item name="instanceName" label="实例名称" rules={[{ required: true }]}>
           <Input />
@@ -2426,6 +2436,7 @@ function ConnectionGuideDialog({
   agent: Agent;
   onClose: () => void;
 }) {
+  const { message } = App.useApp();
   const agentType = agent.agentType as ClawType;
   const config = clawTypeConfig[agentType];
   const proxyBase = "http://localhost:3001/proxy/v1";
@@ -2489,6 +2500,7 @@ function ChannelAssignModal({
   onClose: () => void;
   onAssigned: () => void;
 }) {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const [channels, setChannels] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -2540,8 +2552,7 @@ function ChannelAssignModal({
       onOk={handleOk}
       confirmLoading={loading}
       okText="分配"
-      destroyOnHidden
-    >
+          >
       <Form form={form} layout="vertical">
         <Form.Item name="channelId" label="AgentOS 渠道" rules={[{ required: true, message: "请选择渠道" }]}>
           <Select
@@ -2601,8 +2612,7 @@ function ChannelProxyGuideModal({
       onCancel={onClose}
       footer={<Button onClick={onClose}>关闭</Button>}
       width={640}
-      destroyOnHidden
-    >
+          >
       <Card size="small" className="mb-4">
         <div className="flex items-center gap-2 mb-3">
           <span className="text-xl">{proxyCfg?.icon || "📡"}</span>

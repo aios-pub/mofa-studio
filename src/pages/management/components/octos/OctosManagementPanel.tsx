@@ -12,7 +12,7 @@ import {
   Button,
   Modal,
   Input,
-  message,
+  App,
   Empty,
   Space,
   Tag,
@@ -72,6 +72,8 @@ export default function OctosManagementPanel({ agent }: Props) {
   const [activeTab, setActiveTab] = useState("profiles");
   const [purgeReport, setPurgeReport] = useState<any>(null);
   const [purgeModalOpen, setPurgeModalOpen] = useState(false);
+
+  const { message } = App.useApp();
 
   const api = useMemo(() => {
     if (isMockEnabled()) return null;

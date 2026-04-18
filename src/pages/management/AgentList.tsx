@@ -2647,7 +2647,7 @@ function ClawEditModal({
         form.setFieldValue("modelId", agent.model_id);
       }
     }
-  }, [models, open, agent]);
+  }, [models, open, agent?.model_id]);
 
   const handleSubmit = async () => {
     try {

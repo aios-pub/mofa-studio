@@ -24,7 +24,7 @@ import {
   Typography,
   Tooltip,
   Popconfirm,
-  message,
+  App,
   Alert,
   DatePicker,
   Switch,
@@ -79,6 +79,7 @@ const statusConfig: Record<ApiKeyStatus, { color: string; label: string; icon: R
 
 export default function ResourceManagementPage() {
   const { t } = useTranslation();
+  const { message } = App.useApp();
   const [activeTab, setActiveTab] = useState('api-keys');
   const [loading, setLoading] = useState(true);
 

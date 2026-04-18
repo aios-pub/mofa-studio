@@ -129,7 +129,7 @@ export default function EvaluationPage() {
       cancelText: t('common.cancel', '取消'),
       onOk: async () => {
         await evaluationApi.delete(record.id);
-        setEvaluations(evaluations.filter((e) => e.id !== record.id));
+        setEvaluations(prev => prev.filter((e) => e.id !== record.id));
         message.success(t('common.deleteSuccess', '已删除'));
       },
     });

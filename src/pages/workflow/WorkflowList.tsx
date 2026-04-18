@@ -60,7 +60,7 @@ export default function WorkflowListPage() {
       onOk: async () => {
         try {
           await workflowApi.delete(workflow.id);
-          setWorkflows(workflows.filter((w) => w.id !== workflow.id));
+          setWorkflows(prev => prev.filter((w) => w.id !== workflow.id));
           message.success('工作流已删除');
         } catch (error) {
           console.error('Failed to delete workflow:', error);
@@ -74,7 +74,7 @@ export default function WorkflowListPage() {
     try {
       const newWorkflow = await workflowApi.duplicate(workflow.id);
       if (newWorkflow) {
-        setWorkflows([...workflows, newWorkflow]);
+        setWorkflows(prev => [...prev, newWorkflow]);
         message.success('工作流已复制');
       }
     } catch (error) {
@@ -87,7 +87,7 @@ export default function WorkflowListPage() {
     try {
       const updated = await workflowApi.publish(workflow.id);
       if (updated) {
-        setWorkflows(workflows.map((w) => (w.id === updated.id ? updated : w)));
+        setWorkflows(prev => prev.map((w) => (w.id === updated.id ? updated : w)));
         message.success('工作流已发布');
       }
     } catch (error) {

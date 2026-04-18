@@ -118,7 +118,7 @@ export default function ChannelsListPage() {
     try {
       const updated = await channelApi.toggleStatus(channel.id);
       if (updated) {
-        setChannels(channels.map((c) => (c.id === updated.id ? updated : c)));
+        setChannels(prev => prev.map((c) => (c.id === updated.id ? updated : c)));
         if (selectedChannel?.id === updated.id) {
           setSelectedChannel(updated);
         }
@@ -168,7 +168,7 @@ export default function ChannelsListPage() {
   const handleCreateChannel = async (data: Partial<Channel>) => {
     try {
       const newChannel = await channelApi.create(data);
-      setChannels([...channels, newChannel]);
+      setChannels(prev => [...prev, newChannel]);
       setShowCreateModal(false);
       setShowTypeSelector(false);
       setSelectedChannel(newChannel);
@@ -184,7 +184,7 @@ export default function ChannelsListPage() {
     try {
       const updated = await channelApi.update(id, data);
       if (updated) {
-        setChannels(channels.map((c) => (c.id === updated.id ? updated : c)));
+        setChannels(prev => prev.map((c) => (c.id === updated.id ? updated : c)));
         setSelectedChannel(updated);
         message.success('渠道更新成功');
       }

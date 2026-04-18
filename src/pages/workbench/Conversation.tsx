@@ -91,7 +91,7 @@ export default function ConversationPage() {
         agentId: selectedAgentForNew,
         title: newConversationTitle || '新对话',
       });
-      setConversations([newConversation, ...conversations]);
+      setConversations(prev => [newConversation, ...prev]);
       setSelectedConversation(newConversation);
       setSelectedAgentId(newConversation.agentId);
       setCreateModalOpen(false);

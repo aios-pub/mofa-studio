@@ -61,7 +61,7 @@ export default function ConversationList({
           agentId: 'agent-1',
           title: '新对话',
         });
-        setConversations([newConversation, ...conversations]);
+        setConversations(prev => [newConversation, ...prev]);
         onSelectConversation?.(newConversation);
       } catch (error) {
         console.error('Failed to create conversation:', error);
@@ -73,7 +73,7 @@ export default function ConversationList({
   const handleDeleteConversation = async (id: string) => {
     try {
       await conversationApi.delete(id);
-      setConversations(conversations.filter((c) => c.id !== id));
+      setConversations(prev => prev.filter((c) => c.id !== id));
       setContextMenu(null);
     } catch (error) {
       console.error('Failed to delete conversation:', error);
@@ -96,7 +96,7 @@ export default function ConversationList({
     if (!renameValue.trim()) { setRenamingId(null); return; }
     try {
       const updated = await conversationApi.update(id, { title: renameValue.trim() });
-      setConversations(conversations.map((c) => c.id === id ? { ...c, title: updated.title } : c));
+      setConversations(prev => prev.map((c) => c.id === id ? { ...c, title: updated.title } : c));
       setRenamingId(null);
     } catch (error) {
       console.error('Failed to rename conversation:', error);

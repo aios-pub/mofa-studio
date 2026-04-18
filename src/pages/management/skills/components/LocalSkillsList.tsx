@@ -59,7 +59,7 @@ export function LocalSkillsList({ selectedSkill, onSelectSkill, onRefresh }: Loc
     try {
       const updated = await skillApi.update(skill.id, { enabled: !skill.enabled });
       if (updated) {
-        setSkills(skills.map((s) => (s.id === skill.id ? updated : s)));
+        setSkills(prev => prev.map((s) => (s.id === skill.id ? updated : s)));
         if (selectedSkill?.id === skill.id) {
           onSelectSkill(updated);
         }
@@ -82,7 +82,7 @@ export function LocalSkillsList({ selectedSkill, onSelectSkill, onRefresh }: Loc
         parameters: [],
         enabled: true,
       });
-      setSkills([created, ...skills]);
+      setSkills(prev => [created, ...prev]);
       setShowCreateModal(false);
       createForm.resetFields();
       message.success('创建成功');
@@ -103,7 +103,7 @@ export function LocalSkillsList({ selectedSkill, onSelectSkill, onRefresh }: Loc
         description: values.description || '',
         category: values.category || 'general',
       });
-      setSkills(skills.map((s) => (s.id === updated.id ? updated : s)));
+      setSkills(prev => prev.map((s) => (s.id === updated.id ? updated : s)));
       if (selectedSkill?.id === updated.id) onSelectSkill(updated);
       setEditSkill(null);
       editForm.resetFields();

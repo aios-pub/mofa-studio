@@ -70,7 +70,7 @@ export function HubSkillsView() {
   const handleInstall = async (skill: HubSkill) => {
     const success = await installSkill(skill);
     if (success) {
-      setInstalledHubIds([...installedHubIds, skill.hubId]);
+      setInstalledHubIds(prev => [...prev, skill.hubId]);
       message.success(`${skill.name} 安装成功`);
     } else {
       message.error('安装失败');

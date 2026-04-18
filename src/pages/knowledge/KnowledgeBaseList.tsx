@@ -77,7 +77,7 @@ export default function KnowledgeBaseListPage() {
       okButtonProps: { danger: true },
       onOk: async () => {
         await knowledgeApi.deleteKnowledgeBase(kb.id);
-        setKnowledgeBases(knowledgeBases.filter(k => k.id !== kb.id));
+        setKnowledgeBases(prev => prev.filter(k => k.id !== kb.id));
         if (selectedKB?.id === kb.id) setSelectedKB(null);
         message.success('已删除');
       }
@@ -87,7 +87,7 @@ export default function KnowledgeBaseListPage() {
   const handleToggleEnabled = async (kb: KnowledgeBase) => {
     const updated = await knowledgeApi.updateKnowledgeBase(kb.id, { enabled: !kb.enabled });
     if (updated) {
-      setKnowledgeBases(knowledgeBases.map(k => k.id === updated.id ? updated : k));
+      setKnowledgeBases(prev => prev.map(k => k.id === updated.id ? updated : k));
       if (selectedKB?.id === updated.id) setSelectedKB(updated);
       message.success(updated.enabled ? '已启用' : '已禁用');
     }
@@ -95,7 +95,7 @@ export default function KnowledgeBaseListPage() {
 
   const handleDeleteDocument = async (id: string) => {
     await knowledgeApi.deleteDocument(id);
-    setDocuments(documents.filter(d => d.id !== id));
+    setDocuments(prev => prev.filter(d => d.id !== id));
     message.success('已删除');
   };
 
@@ -105,7 +105,7 @@ export default function KnowledgeBaseListPage() {
     setFormError(null);
     try {
       const created = await knowledgeApi.createKnowledgeBase({ name: formName, description: formDesc });
-      setKnowledgeBases([created, ...knowledgeBases]);
+      setKnowledgeBases(prev => [created, ...prev]);
       setShowCreateModal(false);
       setFormName('');
       setFormDesc('');
@@ -123,7 +123,7 @@ export default function KnowledgeBaseListPage() {
     setFormError(null);
     try {
       const updated = await knowledgeApi.updateKnowledgeBase(editKB.id, { name: formName, description: formDesc });
-      setKnowledgeBases(knowledgeBases.map(k => k.id === updated.id ? { ...k, ...updated } : k));
+      setKnowledgeBases(prev => prev.map(k => k.id === updated.id ? { ...k, ...updated } : k));
       if (selectedKB?.id === updated.id) setSelectedKB({ ...selectedKB, ...updated });
       setEditKB(null);
       setFormName('');

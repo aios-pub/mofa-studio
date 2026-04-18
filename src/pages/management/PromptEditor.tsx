@@ -188,13 +188,15 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
 
   // 添加变量
   const addVariable = () => {
-    const newVar: PromptVariable = {
-      name: `variable_${variables.length + 1}`,
-      type: 'string',
-      defaultValue: '',
-      required: false,
-    };
-    setVariables([...variables, newVar]);
+    setVariables(prev => {
+      const newVar: PromptVariable = {
+        name: `variable_${prev.length + 1}`,
+        type: 'string',
+        defaultValue: '',
+        required: false,
+      };
+      return [...prev, newVar];
+    });
   };
 
   // 更新变量
@@ -206,7 +208,7 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
 
   // 删除变量
   const removeVariable = (index: number) => {
-    setVariables(variables.filter((_, i) => i !== index));
+    setVariables(prev => prev.filter((_, i) => i !== index));
   };
 
   // 插入变量到内容

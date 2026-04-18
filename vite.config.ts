@@ -50,6 +50,16 @@ export default defineConfig(async ({ mode }) => {
         // 3. tell Vite to ignore watching `src-tauri`
         ignored: ["**/src-tauri/**"],
       },
+      // 4. proxy for Octos API (avoid CORS)
+      proxy: {
+        '/octos-proxy': {
+          target: 'http://149.88.87.98:8080',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/octos-proxy/, ''),
+          // 不需要验证 SSL 证书（如果是 https）
+          // secure: false,
+        },
+      },
     },
   };
 });

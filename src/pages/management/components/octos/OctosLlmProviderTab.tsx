@@ -3,7 +3,7 @@
  * 使用 Ant Design 组件替代 Tailwind 原生组件
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   Select,
   Input,
@@ -13,6 +13,7 @@ import {
   Divider,
   Alert,
   Tag,
+  message,
 } from "antd";
 import {
   CheckCircleOutlined,
@@ -23,6 +24,7 @@ import {
   ArrowUpOutlined,
   ArrowDownOutlined,
   ExperimentOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
 import type { OctosProfileConfig, OctosFallbackModel } from "@/types/octos";
 import { OCTOS_PROVIDER_CATALOG, OCTOS_PROVIDER_NAMES } from "@/services";
@@ -111,10 +113,41 @@ export default function OctosLlmProviderTab({ config, onChange, apiClient }: Pro
   const fallbacks = config.fallback_models || [];
   const [testResults, setTestResults] = useState<Record<number, TestResult>>({});
   const [fetchedModels, setFetchedModels] = useState<Record<string, string[]>>({});
+  const [fetchingModels, setFetchingModels] = useState(false);
 
   const updateConfig = (patch: Partial<OctosProfileConfig>) => {
     onChange({ ...config, ...patch });
   };
+
+  const fetchModels = useCallback(async () => {
+    const provider = config.provider;
+    if (!provider) {
+      message.warning("请先选择 Provider");
+      return;
+    }
+    const apiKey = config.env_vars[primaryEnv] || "";
+    if (!apiKey) {
+      message.warning("请先配置 API Key");
+      return;
+    }
+    setFetchingModels(true);
+    try {
+      const isMasked = apiKey.includes("***");
+      const models = await apiClient.fetchProviderModels({
+        provider,
+        model: config.model || undefined,
+        api_key: isMasked ? undefined : apiKey,
+        api_key_env: isMasked ? primaryEnv : undefined,
+        base_url: config.base_url || undefined,
+      });
+      setFetchedModels((s) => ({ ...s, [provider]: models }));
+      message.success(`获取到 ${models.length} 个模型`);
+    } catch (e: any) {
+      message.error(e?.message || "获取模型列表失败");
+    } finally {
+      setFetchingModels(false);
+    }
+  }, [apiClient, config.provider, config.model, config.base_url, config.env_vars, primaryEnv]);
 
   const changePrimaryProvider = (provider: string | null) => {
     const modelId = getModelIds(provider || "", fetchedModels)[0] || null;
@@ -309,7 +342,19 @@ export default function OctosLlmProviderTab({ config, onChange, apiClient }: Pro
         )}
 
         <div>
-          <Text type="secondary" className="block mb-1">模型</Text>
+          <div className="flex items-center justify-between mb-1">
+            <Text type="secondary">模型</Text>
+            <Button
+              size="small"
+              type="text"
+              icon={<ReloadOutlined />}
+              loading={fetchingModels}
+              onClick={fetchModels}
+              className="text-xs"
+            >
+              刷新模型列表
+            </Button>
+          </div>
           <Select
             className="w-full"
             showSearch
@@ -323,6 +368,11 @@ export default function OctosLlmProviderTab({ config, onChange, apiClient }: Pro
               value: m.id,
             }))}
           />
+          {fetchedModels[config.provider || ""] && (
+            <Text type="secondary" className="text-xs mt-1 block">
+              已获取 {fetchedModels[config.provider || ""].length} 个动态模型
+            </Text>
+          )}
         </div>
 
         <div>

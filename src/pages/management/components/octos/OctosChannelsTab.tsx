@@ -3,6 +3,7 @@
  * 支持 Telegram、Discord、Slack、WhatsApp、飞书、邮件等渠道
  */
 
+import { useState, useEffect, useCallback } from "react";
 import {
   Tabs,
   Switch,
@@ -10,8 +11,17 @@ import {
   Typography,
   Select,
   Alert,
+  Button,
+  Card,
+  Space,
+  Tag,
+  Spin,
 } from "antd";
-import type { OctosProfileConfig, OctosChannelCredentials, OctosChannelType } from "@/types/octos";
+import {
+  QrcodeOutlined,
+  ReloadOutlined,
+} from "@ant-design/icons";
+import type { OctosProfileConfig, OctosChannelCredentials, OctosChannelType, OctosBridgeQrInfo } from "@/types/octos";
 import { OCTOS_CHANNEL_LABELS, OCTOS_CHANNEL_ICONS } from "@/types/octos";
 
 const { Text } = Typography;
@@ -229,6 +239,128 @@ function FeishuConfig({ config, onChange, channelType }: ChannelConfigProps) {
   );
 }
 
+function WhatsAppConfig({ config, onChange, channelType }: ChannelConfigProps & { apiClient?: any; profileId?: string }) {
+  const enabled = !!getChannel(config, channelType);
+  const [qrInfo, setQrInfo] = useState<OctosBridgeQrInfo | null>(null);
+  const [loadingQr, setLoadingQr] = useState(false);
+
+  const fetchQr = useCallback(async () => {
+    // QR code fetching requires apiClient and profileId
+    // For now, this is a placeholder - implementation needs to be passed from parent
+    setQrInfo({
+      qr: null,
+      status: "disconnected",
+      ws_port: 8081,
+      http_port: 8082,
+      phone_number: null,
+      lid: null,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (enabled) {
+      fetchQr();
+      const interval = setInterval(fetchQr, 5000); // Poll every 5 seconds
+      return () => clearInterval(interval);
+    }
+  }, [enabled, fetchQr]);
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "connected": return "success";
+      case "waiting": return "processing";
+      case "logged_out": return "warning";
+      default: return "default";
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "connected": return "已连接";
+      case "waiting": return "等待扫码";
+      case "logged_out": return "已登出";
+      case "disconnected": return "未连接";
+      default: return status;
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <Alert
+        type="info"
+        showIcon
+        message="WhatsApp 桥接"
+        description={
+          <ol className="list-decimal list-inside text-xs space-y-1 mt-1">
+            <li>确保已安装 WhatsApp 桥接服务</li>
+            <li>启用后显示 QR 码，使用 WhatsApp 扫码配对</li>
+            <li>配对成功后即可通过 WhatsApp 收发消息</li>
+          </ol>
+        }
+        className="text-xs"
+      />
+      <div className="flex items-center gap-2">
+        <Switch checked={enabled} onChange={(v) => onChange(toggleChannel(config, channelType, v))} />
+        <Text>启用 WhatsApp 渠道</Text>
+      </div>
+      {enabled && (
+        <>
+          <Card size="small" className="bg-gray-50">
+            <Space direction="vertical" size={12} className="w-full">
+              <div className="flex items-center justify-between">
+                <Text type="secondary" className="text-xs">连接状态:</Text>
+                <Space>
+                  <Tag color={getStatusColor(qrInfo?.status || "disconnected")}>
+                    {getStatusText(qrInfo?.status || "disconnected")}
+                  </Tag>
+                  <Button
+                    size="small"
+                    icon={<ReloadOutlined />}
+                    onClick={fetchQr}
+                    loading={loadingQr}
+                  >
+                    刷新
+                  </Button>
+                </Space>
+              </div>
+
+              {qrInfo?.status === "waiting" && qrInfo?.qr && (
+                <div className="flex flex-col items-center py-4">
+                  <QrcodeOutlined style={{ fontSize: 48, color: "#1890ff" }} />
+                  <Text type="secondary" className="text-xs mt-2">
+                    请使用 WhatsApp 扫码配对
+                  </Text>
+                  <Text type="secondary" className="text-xs mt-1">
+                    QR 码已生成（显示在桥接服务终端）
+                  </Text>
+                </div>
+              )}
+
+              {qrInfo?.status === "connected" && qrInfo?.phone_number && (
+                <div>
+                  <Text type="secondary" className="text-xs">
+                    已连接手机号:
+                  </Text>
+                  <Text className="ml-2 font-mono text-xs">{qrInfo.phone_number}</Text>
+                </div>
+              )}
+
+              {qrInfo?.status === "logged_out" && (
+                <Alert
+                  type="warning"
+                  message="已登出"
+                  description="请重新扫码配对"
+                  className="text-xs"
+                />
+              )}
+            </Space>
+          </Card>
+        </>
+      )}
+    </div>
+  );
+}
+
 function GenericChannelConfig({ config, onChange, channelType, envKeys, fields }: ChannelConfigProps & { envKeys: string[]; fields: { key: string; label: string; placeholder: string }[] }) {
   const enabled = !!getChannel(config, channelType);
 
@@ -328,15 +460,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
           {activeChannels.includes("whatsapp") && " ●"}
         </span>
       ),
-      children: (
-        <GenericChannelConfig
-          config={config}
-          onChange={onChange}
-          channelType="whatsapp"
-          envKeys={[]}
-          fields={[]}
-        />
-      ),
+      children: <WhatsAppConfig config={config} onChange={onChange} channelType="whatsapp" />,
     },
     {
       key: "email",

@@ -63,6 +63,8 @@ export interface OctosProfileConfig {
   email?: OctosEmailSettings | null;
   env_vars: Record<string, string>;
   admin_mode?: boolean;
+  hooks?: HookConfig[];
+  sandbox?: SandboxConfig;
 }
 
 /** Profile 响应 */
@@ -146,3 +148,117 @@ export const OCTOS_PROVIDERS = [
 ] as const;
 
 export type OctosProviderName = typeof OCTOS_PROVIDERS[number];
+
+// ── Hooks & Sandbox ─────────────────────────────────────────────
+
+/** Hook 配置 */
+export interface HookConfig {
+  event: string;
+  command: string[];
+  timeout_ms?: number;
+  tool_filter?: string[];
+}
+
+/** Docker 沙箱配置 */
+export interface DockerConfig {
+  image?: string | null;
+  cpu_limit?: string | null;
+  memory_limit?: string | null;
+  pids_limit?: number | null;
+}
+
+/** 沙箱配置 */
+export interface SandboxConfig {
+  enabled?: boolean;
+  mode?: 'auto' | 'macos' | 'docker' | 'bwrap';
+  allow_network?: boolean;
+  docker?: DockerConfig;
+}
+
+// ── QoS Metrics ─────────────────────────────────────────────────
+
+/** Provider QoS 指标 */
+export interface OctosSharedProviderMetrics {
+  provider: string;
+  model: string;
+  latency_ema_ms: number;
+  p95_latency_ms: number;
+  success_count: number;
+  failure_count: number;
+  consecutive_failures: number;
+  error_rate: number;
+  score: number;
+}
+
+/** QoS 策略配置 */
+export interface OctosSharedPolicy {
+  ema_alpha: number;
+  failure_threshold: number;
+  latency_threshold_ms: number;
+  error_rate_threshold: number;
+  probe_probability: number;
+  probe_interval_secs: number;
+  weight_latency: number;
+  weight_error_rate: number;
+  weight_priority: number;
+}
+
+/** Profile QoS 指标汇总 */
+export interface OctosSharedMetrics {
+  updated_at: string;
+  policy: OctosSharedPolicy;
+  providers: OctosSharedProviderMetrics[];
+}
+
+// ── Profile Skills ───────────────────────────────────────────────
+
+/** Profile 安装的 Skill 条目 */
+export interface OctosSkillEntry {
+  name: string;
+  version: string | null;
+  tool_count: number;
+  source_repo: string | null;
+}
+
+// ── Monitor ─────────────────────────────────────────────────────
+
+/** 监控状态 */
+export interface OctosMonitorStatus {
+  watchdog_enabled: boolean;
+  alerts_enabled: boolean;
+}
+
+// ── Purge ───────────────────────────────────────────────────────
+
+/** Profile 清理报告 */
+export interface OctosPurgeReport {
+  profile_id: string;
+  user_email: string | null;
+  tenant_id: string | null;
+  node_name: string | null;
+  port_released: number | null;
+  files_removed: string[];
+  bytes_freed: number;
+}
+
+// ── WhatsApp QR ─────────────────────────────────────────────────
+
+/** WhatsApp 桥接 QR 信息 */
+export interface OctosBridgeQrInfo {
+  qr: string | null;
+  status: 'waiting' | 'connected' | 'disconnected' | 'logged_out';
+  ws_port: number;
+  http_port: number;
+  phone_number: string | null;
+  lid: string | null;
+}
+
+// ── Overview ────────────────────────────────────────────────────
+
+/** 概览响应 */
+export interface OctosOverviewResponse {
+  total_profiles: number;
+  running: number;
+  stopped: number;
+  profiles: OctosProfileResponse[];
+}

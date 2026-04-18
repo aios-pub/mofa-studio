@@ -7,6 +7,12 @@ import type {
   OctosProfileConfig,
   OctosActionResponse,
   OctosTestProviderResponse,
+  OctosSharedMetrics,
+  OctosSkillEntry,
+  OctosMonitorStatus,
+  OctosPurgeReport,
+  OctosBridgeQrInfo,
+  OctosOverviewResponse,
 } from "@/types/octos";
 
 const defaultGatewaySettings = {
@@ -121,4 +127,129 @@ export const octosMockApi = {
     updated_at: new Date().toISOString(),
     status: { running: false, pid: null, started_at: null, uptime_secs: null },
   }),
+
+  // ==================== 批量操作 ====================
+
+  startAll: async (): Promise<OctosActionResponse> => ({
+    ok: true,
+    message: "All profiles started",
+  }),
+
+  stopAll: async (): Promise<OctosActionResponse> => ({
+    ok: true,
+    message: "All profiles stopped",
+  }),
+
+  // ==================== Profile Skills ====================
+
+  listProfileSkills: async (): Promise<{ skills: OctosSkillEntry[] }> => ({
+    skills: [
+      { name: "web-search", version: "1.0.0", tool_count: 3, source_repo: "github.com/octos/skills" },
+      { name: "code-exec", version: "2.1.0", tool_count: 5, source_repo: "github.com/octos/skills" },
+      { name: "file-ops", version: "1.5.0", tool_count: 8, source_repo: null },
+    ],
+  }),
+
+  installProfileSkill: async (): Promise<{ ok: boolean; installed: string[]; skipped: string[]; deps_installed: boolean }> => ({
+    ok: true,
+    installed: ["test-skill"],
+    skipped: [],
+    deps_installed: true,
+  }),
+
+  removeProfileSkill: async (): Promise<OctosActionResponse> => ({ ok: true }),
+
+  // ==================== QoS Metrics ====================
+
+  getProfileMetrics: async (): Promise<OctosSharedMetrics> => ({
+    updated_at: new Date().toISOString(),
+    policy: {
+      ema_alpha: 0.1,
+      failure_threshold: 5,
+      latency_threshold_ms: 5000,
+      error_rate_threshold: 0.1,
+      probe_probability: 0.1,
+      probe_interval_secs: 60,
+      weight_latency: 0.5,
+      weight_error_rate: 0.3,
+      weight_priority: 0.2,
+    },
+    providers: [
+      {
+        provider: "anthropic",
+        model: "claude-sonnet-4-6",
+        latency_ema_ms: 850,
+        p95_latency_ms: 1200,
+        success_count: 950,
+        failure_count: 50,
+        consecutive_failures: 0,
+        error_rate: 0.05,
+        score: 95,
+      },
+      {
+        provider: "openai",
+        model: "gpt-4",
+        latency_ema_ms: 600,
+        p95_latency_ms: 900,
+        success_count: 980,
+        failure_count: 20,
+        consecutive_failures: 0,
+        error_rate: 0.02,
+        score: 98,
+      },
+    ],
+  }),
+
+  // ==================== Monitor & Watchdog ====================
+
+  getMonitorStatus: async (): Promise<OctosMonitorStatus> => ({
+    watchdog_enabled: true,
+    alerts_enabled: true,
+  }),
+
+  toggleWatchdog: async (enabled: boolean): Promise<{ ok: boolean; watchdog_enabled: boolean }> => ({
+    ok: true,
+    watchdog_enabled: enabled,
+  }),
+
+  toggleAlerts: async (enabled: boolean): Promise<{ ok: boolean; alerts_enabled: boolean }> => ({
+    ok: true,
+    alerts_enabled: enabled,
+  }),
+
+  // ==================== Purge ====================
+
+  purgeProfile: async (): Promise<OctosPurgeReport> => ({
+    profile_id: "test-profile",
+    user_email: null,
+    tenant_id: null,
+    node_name: null,
+    port_released: null,
+    files_removed: ["/var/lib/octos/test-profile/conversations.json", "/var/lib/octos/test-profile/cache/*"],
+    bytes_freed: 1048576,
+  }),
+
+  // ==================== WhatsApp QR ====================
+
+  getWhatsAppQr: async (): Promise<OctosBridgeQrInfo> => ({
+    qr: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+    status: "waiting",
+    ws_port: 8081,
+    http_port: 8082,
+    phone_number: null,
+    lid: null,
+  }),
+
+  // ==================== Overview ====================
+
+  getOverview: async (): Promise<OctosOverviewResponse> => ({
+    total_profiles: 2,
+    running: 1,
+    stopped: 1,
+    profiles: mockProfiles,
+  }),
+
+  // ==================== SSE Log Stream URL ====================
+
+  getLogStreamUrl: (profileId: string): string => `/api/admin/profiles/${profileId}/logs`,
 };

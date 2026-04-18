@@ -10,6 +10,12 @@ import type {
   OctosActionResponse,
   OctosTestProviderResponse,
   OctosProfileConfig,
+  OctosSharedMetrics,
+  OctosSkillEntry,
+  OctosMonitorStatus,
+  OctosPurgeReport,
+  OctosBridgeQrInfo,
+  OctosOverviewResponse,
 } from "@/types/octos";
 import type { Agent } from "@/types";
 
@@ -17,8 +23,12 @@ export class OctosApiClient {
   private http: AxiosInstance;
 
   constructor(baseUrl: string, authToken?: string) {
+    // 开发环境使用代理避免 CORS
+    const isDev = import.meta.env.DEV;
+    const shouldUseProxy = isDev && baseUrl && !baseUrl.startsWith('/');
+
     this.http = axios.create({
-      baseURL: baseUrl,
+      baseURL: shouldUseProxy ? '/octos-proxy' : baseUrl,
       timeout: 15000,
       headers: {
         "Content-Type": "application/json",
@@ -126,6 +136,92 @@ export class OctosApiClient {
   }): Promise<string[]> {
     const { data } = await this.http.post("/api/my/provider-models", params);
     return data;
+  }
+
+  // ==================== 批量操作 ====================
+
+  async startAll(): Promise<OctosActionResponse> {
+    const { data } = await this.http.post("/api/admin/start-all");
+    return data;
+  }
+
+  async stopAll(): Promise<OctosActionResponse> {
+    const { data } = await this.http.post("/api/admin/stop-all");
+    return data;
+  }
+
+  // ==================== Profile Skills ====================
+
+  async listProfileSkills(id: string): Promise<{ skills: OctosSkillEntry[] }> {
+    const { data } = await this.http.get(`/api/admin/profiles/${id}/skills`);
+    return data;
+  }
+
+  async installProfileSkill(
+    id: string,
+    data: { repo: string; force: boolean; branch: string }
+  ): Promise<{ ok: boolean; installed: string[]; skipped: string[]; deps_installed: boolean }> {
+    const { data: responseData } = await this.http.post(`/api/admin/profiles/${id}/skills`, data);
+    return responseData;
+  }
+
+  async removeProfileSkill(id: string, name: string): Promise<OctosActionResponse> {
+    const { data } = await this.http.delete(`/api/admin/profiles/${id}/skills/${name}`);
+    return data;
+  }
+
+  // ==================== QoS Metrics ====================
+
+  async getProfileMetrics(id: string): Promise<OctosSharedMetrics | null> {
+    const { data } = await this.http.get(`/api/admin/profiles/${id}/metrics`);
+    return data;
+  }
+
+  // ==================== Monitor & Watchdog ====================
+
+  async getMonitorStatus(): Promise<OctosMonitorStatus> {
+    const { data } = await this.http.get("/api/admin/monitor/status");
+    return data;
+  }
+
+  async toggleWatchdog(enabled: boolean): Promise<{ ok: boolean; watchdog_enabled: boolean }> {
+    const { data } = await this.http.post("/api/admin/monitor/watchdog", { enabled });
+    return data;
+  }
+
+  async toggleAlerts(enabled: boolean): Promise<{ ok: boolean; alerts_enabled: boolean }> {
+    const { data } = await this.http.post("/api/admin/monitor/alerts", { enabled });
+    return data;
+  }
+
+  // ==================== Purge ====================
+
+  async purgeProfile(id: string): Promise<OctosPurgeReport> {
+    const { data } = await this.http.post(`/api/admin/profiles/${id}/purge`);
+    return data;
+  }
+
+  // ==================== WhatsApp QR ====================
+
+  async getWhatsAppQr(id: string): Promise<OctosBridgeQrInfo> {
+    const { data } = await this.http.get(`/api/admin/profiles/${id}/whatsapp/qr`);
+    return data;
+  }
+
+  // ==================== Overview ====================
+
+  async getOverview(): Promise<OctosOverviewResponse> {
+    const { data } = await this.http.get("/api/admin/overview");
+    return data;
+  }
+
+  // ==================== SSE Log Stream URL ====================
+
+  getLogStreamUrl(profileId: string): string {
+    const claw = (this.http.defaults.headers?.Authorization as string)?.toString() || "";
+    const token = claw.replace("Bearer ", "");
+    const base = `/api/admin/profiles/${profileId}/logs`;
+    return token ? `${base}?token=${encodeURIComponent(token)}` : base;
   }
 
   // ==================== 子账户 ====================

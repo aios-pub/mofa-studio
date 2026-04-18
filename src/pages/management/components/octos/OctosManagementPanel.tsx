@@ -28,15 +28,30 @@ import {
   SettingOutlined,
   MessageOutlined,
   ThunderboltOutlined,
+  AppstoreOutlined,
+  LineChartOutlined,
+  FileTextOutlined,
+  TeamOutlined,
+  EyeOutlined,
+  RocketOutlined,
+  ClearOutlined,
+  InfoCircleOutlined,
 } from "@ant-design/icons";
 import type { Agent } from "@/types";
 import type { OctosProfileResponse, OctosProfileConfig } from "@/types/octos";
 import { createOctosApiClient } from "@/services";
+
+const { Text } = Typography;
 import { isMockEnabled, octosMockApi } from "@/services";
 import { OctosApiClient } from "@/services/real/octos";
 import OctosLlmProviderTab from "./OctosLlmProviderTab";
 import OctosChannelsTab from "./OctosChannelsTab";
 import OctosGatewaySettingsTab from "./OctosGatewaySettingsTab";
+import OctosSkillsTab from "./OctosSkillsTab";
+import OctosMetricsTab from "./OctosMetricsTab";
+import OctosLogsTab from "./OctosLogsTab";
+import OctosSubAccountsTab from "./OctosSubAccountsTab";
+import OctosMonitorTab from "./OctosMonitorTab";
 
 interface Props {
   agent: Agent;
@@ -54,6 +69,8 @@ export default function OctosManagementPanel({ agent }: Props) {
   const [saving, setSaving] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("profiles");
+  const [purgeReport, setPurgeReport] = useState<any>(null);
+  const [purgeModalOpen, setPurgeModalOpen] = useState(false);
 
   const api = useMemo(() => {
     if (isMockEnabled()) return null;
@@ -157,12 +174,27 @@ export default function OctosManagementPanel({ agent }: Props) {
     [callApi, fetchProfiles, selectedProfileId, profiles],
   );
 
+  const handlePurge = useCallback(
+    async (profileId: string) => {
+      try {
+        const report = await callApi((c) => c.purgeProfile(profileId));
+        setPurgeReport(report);
+        setPurgeModalOpen(true);
+        message.success("清理完成");
+      } catch (e: any) {
+        message.error(e?.message || "清理失败");
+      }
+    },
+    [callApi],
+  );
+
   // Connecting state
   if (loading && connected === null) {
     return (
       <Card>
-        <div className="flex items-center justify-center py-8">
-          <Spin tip="连接 Octos 服务..." />
+        <div className="flex items-center justify-center py-8 gap-3">
+          <Spin />
+          <Text type="secondary">连接 Octos 服务...</Text>
         </div>
       </Card>
     );
@@ -201,18 +233,75 @@ export default function OctosManagementPanel({ agent }: Props) {
 
   return (
     <div className="space-y-4">
+      {/* System Status Banner */}
+      <Card size="small" className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+        <Space>
+          <InfoCircleOutlined className="text-blue-500" />
+          <Text type="secondary" className="text-xs">
+            Octos 服务状态:
+          </Text>
+          <Tag color={connected ? "success" : "error"}>
+            {connected ? "已连接" : "未连接"}
+          </Tag>
+          <Text type="secondary" className="text-xs">
+            {profiles.length} 个 Profile，{profiles.filter((p) => p.status.running).length} 个运行中
+          </Text>
+        </Space>
+      </Card>
+
       {/* Profile Selector */}
       <Card
         title={
           <div className="flex items-center justify-between">
             <span>Octos Profiles</span>
-            <Button
-              size="small"
-              icon={<PlusOutlined />}
-              onClick={() => setCreateOpen(true)}
-            >
-              新建
-            </Button>
+            <Space>
+              <Popconfirm
+                title="确认启动所有 Profile？"
+                onConfirm={async () => {
+                  try {
+                    await callApi((c) => c.startAll());
+                    message.success("已全部启动");
+                    fetchProfiles();
+                  } catch (e: any) {
+                    message.error(e?.message || "操作失败");
+                  }
+                }}
+              >
+                <Button
+                  size="small"
+                  icon={<RocketOutlined />}
+                >
+                  全部启动
+                </Button>
+              </Popconfirm>
+              <Popconfirm
+                title="确认停止所有 Profile？"
+                onConfirm={async () => {
+                  try {
+                    await callApi((c) => c.stopAll());
+                    message.success("已全部停止");
+                    fetchProfiles();
+                  } catch (e: any) {
+                    message.error(e?.message || "操作失败");
+                  }
+                }}
+              >
+                <Button
+                  size="small"
+                  danger
+                  icon={<ClearOutlined />}
+                >
+                  全部停止
+                </Button>
+              </Popconfirm>
+              <Button
+                size="small"
+                icon={<PlusOutlined />}
+                onClick={() => setCreateOpen(true)}
+              >
+                新建
+              </Button>
+            </Space>
           </div>
         }
         size="small"
@@ -260,6 +349,18 @@ export default function OctosManagementPanel({ agent }: Props) {
                     type="text"
                     danger
                     icon={<DeleteOutlined />}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </Popconfirm>
+                <Popconfirm
+                  title="确认清理此 Profile 数据？"
+                  description="此操作将删除 Profile 的所有数据，包括对话历史、缓存等。"
+                  onConfirm={() => handlePurge(p.id)}
+                >
+                  <Button
+                    size="small"
+                    type="text"
+                    icon={<ClearOutlined />}
                     onClick={(e) => e.stopPropagation()}
                   />
                 </Popconfirm>
@@ -323,6 +424,77 @@ export default function OctosManagementPanel({ agent }: Props) {
                   <OctosGatewaySettingsTab
                     config={selectedProfile.config}
                     onChange={handleConfigChange}
+                  />
+                ),
+              },
+              {
+                key: "skills",
+                label: (
+                  <span>
+                    <AppstoreOutlined /> Skills
+                  </span>
+                ),
+                children: (
+                  <OctosSkillsTab
+                    profileId={selectedProfile.id}
+                    apiClient={api || (octosMockApi as any)}
+                  />
+                ),
+              },
+              {
+                key: "metrics",
+                label: (
+                  <span>
+                    <LineChartOutlined /> 指标
+                  </span>
+                ),
+                children: (
+                  <OctosMetricsTab
+                    profileId={selectedProfile.id}
+                    apiClient={api || (octosMockApi as any)}
+                  />
+                ),
+              },
+              {
+                key: "logs",
+                label: (
+                  <span>
+                    <FileTextOutlined /> 日志
+                  </span>
+                ),
+                children: (
+                  <OctosLogsTab
+                    profileId={selectedProfile.id}
+                    apiClient={api || (octosMockApi as any)}
+                  />
+                ),
+              },
+              {
+                key: "subaccounts",
+                label: (
+                  <span>
+                    <TeamOutlined /> 子账户
+                  </span>
+                ),
+                children: (
+                  <OctosSubAccountsTab
+                    profileId={selectedProfile.id}
+                    apiClient={api || (octosMockApi as any)}
+                  />
+                ),
+                // 仅当 Profile 无 parent_id 时显示（非子账户）
+                style: { display: selectedProfile.parent_id ? 'none' : undefined },
+              },
+              {
+                key: "monitor",
+                label: (
+                  <span>
+                    <EyeOutlined /> 监控
+                  </span>
+                ),
+                children: (
+                  <OctosMonitorTab
+                    apiClient={api || (octosMockApi as any)}
                   />
                 ),
               },
@@ -393,6 +565,51 @@ export default function OctosManagementPanel({ agent }: Props) {
             <Input name="name" placeholder="My Profile" />
           </div>
         </form>
+      </Modal>
+
+      {/* Purge Report Modal */}
+      <Modal
+        title="清理数据报告"
+        open={purgeModalOpen}
+        onCancel={() => setPurgeModalOpen(false)}
+        footer={[
+          <Button key="close" type="primary" onClick={() => setPurgeModalOpen(false)}>
+            关闭
+          </Button>,
+        ]}
+      >
+        {purgeReport && (
+          <Space direction="vertical" size={12} className="w-full">
+            <div>
+              <Text type="secondary">Profile ID:</Text>
+              <div className="mt-1">
+                <Text code>{purgeReport.profile_id}</Text>
+              </div>
+            </div>
+            <div>
+              <Text type="secondary">释放空间:</Text>
+              <div className="mt-1">
+                <Text strong>{(purgeReport.bytes_freed / 1024 / 1024).toFixed(2)} MB</Text>
+              </div>
+            </div>
+            <div>
+              <Text type="secondary">删除文件:</Text>
+              <div className="mt-1 max-h-40 overflow-y-auto">
+                {purgeReport.files_removed?.length > 0 ? (
+                  <ul className="list-disc pl-4 text-xs">
+                    {purgeReport.files_removed.map((file: string, idx: number) => (
+                      <li key={idx} className="text-gray-600">
+                        {file}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <Text type="secondary">无</Text>
+                )}
+              </div>
+            </div>
+          </Space>
+        )}
       </Modal>
     </div>
   );

@@ -7,6 +7,34 @@ import type { OctosProfileConfig, OctosFallbackConfig, OctosFallbackModel } from
 import { providerApi } from "@/services";
 
 /**
+ * Provider 类型到 API Key 环境变量的映射
+ */
+const PROVIDER_ENV_MAP: Record<string, string> = {
+  anthropic: "ANTHROPIC_API_KEY",
+  openai: "OPENAI_API_KEY",
+  gemini: "GEMINI_API_KEY",
+  openrouter: "OPENROUTER_API_KEY",
+  deepseek: "DEEPSEEK_API_KEY",
+  groq: "GROQ_API_KEY",
+  moonshot: "MOONSHOT_API_KEY",
+  dashscope: "DASHSCOPE_API_KEY",
+  minimax: "MINIMAX_API_KEY",
+  zhipu: "ZHIPU_API_KEY",
+  zai: "ZAI_API_KEY",
+  nvidia: "NVIDIA_API_KEY",
+  r9s: "R9S_API_KEY",
+  ollama: "",
+  vllm: "VLLM_API_KEY",
+};
+
+/**
+ * 根据 provider type 获取对应的 API Key 环境变量名
+ */
+function getApiKeyEnv(providerType: string): string {
+  return PROVIDER_ENV_MAP[providerType] || "";
+}
+
+/**
  * 将前端配置转换为后端格式
  * - provider_id + model_id → provider + model + base_url + api_key_env
  * - fallback_configs → fallback_models
@@ -23,7 +51,7 @@ export async function toBackendFormat(frontendConfig: OctosProfileConfig): Promi
       backendConfig.provider = provider.type;
       backendConfig.model = model?.name || null;
       backendConfig.base_url = provider.baseUrl;
-      backendConfig.api_key_env = `PROVIDER_API_KEY_${provider.id.toUpperCase()}`;
+      backendConfig.api_key_env = getApiKeyEnv(provider.type);
 
       // 保留新版配置用于回显
       backendConfig.provider_id = frontendConfig.provider_id;
@@ -46,7 +74,7 @@ export async function toBackendFormat(frontendConfig: OctosProfileConfig): Promi
             provider: provider.type,
             model: model?.name || null,
             base_url: provider.baseUrl,
-            api_key_env: `PROVIDER_API_KEY_${provider.id.toUpperCase()}`,
+            api_key_env: getApiKeyEnv(provider.type),
             api_type: provider.type,
           });
         } catch (error) {

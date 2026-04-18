@@ -439,7 +439,10 @@ export default function ProvidersListPage() {
       <AddProviderModal
         open={addModalOpen}
         onClose={() => setAddModalOpen(false)}
-        onSubmit={handleAddProvider}
+        onSubmit={async (data) => {
+          await handleAddProvider(data);
+          await loadProviders();
+        }}
       />
 
       {/* 编辑 Provider 弹窗 */}

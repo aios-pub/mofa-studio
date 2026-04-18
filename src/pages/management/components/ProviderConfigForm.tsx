@@ -27,17 +27,25 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
 }) => {
   const [showApiKey, setShowApiKey] = useState(false);
 
-  // 初始化默认值
+  // 初始化默认值（仅在字段为空时设置）
   useEffect(() => {
-    const initialData: Partial<CreateProviderFormData> = {
-      name: config.name,
-      baseUrl: config.api.defaultBaseUrl,
-      selectedModels: [],
-    };
+    const initialData: Partial<CreateProviderFormData> = {};
+
+    // 仅在 name 为空时设置默认值
+    if (!formData.name) {
+      initialData.name = config.name;
+    }
+    // 仅在 baseUrl 为空时设置默认值
+    if (!formData.baseUrl) {
+      initialData.baseUrl = config.api.defaultBaseUrl;
+    }
+    if (!formData.selectedModels) {
+      initialData.selectedModels = [];
+    }
 
     // 设置配置字段默认值
     config.configFields.forEach(field => {
-      if (field.defaultValue !== undefined) {
+      if (field.defaultValue !== undefined && formData.config?.[field.key] === undefined) {
         initialData.config = {
           ...initialData.config,
           [field.key]: field.defaultValue,
@@ -45,7 +53,9 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
       }
     });
 
-    onChange(initialData);
+    if (Object.keys(initialData).length > 0) {
+      onChange(initialData);
+    }
   }, [config.type]);
 
   // 渲染配置字段

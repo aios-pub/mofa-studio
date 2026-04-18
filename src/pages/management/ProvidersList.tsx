@@ -72,8 +72,10 @@ export default function ProvidersListPage() {
       setLoading(true);
       const data = await providerApi.getAll();
       setProviders(data);
+      return data;
     } catch (error) {
       console.error("Failed to load providers:", error);
+      return [];
     } finally {
       setLoading(false);
     }
@@ -155,8 +157,8 @@ export default function ProvidersListPage() {
         Array.from(refreshSelectedIds),
       );
       setRefreshModalOpen(false);
-      await loadProviders();
-      const updated = providers.find((p) => p.id === refreshingProviderId);
+      const allProviders = await loadProviders();
+      const updated = allProviders.find((p) => p.id === refreshingProviderId);
       if (selectedProvider?.id === refreshingProviderId && updated) {
         setSelectedProvider(updated);
       }
@@ -182,8 +184,8 @@ export default function ProvidersListPage() {
 
     try {
       await providerApi.selectModels(providerId, updatedIds);
-      await loadProviders();
-      const updated = providers.find((p) => p.id === providerId);
+      const allProviders = await loadProviders();
+      const updated = allProviders.find((p) => p.id === providerId);
       if (selectedProvider?.id === providerId && updated) {
         setSelectedProvider(updated);
       }
@@ -206,8 +208,8 @@ export default function ProvidersListPage() {
     const updatedIds = [...currentIds, modelId];
     try {
       await providerApi.selectModels(providerId, updatedIds);
-      await loadProviders();
-      const updated = providers.find((p) => p.id === providerId);
+      const allProviders = await loadProviders();
+      const updated = allProviders.find((p) => p.id === providerId);
       if (selectedProvider?.id === providerId && updated) {
         setSelectedProvider(updated);
       }

@@ -12,10 +12,8 @@ import {
   Tag,
   Spin,
   Empty,
-  Divider,
 } from "antd";
 import {
-  LinkOutlined,
   InfoCircleOutlined,
   CheckCircleOutlined,
 } from "@ant-design/icons";
@@ -54,6 +52,18 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
     loadChannels();
   }, []);
 
+  // 当 config.channel_ids 或 channels 变化时，同步更新 selectedChannels
+  useEffect(() => {
+    if (config.channel_ids && config.channel_ids.length > 0 && channels.length > 0) {
+      const current = channels.filter((c: Channel) =>
+        config.channel_ids?.includes(c.id)
+      );
+      setSelectedChannels(current);
+    } else if (!config.channel_ids || config.channel_ids.length === 0) {
+      setSelectedChannels([]);
+    }
+  }, [config.channel_ids, channels]);
+
   const loadChannels = async () => {
     try {
       setLoading(true);
@@ -63,14 +73,6 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
         OCTOS_SUPPORTED_CHANNEL_TYPES.includes(c.type as any)
       );
       setChannels(supportedChannels);
-
-      // 如果当前配置了 channel_ids，则设置选中的 channels
-      if (config.channel_ids && config.channel_ids.length > 0) {
-        const current = supportedChannels.filter((c: Channel) =>
-          config.channel_ids?.includes(c.id)
-        );
-        setSelectedChannels(current);
-      }
     } catch (error) {
       console.error("Failed to load channels:", error);
     } finally {
@@ -101,8 +103,6 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
     updateConfig({ channel_ids: newIds });
   };
 
-  // 检查是否使用旧模式配置
-  const isLegacyMode = !config.channel_ids && config.channels && config.channels.length > 0;
 
   if (loading) {
     return (
@@ -124,20 +124,8 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
         className="text-xs"
       />
 
-      {/* 旧模式提示 */}
-      {isLegacyMode && (
-        <Alert
-          type="warning"
-          showIcon
-          message="此 Profile 使用旧版渠道配置方式"
-          description="建议重新选择渠道以使用新版配置，旧版配置方式可能在未来版本中移除"
-          className="text-xs"
-          closable
-        />
-      )}
-
       {/* 未选择渠道提示 */}
-      {!isLegacyMode && (!config.channel_ids || config.channel_ids.length === 0) && (
+      {(!config.channel_ids || config.channel_ids.length === 0) && (
         <Alert
           type="warning"
           showIcon
@@ -260,32 +248,6 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
         </div>
       )}
 
-      {/* 旧模式配置显示 (只读) */}
-      {isLegacyMode && (
-        <>
-          <Divider orientation="left" className="text-xs">
-            旧版配置 (只读)
-          </Divider>
-          <div className="space-y-2">
-            {config.channels.map((channel, idx) => {
-              const type = channel.type as keyof typeof OCTOS_CHANNEL_LABELS;
-              return (
-                <div
-                  key={idx}
-                  className="p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-tertiary)]"
-                >
-                  <Space>
-                    <span>{OCTOS_CHANNEL_ICONS[type] || <LinkOutlined />}</span>
-                    <Text>{OCTOS_CHANNEL_LABELS[type] || type}</Text>
-                    <Tag color="default" className="text-xs">旧版配置</Tag>
-                  </Space>
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
-
       {/* 说明 */}
       <Alert
         type="info"
@@ -321,28 +283,3 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
     </div>
   );
 }
-
-// Octos 渠道标签（用于旧版配置显示）
-const OCTOS_CHANNEL_LABELS = {
-  telegram: 'Telegram',
-  discord: 'Discord',
-  slack: 'Slack',
-  whatsapp: 'WhatsApp',
-  feishu: '飞书',
-  email: '邮件',
-  wecom_bot: '企业微信',
-  qq_bot: 'QQ Bot',
-  wechat: '微信',
-};
-
-const OCTOS_CHANNEL_ICONS = {
-  telegram: '✈️',
-  discord: '💬',
-  slack: '📱',
-  whatsapp: '📱',
-  feishu: '🐦',
-  email: '📧',
-  wecom_bot: '💼',
-  qq_bot: '🐧',
-  wechat: '💚',
-};

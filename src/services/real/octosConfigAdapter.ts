@@ -291,6 +291,72 @@ export async function toFrontendFormat(backendConfig: OctosProfileConfig): Promi
     }
   }
 
+  // 转换渠道配置：channels → channel_ids
+  // 如果后端已经有 channel_ids，直接使用
+  if (backendConfig.channel_ids && backendConfig.channel_ids.length > 0) {
+    frontendConfig.channel_ids = backendConfig.channel_ids;
+  } else if (backendConfig.channels && backendConfig.channels.length > 0) {
+    // 将旧格式的 channels 转换为 channel_ids
+    try {
+      const channels = await channelApi.getAll();
+      const matchedChannelIds: string[] = [];
+
+      for (const backendChannel of backendConfig.channels) {
+        // 根据渠道类型和配置查找匹配的渠道
+        const matchedChannel = channels.find((c: any) => {
+          if (c.type !== backendChannel.type) return false;
+
+          // 根据渠道类型进行更精确的匹配
+          switch (backendChannel.type) {
+            case 'feishu':
+              return c.config.app_id === backendChannel.settings?.app_id_env;
+
+            case 'telegram':
+              return c.config.bot_token === backendChannel.settings?.bot_token_env;
+
+            case 'discord':
+              return c.config.bot_token === backendChannel.settings?.bot_token_env &&
+                     c.config.application_id === backendChannel.settings?.application_id_env;
+
+            case 'slack':
+              return c.config.bot_token === backendChannel.settings?.bot_token_env;
+
+            case 'whatsapp':
+              return c.config.phone_number_id === backendChannel.settings?.phone_number_id_env;
+
+            case 'email':
+              return c.config.smtp_host === backendChannel.settings?.smtp_host &&
+                     c.config.from_address === backendChannel.settings?.from_address;
+
+            case 'wecom_bot':
+              return c.config.corp_id === backendChannel.settings?.corp_id_env;
+
+            case 'qq_bot':
+              return c.config.bot_token === backendChannel.settings?.bot_token_env ||
+                     c.config.access_token === backendChannel.settings?.bot_token_env;
+
+            case 'wechat':
+              return c.config.app_id === backendChannel.settings?.app_id_env;
+
+            default:
+              // 通用匹配：类型相同即可
+              return true;
+          }
+        });
+
+        if (matchedChannel) {
+          matchedChannelIds.push(matchedChannel.id);
+        }
+      }
+
+      if (matchedChannelIds.length > 0) {
+        frontendConfig.channel_ids = matchedChannelIds;
+      }
+    } catch (error) {
+      console.error("Failed to match channels to frontend format:", error);
+    }
+  }
+
   return frontendConfig;
 }
 

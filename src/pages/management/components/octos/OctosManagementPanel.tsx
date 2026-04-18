@@ -394,8 +394,6 @@ export default function OctosManagementPanel({ agent }: Props) {
                   <OctosLlmProviderTab
                     config={selectedProfile.config}
                     onChange={handleConfigChange}
-                    profileId={selectedProfile.id}
-                    apiClient={api || (octosMockApi as any)}
                   />
                 ),
               },

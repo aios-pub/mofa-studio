@@ -1,12 +1,11 @@
 /**
- * Octos LLM Provider 配置 — 移植自 Octos LlmProviderTab
- * 使用 Ant Design 组件替代 Tailwind 原生组件
+ * Octos LLM Provider 配置 — 复用 Provider 管理
+ * 从已配置的 Providers 中选择，而不是重新配置
  */
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Select,
-  Input,
   Button,
   Space,
   Typography,
@@ -14,6 +13,8 @@ import {
   Alert,
   Tag,
   message,
+  Card,
+  Spin,
 } from "antd";
 import {
   CheckCircleOutlined,
@@ -21,513 +22,344 @@ import {
   LoadingOutlined,
   PlusOutlined,
   DeleteOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
   ExperimentOutlined,
   ReloadOutlined,
+  CloudServerOutlined,
+  InfoCircleOutlined,
 } from "@ant-design/icons";
-import type { OctosProfileConfig, OctosFallbackModel } from "@/types/octos";
-import { OCTOS_PROVIDER_CATALOG, OCTOS_PROVIDER_NAMES } from "@/services";
-import type { OctosApiClient } from "@/services/real/octos";
+import type { OctosProfileConfig } from "@/types/octos";
+import { providerApi } from "@/services";
 
 const { Text } = Typography;
 
-const CUSTOM_PROVIDER = "__custom__";
-
-interface ModelEndpoint {
-  id: string;
-  label: string;
-  base_url?: string;
-  api_key_env?: string;
-}
-
-interface ModelEntry {
-  id: string;
-  input: number;
-  output: number;
-  max_output: number;
-  endpoints?: ModelEndpoint[];
-}
-
-type TestState = "idle" | "testing" | "success" | "error";
-interface TestResult {
-  state: TestState;
+interface TestState {
+  state: "idle" | "testing" | "success" | "error";
   error: string;
-  pricing: ModelEntry | null;
+}
+
+interface ProviderWithModels {
+  id: string;
+  name: string;
+  type: string;
+  models: { id: string; name: string; enabled: boolean }[];
 }
 
 interface Props {
   config: OctosProfileConfig;
   onChange: (config: OctosProfileConfig) => void;
   profileId?: string;
-  apiClient: OctosApiClient;
 }
 
-function isKnownProvider(provider: string | null | undefined): boolean {
-  return !!provider && OCTOS_PROVIDER_NAMES.includes(provider);
-}
+export default function OctosLlmProviderTab({ config, onChange, profileId }: Props) {
+  const [providers, setProviders] = useState<ProviderWithModels[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [testResult, setTestResult] = useState<TestState>({ state: "idle", error: "" });
+  const [selectedProvider, setSelectedProvider] = useState<ProviderWithModels | null>(null);
 
-function getApiKeyEnvName(provider: string | null | undefined): string {
-  const entry = OCTOS_PROVIDER_CATALOG[provider || ""];
-  return entry?.env || `${(provider || "ANTHROPIC").toUpperCase()}_API_KEY`;
-}
+  // 加载 Providers 列表
+  useEffect(() => {
+    loadProviders();
+  }, []);
 
-function findModelEntry(provider: string | null | undefined, modelId: string | null | undefined): ModelEntry | undefined {
-  if (!provider || !modelId) return undefined;
-  return (OCTOS_PROVIDER_CATALOG[provider]?.models || []).find((m: any) => m.id === modelId) as ModelEntry | undefined;
-}
+  const loadProviders = async () => {
+    try {
+      setLoading(true);
+      const data = await providerApi.getAll();
+      const providersWithModels: ProviderWithModels[] = data.map((p) => ({
+        id: p.id,
+        name: p.name,
+        type: p.type,
+        models: (p.models || []).map((m) => ({
+          id: m.id,
+          name: m.name,
+          enabled: m.enabled ?? true,
+        })),
+      }));
+      setProviders(providersWithModels);
 
-function getModelIds(provider: string, fetched?: Record<string, string[]>): string[] {
-  const staticIds = (OCTOS_PROVIDER_CATALOG[provider]?.models || []).map((m: any) => m.id);
-  const dynamicIds = fetched?.[provider] || [];
-  const seen = new Set(staticIds);
-  const merged = [...staticIds];
-  for (const id of dynamicIds) {
-    if (!seen.has(id)) {
-      merged.push(id);
-      seen.add(id);
+      // 如果当前配置了 provider_id，则设置选中的 provider
+      if (config.provider_id) {
+        const current = providersWithModels.find((p) => p.id === config.provider_id);
+        setSelectedProvider(current || null);
+      }
+    } catch (error) {
+      console.error("Failed to load providers:", error);
+      message.error("加载 Provider 列表失败");
+    } finally {
+      setLoading(false);
     }
-  }
-  return merged;
-}
-
-function formatPrice(p: ModelEntry): string {
-  if (p.input === 0 && p.output === 0) return "Free (local)";
-  return `$${p.input}/M in, $${p.output}/M out`;
-}
-
-function getFallbackEnvName(provider: string, index: number, allFallbacks: OctosFallbackModel[], primaryEnv: string): string {
-  const baseEnv = getApiKeyEnvName(provider);
-  if (!baseEnv) return `FALLBACK_${index}_API_KEY`;
-  const usedByPrimary = primaryEnv === baseEnv;
-  const usedByEarlierFallback = allFallbacks.some(
-    (fb, i) => i < index && (fb.api_key_env || getApiKeyEnvName(fb.provider)) === baseEnv,
-  );
-  if (!usedByPrimary && !usedByEarlierFallback) return baseEnv;
-  if (usedByPrimary && !usedByEarlierFallback) return baseEnv;
-  return `${baseEnv}_${index + 1}`;
-}
-
-export default function OctosLlmProviderTab({ config, onChange, apiClient }: Props) {
-  const primaryEnv = config.api_key_env || getApiKeyEnvName(config.provider);
-  const fallbacks = config.fallback_models || [];
-  const [testResults, setTestResults] = useState<Record<number, TestResult>>({});
-  const [fetchedModels, setFetchedModels] = useState<Record<string, string[]>>({});
-  const [fetchingModels, setFetchingModels] = useState(false);
+  };
 
   const updateConfig = (patch: Partial<OctosProfileConfig>) => {
     onChange({ ...config, ...patch });
   };
 
-  const fetchModels = useCallback(async () => {
-    const provider = config.provider;
-    if (!provider) {
-      message.warning("请先选择 Provider");
+  // 选择 Provider
+  const handleProviderChange = (providerId: string | null) => {
+    if (!providerId) {
+      setSelectedProvider(null);
+      updateConfig({ provider_id: null, model_id: null });
       return;
     }
-    const apiKey = config.env_vars[primaryEnv] || "";
-    if (!apiKey) {
-      message.warning("请先配置 API Key");
+
+    const provider = providers.find((p) => p.id === providerId);
+    if (!provider) return;
+
+    setSelectedProvider(provider);
+
+    // 默认选择第一个启用的模型
+    const firstEnabledModel = provider.models.find((m) => m.enabled);
+    updateConfig({
+      provider_id: providerId,
+      model_id: firstEnabledModel?.id || null,
+      // 清除旧模式的配置
+      provider: null,
+      model: null,
+      base_url: null,
+      api_key_env: null,
+    });
+  };
+
+  // 选择模型
+  const handleModelChange = (modelId: string | null) => {
+    updateConfig({ model_id: modelId });
+  };
+
+  // 测试连接
+  const handleTest = async () => {
+    if (!config.provider_id || !config.model_id) {
+      message.warning("请先选择 Provider 和模型");
       return;
     }
-    setFetchingModels(true);
+
+    setTestResult({ state: "testing", error: "" });
     try {
-      const isMasked = apiKey.includes("***");
-      const models = await apiClient.fetchProviderModels({
-        provider,
-        model: config.model || undefined,
-        api_key: isMasked ? undefined : apiKey,
-        api_key_env: isMasked ? primaryEnv : undefined,
-        base_url: config.base_url || undefined,
-      });
-      setFetchedModels((s) => ({ ...s, [provider]: models }));
-      message.success(`获取到 ${models.length} 个模型`);
-    } catch (e: any) {
-      message.error(e?.message || "获取模型列表失败");
-    } finally {
-      setFetchingModels(false);
-    }
-  }, [apiClient, config.provider, config.model, config.base_url, config.env_vars, primaryEnv]);
-
-  const changePrimaryProvider = (provider: string | null) => {
-    const modelId = getModelIds(provider || "", fetchedModels)[0] || null;
-    const modelEntry = findModelEntry(provider, modelId);
-    const ep = modelEntry?.endpoints?.[0];
-    const envName = ep?.api_key_env || getApiKeyEnvName(provider);
-    updateConfig({
-      provider,
-      model: modelId,
-      api_key_env: envName,
-      base_url: ep?.base_url ?? (isKnownProvider(provider) ? null : config.base_url ?? null),
-    });
-  };
-
-  const changePrimaryModel = (modelId: string) => {
-    const modelEntry = findModelEntry(config.provider, modelId);
-    const ep = modelEntry?.endpoints?.[0];
-    const envName = ep?.api_key_env || getApiKeyEnvName(config.provider);
-    updateConfig({
-      model: modelId,
-      api_key_env: envName,
-      base_url: ep?.base_url ?? null,
-    });
-  };
-
-  const changePrimaryKey = (value: string) => {
-    const newEnvVars = { ...config.env_vars };
-    if (value) {
-      newEnvVars[primaryEnv] = value;
-    } else {
-      delete newEnvVars[primaryEnv];
-    }
-    updateConfig({ api_key_env: primaryEnv, env_vars: newEnvVars });
-  };
-
-  const addFallback = () => {
-    const provider = "deepseek";
-    const models = getModelIds(provider, fetchedModels);
-    const env = getFallbackEnvName(provider, 0, fallbacks, primaryEnv);
-    updateConfig({
-      fallback_models: [{ provider, model: models[0] || null, api_key_env: env }, ...fallbacks],
-    });
-  };
-
-  const updateFallback = (idx: number, patch: Partial<OctosFallbackModel>) => {
-    const updated = fallbacks.map((fb, i) => (i === idx ? { ...fb, ...patch } : fb));
-    updateConfig({ fallback_models: updated });
-  };
-
-  const removeFallback = (idx: number) => {
-    updateConfig({ fallback_models: fallbacks.filter((_, i) => i !== idx) });
-  };
-
-  const moveFallback = (idx: number, direction: -1 | 1) => {
-    const target = idx + direction;
-    if (target < 0 || target >= fallbacks.length) return;
-    const updated = [...fallbacks];
-    [updated[idx], updated[target]] = [updated[target], updated[idx]];
-    updateConfig({ fallback_models: updated });
-  };
-
-  const changeFallbackProvider = (idx: number, provider: string) => {
-    const modelId = getModelIds(provider, fetchedModels)[0] || null;
-    const modelEntry = findModelEntry(provider, modelId);
-    const ep = modelEntry?.endpoints?.[0];
-    const envName = ep?.api_key_env || getFallbackEnvName(provider, idx, fallbacks, primaryEnv);
-    updateFallback(idx, {
-      provider,
-      model: modelId,
-      api_key_env: envName,
-      base_url: ep?.base_url ?? null,
-    });
-  };
-
-  const updateFallbackEnvVar = (idx: number, fbEnv: string, value: string) => {
-    const newEnvVars = { ...config.env_vars };
-    if (value) {
-      newEnvVars[fbEnv] = value;
-    } else {
-      delete newEnvVars[fbEnv];
-    }
-    const updated = fallbacks.map((fb, i) => (i === idx ? { ...fb, api_key_env: fbEnv } : fb));
-    updateConfig({ env_vars: newEnvVars, fallback_models: updated });
-  };
-
-  const doTest = async (key: number, provider: string, model: string, apiKeyEnv: string, baseUrl?: string | null) => {
-    const apiKey = config.env_vars[apiKeyEnv] || "";
-    if (!apiKey) {
-      setTestResults((s) => ({ ...s, [key]: { state: "error", error: "未配置 API Key", pricing: null } }));
-      return;
-    }
-    if (!model) {
-      setTestResults((s) => ({ ...s, [key]: { state: "error", error: "未选择模型", pricing: null } }));
-      return;
-    }
-    setTestResults((s) => ({ ...s, [key]: { state: "testing", error: "", pricing: null } }));
-    try {
-      const isMasked = apiKey.includes("***");
-      const res = await apiClient.testProvider({
-        provider,
-        model,
-        api_key: isMasked ? undefined : apiKey,
-        api_key_env: isMasked ? apiKeyEnv : undefined,
-        base_url: baseUrl || undefined,
-      });
-      const pricing = findModelEntry(provider, model) || null;
-      if (res.ok) {
-        setTestResults((s) => ({ ...s, [key]: { state: "success", error: "", pricing } }));
-        if (res.models && res.models.length > 0) {
-          setFetchedModels((s) => ({ ...s, [provider]: res.models! }));
-        }
+      const result = await providerApi.validateApiKey(config.provider_id);
+      if (result.valid) {
+        setTestResult({ state: "success", error: "" });
+        message.success("连接测试成功");
       } else {
-        setTestResults((s) => ({ ...s, [key]: { state: "error", error: res.error || "未知错误", pricing: null } }));
+        setTestResult({ state: "error", error: result.message || "连接失败" });
+        message.error(result.message || "连接测试失败");
       }
     } catch (e: unknown) {
-      setTestResults((s) => ({
-        ...s,
-        [key]: { state: "error", error: e instanceof Error ? e.message : "请求失败", pricing: null },
-      }));
+      const errorMsg = e instanceof Error ? e.message : "请求失败";
+      setTestResult({ state: "error", error: errorMsg });
+      message.error(errorMsg);
     }
   };
 
-  // Provider select value
-  const known = isKnownProvider(config.provider);
-  const isFullyCustom = !!config.provider && !known;
-  const providerSelectValue = !config.provider ? undefined : known ? config.provider : CUSTOM_PROVIDER;
+  // 检查是否使用旧模式配置
+  const isLegacyMode = !config.provider_id && config.provider;
 
-  // Model list for primary provider
-  const providerModels = useMemo(() => {
-    const staticModels = OCTOS_PROVIDER_CATALOG[config.provider || ""]?.models || [];
-    const staticIds = staticModels.map((m: any) => m.id);
-    const dynamicIds = (fetchedModels[config.provider || ""] || []).filter((id) => !staticIds.includes(id));
-    return [...staticModels, ...dynamicIds.map((id) => ({ id, input: 0, output: 0, max_output: 0 }))];
-  }, [config.provider, fetchedModels]);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Space>
+          <Spin />
+          <Text type="secondary">加载 Provider 列表...</Text>
+        </Space>
+      </div>
+    );
+  }
 
-  const modelSelectValue = config.model || undefined;
+  if (providers.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8">
+        <CloudServerOutlined className="text-5xl text-[var(--color-text-tertiary)] mb-4" />
+        <h3 className="text-lg font-medium text-[var(--color-text-primary)] mb-2">
+          暂无可用 Provider
+        </h3>
+        <Text type="secondary" className="text-center">
+          请先在 Provider 管理页面添加 Provider
+        </Text>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
       <Alert
         type="info"
         showIcon
-        message="配置 LLM Provider 以启动网关。可配置回退模型实现自动故障切换。"
+        message="从已配置的 Providers 中选择，无需重新配置 API Key"
         className="text-xs"
       />
 
-      {/* Primary Provider */}
-      <div className="p-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] space-y-3">
-        <Text strong>主 Provider</Text>
+      {/* 旧模式提示 */}
+      {isLegacyMode && (
+        <Alert
+          type="warning"
+          showIcon
+          message="此 Profile 使用旧版配置方式"
+          description="建议重新选择 Provider 以使用新版配置，旧版配置方式可能在未来版本中移除"
+          className="text-xs"
+          closable
+        />
+      )}
 
-        <div>
-          <Text type="secondary" className="block mb-1">Provider</Text>
-          <Select
-            className="w-full"
-            value={providerSelectValue}
-            placeholder="选择 Provider..."
-            onChange={(v) => {
-              if (v === CUSTOM_PROVIDER) {
-                changePrimaryProvider("");
-              } else {
-                changePrimaryProvider(v || null);
-              }
-            }}
-            options={[
-              ...OCTOS_PROVIDER_NAMES.map((p) => ({ label: p, value: p })),
-              { label: isFullyCustom ? `自定义: ${config.provider}` : "自定义 API...", value: CUSTOM_PROVIDER },
-            ]}
-          />
-        </div>
-
-        {isFullyCustom && (
-          <>
-            <div>
-              <Text type="secondary" className="block mb-1">自定义 Provider 名称</Text>
-              <Input
-                value={config.provider || ""}
-                onChange={(e) => changePrimaryProvider(e.target.value)}
-                placeholder="my-endpoint"
-                className="font-mono text-xs"
-              />
-            </div>
-            <div>
-              <Text type="secondary" className="block mb-1">Base URL</Text>
-              <Input
-                value={config.base_url || ""}
-                onChange={(e) => updateConfig({ base_url: e.target.value || null })}
-                placeholder="https://example.com/v1"
-                className="font-mono text-xs"
-              />
-            </div>
-          </>
-        )}
-
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <Text type="secondary">模型</Text>
-            <Button
-              size="small"
-              type="text"
-              icon={<ReloadOutlined />}
-              loading={fetchingModels}
-              onClick={fetchModels}
-              className="text-xs"
-            >
-              刷新模型列表
-            </Button>
-          </div>
-          <Select
-            className="w-full"
-            showSearch
-            value={modelSelectValue}
-            placeholder="选择模型..."
-            onChange={changePrimaryModel}
-            options={providerModels.map((m: any) => ({
-              label: m.input === 0 && m.output === 0
-                ? m.id
-                : `${m.id} — $${m.input}/$${m.output} per 1M tokens`,
-              value: m.id,
-            }))}
-          />
-          {fetchedModels[config.provider || ""] && (
-            <Text type="secondary" className="text-xs mt-1 block">
-              已获取 {fetchedModels[config.provider || ""].length} 个动态模型
+      {/* Provider 选择 */}
+      <Card size="small" className="bg-[var(--color-bg-secondary)]">
+        <div className="space-y-4">
+          <div>
+            <Text type="secondary" className="block mb-2">
+              选择 Provider <Text type="danger">*</Text>
             </Text>
+            <Select
+              className="w-full"
+              value={config.provider_id || undefined}
+              placeholder="请选择 Provider..."
+              onChange={handleProviderChange}
+              options={providers.map((p) => ({
+                label: (
+                  <Space>
+                    <span>{p.name}</span>
+                    <Tag color="blue" className="text-xs">{p.type}</Tag>
+                    <Text type="secondary" className="text-xs">
+                      {p.models.filter((m) => m.enabled).length} 个可用模型
+                    </Text>
+                  </Space>
+                ),
+                value: p.id,
+              }))}
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+              }
+            />
+          </div>
+
+          {/* 模型选择 */}
+          {selectedProvider && (
+            <div>
+              <Text type="secondary" className="block mb-2">
+                选择模型 <Text type="danger">*</Text>
+              </Text>
+              <Select
+                className="w-full"
+                value={config.model_id || undefined}
+                placeholder="请选择模型..."
+                onChange={handleModelChange}
+                options={selectedProvider.models
+                  .filter((m) => m.enabled)
+                  .map((m) => ({
+                    label: m.name,
+                    value: m.id,
+                  }))}
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+                }
+              />
+              <Text type="secondary" className="text-xs mt-1 block">
+                {selectedProvider.models.filter((m) => m.enabled).length} 个可用模型
+              </Text>
+            </div>
+          )}
+
+          {/* 测试连接 */}
+          {(config.provider_id || isLegacyMode) && (
+            <div className="flex items-start gap-4 pt-2 border-t border-[var(--color-border)]">
+              <Space direction="vertical" size={4} className="flex-1">
+                <Button
+                  size="small"
+                  icon={
+                    testResult.state === "testing" ? (
+                      <LoadingOutlined />
+                    ) : testResult.state === "success" ? (
+                      <CheckCircleOutlined />
+                    ) : testResult.state === "error" ? (
+                      <CloseCircleOutlined />
+                    ) : (
+                      <ExperimentOutlined />
+                    )
+                  }
+                  loading={testResult.state === "testing"}
+                  onClick={handleTest}
+                  danger={testResult.state === "error"}
+                  type={testResult.state === "success" ? "primary" : "default"}
+                  ghost={testResult.state === "success"}
+                >
+                  {testResult.state === "testing"
+                    ? "测试中..."
+                    : testResult.state === "success"
+                      ? "连接成功"
+                      : testResult.state === "error"
+                        ? "失败 — 重试"
+                        : "测试连接"}
+                </Button>
+                {testResult.state === "error" && testResult.error && (
+                  <Text type="danger" className="text-xs">
+                    {testResult.error}
+                  </Text>
+                )}
+              </Space>
+            </div>
           )}
         </div>
+      </Card>
 
-        <div>
-          <Text type="secondary" className="block mb-1">
-            API Key <Text className="text-xs">({primaryEnv})</Text>
-          </Text>
-          <Input.Password
-            value={config.env_vars[primaryEnv] || ""}
-            onChange={(e) => changePrimaryKey(e.target.value)}
-            placeholder={`粘贴 ${config.provider || "provider"} API Key`}
-            className="font-mono text-xs"
-          />
-        </div>
+      {/* 旧模式配置显示 (只读) */}
+      {isLegacyMode && (
+        <>
+          <Divider orientation="left" className="text-xs">
+            旧版配置 (只读)
+          </Divider>
+          <Card size="small" className="bg-[var(--color-bg-tertiary)]">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <Text type="secondary" className="block mb-1">Provider</Text>
+                <Text>{config.provider || "-"}</Text>
+              </div>
+              <div>
+                <Text type="secondary" className="block mb-1">Model</Text>
+                <Text>{config.model || "-"}</Text>
+              </div>
+              <div>
+                <Text type="secondary" className="block mb-1">Base URL</Text>
+                <Text code className="text-xs">{config.base_url || "-"}</Text>
+              </div>
+              <div>
+                <Text type="secondary" className="block mb-1">API Key Env</Text>
+                <Text code className="text-xs">{config.api_key_env || "-"}</Text>
+              </div>
+            </div>
+          </Card>
+        </>
+      )}
 
-        <TestButton
-          result={testResults[-1] || null}
-          onTest={() => doTest(-1, config.provider || "anthropic", config.model || "", primaryEnv, config.base_url)}
-        />
-      </div>
-
-      {/* Fallback Models */}
+      {/* 回退模型 - 暂时保留，未来也可以改为复用 Provider */}
       <Divider orientation="left" className="text-xs">
         回退模型
       </Divider>
-
-      <div className="flex justify-end">
-        <Button size="small" icon={<PlusOutlined />} onClick={addFallback}>
-          添加回退
-        </Button>
-      </div>
-
-      {fallbacks.length === 0 && (
+      <Alert
+        type="info"
+        showIcon
+        icon={<InfoCircleOutlined />}
+        message="回退模型配置"
+        description="当前版本回退模型仍使用旧版配置方式，未来版本将支持从 Provider 管理中选择"
+        className="text-xs"
+      />
+      {(!config.fallback_models || config.fallback_models.length === 0) ? (
         <Text type="secondary" className="text-xs italic">
           未配置回退模型。如果主 Provider 失败，网关将重试同一 Provider。
         </Text>
-      )}
-
-      {fallbacks.map((fb, idx) => {
-        const fbEnv = fb.api_key_env || getApiKeyEnvName(fb.provider);
-        const fbModels = getModelIds(fb.provider, fetchedModels);
-        return (
-          <div
-            key={idx}
-            className="p-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] space-y-3"
-          >
-            <div className="flex items-center justify-between">
+      ) : (
+        <div className="space-y-2">
+          {config.fallback_models.map((fb, idx) => (
+            <div
+              key={idx}
+              className="p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)]"
+            >
               <Space>
                 <Tag>回退 #{idx + 1}</Tag>
-                <Button
-                  size="small"
-                  type="text"
-                  icon={<ArrowUpOutlined />}
-                  disabled={idx === 0}
-                  onClick={() => moveFallback(idx, -1)}
-                />
-                <Button
-                  size="small"
-                  type="text"
-                  icon={<ArrowDownOutlined />}
-                  disabled={idx === fallbacks.length - 1}
-                  onClick={() => moveFallback(idx, 1)}
-                />
+                <Text>{fb.provider}</Text>
+                <Text type="secondary">{fb.model || "默认模型"}</Text>
               </Space>
-              <Button
-                size="small"
-                type="text"
-                danger
-                icon={<DeleteOutlined />}
-                onClick={() => removeFallback(idx)}
-              />
             </div>
-
-            <div>
-              <Text type="secondary" className="block mb-1">Provider</Text>
-              <Select
-                className="w-full"
-                value={fb.provider || undefined}
-                onChange={(v) => changeFallbackProvider(idx, v)}
-                options={OCTOS_PROVIDER_NAMES.map((p) => ({ label: p, value: p }))}
-              />
-            </div>
-
-            <div>
-              <Text type="secondary" className="block mb-1">模型</Text>
-              <Select
-                className="w-full"
-                showSearch
-                value={fb.model || undefined}
-                onChange={(v) => updateFallback(idx, { model: v })}
-                options={fbModels.map((id) => ({ label: id, value: id }))}
-              />
-            </div>
-
-            <div>
-              <Text type="secondary" className="block mb-1">
-                API Key <Text className="text-xs">({fbEnv})</Text>
-              </Text>
-              <Input.Password
-                value={config.env_vars[fbEnv] || ""}
-                onChange={(e) => updateFallbackEnvVar(idx, fbEnv, e.target.value)}
-                placeholder={`粘贴 ${fb.provider} API Key`}
-                className="font-mono text-xs"
-              />
-            </div>
-
-            <TestButton
-              result={testResults[idx] || null}
-              onTest={() => doTest(idx, fb.provider, fb.model || "", fbEnv, fb.base_url)}
-            />
-          </div>
-        );
-      })}
+          ))}
+        </div>
+      )}
     </div>
-  );
-}
-
-function TestButton({ result, onTest }: { result: TestResult | null; onTest: () => void }) {
-  const state = result?.state || "idle";
-  return (
-    <Space direction="vertical" size={4}>
-      <Button
-        size="small"
-        icon={
-          state === "testing" ? (
-            <LoadingOutlined />
-          ) : state === "success" ? (
-            <CheckCircleOutlined />
-          ) : state === "error" ? (
-            <CloseCircleOutlined />
-          ) : (
-            <ExperimentOutlined />
-          )
-        }
-        loading={state === "testing"}
-        onClick={onTest}
-        danger={state === "error"}
-        type={state === "success" ? "primary" : "default"}
-        ghost={state === "success"}
-      >
-        {state === "testing"
-          ? "测试中..."
-          : state === "success"
-            ? "连接成功"
-            : state === "error"
-              ? "失败 — 重试"
-              : "测试连接"}
-      </Button>
-      {state === "success" && result?.pricing && (
-        <Text type="success" className="text-xs">
-          {formatPrice(result.pricing)}
-        </Text>
-      )}
-      {state === "error" && result?.error && (
-        <Text type="danger" className="text-xs">{result.error}</Text>
-      )}
-    </Space>
   );
 }

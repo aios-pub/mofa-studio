@@ -52,13 +52,26 @@ export interface OctosEmailSettings {
 
 /** Profile 配置 */
 export interface OctosProfileConfig {
-  provider?: string | null;
-  model?: string | null;
-  base_url?: string | null;
-  api_key_env?: string | null;
-  api_type?: string | null;
+  // Provider 配置 - 支持两种模式：
+  // 1. 新模式：复用 provider 管理 (provider_id + model_id)
+  // 2. 旧模式：直接配置 (provider + model + base_url + api_key_env)
+  provider_id?: string | null;      // Provider ID (复用 provider 管理)
+  model_id?: string | null;         // 模型 ID (从 provider 的模型列表中选择)
+  provider?: string | null;         // 旧模式：Provider 名称
+  model?: string | null;            // 旧模式：模型名称
+  base_url?: string | null;         // 旧模式：Base URL
+  api_key_env?: string | null;      // 旧模式：API Key 环境变量名
+  api_type?: string | null;         // API 类型
+
+  // 回退模型 (暂时保留旧配置方式)
   fallback_models?: OctosFallbackModel[];
-  channels: OctosChannelCredentials[];
+
+  // 渠道配置 - 支持两种模式：
+  // 1. 新模式：复用渠道管理 (channel_ids)
+  // 2. 旧模式：直接配置 (channels)
+  channel_ids?: string[];           // Channel ID 列表 (复用渠道管理)
+  channels: OctosChannelCredentials[]; // 旧模式：渠道配置列表
+
   gateway: OctosGatewaySettings;
   email?: OctosEmailSettings | null;
   env_vars: Record<string, string>;

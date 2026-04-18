@@ -1,28 +1,30 @@
 /**
- * Octos 渠道配置 — 移植自 Octos MessagingPage
- * 支持 Telegram、Discord、Slack、WhatsApp、飞书、邮件等渠道
+ * Octos 渠道配置 — 复用渠道管理
+ * 从已配置的 Channels 中选择，而不是重新配置
  */
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  Tabs,
-  Switch,
-  Input,
-  Typography,
   Select,
+  Typography,
   Alert,
-  Button,
   Card,
   Space,
   Tag,
   Spin,
+  Empty,
+  Divider,
 } from "antd";
 import {
-  QrcodeOutlined,
-  ReloadOutlined,
+  LinkOutlined,
+  InfoCircleOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
 } from "@ant-design/icons";
-import type { OctosProfileConfig, OctosChannelCredentials, OctosChannelType, OctosBridgeQrInfo } from "@/types/octos";
-import { OCTOS_CHANNEL_LABELS, OCTOS_CHANNEL_ICONS } from "@/types/octos";
+import type { OctosProfileConfig } from "@/types/octos";
+import { channelApi } from "@/services";
+import { channelTypeConfig } from "@/services/mock/channels";
+import type { Channel } from "@/types/channel";
 
 const { Text } = Typography;
 
@@ -31,459 +33,277 @@ interface Props {
   onChange: (config: OctosProfileConfig) => void;
 }
 
-interface ChannelConfigProps {
-  config: OctosProfileConfig;
-  onChange: (config: OctosProfileConfig) => void;
-  channelType: string;
-}
-
-function getChannel(config: OctosProfileConfig, type: string): OctosChannelCredentials | undefined {
-  return config.channels.find((c) => c.type === type);
-}
-
-function toggleChannel(config: OctosProfileConfig, type: string, on: boolean): OctosProfileConfig {
-  if (on) {
-    const defaults: Record<string, Record<string, string>> = {
-      telegram: { token_env: "TELEGRAM_BOT_TOKEN", allowed_senders: "" },
-      discord: { token_env: "DISCORD_BOT_TOKEN", application_id: "" },
-      slack: { bot_token_env: "SLACK_BOT_TOKEN", app_token_env: "SLACK_APP_TOKEN" },
-      whatsapp: {},
-      feishu: { app_id_env: "FEISHU_APP_ID", app_secret_env: "FEISHU_APP_SECRET", mode: "websocket" },
-      email: { provider: "smtp" },
-      wecom_bot: { webhook_url_env: "WECOM_BOT_WEBHOOK_URL" },
-      qq_bot: { app_id_env: "QQ_BOT_APP_ID", app_secret_env: "QQ_BOT_APP_SECRET" },
-      wechat: {},
-    };
-    return {
-      ...config,
-      channels: [...config.channels, { type, ...defaults[type] }],
-    };
-  }
-  return { ...config, channels: config.channels.filter((c) => c.type !== type) };
-}
-
-function updateChannelField(config: OctosProfileConfig, type: string, field: string, value: string | number): OctosProfileConfig {
-  return {
-    ...config,
-    channels: config.channels.map((c) => (c.type === type ? { ...c, [field]: value } : c)),
-  };
-}
-
-function updateEnvVar(config: OctosProfileConfig, key: string, value: string): OctosProfileConfig {
-  const newEnvVars = { ...config.env_vars };
-  if (value) {
-    newEnvVars[key] = value;
-  } else {
-    delete newEnvVars[key];
-  }
-  return { ...config, env_vars: newEnvVars };
-}
-
-// Individual channel config components
-function TelegramConfig({ config, onChange, channelType }: ChannelConfigProps) {
-  const enabled = !!getChannel(config, channelType);
-  const channel = getChannel(config, channelType);
-
-  return (
-    <div className="space-y-3">
-      <Alert
-        type="info"
-        showIcon
-        message="Telegram Bot"
-        description={
-          <ol className="list-decimal list-inside text-xs space-y-1 mt-1">
-            <li>在 Telegram 上联系 @BotFather 并使用 /newbot 创建机器人</li>
-            <li>复制 Bot Token 并粘贴到下方</li>
-            <li>从 @userinfobot 获取你的 User ID 以限制访问（可选）</li>
-          </ol>
-        }
-        className="text-xs"
-      />
-      <div className="flex items-center gap-2">
-        <Switch checked={enabled} onChange={(v) => onChange(toggleChannel(config, channelType, v))} />
-        <Text>启用 Telegram 渠道</Text>
-      </div>
-      {enabled && (
-        <>
-          <div>
-            <Text type="secondary" className="block mb-1">Bot Token</Text>
-            <Input.Password
-              value={config.env_vars["TELEGRAM_BOT_TOKEN"] || ""}
-              onChange={(e) => onChange(updateEnvVar(config, "TELEGRAM_BOT_TOKEN", e.target.value))}
-              placeholder="123456:ABC-DEF..."
-              className="font-mono text-xs"
-            />
-          </div>
-          <div>
-            <Text type="secondary" className="block mb-1">允许的发送者</Text>
-            <Input
-              value={(channel as any)?.allowed_senders || ""}
-              onChange={(e) => onChange(updateChannelField(config, channelType, "allowed_senders", e.target.value))}
-              placeholder="Telegram User IDs，逗号分隔（空 = 允许所有人）"
-              className="font-mono text-xs"
-            />
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-function DiscordConfig({ config, onChange, channelType }: ChannelConfigProps) {
-  const enabled = !!getChannel(config, channelType);
-
-  return (
-    <div className="space-y-3">
-      <Alert type="info" showIcon message="Discord Bot" description="连接到 Discord 服务器作为机器人。需要在 Discord Developer Portal 创建应用。" className="text-xs" />
-      <div className="flex items-center gap-2">
-        <Switch checked={enabled} onChange={(v) => onChange(toggleChannel(config, channelType, v))} />
-        <Text>启用 Discord 渠道</Text>
-      </div>
-      {enabled && (
-        <>
-          <div>
-            <Text type="secondary" className="block mb-1">Bot Token</Text>
-            <Input.Password
-              value={config.env_vars["DISCORD_BOT_TOKEN"] || ""}
-              onChange={(e) => onChange(updateEnvVar(config, "DISCORD_BOT_TOKEN", e.target.value))}
-              placeholder="Discord Bot Token"
-              className="font-mono text-xs"
-            />
-          </div>
-          <div>
-            <Text type="secondary" className="block mb-1">Application ID</Text>
-            <Input
-              value={(getChannel(config, channelType) as any)?.application_id || ""}
-              onChange={(e) => onChange(updateChannelField(config, channelType, "application_id", e.target.value))}
-              placeholder="Discord Application ID"
-              className="font-mono text-xs"
-            />
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-function FeishuConfig({ config, onChange, channelType }: ChannelConfigProps) {
-  const enabled = !!getChannel(config, channelType);
-  const channel = getChannel(config, channelType);
-
-  return (
-    <div className="space-y-3">
-      <Alert
-        type="info"
-        showIcon
-        message="飞书 / Lark"
-        description={
-          <ol className="list-decimal list-inside text-xs space-y-1 mt-1">
-            <li>前往飞书开放平台创建自建应用</li>
-            <li>启用机器人能力</li>
-            <li>复制 App ID 和 App Secret</li>
-            <li>订阅事件 im.message.receive_v1（选择长连接模式）</li>
-          </ol>
-        }
-        className="text-xs"
-      />
-      <div className="flex items-center gap-2">
-        <Switch checked={enabled} onChange={(v) => onChange(toggleChannel(config, channelType, v))} />
-        <Text>启用飞书渠道</Text>
-      </div>
-      {enabled && (
-        <>
-          <div>
-            <Text type="secondary" className="block mb-1">App ID</Text>
-            <Input.Password
-              value={config.env_vars["FEISHU_APP_ID"] || ""}
-              onChange={(e) => onChange(updateEnvVar(config, "FEISHU_APP_ID", e.target.value))}
-              placeholder="cli_xxxx"
-              className="font-mono text-xs"
-            />
-          </div>
-          <div>
-            <Text type="secondary" className="block mb-1">App Secret</Text>
-            <Input.Password
-              value={config.env_vars["FEISHU_APP_SECRET"] || ""}
-              onChange={(e) => onChange(updateEnvVar(config, "FEISHU_APP_SECRET", e.target.value))}
-              placeholder="secret..."
-              className="font-mono text-xs"
-            />
-          </div>
-          <div>
-            <Text type="secondary" className="block mb-1">连接模式</Text>
-            <Select
-              className="w-full"
-              value={(channel as any)?.mode || "websocket"}
-              onChange={(v) => onChange(updateChannelField(config, channelType, "mode", v))}
-              options={[
-                { label: "WebSocket（推荐，无需公网地址）", value: "websocket" },
-                { label: "Webhook（需要公网地址 / ngrok）", value: "webhook" },
-              ]}
-            />
-          </div>
-          <div>
-            <Text type="secondary" className="block mb-1">区域</Text>
-            <Select
-              className="w-full"
-              value={(channel as any)?.region || "feishu"}
-              onChange={(v) => onChange(updateChannelField(config, channelType, "region", v))}
-              options={[
-                { label: "飞书（中国）", value: "feishu" },
-                { label: "Lark（国际）", value: "lark" },
-              ]}
-            />
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-function WhatsAppConfig({ config, onChange, channelType }: ChannelConfigProps & { apiClient?: any; profileId?: string }) {
-  const enabled = !!getChannel(config, channelType);
-  const [qrInfo, setQrInfo] = useState<OctosBridgeQrInfo | null>(null);
-  const [loadingQr, setLoadingQr] = useState(false);
-
-  const fetchQr = useCallback(async () => {
-    // QR code fetching requires apiClient and profileId
-    // For now, this is a placeholder - implementation needs to be passed from parent
-    setQrInfo({
-      qr: null,
-      status: "disconnected",
-      ws_port: 8081,
-      http_port: 8082,
-      phone_number: null,
-      lid: null,
-    });
-  }, []);
-
-  useEffect(() => {
-    if (enabled) {
-      fetchQr();
-      const interval = setInterval(fetchQr, 5000); // Poll every 5 seconds
-      return () => clearInterval(interval);
-    }
-  }, [enabled, fetchQr]);
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "connected": return "success";
-      case "waiting": return "processing";
-      case "logged_out": return "warning";
-      default: return "default";
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "connected": return "已连接";
-      case "waiting": return "等待扫码";
-      case "logged_out": return "已登出";
-      case "disconnected": return "未连接";
-      default: return status;
-    }
-  };
-
-  return (
-    <div className="space-y-3">
-      <Alert
-        type="info"
-        showIcon
-        message="WhatsApp 桥接"
-        description={
-          <ol className="list-decimal list-inside text-xs space-y-1 mt-1">
-            <li>确保已安装 WhatsApp 桥接服务</li>
-            <li>启用后显示 QR 码，使用 WhatsApp 扫码配对</li>
-            <li>配对成功后即可通过 WhatsApp 收发消息</li>
-          </ol>
-        }
-        className="text-xs"
-      />
-      <div className="flex items-center gap-2">
-        <Switch checked={enabled} onChange={(v) => onChange(toggleChannel(config, channelType, v))} />
-        <Text>启用 WhatsApp 渠道</Text>
-      </div>
-      {enabled && (
-        <>
-          <Card size="small" className="bg-gray-50">
-            <Space direction="vertical" size={12} className="w-full">
-              <div className="flex items-center justify-between">
-                <Text type="secondary" className="text-xs">连接状态:</Text>
-                <Space>
-                  <Tag color={getStatusColor(qrInfo?.status || "disconnected")}>
-                    {getStatusText(qrInfo?.status || "disconnected")}
-                  </Tag>
-                  <Button
-                    size="small"
-                    icon={<ReloadOutlined />}
-                    onClick={fetchQr}
-                    loading={loadingQr}
-                  >
-                    刷新
-                  </Button>
-                </Space>
-              </div>
-
-              {qrInfo?.status === "waiting" && qrInfo?.qr && (
-                <div className="flex flex-col items-center py-4">
-                  <QrcodeOutlined style={{ fontSize: 48, color: "#1890ff" }} />
-                  <Text type="secondary" className="text-xs mt-2">
-                    请使用 WhatsApp 扫码配对
-                  </Text>
-                  <Text type="secondary" className="text-xs mt-1">
-                    QR 码已生成（显示在桥接服务终端）
-                  </Text>
-                </div>
-              )}
-
-              {qrInfo?.status === "connected" && qrInfo?.phone_number && (
-                <div>
-                  <Text type="secondary" className="text-xs">
-                    已连接手机号:
-                  </Text>
-                  <Text className="ml-2 font-mono text-xs">{qrInfo.phone_number}</Text>
-                </div>
-              )}
-
-              {qrInfo?.status === "logged_out" && (
-                <Alert
-                  type="warning"
-                  message="已登出"
-                  description="请重新扫码配对"
-                  className="text-xs"
-                />
-              )}
-            </Space>
-          </Card>
-        </>
-      )}
-    </div>
-  );
-}
-
-function GenericChannelConfig({ config, onChange, channelType, envKeys, fields }: ChannelConfigProps & { envKeys: string[]; fields: { key: string; label: string; placeholder: string }[] }) {
-  const enabled = !!getChannel(config, channelType);
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <Switch checked={enabled} onChange={(v) => onChange(toggleChannel(config, channelType, v))} />
-        <Text>启用 {OCTOS_CHANNEL_LABELS[channelType as OctosChannelType] || channelType} 渠道</Text>
-      </div>
-      {enabled && (
-        <>
-          {envKeys.map((key) => (
-            <div key={key}>
-              <Text type="secondary" className="block mb-1">{key}</Text>
-              <Input.Password
-                value={config.env_vars[key] || ""}
-                onChange={(e) => onChange(updateEnvVar(config, key, e.target.value))}
-                placeholder={`输入 ${key} 的值`}
-                className="font-mono text-xs"
-              />
-            </div>
-          ))}
-          {fields.map((f) => (
-            <div key={f.key}>
-              <Text type="secondary" className="block mb-1">{f.label}</Text>
-              <Input
-                value={(getChannel(config, channelType) as any)?.[f.key] || ""}
-                onChange={(e) => onChange(updateChannelField(config, channelType, f.key, e.target.value))}
-                placeholder={f.placeholder}
-                className="font-mono text-xs"
-              />
-            </div>
-          ))}
-        </>
-      )}
-    </div>
-  );
-}
+// Octos 支持的渠道类型
+const OCTOS_SUPPORTED_CHANNEL_TYPES = [
+  'telegram',
+  'discord',
+  'slack',
+  'whatsapp',
+  'feishu',
+  'email',
+  'wecom_bot',
+  'qq_bot',
+  'wechat',
+] as const;
 
 export default function OctosChannelsTab({ config, onChange }: Props) {
-  const activeChannels = config.channels.map((c) => c.type);
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]);
 
-  const channelTabs = [
-    {
-      key: "telegram",
-      label: (
-        <span>
-          {OCTOS_CHANNEL_ICONS.telegram} {OCTOS_CHANNEL_LABELS.telegram}
-          {activeChannels.includes("telegram") && " ●"}
-        </span>
-      ),
-      children: <TelegramConfig config={config} onChange={onChange} channelType="telegram" />,
-    },
-    {
-      key: "discord",
-      label: (
-        <span>
-          {OCTOS_CHANNEL_ICONS.discord} {OCTOS_CHANNEL_LABELS.discord}
-          {activeChannels.includes("discord") && " ●"}
-        </span>
-      ),
-      children: <DiscordConfig config={config} onChange={onChange} channelType="discord" />,
-    },
-    {
-      key: "feishu",
-      label: (
-        <span>
-          {OCTOS_CHANNEL_ICONS.feishu} {OCTOS_CHANNEL_LABELS.feishu}
-          {activeChannels.includes("feishu") && " ●"}
-        </span>
-      ),
-      children: <FeishuConfig config={config} onChange={onChange} channelType="feishu" />,
-    },
-    {
-      key: "slack",
-      label: (
-        <span>
-          {OCTOS_CHANNEL_ICONS.slack} {OCTOS_CHANNEL_LABELS.slack}
-          {activeChannels.includes("slack") && " ●"}
-        </span>
-      ),
-      children: (
-        <GenericChannelConfig
-          config={config}
-          onChange={onChange}
-          channelType="slack"
-          envKeys={["SLACK_BOT_TOKEN", "SLACK_APP_TOKEN"]}
-          fields={[]}
-        />
-      ),
-    },
-    {
-      key: "whatsapp",
-      label: (
-        <span>
-          {OCTOS_CHANNEL_ICONS.whatsapp} {OCTOS_CHANNEL_LABELS.whatsapp}
-          {activeChannels.includes("whatsapp") && " ●"}
-        </span>
-      ),
-      children: <WhatsAppConfig config={config} onChange={onChange} channelType="whatsapp" />,
-    },
-    {
-      key: "email",
-      label: (
-        <span>
-          {OCTOS_CHANNEL_ICONS.email} {OCTOS_CHANNEL_LABELS.email}
-          {activeChannels.includes("email") && " ●"}
-        </span>
-      ),
-      children: (
-        <GenericChannelConfig
-          config={config}
-          onChange={onChange}
-          channelType="email"
-          envKeys={["SMTP_PASSWORD"]}
-          fields={[
-            { key: "smtp_host", label: "SMTP Host", placeholder: "smtp.gmail.com" },
-            { key: "from_address", label: "发件地址", placeholder: "bot@example.com" },
-          ]}
-        />
-      ),
-    },
-  ];
+  // 加载 Channels 列表
+  useEffect(() => {
+    loadChannels();
+  }, []);
 
-  return <Tabs items={channelTabs} />;
+  const loadChannels = async () => {
+    try {
+      setLoading(true);
+      const data = await channelApi.getAll();
+      // 只显示 Octos 支持的渠道类型
+      const supportedChannels = data.filter((c) =>
+        OCTOS_SUPPORTED_CHANNEL_TYPES.includes(c.type as any)
+      );
+      setChannels(supportedChannels);
+
+      // 如果当前配置了 channel_ids，则设置选中的 channels
+      if (config.channel_ids && config.channel_ids.length > 0) {
+        const current = supportedChannels.filter((c) =>
+          config.channel_ids?.includes(c.id)
+        );
+        setSelectedChannels(current);
+      }
+    } catch (error) {
+      console.error("Failed to load channels:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateConfig = (patch: Partial<OctosProfileConfig>) => {
+    onChange({ ...config, ...patch });
+  };
+
+  // 选择/取消选择 Channel
+  const handleChannelToggle = (channelId: string) => {
+    const currentIds = config.channel_ids || [];
+    const isSelected = currentIds.includes(channelId);
+
+    let newIds: string[];
+    if (isSelected) {
+      newIds = currentIds.filter((id) => id !== channelId);
+    } else {
+      newIds = [...currentIds, channelId];
+    }
+
+    // 更新选中的 channels
+    const newSelected = channels.filter((c) => newIds.includes(c.id));
+    setSelectedChannels(newSelected);
+
+    updateConfig({ channel_ids: newIds });
+  };
+
+  // 检查是否使用旧模式配置
+  const isLegacyMode = !config.channel_ids && config.channels && config.channels.length > 0;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Space>
+          <Spin />
+          <Text type="secondary">加载渠道列表...</Text>
+        </Space>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <Alert
+        type="info"
+        showIcon
+        message="从已配置的渠道中选择，无需重新配置凭据"
+        className="text-xs"
+      />
+
+      {/* 旧模式提示 */}
+      {isLegacyMode && (
+        <Alert
+          type="warning"
+          showIcon
+          message="此 Profile 使用旧版渠道配置方式"
+          description="建议重新选择渠道以使用新版配置，旧版配置方式可能在未来版本中移除"
+          className="text-xs"
+          closable
+        />
+      )}
+
+      {/* 渠道选择 */}
+      <div>
+        <Text type="secondary" className="block mb-3">
+          选择可用渠道
+        </Text>
+
+        {channels.length === 0 ? (
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={
+              <div className="text-center">
+                <p className="text-[var(--color-text-tertiary)]">暂无可用渠道</p>
+                <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
+                  请先在渠道管理页面添加渠道
+                </p>
+              </div>
+            }
+          />
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {channels.map((channel) => {
+              const isSelected = (config.channel_ids || []).includes(channel.id);
+              const typeConfig = channelTypeConfig[channel.type];
+
+              return (
+                <Card
+                  key={channel.id}
+                  size="small"
+                  className={`cursor-pointer transition-all ${
+                    isSelected
+                      ? "border-[var(--color-primary)] bg-[var(--color-primary-bg)]"
+                      : "border-[var(--color-border)] hover:border-[var(--color-primary)]/50"
+                  }`}
+                  onClick={() => handleChannelToggle(channel.id)}
+                >
+                  <Space direction="vertical" size={4} className="w-full">
+                    <div className="flex items-start justify-between">
+                      <Space>
+                        <span className="text-2xl">{typeConfig?.icon}</span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <Text strong className="text-[var(--color-text-primary)]">
+                              {channel.name}
+                            </Text>
+                            {isSelected && (
+                              <CheckCircleOutlined className="text-[var(--color-primary)]" />
+                            )}
+                          </div>
+                          <Text type="secondary" className="text-xs">
+                            {typeConfig?.name}
+                          </Text>
+                        </div>
+                      </Space>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Tag
+                        color={channel.enabled ? "success" : "default"}
+                        className="text-xs"
+                      >
+                        {channel.enabled ? "已启用" : "已禁用"}
+                      </Tag>
+                      <Tag color={channel.status === "active" ? "success" : "default"} className="text-xs">
+                        {channel.status === "active" ? "正常" : "离线"}
+                      </Tag>
+                    </div>
+                  </Space>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* 已选渠道汇总 */}
+      {selectedChannels.length > 0 && (
+        <div className="p-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
+          <Text type="secondary" className="block mb-2">
+            已选择 {selectedChannels.length} 个渠道
+          </Text>
+          <Space wrap>
+            {selectedChannels.map((channel) => {
+              const typeConfig = channelTypeConfig[channel.type];
+              return (
+                <Tag
+                  key={channel.id}
+                  icon={<span>{typeConfig?.icon}</span>}
+                  closable
+                  onClose={(e) => {
+                    e.stopPropagation();
+                    handleChannelToggle(channel.id);
+                  }}
+                  color="blue"
+                >
+                  {channel.name}
+                </Tag>
+              );
+            })}
+          </Space>
+        </div>
+      )}
+
+      {/* 旧模式配置显示 (只读) */}
+      {isLegacyMode && (
+        <>
+          <Divider orientation="left" className="text-xs">
+            旧版配置 (只读)
+          </Divider>
+          <div className="space-y-2">
+            {config.channels.map((channel, idx) => {
+              const type = channel.type as keyof typeof OCTOS_CHANNEL_LABELS;
+              return (
+                <div
+                  key={idx}
+                  className="p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-tertiary)]"
+                >
+                  <Space>
+                    <span>{OCTOS_CHANNEL_ICONS[type] || <LinkOutlined />}</span>
+                    <Text>{OCTOS_CHANNEL_LABELS[type] || type}</Text>
+                    <Tag color="default" className="text-xs">旧版配置</Tag>
+                  </Space>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {/* 说明 */}
+      <Alert
+        type="info"
+        showIcon
+        icon={<InfoCircleOutlined />}
+        message="渠道说明"
+        description={
+          <ul className="text-xs space-y-1 mt-2 list-disc pl-4">
+            <li>只有已启用且状态正常的渠道才能被选择</li>
+            <li>渠道的具体配置（如 Token、Secret）在渠道管理页面维护</li>
+            <li>Octos 会使用所选渠道进行消息收发</li>
+          </ul>
+        }
+      />
+    </div>
+  );
 }
+
+// Octos 渠道标签（用于旧版配置显示）
+const OCTOS_CHANNEL_LABELS = {
+  telegram: 'Telegram',
+  discord: 'Discord',
+  slack: 'Slack',
+  whatsapp: 'WhatsApp',
+  feishu: '飞书',
+  email: '邮件',
+  wecom_bot: '企业微信',
+  qq_bot: 'QQ Bot',
+  wechat: '微信',
+};
+
+const OCTOS_CHANNEL_ICONS = {
+  telegram: '✈️',
+  discord: '💬',
+  slack: '📱',
+  whatsapp: '📱',
+  feishu: '🐦',
+  email: '📧',
+  wecom_bot: '💼',
+  qq_bot: '🐧',
+  wechat: '💚',
+};

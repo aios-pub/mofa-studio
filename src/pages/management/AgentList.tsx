@@ -37,9 +37,19 @@ import {
   LinkOutlined,
   CloudServerOutlined,
 } from "@ant-design/icons";
-import { agentApi, providerApi, promptApi, clawApi, channelApi } from "@/services";
+import {
+  agentApi,
+  providerApi,
+  promptApi,
+  clawApi,
+  channelApi,
+} from "@/services";
 import type { Prompt } from "@/services";
-import { FormModal, showDeleteConfirm, useFormError } from "@/components/common/Modal";
+import {
+  FormModal,
+  showDeleteConfirm,
+  useFormError,
+} from "@/components/common/Modal";
 import { PermissionConfig } from "../../components/permission";
 import {
   AgentPromptSelector,
@@ -54,16 +64,27 @@ import OctosManagementPanel from "./components/octos/OctosManagementPanel";
 
 /** 从 agent.customParams.claw 提取 Agent 类型配置 */
 function getClaw(agent: Agent): Record<string, unknown> {
-  return ((agent.customParams as Record<string, unknown>)?.claw as Record<string, unknown>) || {};
+  return (
+    ((agent.customParams as Record<string, unknown>)?.claw as Record<
+      string,
+      unknown
+    >) || {}
+  );
 }
 function clawVal(agent: Agent, key: string): string | undefined {
   const v = getClaw(agent)[key];
-  return typeof v === 'string' ? v : undefined;
+  return typeof v === "string" ? v : undefined;
 }
 
 // ==================== 自定义参数编辑器（JSON 可视化）===================
 
-type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
+type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [k: string]: JsonValue };
 
 /** 获取 JSON 值的类型标签 */
 function jsonTypeOf(v: JsonValue): string {
@@ -92,7 +113,8 @@ const TYPE_OPTIONS = [
 
 /** 将任意 JSON 值转为指定类型的默认值 */
 function castType(val: JsonValue, targetType: string): JsonValue {
-  if (targetType === "string") return typeof val === "string" ? val : String(val ?? "");
+  if (targetType === "string")
+    return typeof val === "string" ? val : String(val ?? "");
   if (targetType === "number") {
     const n = Number(val);
     return isNaN(n) ? 0 : n;
@@ -117,13 +139,42 @@ function ValueInput({
 }) {
   const t = jsonTypeOf(value);
   if (t === "string")
-    return <Input size="small" value={value as string} onChange={(e) => onChange(e.target.value)} placeholder="字符串值" className={compact ? "flex-1" : "w-full"} />;
+    return (
+      <Input
+        size="small"
+        value={value as string}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="字符串值"
+        className={compact ? "flex-1" : "w-full"}
+      />
+    );
   if (t === "number")
-    return <InputNumber size="small" value={value as number} onChange={(v) => onChange(v ?? 0)} className={compact ? "flex-1" : "w-full"} />;
+    return (
+      <InputNumber
+        size="small"
+        value={value as number}
+        onChange={(v) => onChange(v ?? 0)}
+        className={compact ? "flex-1" : "w-full"}
+      />
+    );
   if (t === "boolean")
-    return <Switch size="small" checked={value as boolean} onChange={(v) => onChange(v)} />;
+    return (
+      <Switch
+        size="small"
+        checked={value as boolean}
+        onChange={(v) => onChange(v)}
+      />
+    );
   // null / object / array — 不可在此行内编辑，交给子节点
-  return <Typography.Text type="secondary" className="text-xs">{t === "null" ? "null" : t === "array" ? `[${(value as JsonValue[]).length} 项]` : `{${Object.keys(value as object).length} 项}`}</Typography.Text>;
+  return (
+    <Typography.Text type="secondary" className="text-xs">
+      {t === "null"
+        ? "null"
+        : t === "array"
+          ? `[${(value as JsonValue[]).length} 项]`
+          : `{${Object.keys(value as object).length} 项}`}
+    </Typography.Text>
+  );
 }
 
 /** 递归节点：渲染一个 key-value 对，对象/数组可展开子节点 */
@@ -150,7 +201,9 @@ function JsonNode({
   const entries = isContainer
     ? t === "object"
       ? Object.entries(value as Record<string, JsonValue>)
-      : (value as JsonValue[]).map((v, i) => [String(i), v] as [string, JsonValue])
+      : (value as JsonValue[]).map(
+          (v, i) => [String(i), v] as [string, JsonValue],
+        )
     : [];
 
   const handleAddChild = () => {
@@ -158,7 +211,10 @@ function JsonNode({
       const obj = { ...(value as Record<string, JsonValue>) };
       let newKey = "key";
       let n = 1;
-      while (newKey in obj) { newKey = `key${n}`; n++; }
+      while (newKey in obj) {
+        newKey = `key${n}`;
+        n++;
+      }
       obj[newKey] = "";
       onChange(path, obj);
       if (!expanded) setExpanded(true);
@@ -170,7 +226,10 @@ function JsonNode({
 
   const handleChildChange = (childPath: string[], val: JsonValue) => {
     if (t === "object") {
-      onChange(path, { ...(value as Record<string, JsonValue>), [childPath[childPath.length - 1]]: val });
+      onChange(path, {
+        ...(value as Record<string, JsonValue>),
+        [childPath[childPath.length - 1]]: val,
+      });
     } else {
       const arr = [...(value as JsonValue[])];
       arr[Number(childPath[childPath.length - 1])] = val;
@@ -212,13 +271,20 @@ function JsonNode({
 
         {/* 键名 */}
         {!root && (
-          <Typography.Text strong className="text-xs w-28 flex-shrink-0 truncate" title={keyName}>
+          <Typography.Text
+            strong
+            className="text-xs w-28 flex-shrink-0 truncate"
+            title={keyName}
+          >
             {keyName}
           </Typography.Text>
         )}
 
         {/* 类型选择 */}
-        <Tag color={TYPE_COLOR[t]} className="text-xs leading-tight px-1 cursor-pointer m-0">
+        <Tag
+          color={TYPE_COLOR[t]}
+          className="text-xs leading-tight px-1 cursor-pointer m-0"
+        >
           <Select
             size="small"
             variant="borderless"
@@ -232,7 +298,11 @@ function JsonNode({
 
         {/* 值 */}
         <div className="flex-1 min-w-0">
-          <ValueInput value={value} onChange={(v) => onChange(path, v)} compact />
+          <ValueInput
+            value={value}
+            onChange={(v) => onChange(path, v)}
+            compact
+          />
         </div>
 
         {/* 删除按钮 */}
@@ -264,7 +334,12 @@ function JsonNode({
             />
           ))}
           <div style={{ marginLeft: 16 }} className="py-0.5">
-            <Button size="small" type="dashed" icon={<PlusOutlined />} onClick={handleAddChild}>
+            <Button
+              size="small"
+              type="dashed"
+              icon={<PlusOutlined />}
+              onClick={handleAddChild}
+            >
               {t === "object" ? "添加属性" : "添加项"}
             </Button>
           </div>
@@ -310,7 +385,10 @@ function CustomParamsEditor({
   const handleAddRoot = () => {
     let newKey = "key";
     let n = 1;
-    while (newKey in data) { newKey = `key${n}`; n++; }
+    while (newKey in data) {
+      newKey = `key${n}`;
+      n++;
+    }
     onChange?.({ ...data, [newKey]: "" });
   };
 
@@ -325,7 +403,11 @@ function CustomParamsEditor({
   const handleRawApply = () => {
     try {
       const parsed = JSON.parse(rawText);
-      if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+      if (
+        typeof parsed !== "object" ||
+        parsed === null ||
+        Array.isArray(parsed)
+      ) {
         setRawError("必须是 JSON 对象 {}");
         return;
       }
@@ -340,7 +422,9 @@ function CustomParamsEditor({
   return (
     <div className="border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-base)]">
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)] rounded-t-lg">
-        <span className="text-xs text-[var(--color-text-secondary)]">自定义参数</span>
+        <span className="text-xs text-[var(--color-text-secondary)]">
+          自定义参数
+        </span>
         <div className="flex items-center gap-2">
           <Button
             size="small"
@@ -376,11 +460,20 @@ function CustomParamsEditor({
               />
             ))}
             {Object.keys(data).length === 0 && (
-              <Typography.Text type="secondary" className="text-xs block py-2 text-center">
+              <Typography.Text
+                type="secondary"
+                className="text-xs block py-2 text-center"
+              >
                 暂无参数
               </Typography.Text>
             )}
-            <Button size="small" type="dashed" icon={<PlusOutlined />} onClick={handleAddRoot} className="mt-1">
+            <Button
+              size="small"
+              type="dashed"
+              icon={<PlusOutlined />}
+              onClick={handleAddRoot}
+              className="mt-1"
+            >
               添加属性
             </Button>
           </>
@@ -388,7 +481,10 @@ function CustomParamsEditor({
           <div className="space-y-2">
             <Input.TextArea
               value={rawText}
-              onChange={(e) => { setRawText(e.target.value); setRawError(null); }}
+              onChange={(e) => {
+                setRawText(e.target.value);
+                setRawError(null);
+              }}
               rows={8}
               className="font-mono text-xs"
               placeholder="{}"
@@ -396,7 +492,9 @@ function CustomParamsEditor({
             />
             <div className="flex items-center justify-between">
               {rawError ? (
-                <Typography.Text type="danger" className="text-xs">{rawError}</Typography.Text>
+                <Typography.Text type="danger" className="text-xs">
+                  {rawError}
+                </Typography.Text>
               ) : (
                 <span />
               )}
@@ -592,13 +690,15 @@ function AgentFormModal({
         providerName: provider?.name,
         temperature: values.temperature,
         stream: values.stream,
-        thinking: values.thinking && typeof values.thinking === 'object'
-          ? values.thinking
-          : { enabled: !!values.thinking },
+        thinking:
+          values.thinking && typeof values.thinking === "object"
+            ? values.thinking
+            : { enabled: !!values.thinking },
         enabled: values.enabled ?? true,
-        customParams: values.customParams && Object.keys(values.customParams).length > 0
-          ? values.customParams
-          : undefined,
+        customParams:
+          values.customParams && Object.keys(values.customParams).length > 0
+            ? values.customParams
+            : undefined,
       };
 
       let savedAgent: Agent | undefined;
@@ -669,7 +769,7 @@ function AgentFormModal({
       onSubmit={handleSubmit}
       loading={loading}
       width={720}
-            error={error}
+      error={error}
       onClearError={clearError}
     >
       <Form form={form} layout="vertical" className="space-y-1">
@@ -750,7 +850,11 @@ function AgentFormModal({
             <Switch />
           </Form.Item>
 
-          <Form.Item name={["thinking", "enabled"]} label="思考模式" valuePropName="checked">
+          <Form.Item
+            name={["thinking", "enabled"]}
+            label="思考模式"
+            valuePropName="checked"
+          >
             <Switch />
           </Form.Item>
         </div>
@@ -873,13 +977,15 @@ function AgentBasicInfo({
         providerName: provider?.name,
         temperature: values.temperature,
         stream: values.stream,
-        thinking: values.thinking && typeof values.thinking === 'object'
-          ? values.thinking
-          : { enabled: !!values.thinking },
+        thinking:
+          values.thinking && typeof values.thinking === "object"
+            ? values.thinking
+            : { enabled: !!values.thinking },
         enabled: values.enabled,
-        customParams: values.customParams && Object.keys(values.customParams).length > 0
-          ? values.customParams
-          : undefined,
+        customParams:
+          values.customParams && Object.keys(values.customParams).length > 0
+            ? values.customParams
+            : undefined,
       });
 
       // 保存提示词关联
@@ -977,7 +1083,7 @@ function AgentBasicInfo({
             <Form.Item name="modelId" label="模型" rules={[{ required: true }]}>
               <Select
                 options={availableModels.map((m: any) => ({
-                  label: m.name,
+                  label: m.model_id,
                   value: m.id,
                 }))}
               />
@@ -1121,9 +1227,13 @@ function AgentBasicInfo({
           <div className="space-y-1">
             {Object.entries(agent.customParams).map(([key, value]) => (
               <div key={key} className="flex items-center gap-2">
-                <Typography.Text className="text-sm text-[var(--color-text-secondary)] w-32 flex-shrink-0">{key}</Typography.Text>
+                <Typography.Text className="text-sm text-[var(--color-text-secondary)] w-32 flex-shrink-0">
+                  {key}
+                </Typography.Text>
                 <Input
-                  value={typeof value === 'string' ? value : JSON.stringify(value)}
+                  value={
+                    typeof value === "string" ? value : JSON.stringify(value)
+                  }
                   readOnly
                   size="small"
                   className="flex-1"
@@ -1455,7 +1565,8 @@ export default function AgentListPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
   const [clawCreateOpen, setClawCreateOpen] = useState(false);
-  const [preselectedAgentType, setPreselectedAgentType] = useState<ClawType | null>(null);
+  const [preselectedAgentType, setPreselectedAgentType] =
+    useState<ClawType | null>(null);
 
   const loadAgents = useCallback(async () => {
     try {
@@ -1478,32 +1589,35 @@ export default function AgentListPage() {
   }, []);
 
   const handleDelete = (agent: Agent) => {
-    showDeleteConfirm({
-      title: "确认删除 Agent",
-      content: (
-        <div>
-          <p>
-            确定要删除 Agent <strong>{agent.name}</strong> 吗？
-          </p>
-          <p className="mt-1 text-[var(--color-text-tertiary)]">
-            此操作不可恢复。
-          </p>
-        </div>
-      ),
-      onOk: async () => {
-        try {
-          await agentApi.delete(agent.id);
-          setAgents((prev) => prev.filter((a) => a.id !== agent.id));
-          if (selectedAgent?.id === agent.id) {
-            setSelectedAgent(null);
+    showDeleteConfirm(
+      {
+        title: "确认删除 Agent",
+        content: (
+          <div>
+            <p>
+              确定要删除 Agent <strong>{agent.name}</strong> 吗？
+            </p>
+            <p className="mt-1 text-[var(--color-text-tertiary)]">
+              此操作不可恢复。
+            </p>
+          </div>
+        ),
+        onOk: async () => {
+          try {
+            await agentApi.delete(agent.id);
+            setAgents((prev) => prev.filter((a) => a.id !== agent.id));
+            if (selectedAgent?.id === agent.id) {
+              setSelectedAgent(null);
+            }
+            message.success("Agent 已删除");
+          } catch (error) {
+            console.error("Failed to delete agent:", error);
+            message.error("删除失败");
           }
-          message.success("Agent 已删除");
-        } catch (error) {
-          console.error("Failed to delete agent:", error);
-          message.error("删除失败");
-        }
+        },
       },
-    }, modal);
+      modal,
+    );
   };
 
   const handleDuplicate = async (agent: Agent) => {
@@ -1602,23 +1716,27 @@ export default function AgentListPage() {
     unknown: "bg-gray-400",
   };
 
-  const isClawAgent = (agent: Agent) => agent.agentType && agent.agentType !== 'native';
+  const isClawAgent = (agent: Agent) =>
+    agent.agentType && agent.agentType !== "native";
 
   // Create button dropdown items
   const createMenuItems = [
-    { key: 'native', label: 'Native Agent', icon: <RobotOutlined /> },
-    { type: 'divider' as const },
-    ...(Object.entries(clawTypeConfig) as [ClawType, typeof clawTypeConfig[ClawType]][]).map(
-      ([type, cfg]) => ({
-        key: type,
-        label: cfg.label,
-        icon: <span>{cfg.icon}</span>,
-      })
-    ),
+    { key: "native", label: "Native Agent", icon: <RobotOutlined /> },
+    { type: "divider" as const },
+    ...(
+      Object.entries(clawTypeConfig) as [
+        ClawType,
+        (typeof clawTypeConfig)[ClawType],
+      ][]
+    ).map(([type, cfg]) => ({
+      key: type,
+      label: cfg.label,
+      icon: <span>{cfg.icon}</span>,
+    })),
   ];
 
   const handleCreateMenu = ({ key }: { key: string }) => {
-    if (key === 'native') {
+    if (key === "native") {
       handleOpenCreate();
     } else {
       setPreselectedAgentType(key as ClawType);
@@ -1637,7 +1755,7 @@ export default function AgentListPage() {
             </h2>
             <Dropdown
               menu={{ items: createMenuItems, onClick: handleCreateMenu }}
-              trigger={['click']}
+              trigger={["click"]}
             >
               <Button type="primary" icon={<PlusOutlined />} />
             </Dropdown>
@@ -1654,8 +1772,8 @@ export default function AgentListPage() {
             onChange={setTypeFilter}
             className="w-full"
             options={[
-              { label: '全部', value: 'all' },
-              { label: 'Native Agent', value: 'native' },
+              { label: "全部", value: "all" },
+              { label: "Native Agent", value: "native" },
               ...Object.entries(clawTypeConfig).map(([type, cfg]) => ({
                 label: `${cfg.icon} ${cfg.label}`,
                 value: type,
@@ -1672,8 +1790,12 @@ export default function AgentListPage() {
           ) : filteredAgents.length === 0 ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">
               <RobotOutlined className="text-3xl mb-2 opacity-50" />
-              <p>{searchQuery || typeFilter !== 'all' ? "无匹配结果" : "暂无 Agent"}</p>
-              {!searchQuery && typeFilter === 'all' && (
+              <p>
+                {searchQuery || typeFilter !== "all"
+                  ? "无匹配结果"
+                  : "暂无 Agent"}
+              </p>
+              {!searchQuery && typeFilter === "all" && (
                 <Button
                   type="link"
                   icon={<PlusOutlined />}
@@ -1685,11 +1807,15 @@ export default function AgentListPage() {
             </div>
           ) : (
             filteredAgents.map((agent) => {
-              const clawConfig = isClawAgent(agent) ? clawTypeConfig[agent.agentType as ClawType] : null;
+              const clawConfig = isClawAgent(agent)
+                ? clawTypeConfig[agent.agentType as ClawType]
+                : null;
               const icon = clawConfig?.icon || agent.avatar || "🤖";
               const statusDot = isClawAgent(agent)
-                ? clawStatusDot[clawVal(agent, 'clawStatus') || 'unknown']
-                : statusColors[agent.status || (agent.enabled ? "idle" : "offline")];
+                ? clawStatusDot[clawVal(agent, "clawStatus") || "unknown"]
+                : statusColors[
+                    agent.status || (agent.enabled ? "idle" : "offline")
+                  ];
 
               return (
                 <div
@@ -1708,11 +1834,16 @@ export default function AgentListPage() {
                         <span className="font-medium text-[var(--color-text-primary)] truncate">
                           {agent.name}
                         </span>
-                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${statusDot}`} />
+                        <span
+                          className={`w-2 h-2 rounded-full flex-shrink-0 ${statusDot}`}
+                        />
                       </div>
                       <div className="flex items-center gap-1 mt-0.5">
                         {clawConfig ? (
-                          <Tag color={clawConfig.color} className="text-xs leading-tight px-1">
+                          <Tag
+                            color={clawConfig.color}
+                            className="text-xs leading-tight px-1"
+                          >
                             {clawConfig.label}
                           </Tag>
                         ) : null}
@@ -1791,8 +1922,15 @@ export default function AgentListPage() {
 
       <ClawCreateModal
         open={clawCreateOpen}
-        onClose={() => { setClawCreateOpen(false); setPreselectedAgentType(null); }}
-        onSuccess={() => { setClawCreateOpen(false); setPreselectedAgentType(null); loadAgents(); }}
+        onClose={() => {
+          setClawCreateOpen(false);
+          setPreselectedAgentType(null);
+        }}
+        onSuccess={() => {
+          setClawCreateOpen(false);
+          setPreselectedAgentType(null);
+          loadAgents();
+        }}
         preselectedType={preselectedAgentType}
       />
     </div>
@@ -1807,26 +1945,28 @@ interface ClawAgentDetailProps {
   onDelete?: () => void;
 }
 
-function ClawAgentDetail({
-  agent,
-  onUpdate,
-  onDelete,
-}: ClawAgentDetailProps) {
+function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
   const { modal, message } = App.useApp();
-  const [activeTab, setActiveTab] = useState<"basic" | "connection" | "channel" | "octos">("basic");
+  const [activeTab, setActiveTab] = useState<
+    "basic" | "connection" | "channel" | "octos"
+  >("basic");
   const [mappings, setMappings] = useState<ClawChannelMapping[]>([]);
   const [editOpen, setEditOpen] = useState(false);
   const [connectOpen, setConnectOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [proxyGuideOpen, setProxyGuideOpen] = useState(false);
-  const [proxyGuideMapping, setProxyGuideMapping] = useState<ClawChannelMapping | null>(null);
+  const [proxyGuideMapping, setProxyGuideMapping] =
+    useState<ClawChannelMapping | null>(null);
 
   const agentType = agent.agentType as ClawType;
   const config = clawTypeConfig[agentType];
   const clawParams = getClaw(agent);
 
   useEffect(() => {
-    clawApi.listChannelMappings(agent.id).then(setMappings).catch(() => {});
+    clawApi
+      .listChannelMappings(agent.id)
+      .then(setMappings)
+      .catch(() => {});
   }, [agent.id]);
 
   const handleTest = async () => {
@@ -1839,27 +1979,40 @@ function ClawAgentDetail({
   };
 
   const handleDelete = () => {
-    showDeleteConfirm({
-      title: "删除 Agent",
-      content: `确定要删除 ${agent.name} 吗？此操作不可恢复。`,
-      onOk: async () => {
-        try {
-          await agentApi.delete(agent.id);
-          message.success("已删除");
-          onDelete?.();
-        } catch (error) {
-          console.error("Failed to delete agent:", error);
-          message.error("删除失败");
-        }
+    showDeleteConfirm(
+      {
+        title: "删除 Agent",
+        content: `确定要删除 ${agent.name} 吗？此操作不可恢复。`,
+        onOk: async () => {
+          try {
+            await agentApi.delete(agent.id);
+            message.success("已删除");
+            onDelete?.();
+          } catch (error) {
+            console.error("Failed to delete agent:", error);
+            message.error("删除失败");
+          }
+        },
       },
-    }, modal);
+      modal,
+    );
   };
 
   const tabs = [
     { key: "basic", label: "基本信息", icon: RobotOutlined },
     { key: "connection", label: "连接信息", icon: LinkOutlined },
-    ...(agent.agentType !== 'native' ? [{ key: "channel" as const, label: "渠道代理", icon: CloudServerOutlined }] : []),
-    ...(agentType === "octos" ? [{ key: "octos" as const, label: "Octos 管理", icon: ApiOutlined }] : []),
+    ...(agent.agentType !== "native"
+      ? [
+          {
+            key: "channel" as const,
+            label: "渠道代理",
+            icon: CloudServerOutlined,
+          },
+        ]
+      : []),
+    ...(agentType === "octos"
+      ? [{ key: "octos" as const, label: "Octos 管理", icon: ApiOutlined }]
+      : []),
   ];
 
   return (
@@ -1876,9 +2029,21 @@ function ClawAgentDetail({
               <Tag color={agent.enabled ? "green" : "red"}>
                 {agent.enabled ? "已启用" : "已禁用"}
               </Tag>
-              {clawVal(agent, 'clawStatus') && (
-                <Tag color={clawVal(agent, 'clawStatus') === "online" ? "green" : clawVal(agent, 'clawStatus') === "offline" ? "red" : "default"}>
-                  {clawVal(agent, 'clawStatus') === "online" ? "在线" : clawVal(agent, 'clawStatus') === "offline" ? "离线" : clawVal(agent, 'clawStatus')}
+              {clawVal(agent, "clawStatus") && (
+                <Tag
+                  color={
+                    clawVal(agent, "clawStatus") === "online"
+                      ? "green"
+                      : clawVal(agent, "clawStatus") === "offline"
+                        ? "red"
+                        : "default"
+                  }
+                >
+                  {clawVal(agent, "clawStatus") === "online"
+                    ? "在线"
+                    : clawVal(agent, "clawStatus") === "offline"
+                      ? "离线"
+                      : clawVal(agent, "clawStatus")}
                 </Tag>
               )}
             </div>
@@ -1920,83 +2085,126 @@ function ClawAgentDetail({
       <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
         {activeTab === "basic" && (
           <>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">名称</label>
-              <Input value={agent.name} readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">编码</label>
-              <Input value={agent.agentCode} readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">类型</label>
-              <Input value={config?.label || clawType} readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">版本</label>
-              <Input value={clawVal(agent, 'version') || "-"} readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">供应商</label>
-              <Input value={agent.providerName || "-"} readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">模型</label>
-              <Input value={agent.modelName || "-"} readOnly />
-            </div>
-            {clawVal(agent, 'endpointUrl') && (
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">端点地址</label>
-                <Input value={clawVal(agent, 'endpointUrl')} readOnly />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+                  名称
+                </label>
+                <Input value={agent.name} readOnly />
               </div>
-            )}
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+                  编码
+                </label>
+                <Input value={agent.agentCode} readOnly />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+                  类型
+                </label>
+                <Input value={config?.label || clawType} readOnly />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+                  版本
+                </label>
+                <Input value={clawVal(agent, "version") || "-"} readOnly />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+                  供应商
+                </label>
+                <Input value={agent.providerName || "-"} readOnly />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+                  模型
+                </label>
+                <Input value={agent.modelName || "-"} readOnly />
+              </div>
+              {clawVal(agent, "endpointUrl") && (
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+                    端点地址
+                  </label>
+                  <Input value={clawVal(agent, "endpointUrl")} readOnly />
+                </div>
+              )}
+            </div>
 
-          {/* Auth Config from customParams.claw */}
-          {clawParams?.authConfig && typeof clawParams.authConfig === 'object' && Object.keys(clawParams.authConfig as Record<string, unknown>).length > 0 && (
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                认证配置
-              </label>
-              <div className="space-y-1">
-                {Object.entries(clawParams.authConfig as Record<string, unknown>).map(([key, value]) => (
-                  <div key={key} className="flex items-center gap-2">
-                    <Typography.Text className="text-sm text-[var(--color-text-secondary)] w-32 flex-shrink-0">{key}</Typography.Text>
-                    <Input
-                      value={typeof value === 'string' ? value : JSON.stringify(value)}
-                      readOnly
-                      size="small"
-                      className="flex-1"
-                      type={key.toLowerCase().includes('token') || key.toLowerCase().includes('key') || key.toLowerCase().includes('secret') ? 'password' : undefined}
-                    />
+            {/* Auth Config from customParams.claw */}
+            {clawParams?.authConfig &&
+              typeof clawParams.authConfig === "object" &&
+              Object.keys(clawParams.authConfig as Record<string, unknown>)
+                .length > 0 && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+                    认证配置
+                  </label>
+                  <div className="space-y-1">
+                    {Object.entries(
+                      clawParams.authConfig as Record<string, unknown>,
+                    ).map(([key, value]) => (
+                      <div key={key} className="flex items-center gap-2">
+                        <Typography.Text className="text-sm text-[var(--color-text-secondary)] w-32 flex-shrink-0">
+                          {key}
+                        </Typography.Text>
+                        <Input
+                          value={
+                            typeof value === "string"
+                              ? value
+                              : JSON.stringify(value)
+                          }
+                          readOnly
+                          size="small"
+                          className="flex-1"
+                          type={
+                            key.toLowerCase().includes("token") ||
+                            key.toLowerCase().includes("key") ||
+                            key.toLowerCase().includes("secret")
+                              ? "password"
+                              : undefined
+                          }
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </div>
+              )}
 
-          {/* Connection Config */}
-          {clawParams?.connectionConfig && typeof clawParams.connectionConfig === 'object' && Object.keys(clawParams.connectionConfig as Record<string, unknown>).length > 0 && (
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                连接配置
-              </label>
-              <div className="space-y-1">
-                {Object.entries(clawParams.connectionConfig as Record<string, unknown>).map(([key, value]) => (
-                  <div key={key} className="flex items-center gap-2">
-                    <Typography.Text className="text-sm text-[var(--color-text-secondary)] w-32 flex-shrink-0">{key}</Typography.Text>
-                    <Input
-                      value={typeof value === 'string' ? value : JSON.stringify(value)}
-                      readOnly
-                      size="small"
-                      className="flex-1"
-                    />
+            {/* Connection Config */}
+            {clawParams?.connectionConfig &&
+              typeof clawParams.connectionConfig === "object" &&
+              Object.keys(
+                clawParams.connectionConfig as Record<string, unknown>,
+              ).length > 0 && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+                    连接配置
+                  </label>
+                  <div className="space-y-1">
+                    {Object.entries(
+                      clawParams.connectionConfig as Record<string, unknown>,
+                    ).map(([key, value]) => (
+                      <div key={key} className="flex items-center gap-2">
+                        <Typography.Text className="text-sm text-[var(--color-text-secondary)] w-32 flex-shrink-0">
+                          {key}
+                        </Typography.Text>
+                        <Input
+                          value={
+                            typeof value === "string"
+                              ? value
+                              : JSON.stringify(value)
+                          }
+                          readOnly
+                          size="small"
+                          className="flex-1"
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </div>
+              )}
           </>
         )}
 
@@ -2006,11 +2214,15 @@ function ClawAgentDetail({
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <Typography.Text type="secondary">代理地址</Typography.Text>
-                  <Typography.Text code>http://localhost:3001/proxy/v1</Typography.Text>
+                  <Typography.Text code>
+                    http://localhost:3001/proxy/v1
+                  </Typography.Text>
                 </div>
                 <div className="flex justify-between">
                   <Typography.Text type="secondary">模式</Typography.Text>
-                  <Typography.Text>{config?.mode === "server" ? "Server 模式" : "CLI 模式"}</Typography.Text>
+                  <Typography.Text>
+                    {config?.mode === "server" ? "Server 模式" : "CLI 模式"}
+                  </Typography.Text>
                 </div>
               </div>
             </Card>
@@ -2018,7 +2230,9 @@ function ClawAgentDetail({
               <div className="bg-[var(--color-bg-base)] rounded-lg p-3 font-mono text-sm">
                 {(config?.setupGuide || []).map((line, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <span className="text-[var(--color-text-tertiary)] select-none">$</span>
+                    <span className="text-[var(--color-text-tertiary)] select-none">
+                      $
+                    </span>
                     <span className="flex-1">{line}</span>
                   </div>
                 ))}
@@ -2031,15 +2245,25 @@ function ClawAgentDetail({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-medium">已分配渠道</h4>
-              <Button size="small" type="primary" icon={<PlusOutlined />} onClick={() => setAssignOpen(true)}>
+              <Button
+                size="small"
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setAssignOpen(true)}
+              >
                 分配渠道
               </Button>
             </div>
             {mappings.length === 0 ? (
-              <Empty description="暂无渠道代理" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+              <Empty
+                description="暂无渠道代理"
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+              />
             ) : (
               mappings.map((m) => {
-                const proxyCfg = channelProxyTypeConfig[m.remoteChannelType] || channelProxyTypeConfig[m.channelType || ""];
+                const proxyCfg =
+                  channelProxyTypeConfig[m.remoteChannelType] ||
+                  channelProxyTypeConfig[m.channelType || ""];
                 return (
                   <div
                     key={m.id}
@@ -2048,14 +2272,19 @@ function ClawAgentDetail({
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <span>{proxyCfg?.icon || "📡"}</span>
-                        <Typography.Text strong>{m.channelName || m.remoteChannelId}</Typography.Text>
+                        <Typography.Text strong>
+                          {m.channelName || m.remoteChannelId}
+                        </Typography.Text>
                         <Tag>{proxyCfg?.label || m.remoteChannelType}</Tag>
                       </div>
                       <Space size="small">
                         <Button
                           size="small"
                           type="link"
-                          onClick={() => { setProxyGuideMapping(m); setProxyGuideOpen(true); }}
+                          onClick={() => {
+                            setProxyGuideMapping(m);
+                            setProxyGuideOpen(true);
+                          }}
                         >
                           配置指南
                         </Button>
@@ -2075,8 +2304,22 @@ function ClawAgentDetail({
                     </div>
                     {m.proxyInfo && (
                       <div className="text-xs space-y-1">
-                        <div><Typography.Text type="secondary">发送:</Typography.Text> <Typography.Text code copyable>{m.proxyInfo.sendUrl}</Typography.Text></div>
-                        <div><Typography.Text type="secondary">Webhook:</Typography.Text> <Typography.Text code copyable>{m.proxyInfo.receiveUrl}</Typography.Text></div>
+                        <div>
+                          <Typography.Text type="secondary">
+                            发送:
+                          </Typography.Text>{" "}
+                          <Typography.Text code copyable>
+                            {m.proxyInfo.sendUrl}
+                          </Typography.Text>
+                        </div>
+                        <div>
+                          <Typography.Text type="secondary">
+                            Webhook:
+                          </Typography.Text>{" "}
+                          <Typography.Text code copyable>
+                            {m.proxyInfo.receiveUrl}
+                          </Typography.Text>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -2095,7 +2338,10 @@ function ClawAgentDetail({
         open={editOpen}
         agent={agent}
         onClose={() => setEditOpen(false)}
-        onSuccess={() => { setEditOpen(false); onUpdate(); }}
+        onSuccess={() => {
+          setEditOpen(false);
+          onUpdate();
+        }}
       />
 
       <ConnectionGuideDialog
@@ -2109,7 +2355,10 @@ function ClawAgentDetail({
         agentId={agent.id}
         onClose={() => setAssignOpen(false)}
         onAssigned={() => {
-          clawApi.listChannelMappings(agent.id).then(setMappings).catch(() => {});
+          clawApi
+            .listChannelMappings(agent.id)
+            .then(setMappings)
+            .catch(() => {});
           setAssignOpen(false);
         }}
       />
@@ -2150,7 +2399,10 @@ function ClawCreateModal({
 
   useEffect(() => {
     if (open) {
-      providerApi.getAll().then(setProviders).catch(() => {});
+      providerApi
+        .getAll()
+        .then(setProviders)
+        .catch(() => {});
       // 预设置 Agent 类型（如果有）
       if (preselectedType && !selectedType) {
         setSelectedType(preselectedType);
@@ -2198,7 +2450,9 @@ function ClawCreateModal({
             clawType: agentType,
             endpointUrl: values.endpointUrl,
             version: values.version,
-            authConfig: values.authToken ? { authToken: values.authToken } : undefined,
+            authConfig: values.authToken
+              ? { authToken: values.authToken }
+              : undefined,
           },
         },
       };
@@ -2222,34 +2476,43 @@ function ClawCreateModal({
       width={600}
       okText="创建"
       confirmLoading={loading}
-          >
+    >
       <div className="mb-4">
-        <Typography.Text strong className="block mb-2">选择类型</Typography.Text>
+        <Typography.Text strong className="block mb-2">
+          选择类型
+        </Typography.Text>
         <div className="flex flex-wrap gap-2">
-          {(Object.entries(clawTypeConfig) as [ClawType, typeof clawTypeConfig[ClawType]][]).map(
-            ([type, cfg]) => (
-              <div
-                key={type}
-                className={`p-3 rounded-lg border-2 cursor-pointer transition-all w-28 text-center ${
-                  selectedType === type
-                    ? "border-[var(--color-primary)] bg-[var(--color-primary-bg)]"
-                    : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-                }`}
-                onClick={() => {
-                  setSelectedType(type);
-                  form.setFieldValue("clawType", type);
-                }}
-              >
-                <div className="text-2xl mb-1">{cfg.icon}</div>
-                <div className="font-medium text-xs">{cfg.label}</div>
-              </div>
-            ),
-          )}
+          {(
+            Object.entries(clawTypeConfig) as [
+              ClawType,
+              (typeof clawTypeConfig)[ClawType],
+            ][]
+          ).map(([type, cfg]) => (
+            <div
+              key={type}
+              className={`p-3 rounded-lg border-2 cursor-pointer transition-all w-28 text-center ${
+                selectedType === type
+                  ? "border-[var(--color-primary)] bg-[var(--color-primary-bg)]"
+                  : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+              }`}
+              onClick={() => {
+                setSelectedType(type);
+                form.setFieldValue("clawType", type);
+              }}
+            >
+              <div className="text-2xl mb-1">{cfg.icon}</div>
+              <div className="font-medium text-xs">{cfg.label}</div>
+            </div>
+          ))}
         </div>
       </div>
       <Form form={form} layout="vertical" initialValues={{ enabled: true }}>
         <div className="grid grid-cols-2 gap-4">
-          <Form.Item name="instanceName" label="实例名称" rules={[{ required: true, message: "请输入名称" }]}>
+          <Form.Item
+            name="instanceName"
+            label="实例名称"
+            rules={[{ required: true, message: "请输入名称" }]}
+          >
             <Input placeholder={`如：生产环境 ${clawCfg?.label || "Claw"}`} />
           </Form.Item>
           <Form.Item name="version" label="版本">
@@ -2262,19 +2525,34 @@ function ClawCreateModal({
           </Form.Item>
         )}
         {selectedType === "octos" && (
-          <Form.Item name="authToken" label="Auth Token" rules={[{ required: true, message: "请输入 Auth Token" }]}>
+          <Form.Item
+            name="authToken"
+            label="Auth Token"
+            rules={[{ required: true, message: "请输入 Auth Token" }]}
+          >
             <Input.Password placeholder="Octos 服务启动时的 auth-token" />
           </Form.Item>
         )}
         <div className="grid grid-cols-2 gap-4">
-          <Form.Item name="providerId" label="供应商" rules={[{ required: true, message: "请选择供应商" }]}>
+          <Form.Item
+            name="providerId"
+            label="供应商"
+            rules={[{ required: true, message: "请选择供应商" }]}
+          >
             <Select
               placeholder="选择供应商"
               onChange={handleProviderChange}
-              options={providers.map((p: any) => ({ label: p.name, value: p.id }))}
+              options={providers.map((p: any) => ({
+                label: p.name,
+                value: p.id,
+              }))}
             />
           </Form.Item>
-          <Form.Item name="modelId" label="模型" rules={[{ required: true, message: "请选择模型" }]}>
+          <Form.Item
+            name="modelId"
+            label="模型"
+            rules={[{ required: true, message: "请选择模型" }]}
+          >
             <Select
               placeholder="选择模型"
               options={models.map((m: any) => ({ label: m.name, value: m.id }))}
@@ -2311,24 +2589,34 @@ function ClawEditModal({
   const agentType = agent.agentType as ClawType;
   const isOctos = agentType === "octos";
   const clawParams = getClaw(agent);
-  const existingAuthConfig = clawParams?.authConfig as Record<string, unknown> | undefined;
+  const existingAuthConfig = clawParams?.authConfig as
+    | Record<string, unknown>
+    | undefined;
 
   useEffect(() => {
     if (open) {
-      providerApi.getAll().then(setProviders).catch(() => {});
+      providerApi
+        .getAll()
+        .then(setProviders)
+        .catch(() => {});
       form.setFieldsValue({
         instanceName: agent.name,
-        version: clawVal(agent, 'version') || "",
-        endpointUrl: clawVal(agent, 'endpointUrl') || "",
-        authToken: (existingAuthConfig?.authToken || existingAuthConfig?.token || "") as string,
+        version: clawVal(agent, "version") || "",
+        endpointUrl: clawVal(agent, "endpointUrl") || "",
+        authToken: (existingAuthConfig?.authToken ||
+          existingAuthConfig?.token ||
+          "") as string,
         providerId: agent.providerId,
         modelId: agent.modelId,
         enabled: agent.enabled,
       });
       if (agent.providerId) {
-        providerApi.getById(agent.providerId).then((prov: any) => {
-          setModels(prov.models || []);
-        }).catch(() => setModels([]));
+        providerApi
+          .getById(agent.providerId)
+          .then((prov: any) => {
+            setModels(prov.models || []);
+          })
+          .catch(() => setModels([]));
       }
     }
   }, [open, agent, form]);
@@ -2363,7 +2651,9 @@ function ClawEditModal({
             clawType: agentType,
             endpointUrl: values.endpointUrl,
             version: values.version,
-            authConfig: values.authToken ? { authToken: values.authToken } : undefined,
+            authConfig: values.authToken
+              ? { authToken: values.authToken }
+              : undefined,
           },
         },
       });
@@ -2386,9 +2676,13 @@ function ClawEditModal({
       width={600}
       okText="保存"
       confirmLoading={loading}
-          >
+    >
       <Form form={form} layout="vertical">
-        <Form.Item name="instanceName" label="实例名称" rules={[{ required: true }]}>
+        <Form.Item
+          name="instanceName"
+          label="实例名称"
+          rules={[{ required: true }]}
+        >
           <Input />
         </Form.Item>
         <Form.Item name="version" label="版本">
@@ -2407,14 +2701,23 @@ function ClawEditModal({
           </Form.Item>
         )}
         <div className="grid grid-cols-2 gap-4">
-          <Form.Item name="providerId" label="供应商" rules={[{ required: true }]}>
+          <Form.Item
+            name="providerId"
+            label="供应商"
+            rules={[{ required: true }]}
+          >
             <Select
               onChange={handleProviderChange}
-              options={providers.map((p: any) => ({ label: p.name, value: p.id }))}
+              options={providers.map((p: any) => ({
+                label: p.name,
+                value: p.id,
+              }))}
             />
           </Form.Item>
           <Form.Item name="modelId" label="模型" rules={[{ required: true }]}>
-            <Select options={models.map((m: any) => ({ label: m.name, value: m.id }))} />
+            <Select
+              options={models.map((m: any) => ({ label: m.name, value: m.id }))}
+            />
           </Form.Item>
         </div>
         <Form.Item name="enabled" label="启用" valuePropName="checked">
@@ -2456,10 +2759,14 @@ function ConnectionGuideDialog({
               <Typography.Text type="secondary">API Base</Typography.Text>
               <div className="flex items-center gap-2">
                 <Typography.Text code>{proxyBase}</Typography.Text>
-                <Button size="small" icon={<CopyOutlined />} onClick={() => {
-                  navigator.clipboard.writeText(proxyBase);
-                  message.success("已复制");
-                }} />
+                <Button
+                  size="small"
+                  icon={<CopyOutlined />}
+                  onClick={() => {
+                    navigator.clipboard.writeText(proxyBase);
+                    message.success("已复制");
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -2470,7 +2777,9 @@ function ConnectionGuideDialog({
         <div className="bg-[var(--color-bg-secondary)] rounded-lg p-3 font-mono text-sm">
           {(config?.setupGuide || []).map((line, i) => (
             <div key={i} className="flex items-center gap-2">
-              <span className="text-[var(--color-text-tertiary)] select-none">$</span>
+              <span className="text-[var(--color-text-tertiary)] select-none">
+                $
+              </span>
               <span className="flex-1">{line}</span>
               <CopyOutlined
                 className="cursor-pointer text-[var(--color-text-tertiary)] hover:text-[var(--color-primary)]"
@@ -2507,7 +2816,10 @@ function ChannelAssignModal({
 
   useEffect(() => {
     if (open) {
-      channelApi.getAll().then(setChannels).catch(() => {});
+      channelApi
+        .getAll()
+        .then(setChannels)
+        .catch(() => {});
     }
   }, [open]);
 
@@ -2527,7 +2839,7 @@ function ChannelAssignModal({
         values.channelId,
         values.remoteChannelId,
         values.remoteChannelType,
-        values.callbackUrl
+        values.callbackUrl,
       );
       message.success("渠道分配成功");
       form.resetFields();
@@ -2539,10 +2851,12 @@ function ChannelAssignModal({
     }
   };
 
-  const channelTypeOptions = Object.entries(channelTypeConfig).map(([type, cfg]) => ({
-    label: `${cfg.icon} ${cfg.name}`,
-    value: type,
-  })) as { label: string; value: string }[];
+  const channelTypeOptions = Object.entries(channelTypeConfig).map(
+    ([type, cfg]) => ({
+      label: `${cfg.icon} ${cfg.name}`,
+      value: type,
+    }),
+  ) as { label: string; value: string }[];
 
   return (
     <Modal
@@ -2552,14 +2866,19 @@ function ChannelAssignModal({
       onOk={handleOk}
       confirmLoading={loading}
       okText="分配"
-          >
+    >
       <Form form={form} layout="vertical">
-        <Form.Item name="channelId" label="AgentOS 渠道" rules={[{ required: true, message: "请选择渠道" }]}>
+        <Form.Item
+          name="channelId"
+          label="AgentOS 渠道"
+          rules={[{ required: true, message: "请选择渠道" }]}
+        >
           <Select
             placeholder="选择本地渠道"
             onChange={handleChannelChange}
             options={channels.map((c: any) => {
-              const typeCfg = channelTypeConfig[c.type as keyof typeof channelTypeConfig];
+              const typeCfg =
+                channelTypeConfig[c.type as keyof typeof channelTypeConfig];
               return {
                 label: (
                   <div className="flex items-center gap-2">
@@ -2572,10 +2891,18 @@ function ChannelAssignModal({
             })}
           />
         </Form.Item>
-        <Form.Item name="remoteChannelId" label="远端渠道 ID" rules={[{ required: true, message: "请输入远端渠道ID" }]}>
+        <Form.Item
+          name="remoteChannelId"
+          label="远端渠道 ID"
+          rules={[{ required: true, message: "请输入远端渠道ID" }]}
+        >
           <Input placeholder="如：tg-bot-001" />
         </Form.Item>
-        <Form.Item name="remoteChannelType" label="远端渠道类型" rules={[{ required: true, message: "请选择渠道类型" }]}>
+        <Form.Item
+          name="remoteChannelType"
+          label="远端渠道类型"
+          rules={[{ required: true, message: "请选择渠道类型" }]}
+        >
           <Select placeholder="选择渠道类型" options={channelTypeOptions} />
         </Form.Item>
         <Form.Item name="callbackUrl" label="回调地址">
@@ -2598,25 +2925,31 @@ function ChannelProxyGuideModal({
   onClose: () => void;
 }) {
   if (!mapping) return null;
-  const proxyCfg = channelProxyTypeConfig[mapping.remoteChannelType] || channelProxyTypeConfig[mapping.channelType || ""];
+  const proxyCfg =
+    channelProxyTypeConfig[mapping.remoteChannelType] ||
+    channelProxyTypeConfig[mapping.channelType || ""];
   const proxyInfo = mapping.proxyInfo;
 
   return (
     <Modal
       title={
         <div className="flex items-center gap-2">
-          <span>{mapping.channelName || mapping.remoteChannelId} — 代理配置指南</span>
+          <span>
+            {mapping.channelName || mapping.remoteChannelId} — 代理配置指南
+          </span>
         </div>
       }
       open={open}
       onCancel={onClose}
       footer={<Button onClick={onClose}>关闭</Button>}
       width={640}
-          >
+    >
       <Card size="small" className="mb-4">
         <div className="flex items-center gap-2 mb-3">
           <span className="text-xl">{proxyCfg?.icon || "📡"}</span>
-          <Typography.Text strong>{mapping.channelName || mapping.remoteChannelId}</Typography.Text>
+          <Typography.Text strong>
+            {mapping.channelName || mapping.remoteChannelId}
+          </Typography.Text>
           <Tag>{proxyCfg?.label || mapping.remoteChannelType}</Tag>
         </div>
         {proxyInfo && (

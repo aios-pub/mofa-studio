@@ -61,10 +61,35 @@ function generateUUID(): string {
 
 // ==================== 请求拦截器 ====================
 
+/**
+ * 从 zustand persist storage 获取 token
+ */
+function getAccessToken(): string | null {
+  try {
+    const stored = localStorage.getItem("AMOS-claw-user-store");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return parsed.state?.userToken?.accessToken || null;
+    }
+  } catch (e) {
+    console.error("Failed to parse token from storage:", e);
+  }
+  return null;
+}
+
+/**
+ * 清除用户认证信息
+ */
+function clearAuth() {
+  localStorage.removeItem("AMOS-claw-user-store");
+  // 同时也清除旧格式的 token（如果有）
+  localStorage.removeItem("token");
+}
+
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // 添加 Token
-    const token = localStorage.getItem("token");
+    // 添加 Token - 从 zustand persist storage 读取
+    const token = getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -120,9 +145,9 @@ axiosInstance.interceptors.response.use(
           break;
         case 401:
           errorMessage = "未授权，请重新登录";
-          // 清除 token 并跳转登录页
-          localStorage.removeItem("token");
-          window.location.href = "/login";
+          // 清除认证信息并跳转登录页
+          clearAuth();
+          window.location.href = "/auth/login";
           break;
         case 403:
           errorMessage = "拒绝访问";
@@ -171,7 +196,7 @@ class ApiClient {
    * 获取当前 Token
    */
   getToken(): string | null {
-    return localStorage.getItem("token");
+    return getAccessToken();
   }
 
   /**
@@ -290,6 +315,9 @@ class ApiClient {
 // ==================== 导出 ====================
 
 export const apiClient = new ApiClient();
+
+// 导出认证辅助函数
+export { getAccessToken, clearAuth };
 
 export default apiClient;
 

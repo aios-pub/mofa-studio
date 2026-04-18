@@ -2,8 +2,9 @@
  * 登录/注册页面
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import {
   SunOutlined,
   MoonOutlined,
@@ -11,6 +12,7 @@ import {
   GlobalOutlined,
 } from "@ant-design/icons";
 import { useAppStore } from "../../stores";
+import { useIsAuthenticated } from "../../stores/useUserStore";
 import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 
@@ -18,8 +20,17 @@ type AuthMode = "login" | "register";
 
 export default function LoginPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { theme, setTheme, language, setLanguage } = useAppStore();
+  const isAuthenticated = useIsAuthenticated();
   const [mode, setMode] = useState<AuthMode>("login");
+
+  // 如果已登录，重定向到首页
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   return (
     <div className="min-h-screen flex">

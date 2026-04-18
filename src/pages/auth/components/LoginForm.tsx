@@ -14,7 +14,7 @@ import {
   GoogleOutlined,
   SyncOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button, Checkbox, Divider, Form, Input, Alert } from "antd";
 import { useUserActions } from "../../../stores/useUserStore";
 import { authApi } from "@/services";
@@ -32,6 +32,7 @@ interface FormValues {
 export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { setUserToken, setUserInfo } = useUserActions();
   const [form] = Form.useForm<FormValues>();
 
@@ -53,7 +54,9 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         refreshToken: res.refreshToken,
       });
       setUserInfo(res.user);
-      navigate("/");
+      // 重定向到原始页面或首页
+      const from = (location.state as any)?.from || "/";
+      navigate(from, { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "登录失败");
     } finally {

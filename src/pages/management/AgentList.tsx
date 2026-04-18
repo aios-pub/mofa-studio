@@ -662,7 +662,8 @@ function AgentFormModal({
         form.setFieldValue("modelId", agent.model_id);
       }
     }
-  }, [availableModels, open, agent]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availableModels, open]);
 
   const handleProviderChange = (providerId: string) => {
     setSelectedProviderId(providerId);
@@ -921,7 +922,8 @@ function AgentBasicInfo({
       });
       loadEditPrompts(agent.id);
     }
-  }, [editing, agent, availableModels]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing, availableModels]);
 
   const loadLinkedPromptNames = async () => {
     try {
@@ -1278,17 +1280,17 @@ function AgentPromptsTab({
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    const loadPermission = async () => {
+      try {
+        const perm = await agentApi.getPermissions(agent.id);
+        setPermission(perm || null);
+      } catch (error) {
+        console.error("Failed to load permission:", error);
+      }
+    };
     loadPermission();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agent.id]);
-
-  const loadPermission = async () => {
-    try {
-      const perm = await agentApi.getPermissions(agent.id);
-      setPermission(perm || null);
-    } catch (error) {
-      console.error("Failed to load permission:", error);
-    }
-  };
 
   const handleChange = async (prompts: string[]) => {
     if (!permission) return;
@@ -1352,17 +1354,17 @@ function AgentSkillsTab({
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    const loadPermission = async () => {
+      try {
+        const perm = await agentApi.getPermissions(agent.id);
+        setPermission(perm || null);
+      } catch (error) {
+        console.error("Failed to load permission:", error);
+      }
+    };
     loadPermission();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agent.id]);
-
-  const loadPermission = async () => {
-    try {
-      const perm = await agentApi.getPermissions(agent.id);
-      setPermission(perm || null);
-    } catch (error) {
-      console.error("Failed to load permission:", error);
-    }
-  };
 
   const handleChange = async (skills: string[]) => {
     if (!permission) return;
@@ -1583,16 +1585,19 @@ export default function AgentListPage() {
       setLoading(true);
       const data = await agentApi.getAll();
       setAgents(data);
-      if (selectedAgent) {
-        const updated = data.find((a: Agent) => a.id === selectedAgent.id);
-        setSelectedAgent(updated || null);
-      }
+      setSelectedAgent((prev) => {
+        if (prev) {
+          const updated = data.find((a: Agent) => a.id === prev.id);
+          return updated || null;
+        }
+        return prev;
+      });
     } catch (error) {
       console.error("Failed to load agents:", error);
     } finally {
       setLoading(false);
     }
-  }, [selectedAgent]);
+  }, []);
 
   useEffect(() => {
     loadAgents();
@@ -2445,8 +2450,8 @@ function ClawCreateModal({
       const shortId = crypto.randomUUID().slice(0, 8);
       const agentData: Partial<Agent> = {
         agent_name: values.instanceName,
-        agent_code: `CLAW-${agentType.toUpperCase()}-${shortId}`,
-        agent_category: agentType,
+        agent_code: `CLAW-${clawType.toUpperCase()}-${shortId}`,
+        agent_category: clawType,
         system_prompt: `Claw proxy agent: ${values.instanceName}`,
         provider: { id: values.providerId, provider_name: provider?.name || "" },
         model_id: values.modelId,
@@ -2455,7 +2460,7 @@ function ClawCreateModal({
         stream: true,
         custom_params: {
           claw: {
-            clawType: agentType,
+            clawType: clawType,
             endpointUrl: values.endpointUrl,
             version: values.version,
             authConfig: values.authToken
@@ -2627,7 +2632,8 @@ function ClawEditModal({
           .catch(() => setModels([]));
       }
     }
-  }, [open, agent, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const handleProviderChange = async (providerId: string) => {
     form.setFieldValue("modelId", undefined);

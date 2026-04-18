@@ -18,6 +18,9 @@ export interface ShortcutDefinition {
 
 // 检查事件是否匹配快捷键
 function matchesShortcut(event: KeyboardEvent, keys: string[]): boolean {
+  // 检查 event.key 是否存在
+  if (!event?.key) return false;
+
   const pressedKeys: string[] = [];
 
   if (event.metaKey || event.ctrlKey) {
@@ -48,7 +51,8 @@ export function formatShortcut(keys: string[]): string {
 
   return keys
     .map((key) => {
-      switch (key) {
+      if (!key) return '';
+      switch (key.toLowerCase()) {
         case 'meta':
           return isMac ? '⌘' : 'Ctrl';
         case 'alt':
@@ -75,6 +79,7 @@ export function formatShortcut(keys: string[]): string {
           return key.toUpperCase();
       }
     })
+    .filter(Boolean)
     .join(' + ');
 }
 

@@ -15,47 +15,67 @@ export interface ThinkingConfig {
 export interface Agent {
   id: string;
   /** Agent 名称 */
-  name: string;
+  agent_name: string;
   /** Agent 唯一编码 */
-  agentCode: string;
+  agent_code: string;
   /** 描述 / 系统提示词（运行时从关联提示词生成） */
-  systemPrompt?: string;
+  system_prompt: string;
   /** 头像 emoji */
   avatar?: string;
   /** 启用状态 */
   enabled: boolean;
   /** 排序权重 */
-  order?: number;
+  agent_order?: number;
   /** 模型 ID (UUID) */
-  modelId: string;
+  model_id: string;
   /** 模型名称 */
-  modelName: string;
+  model_name: string;
   /** 供应商 ID (UUID) */
-  providerId: string;
-  /** 供应商名称 */
-  providerName?: string;
-  /** 上下文限制 */
-  contextLimit?: number;
+  provider: {
+    id: string;
+    provider_name: string;
+  };
+  /** Agent 类型: 'native' | 'openclaw' | 'zeroclaw' | 'octos' | 'claude_code' | 'codex' */
+  agent_category: string;
+  /** 自定义参数 */
+  custom_params?: Record<string, unknown>;
   /** 温度参数 */
   temperature?: number;
-  /** 思考模式配置（后端 jsonb 存储） */
-  thinking?: ThinkingConfig;
   /** 是否流式输出 */
   stream?: boolean;
+  /** 思考模式配置（后端 jsonb 存储） */
+  thinking?: ThinkingConfig;
+  /** 上下文限制 */
+  context_limit?: number;
   /** 响应格式 */
-  responseFormat?: string;
+  response_format?: string;
   /** 最大完成 token 数 */
-  maxCompletionTokens?: number;
-  /** 自定义参数 */
-  customParams?: Record<string, unknown>;
+  max_completion_tokens?: number;
   /** 输入参数配置（前端使用） */
   inputParameters?: AgentInputParameter[];
   /** 平台标识 */
   platform?: number;
   /** 状态（前端用） */
   status?: AgentStatus;
-  /** Agent 类型: 'native' | 'openclaw' | 'zeroclaw' | 'octos' | 'claude_code' | 'codex' */
-  agentType: string;
+
+  // 别名，兼容旧代码
+  /** @deprecated 使用 agent_name */
+  name?: string;
+  /** @deprecated 使用 agent_code */
+  agentCode?: string;
+  /** @deprecated 使用 agent_category */
+  agentType?: string;
+  /** @deprecated 使用 model_id */
+  modelId?: string;
+  /** @deprecated 使用 model_name */
+  modelName?: string;
+  /** @deprecated 使用 provider?.id */
+  providerId?: string;
+  /** @deprecated 使用 provider?.provider_name */
+  providerName?: string;
+  /** @deprecated 使用 custom_params */
+  customParams?: Record<string, unknown>;
+
   createdAt?: Date;
   updatedAt?: Date;
 }

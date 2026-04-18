@@ -604,18 +604,18 @@ function AgentFormModal({
   useEffect(() => {
     if (open && agent) {
       form.setFieldsValue({
-        name: agent.name,
-        agentCode: agent.agentCode,
+        name: agent.agent_name || "" || "",
+        agentCode: agent.agent_code || "" || "",
         avatar: agent.avatar || "🤖",
-        providerId: agent.providerId,
-        modelId: agent.modelId,
+        providerId: agent.provider?.id,
+        modelId: agent.model_id || "",
         temperature: agent.temperature ?? 0.7,
         stream: agent.stream ?? true,
         thinking: agent.thinking ?? { enabled: false },
         enabled: agent.enabled,
-        customParams: agent.customParams || {},
+        customParams: agent.custom_params || {},
       });
-      setSelectedProviderId(agent.providerId);
+      setSelectedProviderId(agent.provider?.id);
       // 加载已有的提示词关联
       loadAgentPrompts(agent.id);
     } else if (open && !agent) {
@@ -654,6 +654,16 @@ function AgentFormModal({
     }
   }, [selectedProviderId, providers]);
 
+  // 当 availableModels 更新后，确保编辑模式下的 modelId 正确回显
+  useEffect(() => {
+    if (open && agent && availableModels.length > 0 && agent.model_id) {
+      const modelExists = availableModels.some((m: any) => m.id === agent.model_id);
+      if (modelExists) {
+        form.setFieldValue("modelId", agent.model_id);
+      }
+    }
+  }, [availableModels, open, agent]);
+
   const handleProviderChange = (providerId: string) => {
     setSelectedProviderId(providerId);
     form.setFieldValue("modelId", undefined);
@@ -681,13 +691,12 @@ function AgentFormModal({
       const model = provider?.models?.find((m: any) => m.id === values.modelId);
 
       const agentData: Partial<Agent> = {
-        name: values.name,
-        agentCode: values.agentCode,
+        agent_name: values.name,
+        agent_code: values.agentCode,
         avatar: values.avatar,
-        providerId: values.providerId,
-        modelId: values.modelId,
-        modelName: model?.name || values.modelId,
-        providerName: provider?.name,
+        provider: { id: values.providerId, provider_name: provider?.name || "" },
+        model_id: values.modelId,
+        model_name: model?.name || values.modelId,
         temperature: values.temperature,
         stream: values.stream,
         thinking:
@@ -695,7 +704,7 @@ function AgentFormModal({
             ? values.thinking
             : { enabled: !!values.thinking },
         enabled: values.enabled ?? true,
-        customParams:
+        custom_params:
           values.customParams && Object.keys(values.customParams).length > 0
             ? values.customParams
             : undefined,
@@ -834,7 +843,7 @@ function AgentFormModal({
               disabled={!selectedProviderId}
               onChange={handleModelChange}
               options={availableModels.map((m: any) => ({
-                label: `${m.name} (${m.maxTokens?.toLocaleString() || "-"} tokens)`,
+                label: m.name,
                 value: m.id,
               }))}
             />
@@ -891,27 +900,28 @@ function AgentBasicInfo({
   }, []);
 
   useEffect(() => {
-    setSelectedProviderId(agent.providerId);
+    setSelectedProviderId(agent.provider?.id);
     loadLinkedPromptNames();
-  }, [agent.providerId, agent.id]);
+  }, [agent.provider?.id, agent.id]);
 
+  // 当 editing 或 availableModels 变化时，设置表单值
   useEffect(() => {
     if (editing) {
       form.setFieldsValue({
-        name: agent.name,
-        agentCode: agent.agentCode,
+        name: agent.agent_name || "" || "",
+        agentCode: agent.agent_code || "" || "",
         avatar: agent.avatar || "🤖",
-        providerId: agent.providerId,
-        modelId: agent.modelId,
+        providerId: agent.provider?.id || "",
+        modelId: agent.model_id || "",
         temperature: agent.temperature ?? 0.7,
         stream: agent.stream ?? true,
         thinking: agent.thinking ?? { enabled: false },
         enabled: agent.enabled,
-        customParams: agent.customParams || {},
+        customParams: agent.custom_params || {},
       });
       loadEditPrompts(agent.id);
     }
-  }, [editing, agent]);
+  }, [editing, agent, availableModels]);
 
   const loadLinkedPromptNames = async () => {
     try {
@@ -968,13 +978,12 @@ function AgentBasicInfo({
       const model = provider?.models?.find((m: any) => m.id === values.modelId);
 
       await agentApi.update(agent.id, {
-        name: values.name,
-        agentCode: values.agentCode,
+        agent_name: values.name,
+        agent_code: values.agentCode,
         avatar: values.avatar,
-        providerId: values.providerId,
-        modelId: values.modelId,
-        modelName: model?.name || values.modelId,
-        providerName: provider?.name,
+        provider: { id: values.providerId, provider_name: provider?.name || "" },
+        model_id: values.modelId,
+        model_name: model?.name || values.modelId,
         temperature: values.temperature,
         stream: values.stream,
         thinking:
@@ -982,7 +991,7 @@ function AgentBasicInfo({
             ? values.thinking
             : { enabled: !!values.thinking },
         enabled: values.enabled,
-        customParams:
+        custom_params:
           values.customParams && Object.keys(values.customParams).length > 0
             ? values.customParams
             : undefined,
@@ -1015,13 +1024,14 @@ function AgentBasicInfo({
   };
 
   const getProviderName = (id: string) =>
-    providers.find((p) => p.id === id)?.name || agent.providerName || id;
+    providers.find((p) => p.id === id)?.name || agent.provider?.provider_name || id || "";
   const getModelName = (providerId: string, modelId: string) => {
     const provider = providers.find((p) => p.id === providerId);
     return (
       provider?.models?.find((m: any) => m.id === modelId)?.name ||
-      agent.modelName ||
-      modelId
+      agent.model_name ||
+      modelId ||
+      ""
     );
   };
 
@@ -1083,7 +1093,7 @@ function AgentBasicInfo({
             <Form.Item name="modelId" label="模型" rules={[{ required: true }]}>
               <Select
                 options={availableModels.map((m: any) => ({
-                  label: m.model_id,
+                  label: m.name,
                   value: m.id,
                 }))}
               />
@@ -1158,13 +1168,13 @@ function AgentBasicInfo({
           <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
             名称
           </label>
-          <Input value={agent.name} readOnly />
+          <Input value={agent.agent_name || "" || ""} readOnly />
         </div>
         <div>
           <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
             编码
           </label>
-          <Input value={agent.agentCode} readOnly />
+          <Input value={agent.agent_code || "" || ""} readOnly />
         </div>
         <div>
           <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
@@ -1184,7 +1194,7 @@ function AgentBasicInfo({
             模型
           </label>
           <Input
-            value={getModelName(agent.providerId, agent.modelId)}
+            value={getModelName(agent.provider?.id, agent.model_id)}
             readOnly
           />
         </div>
@@ -1192,7 +1202,7 @@ function AgentBasicInfo({
           <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
             供应商
           </label>
-          <Input value={getProviderName(agent.providerId)} readOnly />
+          <Input value={getProviderName(agent.provider?.id)} readOnly />
         </div>
         <div>
           <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
@@ -1486,7 +1496,7 @@ function AgentDetail({
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
-              {agent.name}
+              {agent.agent_name || ""}
             </h2>
             <Tag color={agent.enabled ? "green" : "red"}>
               {agent.enabled ? "已启用" : "已禁用"}
@@ -1546,7 +1556,7 @@ function AgentPermissionTab({ agent }: { agent: Agent }) {
   return (
     <PermissionConfig
       agentId={agent.id}
-      agentName={agent.name}
+      agentName={agent.agent_name || ""}
       onSave={() => {}}
     />
   );
@@ -1595,7 +1605,7 @@ export default function AgentListPage() {
         content: (
           <div>
             <p>
-              确定要删除 Agent <strong>{agent.name}</strong> 吗？
+              确定要删除 Agent <strong>{agent.agent_name || ""}</strong> 吗？
             </p>
             <p className="mt-1 text-[var(--color-text-tertiary)]">
               此操作不可恢复。
@@ -1623,13 +1633,12 @@ export default function AgentListPage() {
   const handleDuplicate = async (agent: Agent) => {
     try {
       const newAgent = await agentApi.create({
-        name: `${agent.name} (副本)`,
-        agentCode: `${agent.agentCode}_copy`,
+        agent_name: `${agent.agent_name || ""} (副本)`,
+        agent_code: `${agent.agent_code || ""}_copy`,
         avatar: agent.avatar,
-        modelId: agent.modelId,
-        modelName: agent.modelName,
-        providerId: agent.providerId,
-        providerName: agent.providerName,
+        model_id: agent.model_id,
+        model_name: agent.model_name || "",
+        provider: agent.provider,
         temperature: agent.temperature,
         stream: agent.stream,
         thinking: agent.thinking,
@@ -1693,9 +1702,9 @@ export default function AgentListPage() {
 
   const filteredAgents = agents.filter((a) => {
     const matchSearch =
-      a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (a.agentCode || "").toLowerCase().includes(searchQuery.toLowerCase());
-    const matchType = typeFilter === "all" || a.agentType === typeFilter;
+      (a.agent_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (a.agent_code || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const matchType = typeFilter === "all" || a.agent_category === typeFilter;
     return matchSearch && matchType;
   });
 
@@ -1717,7 +1726,7 @@ export default function AgentListPage() {
   };
 
   const isClawAgent = (agent: Agent) =>
-    agent.agentType && agent.agentType !== "native";
+    agent.agent_category && agent.agent_category !== "native";
 
   // Create button dropdown items
   const createMenuItems = [
@@ -1808,7 +1817,7 @@ export default function AgentListPage() {
           ) : (
             filteredAgents.map((agent) => {
               const clawConfig = isClawAgent(agent)
-                ? clawTypeConfig[agent.agentType as ClawType]
+                ? clawTypeConfig[agent.agent_category as ClawType]
                 : null;
               const icon = clawConfig?.icon || agent.avatar || "🤖";
               const statusDot = isClawAgent(agent)
@@ -1832,7 +1841,7 @@ export default function AgentListPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-[var(--color-text-primary)] truncate">
-                          {agent.name}
+                          {agent.agent_name || ""}
                         </span>
                         <span
                           className={`w-2 h-2 rounded-full flex-shrink-0 ${statusDot}`}
@@ -1848,7 +1857,7 @@ export default function AgentListPage() {
                           </Tag>
                         ) : null}
                         <p className="text-sm text-[var(--color-text-tertiary)] truncate">
-                          {agent.modelName || agent.agentCode}
+                          {agent.model_name || "" || agent.agent_code || ""}
                         </p>
                       </div>
                     </div>
@@ -1958,7 +1967,7 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
   const [proxyGuideMapping, setProxyGuideMapping] =
     useState<ClawChannelMapping | null>(null);
 
-  const agentType = agent.agentType as ClawType;
+  const agentType = agent.agent_category as ClawType;
   const config = clawTypeConfig[agentType];
   const clawParams = getClaw(agent);
 
@@ -1982,7 +1991,7 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
     showDeleteConfirm(
       {
         title: "删除 Agent",
-        content: `确定要删除 ${agent.name} 吗？此操作不可恢复。`,
+        content: `确定要删除 ${agent.agent_name || ""} 吗？此操作不可恢复。`,
         onOk: async () => {
           try {
             await agentApi.delete(agent.id);
@@ -2001,7 +2010,7 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
   const tabs = [
     { key: "basic", label: "基本信息", icon: RobotOutlined },
     { key: "connection", label: "连接信息", icon: LinkOutlined },
-    ...(agent.agentType !== "native"
+    ...(agent.agent_category !== "native"
       ? [
           {
             key: "channel" as const,
@@ -2023,7 +2032,7 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
-                {agent.name}
+                {agent.agent_name || ""}
               </h2>
               <Tag color={config?.color}>{config?.label}</Tag>
               <Tag color={agent.enabled ? "green" : "red"}>
@@ -2048,7 +2057,7 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
               )}
             </div>
             <p className="text-sm text-[var(--color-text-tertiary)] mt-1">
-              {agent.modelName} · {agent.providerName}
+              {agent.model_name || ""} · {agent.provider?.provider_name}
             </p>
           </div>
         </div>
@@ -2090,13 +2099,13 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
                 <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
                   名称
                 </label>
-                <Input value={agent.name} readOnly />
+                <Input value={agent.agent_name || ""} readOnly />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
                   编码
                 </label>
-                <Input value={agent.agentCode} readOnly />
+                <Input value={agent.agent_code || ""} readOnly />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
@@ -2114,13 +2123,13 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
                 <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
                   供应商
                 </label>
-                <Input value={agent.providerName || "-"} readOnly />
+                <Input value={agent.provider?.provider_name || "-"} readOnly />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
                   模型
                 </label>
-                <Input value={agent.modelName || "-"} readOnly />
+                <Input value={agent.model_name || "" || "-"} readOnly />
               </div>
               {clawVal(agent, "endpointUrl") && (
                 <div className="col-span-2">
@@ -2435,17 +2444,16 @@ function ClawCreateModal({
       const clawType = selectedType!;
       const shortId = crypto.randomUUID().slice(0, 8);
       const agentData: Partial<Agent> = {
-        name: values.instanceName,
-        agentCode: `CLAW-${agentType.toUpperCase()}-${shortId}`,
-        agentType: agentType,
-        systemPrompt: `Claw proxy agent: ${values.instanceName}`,
-        providerId: values.providerId,
-        modelId: values.modelId,
-        modelName: model?.name || values.modelId,
-        providerName: provider?.name,
+        agent_name: values.instanceName,
+        agent_code: `CLAW-${agentType.toUpperCase()}-${shortId}`,
+        agent_category: agentType,
+        system_prompt: `Claw proxy agent: ${values.instanceName}`,
+        provider: { id: values.providerId, provider_name: provider?.name || "" },
+        model_id: values.modelId,
+        model_name: model?.name || values.modelId,
         enabled: values.enabled ?? true,
         stream: true,
-        customParams: {
+        custom_params: {
           claw: {
             clawType: agentType,
             endpointUrl: values.endpointUrl,
@@ -2586,7 +2594,7 @@ function ClawEditModal({
   const [providers, setProviders] = useState<any[]>([]);
   const [models, setModels] = useState<any[]>([]);
 
-  const agentType = agent.agentType as ClawType;
+  const agentType = agent.agent_category as ClawType;
   const isOctos = agentType === "octos";
   const clawParams = getClaw(agent);
   const existingAuthConfig = clawParams?.authConfig as
@@ -2600,19 +2608,19 @@ function ClawEditModal({
         .then(setProviders)
         .catch(() => {});
       form.setFieldsValue({
-        instanceName: agent.name,
+        instanceName: agent.agent_name || "",
         version: clawVal(agent, "version") || "",
         endpointUrl: clawVal(agent, "endpointUrl") || "",
         authToken: (existingAuthConfig?.authToken ||
           existingAuthConfig?.token ||
           "") as string,
-        providerId: agent.providerId,
-        modelId: agent.modelId,
+        providerId: agent.provider?.id || "",
+        modelId: agent.model_id || "",
         enabled: agent.enabled,
       });
-      if (agent.providerId) {
+      if (agent.provider?.id) {
         providerApi
-          .getById(agent.providerId)
+          .getById(agent.provider?.id)
           .then((prov: any) => {
             setModels(prov.models || []);
           })
@@ -2631,6 +2639,16 @@ function ClawEditModal({
     }
   };
 
+  // 当 models 更新后，确保编辑模式下的 modelId 正确回显
+  useEffect(() => {
+    if (open && agent && models.length > 0 && agent.model_id) {
+      const modelExists = models.some((m: any) => m.id === agent.model_id);
+      if (modelExists) {
+        form.setFieldValue("modelId", agent.model_id);
+      }
+    }
+  }, [models, open, agent]);
+
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
@@ -2638,15 +2656,14 @@ function ClawEditModal({
       const provider = providers.find((p: any) => p.id === values.providerId);
       const model = provider?.models?.find((m: any) => m.id === values.modelId);
       await agentApi.update(agent.id, {
-        name: values.instanceName,
-        agentType: agentType,
-        providerId: values.providerId,
-        modelId: values.modelId,
-        modelName: model?.name || values.modelId,
-        providerName: provider?.name,
+        agent_name: values.instanceName,
+        agent_category: agentType,
+        provider: { id: values.providerId, provider_name: provider?.name || "" },
+        model_id: values.modelId,
+        model_name: model?.name || values.modelId,
         enabled: values.enabled,
-        customParams: {
-          ...(agent.customParams || {}),
+        custom_params: {
+          ...(agent.custom_params || {}),
           claw: {
             clawType: agentType,
             endpointUrl: values.endpointUrl,
@@ -2740,7 +2757,7 @@ function ConnectionGuideDialog({
   onClose: () => void;
 }) {
   const { message } = App.useApp();
-  const agentType = agent.agentType as ClawType;
+  const agentType = agent.agent_category as ClawType;
   const config = clawTypeConfig[agentType];
   const proxyBase = "http://localhost:3001/proxy/v1";
 

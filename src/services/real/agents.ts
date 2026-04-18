@@ -36,7 +36,8 @@ interface BackendAgentReq {
 /** 后端 AgentVo (响应) */
 interface BackendAgentVo {
   id: string;
-  model: string;
+  model_id: string;
+  model_name: string;
   provider: {
     id: string;
     provider_name: string;
@@ -60,23 +61,23 @@ interface BackendAgentVo {
 
 /** 前端 → 后端 */
 function toBackend(data: Partial<Agent>, isUpdate = false): BackendAgentReq {
-  const agentType = data.agentType || 'native';
+  const agentType = data.agent_category || data.agentType || 'native';
   const req: BackendAgentReq = {
-    provider_id: data.providerId || '',
-    model_id: data.modelId || '',
-    model_name: data.modelName || '',
-    agent_code: data.agentCode || '',
-    agent_name: data.name || '',
-    system_prompt: data.systemPrompt || '',
+    provider_id: data.provider?.id || data.providerId || '',
+    model_id: data.model_id || data.modelId || '',
+    model_name: data.model_name || data.modelName || '',
+    agent_code: data.agent_code || data.agentCode || '',
+    agent_name: data.agent_name || data.name || '',
+    system_prompt: data.system_prompt || data.systemPrompt || '',
     temperature: data.temperature,
     thinking: data.thinking,
     stream: data.stream,
-    context_limit: data.contextLimit,
-    response_format: data.responseFormat,
-    max_completion_tokens: data.maxCompletionTokens,
+    context_limit: data.context_limit || data.contextLimit,
+    response_format: data.response_format || data.responseFormat,
+    max_completion_tokens: data.max_completion_tokens || data.maxCompletionTokens,
     platform: data.platform,
-    custom_params: data.customParams,
-    agent_order: data.order,
+    custom_params: data.custom_params || data.customParams,
+    agent_order: data.agent_order || data.order,
     agent_status: data.enabled,
     agent_type: agentType,
   };
@@ -108,24 +109,37 @@ function fromBackend(vo: BackendAgentVo): Agent {
   const cp = vo.custom_params;
   return {
     id: vo.id,
-    name: vo.agent_name,
-    agentCode: vo.agent_code,
-    systemPrompt: vo.system_prompt,
+    agent_name: vo.agent_name,
+    agent_code: vo.agent_code,
+    system_prompt: vo.system_prompt,
     enabled: vo.enabled,
-    order: vo.agent_order,
-    modelId: '',
-    modelName: vo.model,
-    providerId: vo.provider?.id || '',
-    providerName: vo.provider?.provider_name || '',
+    agent_order: vo.agent_order,
+    model_id: vo.model_id,
+    model_name: vo.model_name,
+    provider: vo.provider,
     temperature: vo.temperature,
     thinking: parseThinking(vo.thinking),
     stream: vo.stream,
+    context_limit: vo.context_limit,
+    response_format: vo.response_format,
+    max_completion_tokens: vo.max_completion_tokens,
+    custom_params: cp,
+    status: vo.enabled ? 'idle' : 'offline',
+    agent_category: agentType,
+    // 别名，兼容可能使用旧字段的代码
+    name: vo.agent_name,
+    agentCode: vo.agent_code,
+    systemPrompt: vo.system_prompt,
+    modelId: vo.model_id,
+    modelName: vo.model_name,
+    providerId: vo.provider?.id,
+    providerName: vo.provider?.provider_name,
+    customParams: cp,
+    agentType: agentType,
+    order: vo.agent_order,
     contextLimit: vo.context_limit,
     responseFormat: vo.response_format,
     maxCompletionTokens: vo.max_completion_tokens,
-    customParams: cp,
-    status: vo.enabled ? 'idle' : 'offline',
-    agentType,
   };
 }
 

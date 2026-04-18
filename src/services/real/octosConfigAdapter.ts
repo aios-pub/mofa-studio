@@ -1,10 +1,11 @@
 /**
  * Octos 配置适配器
  * 处理前端（使用 provider_id/model_id）与后端（使用 provider/model/base_url/api_key_env）之间的数据转换
+ * 处理渠道配置（使用 channel_ids）与后端 channels 格式之间的转换
  */
 
-import type { OctosProfileConfig, OctosFallbackConfig, OctosFallbackModel } from "@/types/octos";
-import { providerApi } from "@/services";
+import type { OctosProfileConfig, OctosFallbackConfig, OctosFallbackModel, OctosChannelCredentials } from "@/types/octos";
+import { providerApi, channelApi } from "@/services";
 
 /**
  * Provider 类型到 API Key 环境变量的映射
@@ -35,9 +36,122 @@ function getApiKeyEnv(providerType: string): string {
 }
 
 /**
+ * 渠道配置映射到 Octos 格式
+ * 将渠道的 config 转换为 { type, settings: { xxx_env: ... } } 格式
+ */
+function channelToOctosFormat(channel: any): OctosChannelCredentials {
+  const octosChannel: any = { type: channel.type };
+
+  // 根据渠道类型映射配置到 Octos 期望的格式
+  switch (channel.type) {
+    case 'feishu':
+      octosChannel.settings = {
+        app_id_env: channel.config.app_id,
+        app_secret_env: channel.config.app_secret,
+      };
+      if (channel.config.encrypt_key) {
+        octosChannel.settings.encrypt_key_env = channel.config.encrypt_key;
+      }
+      if (channel.config.verification_token) {
+        octosChannel.settings.verification_token_env = channel.config.verification_token;
+      }
+      break;
+
+    case 'telegram':
+      octosChannel.settings = {
+        bot_token_env: channel.config.bot_token,
+      };
+      if (channel.config.webhook_url) {
+        octosChannel.settings.webhook_url = channel.config.webhook_url;
+      }
+      break;
+
+    case 'discord':
+      octosChannel.settings = {
+        bot_token_env: channel.config.bot_token,
+        application_id_env: channel.config.application_id,
+      };
+      if (channel.config.public_key) {
+        octosChannel.settings.public_key_env = channel.config.public_key;
+      }
+      break;
+
+    case 'slack':
+      octosChannel.settings = {
+        bot_token_env: channel.config.bot_token,
+        signing_secret_env: channel.config.signing_secret,
+      };
+      if (channel.config.app_token) {
+        octosChannel.settings.app_token_env = channel.config.app_token;
+      }
+      break;
+
+    case 'whatsapp':
+      octosChannel.settings = {
+        phone_number_id_env: channel.config.phone_number_id,
+        access_token_env: channel.config.access_token,
+      };
+      if (channel.config.business_account_id) {
+        octosChannel.settings.business_account_id = channel.config.business_account_id;
+      }
+      break;
+
+    case 'email':
+      octosChannel.settings = {
+        smtp_host: channel.config.smtp_host,
+        smtp_port: channel.config.smtp_port,
+        username_env: channel.config.smtp_user,
+        password_env: channel.config.smtp_password,
+        from_address: channel.config.from_address,
+      };
+      break;
+
+    case 'wechat_work':
+    case 'wecom_bot':
+      octosChannel.type = 'wecom_bot';
+      octosChannel.settings = {
+        corp_id_env: channel.config.corp_id,
+        agent_id_env: channel.config.agent_id,
+        secret_env: channel.config.secret,
+      };
+      if (channel.config.token) {
+        octosChannel.settings.token = channel.config.token;
+      }
+      break;
+
+    case 'qq_bot':
+      octosChannel.settings = {
+        bot_token_env: channel.config.bot_token || channel.config.access_token,
+      };
+      break;
+
+    case 'wechat':
+      octosChannel.settings = {
+        app_id_env: channel.config.app_id,
+        app_secret_env: channel.config.app_secret,
+        token_env: channel.config.token,
+      };
+      if (channel.config.encoding_aes_key) {
+        octosChannel.settings.encoding_aes_key_env = channel.config.encoding_aes_key;
+      }
+      break;
+
+    default:
+      // 通用处理：将所有 config 值转为 xxx_env 格式
+      octosChannel.settings = {};
+      for (const [key, value] of Object.entries(channel.config || {})) {
+        octosChannel.settings[`${key}_env`] = value;
+      }
+  }
+
+  return octosChannel;
+}
+
+/**
  * 将前端配置转换为后端格式
  * - provider_id + model_id → provider + model + base_url + api_key_env
  * - fallback_configs → fallback_models
+ * - channel_ids → channels (带完整凭据)
  */
 export async function toBackendFormat(frontendConfig: OctosProfileConfig): Promise<OctosProfileConfig> {
   const backendConfig: OctosProfileConfig = { ...frontendConfig };
@@ -85,6 +199,22 @@ export async function toBackendFormat(frontendConfig: OctosProfileConfig): Promi
     backendConfig.fallback_models = fallbackModels;
     // 保留新版配置用于回显
     backendConfig.fallback_configs = frontendConfig.fallback_configs;
+  }
+
+  // 转换渠道配置：channel_ids → channels (带凭据)
+  if (frontendConfig.channel_ids && frontendConfig.channel_ids.length > 0) {
+    try {
+      const channels = await channelApi.getAll();
+      const selectedChannels = channels.filter((c: any) =>
+        frontendConfig.channel_ids?.includes(c.id)
+      );
+
+      backendConfig.channels = selectedChannels.map(channelToOctosFormat);
+      // 保留新版配置用于回显
+      backendConfig.channel_ids = frontendConfig.channel_ids;
+    } catch (error) {
+      console.error("Failed to resolve channels for backend format:", error);
+    }
   }
 
   return backendConfig;

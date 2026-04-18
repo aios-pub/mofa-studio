@@ -3,9 +3,8 @@
  * 从已配置的 Channels 中选择，而不是重新配置
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
-  Select,
   Typography,
   Alert,
   Card,
@@ -19,7 +18,6 @@ import {
   LinkOutlined,
   InfoCircleOutlined,
   CheckCircleOutlined,
-  CloseCircleOutlined,
 } from "@ant-design/icons";
 import type { OctosProfileConfig } from "@/types/octos";
 import { channelApi } from "@/services";
@@ -61,14 +59,14 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
       setLoading(true);
       const data = await channelApi.getAll();
       // 只显示 Octos 支持的渠道类型
-      const supportedChannels = data.filter((c) =>
+      const supportedChannels = data.filter((c: Channel) =>
         OCTOS_SUPPORTED_CHANNEL_TYPES.includes(c.type as any)
       );
       setChannels(supportedChannels);
 
       // 如果当前配置了 channel_ids，则设置选中的 channels
       if (config.channel_ids && config.channel_ids.length > 0) {
-        const current = supportedChannels.filter((c) =>
+        const current = supportedChannels.filter((c: Channel) =>
           config.channel_ids?.includes(c.id)
         );
         setSelectedChannels(current);
@@ -138,6 +136,23 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
         />
       )}
 
+      {/* 未选择渠道提示 */}
+      {!isLegacyMode && (!config.channel_ids || config.channel_ids.length === 0) && (
+        <Alert
+          type="warning"
+          showIcon
+          message="未选择任何渠道"
+          description={
+            <div className="text-xs">
+              <p>请至少选择一个渠道以启用消息收发功能。</p>
+              <p className="mt-1 text-[var(--color-text-tertiary)]">
+                Octos 将使用所选渠道的凭据（如 Token、Secret）进行消息通信。
+              </p>
+            </div>
+          }
+        />
+      )}
+
       {/* 渠道选择 */}
       <div>
         <Text type="secondary" className="block mb-3">
@@ -153,6 +168,12 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
                 <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
                   请先在渠道管理页面添加渠道
                 </p>
+                <div className="mt-3 p-3 bg-[var(--color-bg-tertiary)] rounded text-left">
+                  <p className="text-xs font-medium mb-1">Octos 支持的渠道类型：</p>
+                  <p className="text-xs text-[var(--color-text-tertiary)] break-all font-mono">
+                    {OCTOS_SUPPORTED_CHANNEL_TYPES.join(', ')}
+                  </p>
+                </div>
               </div>
             }
           />
@@ -270,13 +291,31 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
         type="info"
         showIcon
         icon={<InfoCircleOutlined />}
-        message="渠道说明"
+        message="渠道配置说明"
         description={
-          <ul className="text-xs space-y-1 mt-2 list-disc pl-4">
-            <li>只有已启用且状态正常的渠道才能被选择</li>
-            <li>渠道的具体配置（如 Token、Secret）在渠道管理页面维护</li>
-            <li>Octos 会使用所选渠道进行消息收发</li>
-          </ul>
+          <div className="text-xs mt-2">
+            <ul className="space-y-1 list-disc pl-4">
+              <li>只有已启用且状态正常的渠道才能被选择</li>
+              <li>渠道的具体配置（如 Token、Secret）在渠道管理页面维护</li>
+              <li>Octos 会自动将所选渠道的凭据转换为后端所需的格式</li>
+            </ul>
+            <div className="mt-2 p-2 bg-[var(--color-bg-tertiary)] rounded">
+              <p className="font-medium mb-1">后端配置格式示例：</p>
+              <pre className="text-xs text-[var(--color-text-tertiary)] overflow-x-auto">
+{`{
+  "channels": [
+    {
+      "type": "feishu",
+      "settings": {
+        "app_id_env": "FEISHU_APP_ID",
+        "app_secret_env": "FEISHU_APP_SECRET"
+      }
+    }
+  ]
+}`}
+              </pre>
+            </div>
+          </div>
         }
       />
     </div>

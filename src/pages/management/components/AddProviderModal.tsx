@@ -113,7 +113,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
       ...prev,
       type: config.type,
       name: config.name,
-      baseUrl: config.api.defaultBaseUrl,
+      baseUrl: prev.baseUrl || config.api.defaultBaseUrl,
       selectedModels: [],
     }));
   }, []);

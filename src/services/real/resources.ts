@@ -21,20 +21,22 @@ import { parseDate } from "./fieldMapper";
 
 // ==================== 前端类型 ====================
 
+type ApiKeyStatus = 'active' | 'expired' | 'revoked';
+
 interface ApiKey {
   id: string;
   name: string;
-  key: string;
-  status: string;
-  userId: string;
-  provider?: string;
-  keyPrefix?: string;
-  description?: string;
+  provider_id: string;
+  provider_name: string | null;
+  keyPrefix: string; // 打码前缀，用于显示
+  fullKey?: string; // 完整密钥，后端返回（可选，兼容老数据）
+  status: ApiKeyStatus;
+  createdAt: Date;
   expiresAt?: Date;
   lastUsedAt?: Date;
-  usageCount?: number;
-  createdBy?: string;
-  createdAt?: Date;
+  usageCount: number;
+  createdBy: string;
+  description?: string;
 }
 
 interface ResourceQuota {
@@ -74,7 +76,10 @@ interface BackendApiKey {
   id: string;
   name: string;
   provider?: string;
+  provider_id?: string;
+  provider_name?: string | null;
   key_prefix?: string;
+  key: string; // 完整密钥
   status: string;
   description?: string;
   expires_at?: string;
@@ -104,19 +109,25 @@ interface BackendResourceQuota {
 // ==================== 字段映射 ====================
 
 function mapApiKey(raw: BackendApiKey): ApiKey {
+  // 从完整密钥生成打码前缀
+  const fullKey = raw.key || "";
+  const keyPrefix = raw.key_prefix || (fullKey.length > 8
+    ? `${fullKey.slice(0, 8)}...${fullKey.slice(-4)}`
+    : fullKey || "sk-***");
+
   return {
     id: raw.id,
     name: raw.name,
-    key: raw.key_prefix || "",
-    status: raw.status,
-    userId: raw.created_by || "",
-    provider: raw.provider,
-    keyPrefix: raw.key_prefix,
+    provider_id: raw.provider_id || raw.provider || "",
+    provider_name: raw.provider_name ?? null,
+    keyPrefix,
+    fullKey: raw.key, // 完整密钥（后端返回的明文）
+    status: raw.status as ApiKeyStatus,
     description: raw.description,
     expiresAt: parseDate(raw.expires_at),
     lastUsedAt: parseDate(raw.last_used_at),
-    usageCount: raw.usage_count,
-    createdBy: raw.created_by,
+    usageCount: raw.usage_count || 0,
+    createdBy: raw.created_by || "",
     createdAt: parseDate(raw.create_time),
   };
 }
@@ -124,10 +135,14 @@ function mapApiKey(raw: BackendApiKey): ApiKey {
 function mapApiKeyToBackend(data: Partial<ApiKey>): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   if (data.name !== undefined) result.name = data.name;
-  if (data.provider !== undefined) result.provider = data.provider;
+  // 后端期望 provider 字段，从前端的 provider_id 映射
+  if (data.provider_id !== undefined) result.provider = data.provider_id;
   if (data.status !== undefined) result.status = data.status;
   if (data.description !== undefined) result.description = data.description;
-  if (data.key !== undefined) result.key = data.key;
+  // 优先使用 key（完整密钥），其次使用 keyPrefix
+  if ((data as any).key !== undefined) result.key = (data as any).key;
+  else if (data.keyPrefix !== undefined) result.key_prefix = data.keyPrefix;
+  if (data.expiresAt !== undefined) result.expires_at = data.expiresAt.toISOString();
   return result;
 }
 

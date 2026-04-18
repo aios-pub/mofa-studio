@@ -9,9 +9,10 @@ export type ApiKeyStatus = 'active' | 'expired' | 'revoked';
 export interface ApiKey {
   id: string;
   name: string;
-  provider: string;
-  keyPrefix: string; // 只显示前缀，如 "sk-abc...xyz"
-  fullKey?: string; // 仅创建时返回一次
+  provider_id: string;
+  provider_name: string | null;
+  keyPrefix: string; // 打码前缀，如 "sk-abc...xyz"
+  fullKey: string; // 完整密钥，后端返回
   status: ApiKeyStatus;
   createdAt: Date;
   expiresAt?: Date;
@@ -74,6 +75,7 @@ export const providerOptions = [
   { value: 'alibaba', label: '阿里云百炼', prefix: '' },
   { value: 'baidu', label: '百度千帆', prefix: '' },
   { value: 'custom', label: '自定义', prefix: '' },
+  { value: 'deleted-provider-id', label: '已删除的 Provider', prefix: '' },
 ];
 
 // Mock API 密钥数据
@@ -82,8 +84,10 @@ const generateMockApiKeys = (): ApiKey[] => {
     {
       id: 'key-1',
       name: 'OpenAI 生产环境',
-      provider: 'openai',
+      provider_id: 'openai',
+      provider_name: 'OpenAI',
       keyPrefix: 'sk-prod...xyz123',
+      fullKey: 'sk-proj-abc123def456789xyz123def456789',
       status: 'active',
       createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
       lastUsedAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
@@ -94,8 +98,10 @@ const generateMockApiKeys = (): ApiKey[] => {
     {
       id: 'key-2',
       name: 'Claude 主密钥',
-      provider: 'anthropic',
+      provider_id: 'anthropic',
+      provider_name: 'Claude (Anthropic)',
       keyPrefix: 'sk-ant-main...abc',
+      fullKey: 'sk-ant-api123456789abcdefghijklmnopqrstuvwxyz',
       status: 'active',
       createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
       lastUsedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
@@ -106,8 +112,10 @@ const generateMockApiKeys = (): ApiKey[] => {
     {
       id: 'key-3',
       name: '智谱 AI 测试',
-      provider: 'zhipu',
+      provider_id: 'zhipu',
+      provider_name: '智谱 AI',
       keyPrefix: 'zhipu-test...789',
+      fullKey: 'zhipu-api-test-key-123456789',
       status: 'active',
       createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
@@ -119,8 +127,10 @@ const generateMockApiKeys = (): ApiKey[] => {
     {
       id: 'key-4',
       name: '旧 OpenAI 密钥',
-      provider: 'openai',
+      provider_id: 'openai',
+      provider_name: 'OpenAI',
       keyPrefix: 'sk-old...expired',
+      fullKey: 'sk-old-key-987654321abcdefghijklmnopqrstuvwxyz',
       status: 'revoked',
       createdAt: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000),
       expiresAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
@@ -132,13 +142,29 @@ const generateMockApiKeys = (): ApiKey[] => {
     {
       id: 'key-5',
       name: '阿里云百炼',
-      provider: 'alibaba',
+      provider_id: 'alibaba',
+      provider_name: '阿里云百炼',
       keyPrefix: 'aliyun...def456',
+      fullKey: 'aliyun-sk-abcdef1234567890',
       status: 'active',
       createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
       lastUsedAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
       usageCount: 5678,
       createdBy: '赵六',
+    },
+    {
+      id: 'key-6',
+      name: '已删除的 Provider',
+      provider_id: 'deleted-provider-id',
+      provider_name: null,
+      keyPrefix: 'unknown...xxx',
+      fullKey: 'unknown-provider-key-123456789',
+      status: 'active',
+      createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
+      lastUsedAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
+      usageCount: 1234,
+      createdBy: '测试用户',
+      description: 'Provider 已被删除，需要重新关联',
     },
   ];
 
@@ -322,7 +348,7 @@ export const resourceApi = {
     let keys = [...mockApiKeys];
 
     if (filter?.provider) {
-      keys = keys.filter((k) => k.provider === filter.provider);
+      keys = keys.filter((k) => k.provider_id === filter.provider || k.provider_name === filter.provider);
     }
     if (filter?.status) {
       keys = keys.filter((k) => k.status === filter.status);
@@ -349,29 +375,31 @@ export const resourceApi = {
   // 创建 API 密钥
   async createApiKey(data: {
     name: string;
-    provider: string;
-    key: string;
+    provider_id: string;
+    key?: string;
+    keyPrefix?: string;
     description?: string;
     expiresAt?: Date;
-    createdBy: string;
+    createdBy?: string;
   }): Promise<ApiKey & { fullKey: string }> {
     await delay(300);
     initData();
 
-    const provider = providerOptions.find((p) => p.value === data.provider);
-    const fullKey = data.key || generateApiKey(provider?.prefix || '');
+    const provider = providerOptions.find((p) => p.value === data.provider_id);
+    const fullKey = data.key || data.keyPrefix || generateApiKey(provider?.prefix || '');
 
     const apiKey: ApiKey & { fullKey: string } = {
       id: `key-${Date.now()}`,
       name: data.name,
-      provider: data.provider,
+      provider_id: data.provider_id,
+      provider_name: provider?.label ?? null,
       keyPrefix: getKeyPrefix(fullKey),
       fullKey,
       status: 'active',
       createdAt: new Date(),
       expiresAt: data.expiresAt,
       usageCount: 0,
-      createdBy: data.createdBy,
+      createdBy: data.createdBy || '系统',
       description: data.description,
     };
 
@@ -387,9 +415,17 @@ export const resourceApi = {
     const index = mockApiKeys.findIndex((k) => k.id === id);
     if (index === -1) return undefined;
 
+    // 如果更新了 provider_id，需要同时更新 provider_name
+    let providerName = mockApiKeys[index].provider_name;
+    if (data.provider_id) {
+      const provider = providerOptions.find((p) => p.value === data.provider_id);
+      providerName = provider?.label ?? null;
+    }
+
     mockApiKeys[index] = {
       ...mockApiKeys[index],
       ...data,
+      provider_name: providerName,
     };
 
     return mockApiKeys[index];

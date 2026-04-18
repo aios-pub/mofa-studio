@@ -64,6 +64,13 @@ import { formatDate } from '@/utils';
 
 const { Text } = Typography;
 
+// 将完整密钥转换为打码显示
+const maskApiKey = (fullKey?: string): string => {
+  if (!fullKey) return 'sk-***';
+  if (fullKey.length <= 8) return `${fullKey}...`;
+  return `${fullKey.slice(0, 8)}...${fullKey.slice(-4)}`;
+};
+
 const statusConfig: Record<ApiKeyStatus, { color: string; label: string; icon: React.ReactNode }> = {
   active: { color: 'success', label: '有效', icon: <CheckCircleOutlined /> },
   expired: { color: 'warning', label: '已过期', icon: <ExclamationCircleOutlined /> },
@@ -85,6 +92,7 @@ export default function ResourceManagementPage() {
   const [keyFilterStatus, setKeyFilterStatus] = useState<ApiKeyStatus | ''>('');
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [newlyCreatedKey, setNewlyCreatedKey] = useState<string | null>(null);
+  const [editingKeyProvider, setEditingKeyProvider] = useState<ApiKey | null>(null);
 
   // Quotas state
   const [quotas, setQuotas] = useState<ResourceQuota[]>([]);
@@ -201,6 +209,22 @@ export default function ResourceManagementPage() {
     message.success('已复制到剪贴板');
   };
 
+  const handleEditProvider = (key: ApiKey) => {
+    setEditingKeyProvider(key);
+  };
+
+  const handleUpdateProvider = async (id: string, providerId: string) => {
+    try {
+      await resourceApi.updateApiKey(id, { provider_id: providerId });
+      message.success('Provider 已更新');
+      setEditingKeyProvider(null);
+      loadApiKeys();
+    } catch (error) {
+      console.error('Failed to update provider:', error);
+      message.error('更新失败');
+    }
+  };
+
   const handleUpdateQuota = async (id: string, limits: Partial<QuotaLimits>) => {
     try {
       await resourceApi.updateQuota(id, { limits });
@@ -250,9 +274,10 @@ export default function ResourceManagementPage() {
 
   const formatCurrency = (amount: number) => `¥${amount.toFixed(2)}`;
 
-  const getProviderLabel = (provider: string) => {
-    const found = providers.find((p) => p.id === provider || p.type === provider || p.name === provider);
-    return found?.name || provider;
+  const getProviderLabel = (providerId: string, providerName: string | null) => {
+    if (providerName) return providerName;
+    const found = providers.find((p) => p.id === providerId);
+    return found?.name || providerId;
   };
 
   const getUsageColor = (percentage: number) => {
@@ -282,17 +307,56 @@ export default function ResourceManagementPage() {
     },
     {
       title: t('resource.provider', 'Provider'),
-      dataIndex: 'provider',
       key: 'provider',
-      width: 120,
-      render: (provider: string) => getProviderLabel(provider),
+      width: 180,
+      render: (_, record) => {
+        const providerLabel = getProviderLabel(record.provider_id, record.provider_name);
+        const isMissing = !record.provider_name;
+        return (
+          <div className="flex items-center gap-2">
+            <span className={isMissing ? 'text-orange-500' : ''}>
+              {providerLabel}
+            </span>
+            {isMissing && (
+              <Tooltip title="Provider 已被删除，点击重新选择">
+                <Button
+                  type="link"
+                  size="small"
+                  className="!p-0 !h-auto"
+                  icon={<ExclamationCircleOutlined className="text-orange-500" />}
+                  onClick={() => handleEditProvider(record)}
+                />
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
     },
     {
-      title: t('resource.keyPrefix', '密钥前缀'),
-      dataIndex: 'keyPrefix',
-      key: 'keyPrefix',
-      width: 140,
-      render: (prefix: string) => <Text code>{prefix}</Text>,
+      title: 'API 密钥',
+      key: 'fullKey',
+      width: 280,
+      render: (_, record) => {
+        // 显示打码的密钥
+        const displayKey = record.keyPrefix || maskApiKey(record.fullKey);
+        // 复制时使用完整的明文密钥
+        const copyKey = record.fullKey || record.keyPrefix;
+        return (
+          <div className="flex items-center gap-2">
+            <Text code className="flex-1 break-all font-mono text-xs">
+              {displayKey}
+            </Text>
+            <Tooltip title="复制密钥">
+              <Button
+                type="text"
+                size="small"
+                icon={<CopyOutlined />}
+                onClick={() => handleCopyKey(copyKey)}
+              />
+            </Tooltip>
+          </div>
+        );
+      },
     },
     {
       title: t('resource.keyStatus.status', '状态'),
@@ -654,12 +718,12 @@ export default function ResourceManagementPage() {
             <Col xs={24} lg={12}>
               <Card title="Token 消耗分布">
                 <Space direction="vertical" className="w-full">
-                  {Object.entries(usageStats.tokensByProvider ?? {}).map(([provider, tokens]) => {
+                  {Object.entries(usageStats.tokensByProvider ?? {}).map(([providerId, tokens]) => {
                     const percentage = (tokens / usageStats.totalTokens) * 100 || 0;
                     return (
-                      <div key={provider}>
+                      <div key={providerId}>
                         <div className="flex justify-between text-xs mb-1">
-                          <span>{getProviderLabel(provider)}</span>
+                          <span>{getProviderLabel(providerId, providerId)}</span>
                           <span>
                             {formatNumber(tokens)} ({percentage.toFixed(1)}%)
                           </span>
@@ -679,12 +743,12 @@ export default function ResourceManagementPage() {
             <Col xs={24} lg={12}>
               <Card title="费用分布">
                 <Space direction="vertical" className="w-full">
-                  {Object.entries(usageStats.costByProvider ?? {}).map(([provider, cost]) => {
+                  {Object.entries(usageStats.costByProvider ?? {}).map(([providerId, cost]) => {
                     const percentage = (cost / usageStats.totalCost) * 100 || 0;
                     return (
-                      <div key={provider}>
+                      <div key={providerId}>
                         <div className="flex justify-between text-xs mb-1">
-                          <span>{getProviderLabel(provider)}</span>
+                          <span>{getProviderLabel(providerId, providerId)}</span>
                           <span>
                             {formatCurrency(cost)} ({percentage.toFixed(1)}%)
                           </span>
@@ -760,7 +824,11 @@ export default function ResourceManagementPage() {
         onClose={() => setCreateModalOpen(false)}
         onSave={async (data) => {
           const result = await resourceApi.createApiKey({
-            ...data,
+            name: data.name,
+            provider_id: data.provider_id,
+            keyPrefix: data.key,
+            description: data.description,
+            expiresAt: data.expiresAt,
             createdBy: '当前用户',
           });
           setCreateModalOpen(false);
@@ -784,6 +852,16 @@ export default function ResourceManagementPage() {
         onClose={() => setCreateQuotaModalOpen(false)}
         onSave={handleCreateQuota}
       />
+
+      {/* 编辑 Provider 弹窗 */}
+      {editingKeyProvider && (
+        <EditProviderModal
+          apiKey={editingKeyProvider}
+          providers={providers}
+          onClose={() => setEditingKeyProvider(null)}
+          onSave={handleUpdateProvider}
+        />
+      )}
     </div>
   );
 }
@@ -800,10 +878,12 @@ function CreateKeyModal({
   onClose: () => void;
   onSave: (data: {
     name: string;
-    provider: string;
-    key: string;
+    provider_id: string;
+    key?: string;
+    keyPrefix?: string;
     description?: string;
     expiresAt?: Date;
+    createdBy?: string;
   }) => Promise<void>;
 }) {
   const [form] = Form.useForm();
@@ -819,10 +899,12 @@ function CreateKeyModal({
       setError(null);
       await onSave({
         name: values.name,
-        provider: values.provider,
+        provider_id: values.provider_id,
         key: values.key,
+        keyPrefix: values.key ? undefined : '', // 如果用户输入了密钥，不需要生成前缀
         description: values.description,
         expiresAt: hasExpiry && values.expiresAt ? values.expiresAt.toDate() : undefined,
+        createdBy: '当前用户',
       });
       form.resetFields();
       setHasExpiry(false);
@@ -856,7 +938,7 @@ function CreateKeyModal({
       <Form
         form={form}
         layout="vertical"
-        initialValues={{ provider: providers[0]?.id }}
+        initialValues={{ provider_id: providers[0]?.id }}
       >
         <Form.Item
           name="name"
@@ -866,7 +948,7 @@ function CreateKeyModal({
           <Input placeholder="如：生产环境密钥" />
         </Form.Item>
 
-        <Form.Item name="provider" label="Provider">
+        <Form.Item name="provider_id" label="Provider">
           <Select options={providers.map((p) => ({ label: p.name, value: p.id }))} />
         </Form.Item>
 
@@ -1121,3 +1203,84 @@ function CreateQuotaModal({
 
 // Import dayjs for DatePicker
 import dayjs from 'dayjs';
+
+// 编辑 Provider 弹窗
+function EditProviderModal({
+  apiKey,
+  providers,
+  onClose,
+  onSave,
+}: {
+  apiKey: ApiKey;
+  providers: Provider[];
+  onClose: () => void;
+  onSave: (id: string, providerId: string) => Promise<void>;
+}) {
+  const [form] = Form.useForm();
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    form.setFieldsValue({
+      provider_id: apiKey.provider_id,
+    });
+  }, [apiKey, form]);
+
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      setSaving(true);
+      setError(null);
+      await onSave(apiKey.id, values.provider_id);
+    } catch (err: any) {
+      if (err?.errorFields) return;
+      console.error('Failed to save:', err);
+      setError(err instanceof Error ? err.message : '保存失败');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Modal
+      title="重新选择 Provider"
+      open={true}
+      onCancel={onClose}
+      onOk={handleSubmit}
+      okText="保存"
+      cancelText="取消"
+      confirmLoading={saving}
+      destroyOnClose
+    >
+      <Alert
+        type="warning"
+        message="Provider 已被删除"
+        description="请为此 API 密钥重新关联一个有效的 Provider"
+        showIcon
+        className="mb-4"
+      />
+      <Form form={form} layout="vertical">
+        <Form.Item
+          name="provider_id"
+          label="选择 Provider"
+          rules={[{ required: true, message: '请选择 Provider' }]}
+        >
+          <Select
+            options={providers.map((p) => ({ label: p.name, value: p.id }))}
+            placeholder="请选择新的 Provider"
+          />
+        </Form.Item>
+      </Form>
+      {error && (
+        <Alert
+          type="error"
+          message={error}
+          showIcon
+          closable
+          onClose={() => setError(null)}
+          className="mt-3"
+        />
+      )}
+    </Modal>
+  );
+}

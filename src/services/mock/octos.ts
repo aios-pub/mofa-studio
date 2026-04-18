@@ -115,7 +115,7 @@ export const octosMockApi = {
     "claude-haiku-4-5-20251001",
   ],
 
-  listSubAccounts: async (): Promise<OctosProfileResponse[]> => [],
+  listSubAccounts: async (_parentId: string): Promise<OctosProfileResponse[]> => [],
 
   createSubAccount: async (_parentId: string, params: any): Promise<OctosProfileResponse> => ({
     id: `sub-${Date.now()}`,
@@ -126,6 +126,21 @@ export const octosMockApi = {
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     status: { running: false, pid: null, started_at: null, uptime_secs: null },
+  }),
+
+  startSubGateway: async (): Promise<OctosActionResponse> => ({
+    ok: true,
+    message: "Sub-account gateway started",
+  }),
+
+  stopSubGateway: async (): Promise<OctosActionResponse> => ({
+    ok: true,
+    message: "Sub-account gateway stopped",
+  }),
+
+  getSubAccountStatus: async (): Promise<{ running: boolean; pid: number | null }> => ({
+    running: false,
+    pid: null,
   }),
 
   // ==================== 批量操作 ====================
@@ -251,5 +266,9 @@ export const octosMockApi = {
 
   // ==================== SSE Log Stream URL ====================
 
-  getLogStreamUrl: (profileId: string): string => `/api/admin/profiles/${profileId}/logs`,
+  getLogStreamUrl: (profileId: string): string => {
+    // Mock 不需要代理，直接返回相对路径
+    const path = `/api/admin/profiles/${profileId}/logs`;
+    return path;
+  },
 };

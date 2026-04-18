@@ -193,7 +193,10 @@ function InstalledSkillsView({
   if (loading) {
     return (
       <div className="flex justify-center py-8">
-        <Spin tip="加载中..." />
+        <Space>
+          <Spin />
+          <span className="text-[var(--color-text-secondary)]">加载中...</span>
+        </Space>
       </div>
     );
   }

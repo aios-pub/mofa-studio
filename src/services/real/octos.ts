@@ -220,8 +220,12 @@ export class OctosApiClient {
   getLogStreamUrl(profileId: string): string {
     const claw = (this.http.defaults.headers?.Authorization as string)?.toString() || "";
     const token = claw.replace("Bearer ", "");
-    const base = `/api/admin/profiles/${profileId}/logs`;
-    return token ? `${base}?token=${encodeURIComponent(token)}` : base;
+    const baseURL = this.http.defaults.baseURL || "";
+    const path = `/api/admin/profiles/${profileId}/logs`;
+    // 移除 baseURL 末尾的斜杠和 path 开头的斜杠，然后正确拼接
+    const cleanBaseURL = baseURL.endsWith('/') ? baseURL.slice(0, -1) : baseURL;
+    const fullPath = token ? `${path}?token=${encodeURIComponent(token)}` : path;
+    return cleanBaseURL + fullPath;
   }
 
   // ==================== 子账户 ====================
@@ -244,6 +248,21 @@ export class OctosApiClient {
     },
   ): Promise<OctosProfileResponse> {
     const { data } = await this.http.post(`/api/admin/profiles/${parentId}/accounts`, params);
+    return data;
+  }
+
+  async startSubGateway(parentId: string, subAccountId: string): Promise<OctosActionResponse> {
+    const { data } = await this.http.post(`/api/admin/profiles/${parentId}/accounts/${subAccountId}/start`);
+    return data;
+  }
+
+  async stopSubGateway(parentId: string, subAccountId: string): Promise<OctosActionResponse> {
+    const { data } = await this.http.post(`/api/admin/profiles/${parentId}/accounts/${subAccountId}/stop`);
+    return data;
+  }
+
+  async getSubAccountStatus(parentId: string, subAccountId: string): Promise<{ running: boolean; pid: number | null }> {
+    const { data } = await this.http.get(`/api/admin/profiles/${parentId}/accounts/${subAccountId}/status`);
     return data;
   }
 }

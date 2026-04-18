@@ -18,7 +18,6 @@ import {
   PauseCircleOutlined,
   PlayCircleOutlined,
   ClearOutlined,
-  CheckCircleOutlined,
 } from "@ant-design/icons";
 import { useSSE } from "@/hooks/useSSE";
 import type { OctosApiClient } from "@/services/real/octos";
@@ -58,42 +57,45 @@ export default function OctosLogsTab({ profileId, apiClient }: Props) {
 
   // SSE 连接
   const url = apiClient.getLogStreamUrl?.(profileId) || '';
-  const { state, isConnected, reconnect } = useSSE(url, {
+  const { state, isConnected, reconnect, lastMessage } = useSSE(url, {
     autoConnect: true,
     reconnectInterval: 5000,
     parseMessage: (data: string) => {
       try {
         return JSON.parse(data) as OctosLogEntry;
       } catch {
-        return { timestamp: new Date().toISOString(), level: 'info' as LogLevel, message: data };
+        // 如果不是 JSON，直接返回字符串
+        return data;
       }
     },
   });
 
-  // 处理新日志
+  // 处理新日志：监听 lastMessage 变化
   useEffect(() => {
-    if (state === 'open') {
-      const handler = (event: MessageEvent) => {
-        try {
-          const log = JSON.parse(event.data) as OctosLogEntry;
-          setLogs((prev) => {
-            const newLogs = [...prev, log];
-            // 保留最近 500 条
-            return newLogs.slice(-500);
-          });
-        } catch {
-          // 忽略解析错误
-        }
+    if (lastMessage === null) return;
+
+    if (paused) return; // 暂停时不添加新日志
+
+    // 判断消息类型
+    if (typeof lastMessage === 'string') {
+      // 纯文本日志
+      const log: OctosLogEntry = {
+        timestamp: new Date().toISOString(),
+        level: lastMessage.startsWith('[stderr]') ? 'error' : 'info',
+        message: lastMessage,
       };
-
-      // 注意：useSSE hook 的 lastMessage 已经是解析后的数据
-      // 这里我们实际上应该监听 lastMessage 的变化
+      setLogs((prev) => {
+        const newLogs = [...prev, log];
+        return newLogs.length > 1000 ? newLogs.slice(-1000) : newLogs;
+      });
+    } else if (typeof lastMessage === 'object' && 'message' in lastMessage) {
+      // 结构化日志
+      setLogs((prev) => {
+        const newLogs = [...prev, lastMessage as OctosLogEntry];
+        return newLogs.length > 1000 ? newLogs.slice(-1000) : newLogs;
+      });
     }
-  }, [state]);
-
-  // 监听 SSE lastMessage 变化（useSSE hook 返回的 lastMessage）
-  // 由于 useSSE 的 lastMessage 是在 hook 内部管理的，
-  // 我们需要在组件中处理它。这里简化处理，假设 API 返回正确的格式。
+  }, [lastMessage, paused]);
 
   // 自动滚动到底部
   useEffect(() => {
@@ -162,7 +164,7 @@ export default function OctosLogsTab({ profileId, apiClient }: Props) {
 
       {/* 日志显示区 */}
       <Card
-        bodyStyle={{ padding: 0 }}
+        styles={{ body: { padding: 0 } }}
         style={{
           backgroundColor: '#1f1f1f',
           borderRadius: 4,
@@ -173,7 +175,7 @@ export default function OctosLogsTab({ profileId, apiClient }: Props) {
             <Empty
               description="暂无日志"
               image={Empty.PRESENTED_IMAGE_SIMPLE}
-              imageStyle={{ height: 60 }}
+              styles={{ image: { height: 60 } }}
             >
               {!isConnected && (
                 <Button type="primary" onClick={reconnect}>

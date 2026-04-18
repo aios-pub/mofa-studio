@@ -62,7 +62,7 @@ export function useSSE(
   const isManualCloseRef = useRef(false);
 
   // 获取 URL（支持函数形式）
-  getUrl = useCallback(() => (typeof url === 'function' ? url() : url), [url]);
+  const getUrl = useCallback(() => (typeof url === 'function' ? url() : url), [url]);
 
   // 清理连接
   const cleanup = useCallback(() => {

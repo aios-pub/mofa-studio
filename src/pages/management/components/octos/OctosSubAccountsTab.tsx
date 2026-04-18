@@ -95,7 +95,11 @@ export default function OctosSubAccountsTab({ profileId, apiClient }: Props) {
 
   const handleStartStop = async (subAccountId: string, action: "start" | "stop") => {
     try {
-      await apiClient[action === "start" ? "startGateway" : "stopGateway"](subAccountId);
+      if (action === "start") {
+        await apiClient.startSubGateway(profileId, subAccountId);
+      } else {
+        await apiClient.stopSubGateway(profileId, subAccountId);
+      }
       message.success(`${action === "start" ? "启动" : "停止"}成功`);
       fetchSubAccounts();
     } catch (e: any) {
@@ -127,6 +131,7 @@ export default function OctosSubAccountsTab({ profileId, apiClient }: Props) {
         <Empty
           description="暂无子账户"
           image={Empty.PRESENTED_IMAGE_SIMPLE}
+          styles={{ image: { height: 60 } }}
         />
       ) : (
         <List

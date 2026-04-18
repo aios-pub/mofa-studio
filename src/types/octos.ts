@@ -27,13 +27,19 @@ export interface OctosChannelCredentials {
   [key: string]: string | number;
 }
 
-/** 回退模型 */
+/** 回退模型 - 旧模式 */
 export interface OctosFallbackModel {
   provider: string;
   model?: string | null;
   base_url?: string | null;
   api_key_env?: string | null;
   api_type?: string | null;
+}
+
+/** 回退配置 - 新模式 (复用 Provider 管理) */
+export interface OctosFallbackConfig {
+  provider_id: string | null;
+  model_id: string | null;
 }
 
 /** 邮件设置 */
@@ -63,7 +69,10 @@ export interface OctosProfileConfig {
   api_key_env?: string | null;      // 旧模式：API Key 环境变量名
   api_type?: string | null;         // API 类型
 
-  // 回退模型 (暂时保留旧配置方式)
+  // 回退模型 - 支持两种模式：
+  // 1. 新模式：复用 provider 管理 (fallback_configs)
+  // 2. 旧模式：直接配置 (fallback_models)
+  fallback_configs?: OctosFallbackConfig[];
   fallback_models?: OctosFallbackModel[];
 
   // 渠道配置 - 支持两种模式：

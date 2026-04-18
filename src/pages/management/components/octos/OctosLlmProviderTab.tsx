@@ -3,7 +3,7 @@
  * 从已配置的 Providers 中选择，而不是重新配置
  */
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Select,
   Button,
@@ -23,7 +23,6 @@ import {
   PlusOutlined,
   DeleteOutlined,
   ExperimentOutlined,
-  ReloadOutlined,
   CloudServerOutlined,
   InfoCircleOutlined,
 } from "@ant-design/icons";
@@ -41,16 +40,16 @@ interface ProviderWithModels {
   id: string;
   name: string;
   type: string;
+  baseUrl: string;
   models: { id: string; name: string; enabled: boolean }[];
 }
 
 interface Props {
   config: OctosProfileConfig;
   onChange: (config: OctosProfileConfig) => void;
-  profileId?: string;
 }
 
-export default function OctosLlmProviderTab({ config, onChange, profileId }: Props) {
+export default function OctosLlmProviderTab({ config, onChange }: Props) {
   const [providers, setProviders] = useState<ProviderWithModels[]>([]);
   const [loading, setLoading] = useState(true);
   const [testResult, setTestResult] = useState<TestState>({ state: "idle", error: "" });
@@ -65,11 +64,12 @@ export default function OctosLlmProviderTab({ config, onChange, profileId }: Pro
     try {
       setLoading(true);
       const data = await providerApi.getAll();
-      const providersWithModels: ProviderWithModels[] = data.map((p) => ({
+      const providersWithModels: ProviderWithModels[] = data.map((p: any) => ({
         id: p.id,
         name: p.name,
         type: p.type,
-        models: (p.models || []).map((m) => ({
+        baseUrl: p.baseUrl,
+        models: (p.models || []).map((m: any) => ({
           id: m.id,
           name: m.name,
           enabled: m.enabled ?? true,
@@ -81,6 +81,46 @@ export default function OctosLlmProviderTab({ config, onChange, profileId }: Pro
       if (config.provider_id) {
         const current = providersWithModels.find((p) => p.id === config.provider_id);
         setSelectedProvider(current || null);
+      } else if (config.provider && config.base_url) {
+        // 尝试从旧版配置匹配到 Provider
+        const matched = providersWithModels.find(
+          (p) => p.type === config.provider && data.find((d: any) => d.id === p.id)?.baseUrl === config.base_url
+        );
+        if (matched) {
+          const matchedModel = matched.models.find((m) => m.name === config.model);
+          if (matchedModel) {
+            // 自动迁移到新版配置
+            onChange({
+              ...config,
+              provider_id: matched.id,
+              model_id: matchedModel.id,
+            });
+            setSelectedProvider(matched);
+          }
+        }
+      }
+
+      // 尝试迁移回退模型配置
+      if (config.fallback_models && config.fallback_models.length > 0 && !config.fallback_configs) {
+        const fallbackConfigs: Array<{ provider_id: string | null; model_id: string | null }> = [];
+        for (const fb of config.fallback_models) {
+          const matchedProvider = providersWithModels.find(
+            (p) => p.type === fb.provider && data.find((d: any) => d.id === p.id)?.baseUrl === fb.base_url
+          );
+          if (matchedProvider) {
+            const matchedModel = matchedProvider.models.find((m) => m.name === fb.model);
+            fallbackConfigs.push({
+              provider_id: matchedProvider.id,
+              model_id: matchedModel?.id || null,
+            });
+          }
+        }
+        if (fallbackConfigs.length > 0) {
+          onChange({
+            ...config,
+            fallback_configs: fallbackConfigs,
+          });
+        }
       }
     } catch (error) {
       console.error("Failed to load providers:", error);
@@ -223,9 +263,11 @@ export default function OctosLlmProviderTab({ config, onChange, profileId }: Pro
                 value: p.id,
               }))}
               showSearch
-              filterOption={(input, option) =>
-                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
-              }
+              filterOption={(input, option) => {
+                const label = option?.label as any;
+                const text = typeof label === 'object' && label?.props?.children?.[0] ? label.props.children[0] : '';
+                return String(text).toLowerCase().includes(input.toLowerCase());
+              }}
             />
           </div>
 
@@ -328,7 +370,7 @@ export default function OctosLlmProviderTab({ config, onChange, profileId }: Pro
         </>
       )}
 
-      {/* 回退模型 - 暂时保留，未来也可以改为复用 Provider */}
+      {/* 回退模型 */}
       <Divider orientation="left" className="text-xs">
         回退模型
       </Divider>
@@ -337,29 +379,105 @@ export default function OctosLlmProviderTab({ config, onChange, profileId }: Pro
         showIcon
         icon={<InfoCircleOutlined />}
         message="回退模型配置"
-        description="当前版本回退模型仍使用旧版配置方式，未来版本将支持从 Provider 管理中选择"
+        description="当主 Provider 失败时，网关将按顺序尝试回退模型"
         className="text-xs"
       />
-      {(!config.fallback_models || config.fallback_models.length === 0) ? (
-        <Text type="secondary" className="text-xs italic">
-          未配置回退模型。如果主 Provider 失败，网关将重试同一 Provider。
-        </Text>
+      {(!config.fallback_configs || config.fallback_configs.length === 0) ? (
+        <div className="text-center py-4">
+          <Text type="secondary" className="text-xs">
+            未配置回退模型。如果主 Provider 失败，网关将重试同一 Provider。
+          </Text>
+        </div>
       ) : (
-        <div className="space-y-2">
-          {config.fallback_models.map((fb, idx) => (
-            <div
-              key={idx}
-              className="p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)]"
-            >
-              <Space>
-                <Tag>回退 #{idx + 1}</Tag>
-                <Text>{fb.provider}</Text>
-                <Text type="secondary">{fb.model || "默认模型"}</Text>
-              </Space>
-            </div>
-          ))}
+        <div className="space-y-3">
+          {config.fallback_configs.map((fb, idx) => {
+            const fbProvider = providers.find((p) => p.id === fb.provider_id);
+            return (
+              <Card
+                key={idx}
+                size="small"
+                className="bg-[var(--color-bg-secondary)]"
+                extra={
+                  <Button
+                    size="small"
+                    type="text"
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => {
+                      const newFallbacks = config.fallback_configs?.filter((_, i) => i !== idx) || [];
+                      updateConfig({ fallback_configs: newFallbacks });
+                    }}
+                  />
+                }
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <Tag color="orange">回退 #{idx + 1}</Tag>
+                </div>
+                <div className="space-y-2">
+                  <Select
+                    className="w-full"
+                    value={fb.provider_id || undefined}
+                    placeholder="选择 Provider..."
+                    onChange={(providerId) => {
+                      const provider = providers.find((p) => p.id === providerId);
+                      const newFallbacks = [...(config.fallback_configs || [])];
+                      newFallbacks[idx] = {
+                        provider_id: providerId,
+                        model_id: provider?.models.find((m) => m.enabled)?.id || null,
+                      };
+                      updateConfig({ fallback_configs: newFallbacks });
+                    }}
+                    options={providers.map((p) => ({
+                      label: (
+                        <Space>
+                          <span>{p.name}</span>
+                          <Tag color="blue" className="text-xs">{p.type}</Tag>
+                        </Space>
+                      ),
+                      value: p.id,
+                    }))}
+                    showSearch
+                    size="small"
+                  />
+                  {fbProvider && (
+                    <Select
+                      className="w-full"
+                      value={fb.model_id || undefined}
+                      placeholder="选择模型..."
+                      onChange={(modelId) => {
+                        const newFallbacks = [...(config.fallback_configs || [])];
+                        newFallbacks[idx] = {
+                          ...newFallbacks[idx],
+                          model_id: modelId,
+                        };
+                        updateConfig({ fallback_configs: newFallbacks });
+                      }}
+                      options={fbProvider.models
+                        .filter((m) => m.enabled)
+                        .map((m) => ({
+                          label: m.name,
+                          value: m.id,
+                        }))}
+                      showSearch
+                      size="small"
+                    />
+                  )}
+                </div>
+              </Card>
+            );
+          })}
         </div>
       )}
+      <Button
+        size="small"
+        icon={<PlusOutlined />}
+        onClick={() => {
+          const newFallbacks = [...(config.fallback_configs || []), { provider_id: null, model_id: null }];
+          updateConfig({ fallback_configs: newFallbacks });
+        }}
+      >
+        添加回退模型
+      </Button>
     </div>
   );
 }

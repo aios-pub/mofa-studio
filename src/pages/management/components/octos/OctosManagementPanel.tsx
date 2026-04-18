@@ -44,6 +44,7 @@ import { createOctosApiClient } from "@/services";
 const { Text } = Typography;
 import { isMockEnabled, octosMockApi } from "@/services";
 import { OctosApiClient } from "@/services/real/octos";
+import { initConfig, prepareConfigForSave } from "@/services/real/octosConfigAdapter";
 import OctosLlmProviderTab from "./OctosLlmProviderTab";
 import OctosChannelsTab from "./OctosChannelsTab";
 import OctosGatewaySettingsTab from "./OctosGatewaySettingsTab";
@@ -93,10 +94,17 @@ export default function OctosManagementPanel({ agent }: Props) {
     try {
       setLoading(true);
       const list = await callApi((c) => c.listProfiles());
-      setProfiles(list);
+      // 将后端配置转换为前端格式
+      const convertedList = await Promise.all(
+        list.map(async (p) => ({
+          ...p,
+          config: await initConfig(p.config),
+        }))
+      );
+      setProfiles(convertedList);
       setConnected(true);
-      if (list.length > 0 && !selectedProfileId) {
-        setSelectedProfileId(list[0].id);
+      if (convertedList.length > 0 && !selectedProfileId) {
+        setSelectedProfileId(convertedList[0].id);
       }
     } catch {
       setConnected(false);
@@ -127,11 +135,18 @@ export default function OctosManagementPanel({ agent }: Props) {
     if (!selectedProfile) return;
     try {
       setSaving(true);
+      // 将前端配置转换为后端格式
+      const backendConfig = await prepareConfigForSave(selectedProfile.config);
       const updated = await callApi((c) =>
-        c.updateProfile(selectedProfile.id, { config: selectedProfile.config }),
+        c.updateProfile(selectedProfile.id, { config: backendConfig }),
       );
+      // 将返回的配置转换回前端格式
+      const frontendUpdated = {
+        ...updated,
+        config: await initConfig(updated.config),
+      };
       setProfiles((prev) =>
-        prev.map((p) => (p.id === updated.id ? updated : p)),
+        prev.map((p) => (p.id === frontendUpdated.id ? frontendUpdated : p)),
       );
       message.success("配置已保存");
     } catch (e: any) {

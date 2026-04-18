@@ -122,7 +122,7 @@ export const channelTypeConfig = isMockEnabled() ? mockChannelTypeConfig : realC
 
 // Providers
 export const providerApi = createProxyService(providerMockApi, providerRealApi as any);
-export type { ExternalModel, ProviderModel } from "./real/providers";
+export type { ExternalModel, ProviderModel, Provider } from "./real/providers";
 
 // System
 export const roleApi = createProxyService(roleMockApi, roleRealApi as any);
@@ -159,6 +159,7 @@ export const clawApi = createProxyService(clawMockApi, clawRealApi);
 export { createOctosApiClient } from "./real/octos";
 export { octosMockApi } from "./mock/octos";
 export { OCTOS_PROVIDER_CATALOG, OCTOS_PROVIDER_NAMES } from "./real/octosProviderCatalog";
+export { initConfig, prepareConfigForSave } from "./real/octosConfigAdapter";
 
 // 导出 mock 数据和类型
 export { mockPrompts, type Prompt, type PromptVariable, type PromptVersion, type VersionDiff } from "./mock/prompts";

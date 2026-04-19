@@ -558,11 +558,11 @@ const skillHubV2MockApi = {
   }),
 
   approvePromotion: async (id: string, data?: { comment?: string }): Promise<any> => ({
-    newSkillId: 'new-' + Date.now(),
-    newVersionId: 'v-' + Date.now(),
-    targetNamespace: 'global',
-    targetSlug: 'promoted-skill',
-    targetVersion: '1.0.0',
+    new_skill_id: 'new-' + Date.now(),
+    new_version_id: 'v-' + Date.now(),
+    target_namespace: 'global',
+    target_slug: 'promoted-skill',
+    target_version: '1.0.0',
   }),
 
   rejectPromotion: async (id: string, data?: { comment?: string }): Promise<void> => {},

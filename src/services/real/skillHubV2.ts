@@ -276,7 +276,12 @@ const listReviews = async (params: {
   size?: number;
 }): Promise<PageResponse<ReviewTask>> => {
   return apiClient.get<PageResponse<ReviewTask>>('/api/skill-hub/v1/reviews', {
-    params: { ...params, page_size: params.size },
+    params: {
+      status: params.status,
+      namespace_id: params.namespaceId,
+      page: params.page,
+      page_size: params.size,
+    },
   });
 };
 
@@ -323,7 +328,11 @@ const listReports = async (params: {
   size?: number;
 }): Promise<PageResponse<SkillReport>> => {
   return apiClient.get<PageResponse<SkillReport>>('/api/skill-hub/v1/admin/reports', {
-    params: { ...params, page_size: params.size },
+    params: {
+      status: params.status,
+      page: params.page,
+      page_size: params.size,
+    },
   });
 };
 
@@ -357,7 +366,11 @@ const createNamespace = async (data: {
   displayName: string;
   type: NamespaceType;
 }): Promise<HubNamespace> => {
-  return apiClient.post<HubNamespace>('/api/skill-hub/v1/namespaces', data);
+  return apiClient.post<HubNamespace>('/api/skill-hub/v1/namespaces', {
+    slug: data.slug,
+    display_name: data.displayName,
+    type: data.type,
+  });
 };
 
 const getNamespace = async (id: string): Promise<HubNamespace> => {
@@ -386,7 +399,11 @@ const submitPromotion = async (data: {
   sourceVersionId: string;
   targetNamespaceId: string;
 }): Promise<{ id: string }> => {
-  return apiClient.post<{ id: string }>('/api/skill-hub/v1/promotions', data);
+  return apiClient.post<{ id: string }>('/api/skill-hub/v1/promotions', {
+    source_skill_id: data.sourceSkillId,
+    source_version_id: data.sourceVersionId,
+    target_namespace_id: data.targetNamespaceId,
+  });
 };
 
 const listPromotions = async (params: {
@@ -408,15 +425,18 @@ const listPromotions = async (params: {
 const approvePromotion = async (id: string, data?: {
   comment?: string;
 }): Promise<{
-  newSkillId?: string;
-  newVersionId: string;
-  targetNamespace: string;
-  targetSlug: string;
-  targetVersion: string;
+  new_skill_id?: string;
+  new_version_id: string;
+  target_namespace: string;
+  target_slug: string;
+  target_version: string;
 }> => {
   return apiClient.post<{
-    newSkillId?: string;
-    newVersionId: string;
+    new_skill_id?: string;
+    new_version_id: string;
+    target_namespace: string;
+    target_slug: string;
+    target_version: string;
   }>(`/api/skill-hub/v1/promotions/${id}/approve`, data);
 };
 
@@ -431,7 +451,12 @@ const getTokens = async (params?: {
   page?: number;
   size?: number;
 }): Promise<{ items: ApiToken[]; total: number; page: number; size: number }> => {
-  return apiClient.get('/api/skill-hub/v1/tokens', { params });
+  return apiClient.get('/api/skill-hub/v1/tokens', {
+    params: {
+      page: params?.page,
+      page_size: params?.size,
+    },
+  });
 };
 
 const createToken = async (data: {
@@ -440,7 +465,12 @@ const createToken = async (data: {
   expirationMode?: 'never' | '30d' | '90d' | '180d' | '365d' | 'custom';
   customExpiresAt?: string;
 }): Promise<{ token: string; id: string; name: string; tokenPrefix: string; createdAt: string }> => {
-  return apiClient.post('/api/skill-hub/v1/tokens', data);
+  return apiClient.post('/api/skill-hub/v1/tokens', {
+    name: data.name,
+    scopes: data.scopes,
+    expiration_mode: data.expirationMode,
+    custom_expires_at: data.customExpiresAt,
+  });
 };
 
 const deleteToken = async (id: string): Promise<void> => {
@@ -448,7 +478,7 @@ const deleteToken = async (id: string): Promise<void> => {
 };
 
 const updateTokenExpiration = async (id: string, expiresAt?: string): Promise<void> => {
-  return apiClient.put<void>(`/api/skill-hub/v1/tokens/${id}/expiration`, { expiresAt });
+  return apiClient.put<void>(`/api/skill-hub/v1/tokens/${id}/expiration`, { expires_at: expiresAt });
 };
 
 // ===== Stats =====

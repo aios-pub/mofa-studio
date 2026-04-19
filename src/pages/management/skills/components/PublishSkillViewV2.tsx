@@ -19,6 +19,7 @@ import {
   Tag,
   Space,
   Divider,
+  Modal,
 } from 'antd';
 import {
   CloudUploadOutlined,
@@ -51,6 +52,7 @@ export function PublishSkillViewV2() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [parsedMetadata, setParsedMetadata] = useState<ParsedMetadata | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [formatModalOpen, setFormatModalOpen] = useState(false);
 
   const {
     namespaces,
@@ -243,12 +245,7 @@ export function PublishSkillViewV2() {
             className="mb-4"
             extra={
               <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  // Show SKILL.md format guide
-                  message.info('SKILL.md 格式: --- 字段名: 值 ---\\n\\nREADME 内容');
-                }}
+                onClick={() => setFormatModalOpen(true)}
               >
                 SKILL.md 格式说明
               </a>
@@ -413,6 +410,149 @@ export function PublishSkillViewV2() {
           </Card>
         )}
       </div>
+
+      {/* SKILL.md 格式说明模态框 */}
+      <Modal
+        title="SKILL.md 格式说明"
+        open={formatModalOpen}
+        onCancel={() => setFormatModalOpen(false)}
+        footer={[
+          <Button key="close" onClick={() => setFormatModalOpen(false)}>
+            关闭
+          </Button>,
+        ]}
+        width={700}
+      >
+        <div className="space-y-4">
+          {/* 技能包结构 */}
+          <div>
+            <Title level={5}>技能包结构</Title>
+            <Paragraph type="secondary">
+              一个标准的技能包结构如下：
+            </Paragraph>
+            <div className="bg-gray-50 p-3 rounded border border-gray-200 font-mono text-sm">
+              my-skill/<br />
+              ├─ SKILL.md <span className="text-gray-500"># 主入口文件（必需）</span><br />
+              ├─ references/ <span className="text-gray-500"># 参考资料（可选）</span><br />
+              ├─ scripts/ <span className="text-gray-500"># 脚本（可选）</span><br />
+              └─ assets/ <span className="text-gray-500"># 静态资源（可选）</span>
+            </div>
+          </div>
+
+          <Divider />
+
+          {/* SKILL.md 格式 */}
+          <div>
+            <Title level={5}>SKILL.md 格式</Title>
+            <Paragraph type="secondary">
+              SKILL.md 使用 YAML frontmatter + Markdown 正文格式：
+            </Paragraph>
+            <div className="bg-gray-50 p-3 rounded border border-gray-200 font-mono text-sm overflow-x-auto">
+              <pre className="whitespace-pre-wrap">---
+<span className="text-blue-600">name</span>: my-skill
+<span className="text-blue-600">description</span>: 一句话描述这个技能的用途
+<span className="text-blue-600">version</span>: 1.0.0
+<span className="text-blue-600">author</span>: Your Name
+<span className="text-blue-600">tags</span>: ["category1", "category2"]
+---
+
+# 技能说明
+
+这里是技能的详细说明...</pre>
+            </div>
+          </div>
+
+          <Divider />
+
+          {/* Frontmatter 字段说明 */}
+          <div>
+            <Title level={5}>Frontmatter 字段说明</Title>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 px-3 font-semibold">字段</th>
+                    <th className="text-left py-2 px-3 font-semibold">必需</th>
+                    <th className="text-left py-2 px-3 font-semibold">说明</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b">
+                    <td className="py-2 px-3 font-mono text-blue-600">name</td>
+                    <td className="py-2 px-3"><Tag color="red" className="m-0">是</Tag></td>
+                    <td className="py-2 px-3">技能标识，kebab-case 格式（小写字母、数字、连字符）</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2 px-3 font-mono text-blue-600">description</td>
+                    <td className="py-2 px-3"><Tag color="red" className="m-0">是</Tag></td>
+                    <td className="py-2 px-3">技能简短描述</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2 px-3 font-mono text-blue-600">version</td>
+                    <td className="py-2 px-3"><Tag color="default" className="m-0">否</Tag></td>
+                    <td className="py-2 px-3">版本号，遵循语义化版本规范（如 1.0.0）</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2 px-3 font-mono text-blue-600">author</td>
+                    <td className="py-2 px-3"><Tag color="default" className="m-0">否</Tag></td>
+                    <td className="py-2 px-3">作者名称</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2 px-3 font-mono text-blue-600">tags</td>
+                    <td className="py-2 px-3"><Tag color="default" className="m-0">否</Tag></td>
+                    <td className="py-2 px-3">标签数组，JSON 格式，如 ["code", "review"]</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <Divider />
+
+          {/* 文件限制 */}
+          <div>
+            <Title level={5}>文件限制</Title>
+            <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600">
+              <li>单文件大小：最大 1MB</li>
+              <li>总包大小：最大 50MB</li>
+              <li>文件数量：最多 100 个</li>
+              <li>允许的文件类型：<code className="bg-gray-100 px-1 rounded">.md</code>、<code className="bg-gray-100 px-1 rounded">.txt</code>、<code className="bg-gray-100 px-1 rounded">.json</code>、<code className="bg-gray-100 px-1 rounded">.yaml</code>、<code className="bg-gray-100 px-1 rounded">.yml</code>、<code className="bg-gray-100 px-1 rounded">.js</code>、<code className="bg-gray-100 px-1 rounded">.ts</code>、<code className="bg-gray-100 px-1 rounded">.py</code>、<code className="bg-gray-100 px-1 rounded">.sh</code>、<code className="bg-gray-100 px-1 rounded">.png</code>、<code className="bg-gray-100 px-1 rounded">.jpg</code>、<code className="bg-gray-100 px-1 rounded">.svg</code></li>
+            </ul>
+          </div>
+
+          {/* 示例 */}
+          <div>
+            <Title level={5}>完整示例</Title>
+            <Paragraph type="secondary">
+              以下是一个完整的 SKILL.md 示例：
+            </Paragraph>
+            <div className="bg-gray-50 p-3 rounded border border-gray-200 font-mono text-sm overflow-x-auto">
+              <pre className="whitespace-pre-wrap">---
+<span className="text-blue-600">name</span>: email-helper
+<span className="text-blue-600">displayName</span>: 邮件助手
+<span className="text-blue-600">description</span>: 帮助处理邮件相关任务，包括编写、回复、分类等
+<span className="text-blue-600">version</span>: 1.2.0
+<span className="text-blue-600">author</span>: Your Team
+<span className="text-blue-600">tags</span>: ["email", "productivity", "automation"]
+---
+
+# 邮件助手
+
+这个技能帮助你处理各种邮件相关任务。
+
+## 功能
+
+- 编写专业邮件
+- 回复常见邮件
+- 分类整理邮件
+
+## 使用方法
+
+直接告诉 AI 你需要处理的邮件内容，它会帮你完成相应任务。</pre>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

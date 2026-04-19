@@ -32,6 +32,7 @@ import { resourceApi as resourceMockApi, providerOptions as mockProviderOptions 
 import { auditLogApi as auditLogMockApi } from "./mock/auditLogs";
 import { scheduledTaskApi as scheduledTaskMockApi } from "./mock/scheduledTasks";
 import { skillHubApi as skillHubMockApi } from "./mock/skillHub";
+import { skillHubV2MockApi } from "./mock/skillHubV2";
 
 // 真实 API 服务
 import { agentRealApi } from "./real/agents";
@@ -40,6 +41,7 @@ import authRealApi from "./real/auth";
 import { promptRealApi } from "./real/prompts";
 import { skillRealApi } from "./real/skills";
 import { skillHubRealApi } from "./real/skillHub";
+import { skillHubV2RealApi } from "./real/skillHubV2";
 import { testSetRealApi } from "./real/testsets";
 import { analyticsRealApi } from "./real/analytics";
 import { monitoringRealApi } from "./real/monitoring";
@@ -95,6 +97,7 @@ export const promptApi = createProxyService(promptMockApi, promptRealApi as any)
 // Skills
 export const skillApi = createProxyService(skillMockApi, skillRealApi as any);
 export const skillHubApi = createProxyService(skillHubMockApi, skillHubRealApi as any);
+export const skillHubV2Api = createProxyService(skillHubV2MockApi, skillHubV2RealApi as any);
 
 // TestSets
 export const testSetApi = createProxyService(testSetMockApi, testSetRealApi as any);

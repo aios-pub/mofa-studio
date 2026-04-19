@@ -1,6 +1,6 @@
 /**
  * Skills 管理页面
- * Tab 布局：本地 Skills | Skill Hub | 发布 Skill
+ * Tab 布局：本地 Skills | Skill Hub | 发布 Skill | 审核管理 | 管理面板
  */
 
 import { useState } from 'react';
@@ -9,16 +9,25 @@ import {
   ThunderboltOutlined,
   CloudOutlined,
   CloudUploadOutlined,
+  AuditOutlined,
+  SettingOutlined,
+  KeyOutlined,
 } from '@ant-design/icons';
-import { LocalSkillsList, HubSkillsView, PublishSkillView } from './skills';
+import { LocalSkillsList, HubSkillsViewV2, PublishSkillViewV2 } from './skills';
 import { SkillDetail } from './SkillDetail';
+import { ReviewQueue } from './skills/components/ReviewQueue';
+import { AdminGovernancePanel } from './skills/components/AdminGovernancePanel';
+import { MySkillsPage } from './skills/components/MySkillsPage';
+import { MyStarsPage } from './skills/components/MyStarsPage';
+import { GovernanceInbox } from './skills/components/GovernanceInbox';
+import { ApiTokenManagement } from './skills/components/ApiTokenManagement';
 import type { Skill } from '@/services';
 import { skillApi } from '@/services';
 
 const { Text, Title } = Typography;
 
 export default function SkillsListPage() {
-  const [activeTab, setActiveTab] = useState<'local' | 'hub' | 'publish'>('local');
+  const [activeTab, setActiveTab] = useState<'local' | 'hub' | 'publish' | 'my-skills' | 'my-stars' | 'governance' | 'review' | 'admin' | 'tokens'>('local');
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
 
   const handleToggleEnabled = async (skill: Skill) => {
@@ -57,6 +66,57 @@ export default function SkillsListPage() {
         <span className="flex items-center gap-2">
           <CloudUploadOutlined />
           发布 Skill
+        </span>
+      ),
+    },
+    {
+      key: 'my-skills',
+      label: (
+        <span className="flex items-center gap-2">
+          📋 我的技能
+        </span>
+      ),
+    },
+    {
+      key: 'my-stars',
+      label: (
+        <span className="flex items-center gap-2">
+          ⭐ 我的收藏
+        </span>
+      ),
+    },
+    {
+      key: 'governance',
+      label: (
+        <span className="flex items-center gap-2">
+          📬 治理收件箱
+        </span>
+      ),
+    },
+    {
+      key: 'review',
+      label: (
+        <span className="flex items-center gap-2">
+          <AuditOutlined />
+          审核队列
+        </span>
+      ),
+    },
+    {
+      key: 'admin',
+      label: (
+        <span className="flex items-center gap-2">
+          <SettingOutlined />
+          管理面板
+        </span>
+      ),
+    },
+    {
+      key: 'tokens',
+      label: (
+        <span className="flex items-center gap-2">
+          <KeyOutlined />
+          API 令牌
         </span>
       ),
     },
@@ -107,9 +167,21 @@ export default function SkillsListPage() {
           </div>
         )}
 
-        {activeTab === 'hub' && <HubSkillsView />}
+        {activeTab === 'hub' && <HubSkillsViewV2 />}
 
-        {activeTab === 'publish' && <PublishSkillView />}
+        {activeTab === 'publish' && <PublishSkillViewV2 />}
+
+        {activeTab === 'my-skills' && <MySkillsPage />}
+
+        {activeTab === 'my-stars' && <MyStarsPage />}
+
+        {activeTab === 'governance' && <GovernanceInbox />}
+
+        {activeTab === 'review' && <ReviewQueue />}
+
+        {activeTab === 'admin' && <AdminGovernancePanel />}
+
+        {activeTab === 'tokens' && <ApiTokenManagement />}
       </div>
     </div>
   );

@@ -1,344 +1,293 @@
 /**
- * Hub Skill 详情组件
+ * Hub Skill 详情页
+ * 多 Tab 布局：概览、版本、文件、README
  */
 
-import { useState } from "react";
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Button,
+  Tabs,
+  Descriptions,
   Tag,
-  Rate,
+  Button,
+  Space,
   Typography,
   Card,
-  Statistic,
-  Tabs,
+  Badge,
+  Divider,
   message,
-} from "antd";
+  Spin,
+} from 'antd';
 import {
+  StarOutlined,
+  StarFilled,
   DownloadOutlined,
-  LoadingOutlined,
-  UserOutlined,
-  ClockCircleOutlined,
-  TagOutlined,
-  SettingOutlined,
-  FileTextOutlined,
-  CheckOutlined,
-  CloseOutlined,
-} from "@ant-design/icons";
-import type { HubSkill } from "../../../../types/skill";
+  ShareAltOutlined,
+  FlagOutlined,
+} from '@ant-design/icons';
+import { useSkillHubStore } from '@/stores/useSkillHubStore';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
+import 'highlight.js/styles/github-dark.css';
+import { VersionList } from './VersionList';
+import { FileTreeBrowser } from './FileTreeBrowser';
+import { FilePreview } from './FilePreview';
+import { StarButton } from './StarButton';
+import { RatingInput } from './RatingInput';
+import { LabelPanel } from './LabelPanel';
 
-const { Text, Title, Paragraph } = Typography;
+const { Title, Paragraph, Text } = Typography;
 
-interface HubSkillDetailProps {
-  skill: HubSkill;
-  isInstalled?: boolean;
-  isInstalling?: boolean;
-  onInstall?: () => Promise<boolean>;
-  onBack?: () => void;
-}
+export function HubSkillDetail() {
+  const { namespace, slug } = useParams<{ namespace: string; slug: string }>();
+  const navigate = useNavigate();
 
-export function HubSkillDetail({
-  skill,
-  isInstalled,
-  isInstalling,
-  onInstall,
-  onBack: _onBack,
-}: HubSkillDetailProps) {
-  const [activeTab, setActiveTab] = useState<"params" | "readme">("params");
-  const [localInstalling, setLocalInstalling] = useState(false);
+  const {
+    selectedHubSkill,
+    detailLoading,
+    loadSkillDetail,
+    loadVersions,
+    selectedHubSkillVersions,
+    loadFiles,
+    currentFiles,
+    loadFileContent,
+    selectedFileContent,
+    selectedFileName,
+    fileLoading,
+  } = useSkillHubStore();
 
-  const handleInstall = async () => {
-    setLocalInstalling(true);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [selectedVersion, setSelectedVersion] = useState<string | undefined>();
+
+  useEffect(() => {
+    if (namespace && slug) {
+      loadSkillDetail(namespace, slug);
+      loadVersions(namespace, slug);
+    }
+  }, [namespace, slug]);
+
+  const handleVersionSelect = (version: string) => {
+    setSelectedVersion(version);
+    if (namespace && slug) {
+      loadFiles(namespace, slug, version);
+    }
+    setActiveTab('files');
+  };
+
+  const handleFileSelect = (path: string) => {
+    if (namespace && slug && selectedVersion) {
+      loadFileContent(namespace, slug, selectedVersion, path);
+    }
+  };
+
+  const handleShare = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url);
+    message.success('链接已复制到剪贴板');
+  };
+
+  const handleDownload = async () => {
+    if (!namespace || !slug) return;
     try {
-      const success = await onInstall?.();
-      if (success) {
-        message.success("安装成功");
-      } else {
-        message.error("安装失败");
-      }
-    } finally {
-      setLocalInstalling(false);
+      const blob = await useSkillHubStore.getState().publishResult
+        ? new Blob()
+        : await fetch(`/api/skill-hub/v1/${namespace}/${slug}/download`).then(r => r.blob());
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${slug}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+      message.success('下载成功');
+    } catch {
+      message.error('下载失败');
     }
   };
 
-  const getTypeTag = (type: HubSkill["type"]) => {
-    const config: Record<HubSkill["type"], { color: string; label: string }> = {
-      builtin: { color: "blue", label: "内置" },
-      custom: { color: "purple", label: "自定义" },
-      api: { color: "orange", label: "API" },
-    };
-    return <Tag color={config[type].color}>{config[type].label}</Tag>;
-  };
+  if (detailLoading || !selectedHubSkill) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Spin size="large" />
+      </div>
+    );
+  }
 
-  const formatDownloads = (num: number) => {
-    if (num >= 10000) {
-      return `${(num / 10000).toFixed(1)}万`;
-    }
-    return num.toString();
-  };
-
-  const tabs = [
-    { key: "params", label: "参数配置", icon: SettingOutlined },
-    { key: "readme", label: "README", icon: FileTextOutlined },
-  ];
+  const { latestVersion, labels, tags } = selectedHubSkill;
 
   return (
-    <div className="flex flex-col h-full">
-      {/* 头部 */}
-      <div className="p-6 border-b border-[var(--color-border)]">
-        <div className="flex items-start justify-between mb-4">
+    <div className="p-6 max-w-6xl mx-auto">
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <Title level={4} style={{ margin: 0 }}>
-                {skill.name}
+              <Title level={2} className="m-0">
+                {selectedHubSkill.displayName || selectedHubSkill.slug}
               </Title>
-              {getTypeTag(skill.type)}
-              <Tag color="cyan">v{skill.version}</Tag>
+              <Tag color="blue">{selectedHubSkill.visibility}</Tag>
+              <Tag color={selectedHubSkill.status === 'ACTIVE' ? 'green' : 'red'}>
+                {selectedHubSkill.status}
+              </Tag>
             </div>
-            <Paragraph type="secondary" style={{ margin: 0 }}>
-              {skill.description}
+            <Paragraph className="text-gray-600 mb-4">
+              {selectedHubSkill.summary || '暂无描述'}
             </Paragraph>
+            <Text type="secondary">
+              {selectedHubSkill.namespaceSlug}/{selectedHubSkill.slug}
+            </Text>
+            <Divider type="vertical" />
+            <Text type="secondary">作者: {selectedHubSkill.ownerDisplayName || selectedHubSkill.ownerId}</Text>
           </div>
-          <Button
-            type={isInstalled ? "default" : "primary"}
-            icon={
-              isInstalling || localInstalling ? (
-                <LoadingOutlined />
-              ) : (
-                <DownloadOutlined />
-              )
-            }
-            disabled={isInstalled || isInstalling || localInstalling}
-            onClick={handleInstall}
-          >
-            {isInstalling || localInstalling
-              ? "安装中..."
-              : isInstalled
-                ? "已安装"
-                : "安装"}
-          </Button>
+
+          {/* Action Buttons */}
+          <Space>
+            <StarButton skillId={selectedHubSkill.id} />
+            <RatingInput skillId={selectedHubSkill.id} />
+            <Button icon={<DownloadOutlined />} onClick={handleDownload}>
+              下载
+            </Button>
+            <Button icon={<ShareAltOutlined />} onClick={handleShare}>
+              分享
+            </Button>
+            <Button icon={<FlagOutlined />} type="text" danger>
+              举报
+            </Button>
+          </Space>
         </div>
 
-        {/* 元信息 */}
-        <div className="flex items-center gap-6 text-sm">
-          <div className="flex items-center gap-1 text-[var(--color-text-secondary)]">
-            <UserOutlined />
-            <span>{skill.author}</span>
+        {/* Stats */}
+        <div className="flex gap-6 mt-4">
+          <div>
+            <Text type="secondary">下载</Text>
+            <div className="text-lg font-semibold">{selectedHubSkill.downloadCount}</div>
           </div>
-          <div className="flex items-center gap-1 text-[var(--color-text-secondary)]">
-            <DownloadOutlined />
-            <span>{formatDownloads(skill.downloads)} 下载</span>
+          <div>
+            <Text type="secondary">Star</Text>
+            <div className="text-lg font-semibold">{selectedHubSkill.starCount}</div>
           </div>
-          <div className="flex items-center gap-1">
-            <Rate
-              disabled
-              value={skill.rating}
-              allowHalf
-              style={{ fontSize: 12 }}
-            />
-            <span className="text-[var(--color-text-secondary)]">
-              {skill.rating.toFixed(1)}
-            </span>
+          <div>
+            <Text type="secondary">评分</Text>
+            <div className="text-lg font-semibold">
+              {selectedHubSkill.ratingCount > 0
+                ? `${selectedHubSkill.ratingAvg} (${selectedHubSkill.ratingCount})`
+                : '-'}
+            </div>
           </div>
-          <div className="flex items-center gap-1 text-[var(--color-text-tertiary)]">
-            <ClockCircleOutlined />
-            <span>
-              更新于 {new Date(skill.updatedAt).toLocaleDateString("zh-CN")}
-            </span>
+          <div>
+            <Text type="secondary">版本</Text>
+            <div className="text-lg font-semibold">
+              {latestVersion?.version || '-'}
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* 标签 */}
-        <div className="flex items-center gap-2 mt-3">
-          <TagOutlined className="text-[var(--color-text-tertiary)]" />
-          <div className="flex flex-wrap gap-1">
-            {skill.tags.map((tag) => (
-              <Tag key={tag} style={{ fontSize: 11 }}>
+      {/* Labels & Tags */}
+      {(labels.length > 0 || tags.length > 0) && (
+        <div className="mb-4">
+          <Space wrap>
+            {labels.map(label => (
+              <Tag key={label.id} color={label.type === 'RECOMMENDED' ? 'blue' : 'purple'}>
+                {label.displayName}
+              </Tag>
+            ))}
+            {tags.map(tag => (
+              <Tag key={tag} color="default">
                 {tag}
               </Tag>
             ))}
-          </div>
+          </Space>
         </div>
-      </div>
+      )}
 
-      {/* 统计卡片 */}
-      <div className="grid grid-cols-4 gap-4 p-6 pb-4">
-        <Card
-          size="small"
-          variant="borderless"
-          style={{ background: "var(--color-bg-secondary)" }}
-        >
-          <Statistic
-            title={
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                分类
-              </Text>
-            }
-            value={skill.category}
-            valueStyle={{ fontSize: 14 }}
-          />
-        </Card>
-        <Card
-          size="small"
-          variant="borderless"
-          style={{ background: "var(--color-bg-secondary)" }}
-        >
-          <Statistic
-            title={
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                超时时间
-              </Text>
-            }
-            value={skill.timeout / 1000}
-            suffix="s"
-            valueStyle={{ fontSize: 14 }}
-          />
-        </Card>
-        <Card
-          size="small"
-          bordered={false}
-          style={{ background: "var(--color-bg-secondary)" }}
-        >
-          <Statistic
-            title={
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                参数数量
-              </Text>
-            }
-            value={
-              Array.isArray(skill.parameters) ? skill.parameters.length : 0
-            }
-            valueStyle={{ fontSize: 14 }}
-          />
-        </Card>
-        <Card
-          size="small"
-          variant="borderless"
-          style={{ background: "var(--color-bg-secondary)" }}
-        >
-          <Statistic
-            title={
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                发布时间
-              </Text>
-            }
-            value={new Date(skill.publishedAt).toLocaleDateString("zh-CN")}
-            valueStyle={{ fontSize: 14 }}
-          />
-        </Card>
-      </div>
-
-      {/* 标签栏 */}
+      {/* Tabs */}
       <Tabs
         activeKey={activeTab}
-        onChange={(key) => setActiveTab(key as typeof activeTab)}
-        items={tabs.map((tab) => ({
-          key: tab.key,
-          label: (
-            <span className="flex items-center gap-2">
-              <tab.icon />
-              {tab.label}
-            </span>
-          ),
-        }))}
-        className="px-6"
-      />
+        onChange={setActiveTab}
+        items={[
+          {
+            key: 'overview',
+            label: '概览',
+            children: (
+              <div className="space-y-4">
+                <Card title="技能信息" bordered={false}>
+                  <Descriptions column={2}>
+                    <Descriptions.Item label="ID">{selectedHubSkill.id}</Descriptions.Item>
+                    <Descriptions.Item label="创建时间">
+                      {selectedHubSkill.createdAt.toLocaleDateString()}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="更新时间">
+                      {selectedHubSkill.updatedAt.toLocaleDateString()}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="可见性">
+                      {selectedHubSkill.visibility}
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Card>
 
-      {/* 内容区 */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {activeTab === "params" && (
-          <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] overflow-hidden">
-            <div className="p-3 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]">
-              <span className="text-sm font-medium text-[var(--color-text-primary)]">
-                参数定义
-              </span>
-            </div>
-            {(Array.isArray(skill.parameters) ? skill.parameters : [])
-              .length === 0 ? (
-              <div className="p-4 text-center text-[var(--color-text-tertiary)]">
-                暂无参数
+                {latestVersion?.parsedMetadataJson && (
+                  <Card title="README" bordered={false}>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeHighlight]}
+                    >
+                      {String(
+                        latestVersion.parsedMetadataJson.description ||
+                          latestVersion.parsedMetadataJson.readme ||
+                          '# 暂无说明'
+                      )}
+                    </ReactMarkdown>
+                  </Card>
+                )}
+              </div>
+            ),
+          },
+          {
+            key: 'versions',
+            label: '版本',
+            children: (
+              <VersionList
+                versions={selectedHubSkillVersions?.items || []}
+                onVersionSelect={handleVersionSelect}
+              />
+            ),
+          },
+          {
+            key: 'files',
+            label: '文件',
+            disabled: !selectedVersion,
+            children: selectedVersion ? (
+              <div className="flex gap-4">
+                <div className="w-1/3">
+                  <FileTreeBrowser
+                    files={currentFiles}
+                    onFileSelect={handleFileSelect}
+                  />
+                </div>
+                <div className="flex-1">
+                  {selectedFileName && (
+                    <FilePreview
+                      fileName={selectedFileName}
+                      content={selectedFileContent}
+                      loading={fileLoading}
+                    />
+                  )}
+                </div>
               </div>
             ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-[var(--color-border)]">
-                    <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
-                      参数名
-                    </th>
-                    <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
-                      类型
-                    </th>
-                    <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
-                      描述
-                    </th>
-                    <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
-                      默认值
-                    </th>
-                    <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
-                      必填
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(Array.isArray(skill.parameters)
-                    ? skill.parameters
-                    : []
-                  ).map((param) => (
-                    <tr
-                      key={param.name}
-                      className="border-b border-[var(--color-border)]/50"
-                    >
-                      <td className="py-2 px-4">
-                        <code className="text-[var(--color-primary)]">
-                          {param.name}
-                        </code>
-                      </td>
-                      <td className="py-2 px-4 text-[var(--color-text-secondary)]">
-                        {param.type}
-                      </td>
-                      <td className="py-2 px-4 text-[var(--color-text-secondary)]">
-                        {param.description}
-                      </td>
-                      <td className="py-2 px-4 text-[var(--color-text-secondary)]">
-                        {param.defaultValue !== undefined
-                          ? JSON.stringify(param.defaultValue)
-                          : "-"}
-                      </td>
-                      <td className="py-2 px-4">
-                        {param.required ? (
-                          <CheckOutlined className="text-green-500" />
-                        ) : (
-                          <CloseOutlined className="text-[var(--color-text-tertiary)]" />
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        )}
-
-        {activeTab === "readme" && (
-          <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] overflow-hidden">
-            <div className="p-3 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]">
-              <span className="text-sm font-medium text-[var(--color-text-primary)]">
-                README
-              </span>
-            </div>
-            <div className="p-4">
-              {skill.readme ? (
-                <pre className="whitespace-pre-wrap text-sm text-[var(--color-text-primary)] font-mono">
-                  {skill.readme}
-                </pre>
-              ) : (
-                <div className="text-center text-[var(--color-text-tertiary)]">
-                  暂无 README
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
+              <div className="text-center text-gray-400 py-8">
+                请先选择一个版本
+              </div>
+            ),
+          },
+          {
+            key: 'labels',
+            label: '标签',
+            children: <LabelPanel skillId={selectedHubSkill.id} />,
+          },
+        ]}
+      />
     </div>
   );
 }

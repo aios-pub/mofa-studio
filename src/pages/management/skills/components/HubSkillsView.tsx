@@ -1,223 +1,237 @@
 /**
- * Skill Hub 浏览视图组件
+ * Skill Hub 浏览页
+ * 带搜索、筛选、排序功能
  */
 
-import { useState, useEffect } from 'react';
-import { Input, Select, Typography, Tabs, Row, Col, Empty, Spin, message } from 'antd';
-// Text is used in the JSX
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  SearchOutlined,
-  FireOutlined,
-  ClockCircleOutlined,
-  CloudOutlined,
-} from '@ant-design/icons';
-import { useSkillHubStore } from '../../../../stores/useSkillHubStore';
-import { skillApi } from '@/services';
+  Input,
+  Select,
+  Card,
+  Tag,
+  Button,
+  Space,
+  Pagination,
+  Empty,
+  Spin,
+  Typography,
+  Checkbox,
+} from 'antd';
+import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
+import { useSkillHubStore } from '@/stores/useSkillHubStore';
+import type { HubSkill, SkillVisibility, HubLabel } from '@/types/skill';
 import { HubSkillCard } from './HubSkillCard';
-import { HubSkillDetail } from './HubSkillDetail';
-import type { HubSkill } from '../../../../types/skill';
 
-const { Title } = Typography;
+const { Search } = Input;
+const { Text } = Typography;
 
 export function HubSkillsView() {
+  const navigate = useNavigate();
+
   const {
     searchQuery,
-    setSearchQuery,
-    selectedCategory,
-    setSelectedCategory,
+    selectedNamespace,
+    selectedLabels,
+    sortBy,
     searchResults,
     searchLoading,
-    categories,
-    categoriesLoading,
-    popularSkills,
-    latestSkills,
-    featuredLoading,
-    installSkill,
-    installingSkillIds,
+    namespaces,
+    namespaceLoading,
+    labels,
+    labelsLoading,
+    setSearchQuery,
+    setSelectedNamespace,
+    setSelectedLabels,
+    setSortBy,
+    search,
+    loadNamespaces,
+    loadLabels,
   } = useSkillHubStore();
 
-  const [selectedHubSkill, setSelectedHubSkill] = useState<HubSkill | null>(null);
-  const [installedHubIds, setInstalledHubIds] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState<'popular' | 'latest' | 'search'>('popular');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 20;
 
   useEffect(() => {
-    // 加载分类和热门数据
-    useSkillHubStore.getState().loadCategories();
-    useSkillHubStore.getState().loadFeatured();
-    loadInstalledSkills();
+    loadNamespaces();
+    loadLabels('zh-CN');
+    search();
   }, []);
 
-  useEffect(() => {
-    // 搜索时自动切换到搜索标签
-    if (searchQuery) {
-      setActiveTab('search');
-      useSkillHubStore.getState().searchSkills();
-    }
-  }, [searchQuery]);
-
-  const loadInstalledSkills = async () => {
-    try {
-      const skills = await skillApi.getAll();
-      const hubIds = skills
-        .filter((s: any) => s.hubId)
-        .map((s: any) => s.hubId);
-      setInstalledHubIds(hubIds);
-    } catch (error) {
-      console.error('Failed to load installed skills:', error);
-    }
+  const handleSearch = () => {
+    setCurrentPage(1);
+    search();
   };
 
-  const handleInstall = async (skill: HubSkill) => {
-    const success = await installSkill(skill);
-    if (success) {
-      setInstalledHubIds(prev => [...prev, skill.hubId]);
-      message.success(`${skill.name} 安装成功`);
-    } else {
-      message.error('安装失败');
-    }
-    return success;
+  const handleLabelChange = (labelId: string, checked: boolean) => {
+    const newLabels = checked
+      ? [...selectedLabels, labelId]
+      : selectedLabels.filter(l => l !== labelId);
+    setSelectedLabels(newLabels);
   };
 
-  const handleSearch = (value: string) => {
-    setSearchQuery(value);
-    if (value) {
-      useSkillHubStore.getState().searchSkills(value);
-    }
-  };
-
-  const renderSkillGrid = (skills: HubSkill[], loading: boolean) => {
-    if (loading) {
-      return (
-        <div className="flex items-center justify-center py-12">
-          <Spin />
-        </div>
-      );
-    }
-
-    if (skills.length === 0) {
-      return (
-        <Empty
-          description="暂无 Skills"
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-        />
-      );
-    }
-
-    return (
-      <Row gutter={[16, 16]}>
-        {skills.map((skill) => (
-          <Col key={skill.hubId} xs={24} sm={12} md={8} lg={6}>
-            <HubSkillCard
-              skill={skill}
-              isInstalled={installedHubIds.includes(skill.hubId)}
-              isInstalling={installingSkillIds.includes(skill.hubId)}
-              onInstall={() => handleInstall(skill)}
-              onClick={() => setSelectedHubSkill(skill)}
-            />
-          </Col>
-        ))}
-      </Row>
-    );
-  };
-
-  // 详情视图
-  if (selectedHubSkill) {
-    return (
-      <HubSkillDetail
-        skill={selectedHubSkill}
-        isInstalled={installedHubIds.includes(selectedHubSkill.hubId)}
-        isInstalling={installingSkillIds.includes(selectedHubSkill.hubId)}
-        onInstall={() => handleInstall(selectedHubSkill)}
-        onBack={() => setSelectedHubSkill(null)}
-      />
-    );
-  }
-
-  const tabs = [
-    {
-      key: 'popular',
-      label: (
-        <span className="flex items-center gap-2">
-          <FireOutlined />
-          热门
-        </span>
-      ),
-    },
-    {
-      key: 'latest',
-      label: (
-        <span className="flex items-center gap-2">
-          <ClockCircleOutlined />
-          最新
-        </span>
-      ),
-    },
-    {
-      key: 'search',
-      label: (
-        <span className="flex items-center gap-2">
-          <SearchOutlined />
-          搜索结果
-          {searchResults.length > 0 && (
-            <span className="text-xs text-[var(--color-text-tertiary)]">
-              ({searchResults.length})
-            </span>
-          )}
-        </span>
-      ),
-    },
-  ];
+  const facets = searchResults?.facets;
 
   return (
-    <div className="flex flex-col h-full">
-      {/* 头部搜索 */}
-      <div className="p-4 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
-        <div className="flex items-center gap-2 mb-3">
-          <CloudOutlined style={{ fontSize: 20 }} />
-          <Title level={5} style={{ margin: 0 }}>Skill Hub</Title>
-        </div>
-        <div className="flex gap-2">
-          <Input
-            placeholder="搜索 Skills..."
-            prefix={<SearchOutlined />}
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
+    <div className="p-6">
+      {/* Search Header */}
+      <div className="mb-6 space-y-4">
+        <div className="flex gap-4">
+          <Search
+            placeholder="搜索技能名称、描述..."
             allowClear
-            style={{ flex: 1 }}
+            enterButton={<SearchOutlined />}
+            size="large"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            onSearch={handleSearch}
+            className="flex-1"
           />
-          <Select
-            value={selectedCategory}
-            onChange={(value) => {
-              setSelectedCategory(value);
-              useSkillHubStore.getState().searchSkills();
-            }}
-            style={{ width: 150 }}
-            loading={categoriesLoading}
-            options={[
-              { label: '全部分类', value: 'all' },
-              ...categories.map((cat) => ({
-                label: `${cat.name} (${cat.count})`,
-                value: cat.name,
-              })),
-            ]}
-          />
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={handleSearch}
+            loading={searchLoading}
+          >
+            刷新
+          </Button>
         </div>
+
+        {/* Filters */}
+        <div className="flex gap-4 items-center flex-wrap">
+          {/* Namespace Filter */}
+          <div className="flex items-center gap-2">
+            <Text type="secondary">命名空间:</Text>
+            <Select
+              placeholder="全部"
+              allowClear
+              style={{ width: 150 }}
+              value={selectedNamespace || undefined}
+              onChange={setSelectedNamespace}
+              loading={namespaceLoading}
+            >
+              {namespaces.map(ns => (
+                <Select.Option key={ns.id} value={ns.slug}>
+                  {ns.displayName}
+                </Select.Option>
+              ))}
+            </Select>
+          </div>
+
+          {/* Sort By */}
+          <div className="flex items-center gap-2">
+            <Text type="secondary">排序:</Text>
+            <Select
+              value={sortBy}
+              onChange={setSortBy}
+              style={{ width: 120 }}
+            >
+              <Select.Option value="newest">最新</Select.Option>
+              <Select.Option value="popular">最受欢迎</Select.Option>
+              <Select.Option value="rating">最高评分</Select.Option>
+            </Select>
+          </div>
+        </div>
+
+        {/* Label Filters */}
+        {labels.length > 0 && (
+          <div className="space-y-2">
+            <Text type="secondary">标签筛选:</Text>
+            <Space wrap>
+              {labels.map(label => (
+                <Checkbox
+                  key={label.id}
+                  checked={selectedLabels.includes(label.id)}
+                  onChange={e => handleLabelChange(label.id, e.target.checked)}
+                >
+                  <Tag
+                    color={label.type === 'RECOMMENDED' ? 'blue' : 'purple'}
+                    className="m-0"
+                  >
+                    {label.displayName}
+                  </Tag>
+                </Checkbox>
+              ))}
+            </Space>
+          </div>
+        )}
       </div>
 
-      {/* 标签栏 */}
-      <Tabs
-        activeKey={activeTab}
-        onChange={(key) => setActiveTab(key as typeof activeTab)}
-        items={tabs}
-        className="px-4 pt-2"
-      />
+      {/* Facets (optional) */}
+      {facets && (facets.namespaces.length > 0 || facets.labels.length > 0) && (
+        <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+          <div className="flex gap-6">
+            {facets.namespaces.length > 0 && (
+              <div>
+                <Text type="secondary" className="mr-2">命名空间:</Text>
+                <Space wrap>
+                  {facets.namespaces.map(ns => (
+                    <Tag key={ns.slug}>{ns.displayName} ({ns.count})</Tag>
+                  ))}
+                </Space>
+              </div>
+            )}
+            {facets.labels.length > 0 && (
+              <div>
+                <Text type="secondary" className="mr-2">相关标签:</Text>
+                <Space wrap>
+                  {facets.labels.map(l => (
+                    <Tag key={l.id} color={l.type === 'RECOMMENDED' ? 'blue' : 'purple'}>
+                      {l.displayName} ({l.count})
+                    </Tag>
+                  ))}
+                </Space>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
-      {/* 内容区 */}
-      <div className="flex-1 overflow-y-auto p-4">
-        {activeTab === 'popular' && renderSkillGrid(popularSkills, featuredLoading)}
-        {activeTab === 'latest' && renderSkillGrid(latestSkills, featuredLoading)}
-        {activeTab === 'search' && renderSkillGrid(searchResults, searchLoading)}
-      </div>
+      {/* Results */}
+      {searchLoading ? (
+        <div className="flex justify-center py-12">
+          <Spin size="large" />
+        </div>
+      ) : searchResults?.skills && searchResults.skills.length > 0 ? (
+        <>
+          <div className="mb-4">
+            <Text type="secondary">
+              找到 {searchResults.total} 个结果
+            </Text>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {searchResults.skills.map(skill => (
+              <HubSkillCard
+                key={skill.id}
+                skill={skill}
+                onClick={() => navigate(`/management/skills/hub/${skill.namespaceSlug}/${skill.slug}`)}
+              />
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {searchResults.total > pageSize && (
+            <div className="flex justify-center mt-6">
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={searchResults.total}
+                onChange={page => {
+                  setCurrentPage(page);
+                  // In a real implementation, you'd trigger a new search with the page
+                }}
+                showSizeChanger={false}
+                showTotal={(total) => `共 ${total} 个`}
+              />
+            </div>
+          )}
+        </>
+      ) : (
+        <Empty
+          description="暂无技能"
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+        />
+      )}
     </div>
   );
 }

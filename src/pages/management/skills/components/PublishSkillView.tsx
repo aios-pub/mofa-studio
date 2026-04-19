@@ -1,110 +1,224 @@
 /**
  * 发布 Skill 视图组件
+ * 支持 ZIP 上传、SKILL.md 预览、命名空间选择
  */
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   Form,
-  Input,
   Select,
-  InputNumber,
   Button,
   Typography,
   Card,
+  Upload,
+  Progress,
   message,
+  Radio,
+  Alert,
+  Descriptions,
+  Tag,
+  Space,
+  Divider,
+  Modal,
 } from 'antd';
 import {
   CloudUploadOutlined,
-  PlusOutlined,
-  DeleteOutlined,
+  InboxOutlined,
+  FileTextOutlined,
+  CheckCircleOutlined,
 } from '@ant-design/icons';
-import { useSkillHubStore } from '../../../../stores/useSkillHubStore';
-import type { SkillParameter } from '@/services';
+import type { UploadProps } from 'antd';
+import { useSkillHubStore } from '@/stores/useSkillHubStore';
+import type { SkillVisibility, NamespaceType } from '@/types/skill';
+import JSZip from 'jszip';
 
 const { Text, Title, Paragraph } = Typography;
-const { TextArea } = Input;
+const { Dragger } = Upload;
 
-interface ParameterFormItem {
-  name: string;
-  type: 'string' | 'number' | 'boolean' | 'object' | 'array';
-  description: string;
-  required: boolean;
-  defaultValue?: string;
+interface ParsedMetadata {
+  name?: string;
+  displayName?: string;
+  description?: string;
+  version?: string;
+  author?: string;
+  tags?: string[];
+  readme?: string;
 }
 
 export function PublishSkillView() {
   const [form] = Form.useForm();
-  const [parameters, setParameters] = useState<ParameterFormItem[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState('');
-  const { publishSkill, publishLoading } = useSkillHubStore();
+  const [fileList, setFileList] = useState<any[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [parsedMetadata, setParsedMetadata] = useState<ParsedMetadata | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [formatModalOpen, setFormatModalOpen] = useState(false);
 
-  const handleAddParameter = () => {
-    setParameters([
-      ...parameters,
-      { name: '', type: 'string', description: '', required: false },
-    ]);
+  const {
+    namespaces,
+    loadNamespaces,
+    publish,
+    publishLoading,
+    publishResult,
+  } = useSkillHubStore();
+
+  // Load namespaces on mount
+  useState(() => {
+    loadNamespaces();
+  });
+
+  const handleFileSelect = async (file: File) => {
+    setError(null);
+    setParsedMetadata(null);
+
+    // Check file type
+    if (!file.name.endsWith('.zip')) {
+      setError('请上传 ZIP 格式的文件');
+      return false;
+    }
+
+    // Check file size (max 50MB)
+    if (file.size > 50 * 1024 * 1024) {
+      setError('文件大小不能超过 50MB');
+      return false;
+    }
+
+    // Parse ZIP to find SKILL.md
+    try {
+      const zip = await JSZip.loadAsync(file);
+      const skillMdFile = zip.file('SKILL.md') || zip.file('skill.md');
+
+      if (skillMdFile) {
+        const content = await skillMdFile.async('string');
+        const metadata = parseSkillMd(content);
+        setParsedMetadata(metadata);
+      } else {
+        // List files in the ZIP
+        const files = Object.keys(zip.files);
+        message.info(`ZIP 包包含 ${files.length} 个文件 (未找到 SKILL.md)`);
+      }
+
+      // Count files and total size
+      const fileCount = Object.keys(zip.files).length;
+      message.success(`解析成功: ${fileCount} 个文件`);
+    } catch (err) {
+      setError('ZIP 文件解析失败');
+      return false;
+    }
+
+    setFileList([file]);
+    return false; // Prevent auto upload
   };
 
-  const handleRemoveParameter = (index: number) => {
-    setParameters(parameters.filter((_, i) => i !== index));
+  const parseSkillMd = (content: string): ParsedMetadata => {
+    const lines = content.split('\n');
+    const metadata: ParsedMetadata = {};
+    let inFrontMatter = false;
+    let frontMatterLines: string[] = [];
+    let readmeLines: string[] = [];
+
+    for (const line of lines) {
+      if (line === '---') {
+        if (!inFrontMatter) {
+          inFrontMatter = true;
+          continue;
+        } else {
+          inFrontMatter = false;
+          continue;
+        }
+      }
+
+      if (inFrontMatter) {
+        frontMatterLines.push(line);
+      } else {
+        readmeLines.push(line);
+      }
+    }
+
+    // Parse front matter
+    for (const line of frontMatterLines) {
+      const match = line.match(/^(\w+):\s*(.+)$/);
+      if (match) {
+        const [, key, value] = match;
+        if (key === 'tags') {
+          try {
+            metadata[key as keyof ParsedMetadata] = JSON.parse(value);
+          } catch {
+            // Skip invalid JSON
+          }
+        } else {
+          metadata[key as keyof ParsedMetadata] = value;
+        }
+      }
+    }
+
+    metadata.readme = readmeLines.join('\n').trim();
+    return metadata;
   };
 
-  const handleParameterChange = (
-    index: number,
-    field: keyof ParameterFormItem,
-    value: unknown
-  ) => {
-    const newParams = [...parameters];
-    newParams[index] = { ...newParams[index], [field]: value };
-    setParameters(newParams);
-  };
+  const handleSubmit = async (values: {
+    namespace: string;
+    visibility: SkillVisibility;
+  }) => {
+    if (fileList.length === 0) {
+      message.error('请先选择要上传的文件');
+      return;
+    }
 
-  const handleAddTag = () => {
-    if (tagInput && !tags.includes(tagInput)) {
-      setTags([...tags, tagInput]);
-      setTagInput('');
+    setUploading(true);
+    setUploadProgress(0);
+
+    // Simulate upload progress
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(progressInterval);
+          return 90;
+        }
+        return prev + 10;
+      });
+    }, 200);
+
+    try {
+      const result = await publish(values.namespace, fileList[0], values.visibility);
+
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+
+      if (result) {
+        message.success('发布成功！技能已进入审核流程');
+        // Reset form
+        setFileList([]);
+        setParsedMetadata(null);
+        setError(null);
+        setUploadProgress(0);
+      } else {
+        message.error('发布失败，请重试');
+      }
+    } catch (err) {
+      clearInterval(progressInterval);
+      message.error('发布失败: ' + (err as Error).message);
+    } finally {
+      setUploading(false);
+      setTimeout(() => setUploadProgress(0), 1000);
     }
   };
 
-  const handleRemoveTag = (tag: string) => {
-    setTags(tags.filter((t) => t !== tag));
-  };
-
-  const handleSubmit = async (values: any) => {
-    // 转换参数格式
-    const formattedParams: SkillParameter[] = parameters.map((p) => ({
-      name: p.name,
-      type: p.type,
-      description: p.description,
-      required: p.required,
-      defaultValue: p.defaultValue ? JSON.parse(p.defaultValue) : undefined,
-    }));
-
-    const result = await publishSkill({
-      name: values.name,
-      description: values.description,
-      type: values.type,
-      category: values.category,
-      parameters: formattedParams,
-      timeout: values.timeout || 30000,
-      tags,
-      readme: values.readme,
-    });
-
-    if (result) {
-      message.success('发布成功！');
-      form.resetFields();
-      setParameters([]);
-      setTags([]);
-    } else {
-      message.error('发布失败，请重试');
-    }
+  const uploadProps: UploadProps = {
+    fileList,
+    onChange: ({ fileList }) => setFileList(fileList),
+    beforeUpload: handleFileSelect,
+    onRemove: () => {
+      setFileList([]);
+      setParsedMetadata(null);
+      setError(null);
+    },
+    maxCount: 1,
   };
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
-      <div className="p-6 max-w-3xl mx-auto w-full">
+      <div className="p-6 max-w-4xl mx-auto w-full">
         {/* 头部 */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
@@ -112,7 +226,7 @@ export function PublishSkillView() {
             <Title level={4} style={{ margin: 0 }}>发布 Skill 到 Hub</Title>
           </div>
           <Paragraph type="secondary">
-            将你创建的 Skill 分享给其他用户。发布前请确保 Skill 功能正常。
+            上传技能包 (ZIP) 到技能仓库。ZIP 包应包含 SKILL.md 元数据文件和技能代码。
           </Paragraph>
         </div>
 
@@ -121,248 +235,324 @@ export function PublishSkillView() {
           layout="vertical"
           onFinish={handleSubmit}
           initialValues={{
-            type: 'custom',
-            timeout: 30000,
+            visibility: 'PUBLIC' as SkillVisibility,
           }}
         >
-          {/* 基本信息 */}
+          {/* 上传区域 */}
           <Card
-            title="基本信息"
+            title="上传技能包"
             size="small"
             className="mb-4"
-            styles={{
-              header: { borderBottom: '1px solid var(--color-border)' },
-            }}
-          >
-            <Form.Item
-              name="name"
-              label="Skill 名称"
-              rules={[
-                { required: true, message: '请输入 Skill 名称' },
-                {
-                  pattern: /^[a-z][a-z0-9_]*$/,
-                  message: '只能包含小写字母、数字和下划线，且必须以字母开头',
-                },
-              ]}
-            >
-              <Input placeholder="例如：my_custom_skill" />
-            </Form.Item>
-
-            <Form.Item
-              name="description"
-              label="描述"
-              rules={[{ required: true, message: '请输入描述' }]}
-            >
-              <TextArea rows={3} placeholder="简要描述 Skill 的功能" />
-            </Form.Item>
-
-            <div className="grid grid-cols-2 gap-4">
-              <Form.Item
-                name="type"
-                label="类型"
-                rules={[{ required: true }]}
+            extra={
+              <a
+                onClick={() => setFormatModalOpen(true)}
               >
-                <Select
-                  options={[
-                    { label: '内置', value: 'builtin' },
-                    { label: '自定义', value: 'custom' },
-                    { label: 'API', value: 'api' },
-                  ]}
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="category"
-                label="分类"
-                rules={[{ required: true, message: '请选择分类' }]}
-              >
-                <Select
-                  placeholder="选择分类"
-                  options={[
-                    { label: '开发工具', value: '开发工具' },
-                    { label: '通知', value: '通知' },
-                    { label: '生活服务', value: '生活服务' },
-                    { label: '文档处理', value: '文档处理' },
-                    { label: 'AI 能力', value: 'AI 能力' },
-                    { label: '数据库', value: '数据库' },
-                    { label: '数据可视化', value: '数据可视化' },
-                    { label: '网络', value: '网络' },
-                    { label: '文件操作', value: '文件操作' },
-                    { label: '搜索', value: '搜索' },
-                    { label: '代码', value: '代码' },
-                    { label: '数据', value: '数据' },
-                  ]}
-                />
-              </Form.Item>
-            </div>
-
-            <Form.Item name="timeout" label="超时时间 (毫秒)">
-              <InputNumber min={1000} max={300000} step={1000} style={{ width: '100%' }} />
-            </Form.Item>
-          </Card>
-
-          {/* 标签 */}
-          <Card
-            title="标签"
-            size="small"
-            className="mb-4"
-            styles={{
-              header: { borderBottom: '1px solid var(--color-border)' },
-            }}
-          >
-            <div className="flex gap-2 mb-2">
-              <Input
-                placeholder="输入标签"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onPressEnter={handleAddTag}
-                style={{ flex: 1 }}
-              />
-              <Button icon={<PlusOutlined />} onClick={handleAddTag}>
-                添加
-              </Button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
-                <Button
-                  key={tag}
-                  size="small"
-                  onClick={() => handleRemoveTag(tag)}
-                >
-                  {tag} <DeleteOutlined className="ml-1" />
-                </Button>
-              ))}
-            </div>
-          </Card>
-
-          {/* 参数定义 */}
-          <Card
-            title={
-              <div className="flex items-center justify-between">
-                <span>参数定义</span>
-                <Button
-                  type="link"
-                  icon={<PlusOutlined />}
-                  onClick={handleAddParameter}
-                  size="small"
-                >
-                  添加参数
-                </Button>
-              </div>
+                SKILL.md 格式说明
+              </a>
             }
-            size="small"
-            className="mb-4"
-            styles={{
-              header: { borderBottom: '1px solid var(--color-border)' },
-            }}
           >
-            {parameters.length === 0 ? (
-              <div className="text-center py-4 text-[var(--color-text-tertiary)]">
-                暂无参数，点击上方按钮添加
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {parameters.map((param, index) => (
-                  <div
-                    key={index}
-                    className="p-3 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]"
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <Text strong>参数 {index + 1}</Text>
-                      <Button
-                        type="text"
-                        danger
-                        size="small"
-                        icon={<DeleteOutlined />}
-                        onClick={() => handleRemoveParameter(index)}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Input
-                        placeholder="参数名"
-                        value={param.name}
-                        onChange={(e) =>
-                          handleParameterChange(index, 'name', e.target.value)
-                        }
-                      />
-                      <Select
-                        value={param.type}
-                        onChange={(value) => handleParameterChange(index, 'type', value)}
-                        options={[
-                          { label: 'String', value: 'string' },
-                          { label: 'Number', value: 'number' },
-                          { label: 'Boolean', value: 'boolean' },
-                          { label: 'Object', value: 'object' },
-                          { label: 'Array', value: 'array' },
-                        ]}
-                      />
-                    </div>
-                    <Input
-                      className="mt-2"
-                      placeholder="描述"
-                      value={param.description}
-                      onChange={(e) =>
-                        handleParameterChange(index, 'description', e.target.value)
-                      }
-                    />
-                    <div className="flex items-center gap-4 mt-2">
-                      <Input
-                        placeholder="默认值 (JSON 格式)"
-                        value={param.defaultValue}
-                        onChange={(e) =>
-                          handleParameterChange(index, 'defaultValue', e.target.value)
-                        }
-                        style={{ flex: 1 }}
-                      />
-                      <label className="flex items-center gap-1 text-sm">
-                        <input
-                          type="checkbox"
-                          checked={param.required}
-                          onChange={(e) =>
-                            handleParameterChange(index, 'required', e.target.checked)
-                          }
-                          className="mr-1"
-                        />
-                        必填
-                      </label>
-                    </div>
+            <Dragger
+              {...uploadProps}
+              disabled={uploading}
+              accept=".zip"
+              style={{ marginBottom: 16 }}
+            >
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined style={{ fontSize: 48 }} />
+              </p>
+              <p className="ant-upload-text">点击或拖拽文件到此区域上传</p>
+              <p className="ant-upload-hint">支持 ZIP 格式，最大 50MB</p>
+            </Dragger>
+
+            {uploading && (
+              <Progress percent={uploadProgress} status="active" />
+            )}
+
+            {error && (
+              <Alert
+                type="error"
+                message={error}
+                showIcon
+                closable
+                onClose={() => setError(null)}
+                style={{ marginBottom: 16 }}
+              />
+            )}
+
+            {parsedMetadata && (
+              <Alert
+                type="success"
+                message="SKILL.md 解析成功"
+                showIcon
+                icon={<CheckCircleOutlined />}
+                style={{ marginBottom: 16 }}
+              >
+                <Descriptions size="small" column={2}>
+                  {parsedMetadata.displayName && (
+                    <Descriptions.Item label="名称">{parsedMetadata.displayName}</Descriptions.Item>
+                  )}
+                  {parsedMetadata.name && (
+                    <Descriptions.Item label="标识">{parsedMetadata.name}</Descriptions.Item>
+                  )}
+                  {parsedMetadata.version && (
+                    <Descriptions.Item label="版本">{parsedMetadata.version}</Descriptions.Item>
+                  )}
+                  {parsedMetadata.author && (
+                    <Descriptions.Item label="作者">{parsedMetadata.author}</Descriptions.Item>
+                  )}
+                </Descriptions>
+                {parsedMetadata.description && (
+                  <Paragraph style={{ marginTop: 12, marginBottom: 0 }}>
+                    {parsedMetadata.description}
+                  </Paragraph>
+                )}
+                {parsedMetadata.tags && parsedMetadata.tags.length > 0 && (
+                  <div style={{ marginTop: 8 }}>
+                    {parsedMetadata.tags.map(tag => (
+                      <Tag key={tag}>{tag}</Tag>
+                    ))}
                   </div>
-                ))}
-              </div>
+                )}
+              </Alert>
             )}
           </Card>
 
-          {/* README */}
-          <Card
-            title="README"
-            size="small"
-            className="mb-4"
-            styles={{
-              header: { borderBottom: '1px solid var(--color-border)' },
-            }}
-          >
-            <Form.Item name="readme" noStyle>
-              <TextArea
-                rows={6}
-                placeholder="使用 Markdown 格式编写 Skill 的使用说明..."
+          {/* 发布设置 */}
+          <Card title="发布设置" size="small" className="mb-4">
+            <Form.Item
+              name="namespace"
+              label="命名空间"
+              rules={[{ required: true, message: '请选择命名空间' }]}
+            >
+              <Select
+                placeholder="选择命名空间"
+                loading={namespaces.length === 0}
+                options={namespaces.map(ns => ({
+                  label: `${ns.displayName} (${ns.slug})`,
+                  value: ns.slug,
+                  disabled: ns.status !== 'ACTIVE',
+                }))}
               />
             </Form.Item>
+
+            <Form.Item
+              name="visibility"
+              label="可见性"
+              rules={[{ required: true }]}
+            >
+              <Radio.Group>
+                <Radio value="PUBLIC">公开</Radio>
+                <Radio value="NAMESPACE_ONLY">仅命名空间内</Radio>
+                <Radio value="PRIVATE">私有</Radio>
+              </Radio.Group>
+            </Form.Item>
+
+            <Paragraph type="secondary" style={{ marginBottom: 0 }}>
+              • 公开: 所有人可见可安装
+              <br />
+              • 仅命名空间内: 只有命名空间成员可见
+              <br />
+              • 私有: 仅自己可见
+            </Paragraph>
+          </Card>
+
+          {/* 发布说明 */}
+          <Card title="发布流程" size="small" className="mb-4">
+            <ol className="pl-4 space-y-1 text-sm text-gray-600">
+              <li>上传 ZIP 包后，系统会自动解析 SKILL.md 文件</li>
+              <li>技能将进入 <Tag color="default">草稿</Tag> 状态</li>
+              <li>你可以选择直接发布（私有）或提交审核（公开/命名空间）</li>
+              <li>审核通过后，技能将发布到 Hub 供其他用户安装</li>
+            </ol>
           </Card>
 
           {/* 提交按钮 */}
           <div className="flex justify-end gap-2">
-            <Button onClick={() => form.resetFields()}>重置</Button>
+            <Button
+              onClick={() => {
+                setFileList([]);
+                setParsedMetadata(null);
+                setError(null);
+                form.resetFields();
+              }}
+              disabled={uploading}
+            >
+              重置
+            </Button>
             <Button
               type="primary"
               htmlType="submit"
               icon={<CloudUploadOutlined />}
               loading={publishLoading}
+              disabled={fileList.length === 0 || uploading}
             >
-              发布到 Hub
+              {publishLoading ? '发布中...' : '发布到 Hub'}
             </Button>
           </div>
         </Form>
+
+        {/* 发布结果 */}
+        {publishResult && (
+          <Card
+            title="发布结果"
+            size="small"
+            className="mt-4"
+            extra={<CheckCircleOutlined style={{ color: '#52c41a', fontSize: 20 }} />}
+          >
+            <Descriptions size="small" column={2}>
+              <Descriptions.Item label="技能 ID">{publishResult.skillId}</Descriptions.Item>
+              <Descriptions.Item label="标识">{publishResult.slug}</Descriptions.Item>
+              <Descriptions.Item label="版本">{publishResult.version}</Descriptions.Item>
+              <Descriptions.Item label="状态">{publishResult.status}</Descriptions.Item>
+              <Descriptions.Item label="文件数">{publishResult.fileCount}</Descriptions.Item>
+              <Descriptions.Item label="大小">{(publishResult.totalSize / 1024).toFixed(1)} KB</Descriptions.Item>
+            </Descriptions>
+          </Card>
+        )}
       </div>
+
+      {/* SKILL.md 格式说明模态框 */}
+      <Modal
+        title="SKILL.md 格式说明"
+        open={formatModalOpen}
+        onCancel={() => setFormatModalOpen(false)}
+        footer={[
+          <Button key="close" onClick={() => setFormatModalOpen(false)}>
+            关闭
+          </Button>,
+        ]}
+        width={700}
+      >
+        <div className="space-y-4">
+          {/* 技能包结构 */}
+          <div>
+            <Title level={5}>技能包结构</Title>
+            <Paragraph type="secondary">
+              一个标准的技能包结构如下：
+            </Paragraph>
+            <div className="bg-gray-50 p-3 rounded border border-gray-200 font-mono text-sm">
+              my-skill/<br />
+              ├─ SKILL.md <span className="text-gray-500"># 主入口文件（必需）</span><br />
+              ├─ references/ <span className="text-gray-500"># 参考资料（可选）</span><br />
+              ├─ scripts/ <span className="text-gray-500"># 脚本（可选）</span><br />
+              └─ assets/ <span className="text-gray-500"># 静态资源（可选）</span>
+            </div>
+          </div>
+
+          <Divider />
+
+          {/* SKILL.md 格式 */}
+          <div>
+            <Title level={5}>SKILL.md 格式</Title>
+            <Paragraph type="secondary">
+              SKILL.md 使用 YAML frontmatter + Markdown 正文格式：
+            </Paragraph>
+            <div className="bg-gray-50 p-3 rounded border border-gray-200 font-mono text-sm overflow-x-auto">
+              <pre className="whitespace-pre-wrap">---
+<span className="text-blue-600">name</span>: my-skill
+<span className="text-blue-600">description</span>: 一句话描述这个技能的用途
+<span className="text-blue-600">version</span>: 1.0.0
+<span className="text-blue-600">author</span>: Your Name
+<span className="text-blue-600">tags</span>: ["category1", "category2"]
+---
+
+# 技能说明
+
+这里是技能的详细说明...</pre>
+            </div>
+          </div>
+
+          <Divider />
+
+          {/* Frontmatter 字段说明 */}
+          <div>
+            <Title level={5}>Frontmatter 字段说明</Title>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 px-3 font-semibold">字段</th>
+                    <th className="text-left py-2 px-3 font-semibold">必需</th>
+                    <th className="text-left py-2 px-3 font-semibold">说明</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b">
+                    <td className="py-2 px-3 font-mono text-blue-600">name</td>
+                    <td className="py-2 px-3"><Tag color="red" className="m-0">是</Tag></td>
+                    <td className="py-2 px-3">技能标识，kebab-case 格式（小写字母、数字、连字符）</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2 px-3 font-mono text-blue-600">description</td>
+                    <td className="py-2 px-3"><Tag color="red" className="m-0">是</Tag></td>
+                    <td className="py-2 px-3">技能简短描述</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2 px-3 font-mono text-blue-600">version</td>
+                    <td className="py-2 px-3"><Tag color="default" className="m-0">否</Tag></td>
+                    <td className="py-2 px-3">版本号，遵循语义化版本规范（如 1.0.0）</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2 px-3 font-mono text-blue-600">author</td>
+                    <td className="py-2 px-3"><Tag color="default" className="m-0">否</Tag></td>
+                    <td className="py-2 px-3">作者名称</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2 px-3 font-mono text-blue-600">tags</td>
+                    <td className="py-2 px-3"><Tag color="default" className="m-0">否</Tag></td>
+                    <td className="py-2 px-3">标签数组，JSON 格式，如 ["code", "review"]</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <Divider />
+
+          {/* 文件限制 */}
+          <div>
+            <Title level={5}>文件限制</Title>
+            <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600">
+              <li>单文件大小：最大 1MB</li>
+              <li>总包大小：最大 50MB</li>
+              <li>文件数量：最多 100 个</li>
+              <li>允许的文件类型：<code className="bg-gray-100 px-1 rounded">.md</code>、<code className="bg-gray-100 px-1 rounded">.txt</code>、<code className="bg-gray-100 px-1 rounded">.json</code>、<code className="bg-gray-100 px-1 rounded">.yaml</code>、<code className="bg-gray-100 px-1 rounded">.yml</code>、<code className="bg-gray-100 px-1 rounded">.js</code>、<code className="bg-gray-100 px-1 rounded">.ts</code>、<code className="bg-gray-100 px-1 rounded">.py</code>、<code className="bg-gray-100 px-1 rounded">.sh</code>、<code className="bg-gray-100 px-1 rounded">.png</code>、<code className="bg-gray-100 px-1 rounded">.jpg</code>、<code className="bg-gray-100 px-1 rounded">.svg</code></li>
+            </ul>
+          </div>
+
+          {/* 示例 */}
+          <div>
+            <Title level={5}>完整示例</Title>
+            <Paragraph type="secondary">
+              以下是一个完整的 SKILL.md 示例：
+            </Paragraph>
+            <div className="bg-gray-50 p-3 rounded border border-gray-200 font-mono text-sm overflow-x-auto">
+              <pre className="whitespace-pre-wrap">---
+<span className="text-blue-600">name</span>: email-helper
+<span className="text-blue-600">displayName</span>: 邮件助手
+<span className="text-blue-600">description</span>: 帮助处理邮件相关任务，包括编写、回复、分类等
+<span className="text-blue-600">version</span>: 1.2.0
+<span className="text-blue-600">author</span>: Your Team
+<span className="text-blue-600">tags</span>: ["email", "productivity", "automation"]
+---
+
+# 邮件助手
+
+这个技能帮助你处理各种邮件相关任务。
+
+## 功能
+
+- 编写专业邮件
+- 回复常见邮件
+- 分类整理邮件
+
+## 使用方法
+
+直接告诉 AI 你需要处理的邮件内容，它会帮你完成相应任务。</pre>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

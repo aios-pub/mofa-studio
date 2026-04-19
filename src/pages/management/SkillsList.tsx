@@ -13,7 +13,7 @@ import {
   SettingOutlined,
   KeyOutlined,
 } from '@ant-design/icons';
-import { LocalSkillsList, HubSkillsViewV2, PublishSkillViewV2 } from './skills';
+import { LocalSkillsList, HubSkillsView, PublishSkillView } from './skills';
 import { SkillDetail } from './SkillDetail';
 import { ReviewQueue } from './skills/components/ReviewQueue';
 import { AdminGovernancePanel } from './skills/components/AdminGovernancePanel';
@@ -167,9 +167,9 @@ export default function SkillsListPage() {
           </div>
         )}
 
-        {activeTab === 'hub' && <HubSkillsViewV2 />}
+        {activeTab === 'hub' && <HubSkillsView />}
 
-        {activeTab === 'publish' && <PublishSkillViewV2 />}
+        {activeTab === 'publish' && <PublishSkillView />}
 
         {activeTab === 'my-skills' && <MySkillsPage />}
 

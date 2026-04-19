@@ -4,14 +4,11 @@
 
 export { LocalSkillsList } from './components/LocalSkillsList';
 export { HubSkillsView } from './components/HubSkillsView';
-export { HubSkillsViewV2 } from './components/HubSkillsViewV2';
 export { HubSkillCard } from './components/HubSkillCard';
 export { HubSkillDetail } from './components/HubSkillDetail';
-export { HubSkillDetailV2 } from './components/HubSkillDetailV2';
 export { PublishSkillView } from './components/PublishSkillView';
-export { PublishSkillViewV2 } from './components/PublishSkillViewV2';
 export { SkillSourceTag } from './components/SkillSourceTag';
-// V2 Components
+// Hub Components
 export { VersionList } from './components/VersionList';
 export { FileTreeBrowser } from './components/FileTreeBrowser';
 export { FilePreview } from './components/FilePreview';

@@ -6,7 +6,7 @@
 
 export interface SkillParameter {
   name: string;
-  type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+  type: "string" | "number" | "boolean" | "object" | "array";
   description: string;
   required?: boolean;
   default?: unknown;
@@ -32,27 +32,31 @@ export interface Skill {
 
 // ===== Skill 来源类型 =====
 
-export type SkillSource = 'local' | 'hub' | 'installed';
+export type SkillSource = "local" | "hub" | "installed";
 
 // ===== Hub 枚举类型 =====
 
 export type SkillVersionStatus =
-  | 'DRAFT'
-  | 'SCANNING'
-  | 'SCAN_FAILED'
-  | 'UPLOADED'
-  | 'PENDING_REVIEW'
-  | 'PUBLISHED'
-  | 'REJECTED'
-  | 'YANKED';
+  | "DRAFT"
+  | "SCANNING"
+  | "SCAN_FAILED"
+  | "UPLOADED"
+  | "PENDING_REVIEW"
+  | "PUBLISHED"
+  | "REJECTED"
+  | "YANKED";
 
-export type SkillStatus = 'ACTIVE' | 'HIDDEN' | 'ARCHIVED';
-export type SkillVisibility = 'PUBLIC' | 'NAMESPACE_ONLY' | 'PRIVATE';
-export type ReviewTaskStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN';
-export type ReportStatus = 'PENDING' | 'DISMISSED' | 'RESOLVED';
-export type LabelType = 'RECOMMENDED' | 'PRIVILEGED';
-export type NamespaceType = 'GLOBAL' | 'TEAM';
-export type NamespaceRole = 'OWNER' | 'ADMIN' | 'MEMBER';
+export type SkillStatus = "ACTIVE" | "HIDDEN" | "ARCHIVED";
+export type SkillVisibility = "PUBLIC" | "NAMESPACE_ONLY" | "PRIVATE";
+export type ReviewTaskStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED"
+  | "WITHDRAWN";
+export type ReportStatus = "PENDING" | "DISMISSED" | "RESOLVED";
+export type LabelType = "RECOMMENDED" | "PRIVILEGED";
+export type NamespaceType = "GLOBAL" | "TEAM";
+export type NamespaceRole = "OWNER" | "ADMIN" | "MEMBER";
 
 // ===== 命名空间 =====
 
@@ -60,7 +64,7 @@ export interface HubNamespace {
   id: string;
   tenantId: string;
   slug: string;
-  displayName: string;
+  display_name: string;
   type: NamespaceType;
   description?: string;
   avatarUrl?: string;
@@ -174,7 +178,7 @@ export interface ReviewTask {
 
 // ===== 跨命名空间推广 =====
 
-export type PromotionTaskStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+export type PromotionTaskStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 export interface PromotionTask {
   id: string;
@@ -211,9 +215,12 @@ export interface PromotionResult {
 
 // ===== 安全审计 =====
 
-export type SecurityVerdict = 'SAFE' | 'SUSPICIOUS' | 'DANGEROUS' | 'BLOCKED';
-export type SecurityAuditDisplayState = SecurityVerdict | 'SCANNING' | 'SCAN_FAILED';
-export type FindingSeverity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFO';
+export type SecurityVerdict = "SAFE" | "SUSPICIOUS" | "DANGEROUS" | "BLOCKED";
+export type SecurityAuditDisplayState =
+  | SecurityVerdict
+  | "SCANNING"
+  | "SCAN_FAILED";
+export type FindingSeverity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO";
 
 export interface SecurityFinding {
   ruleId: string;
@@ -309,7 +316,7 @@ export interface HubSkillLegacy {
   hubId: string;
   name: string;
   description: string;
-  type: 'builtin' | 'custom' | 'api';
+  type: "builtin" | "custom" | "api";
   category: string;
   parameters: SkillParameter[];
   timeout: number;
@@ -338,7 +345,7 @@ export interface InstalledSkill extends Skill {
 export interface PublishSkillRequest {
   name: string;
   description: string;
-  type: 'builtin' | 'custom' | 'api';
+  type: "builtin" | "custom" | "api";
   category: string;
   parameters: SkillParameter[];
   timeout: number;
@@ -376,7 +383,12 @@ export interface HubSearchResult {
   pageSize: number;
   facets?: {
     namespaces: Array<{ slug: string; displayName: string; count: number }>;
-    labels: Array<{ id: string; slug: string; displayName: string; count: number }>;
+    labels: Array<{
+      id: string;
+      slug: string;
+      displayName: string;
+      count: number;
+    }>;
   };
 }
 

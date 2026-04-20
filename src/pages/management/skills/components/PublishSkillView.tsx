@@ -3,7 +3,7 @@
  * 支持 ZIP 上传、SKILL.md 预览、命名空间选择
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from "react";
 import {
   Form,
   Select,
@@ -17,23 +17,21 @@ import {
   Alert,
   Descriptions,
   Tag,
-  Space,
   Divider,
   Modal,
-} from 'antd';
+} from "antd";
 import {
   CloudUploadOutlined,
   InboxOutlined,
-  FileTextOutlined,
   CheckCircleOutlined,
   TeamOutlined,
-} from '@ant-design/icons';
-import type { UploadProps } from 'antd';
-import { useSkillHubStore } from '@/stores/useSkillHubStore';
-import type { SkillVisibility, NamespaceType } from '@/types/skill';
-import JSZip from 'jszip';
+} from "@ant-design/icons";
+import type { UploadProps } from "antd";
+import { useSkillHubStore } from "@/stores/useSkillHubStore";
+import type { SkillVisibility } from "@/types/skill";
+import JSZip from "jszip";
 
-const { Text, Title, Paragraph } = Typography;
+const { Title, Paragraph } = Typography;
 const { Dragger } = Upload;
 
 interface ParsedMetadata {
@@ -50,22 +48,21 @@ interface PublishSkillViewProps {
   onSwitchToNamespaces?: () => void;
 }
 
-export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps) {
+export function PublishSkillView({
+  onSwitchToNamespaces,
+}: PublishSkillViewProps) {
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [parsedMetadata, setParsedMetadata] = useState<ParsedMetadata | null>(null);
+  const [parsedMetadata, setParsedMetadata] = useState<ParsedMetadata | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
   const [formatModalOpen, setFormatModalOpen] = useState(false);
 
-  const {
-    namespaces,
-    loadNamespaces,
-    publish,
-    publishLoading,
-    publishResult,
-  } = useSkillHubStore();
+  const { namespaces, loadNamespaces, publish, publishLoading, publishResult } =
+    useSkillHubStore();
 
   // Load namespaces on mount
   useState(() => {
@@ -77,24 +74,24 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
     setParsedMetadata(null);
 
     // Check file type
-    if (!file.name.endsWith('.zip')) {
-      setError('请上传 ZIP 格式的文件');
+    if (!file.name.endsWith(".zip")) {
+      setError("请上传 ZIP 格式的文件");
       return false;
     }
 
     // Check file size (max 50MB)
     if (file.size > 50 * 1024 * 1024) {
-      setError('文件大小不能超过 50MB');
+      setError("文件大小不能超过 50MB");
       return false;
     }
 
     // Parse ZIP to find SKILL.md
     try {
       const zip = await JSZip.loadAsync(file);
-      const skillMdFile = zip.file('SKILL.md') || zip.file('skill.md');
+      const skillMdFile = zip.file("SKILL.md") || zip.file("skill.md");
 
       if (skillMdFile) {
-        const content = await skillMdFile.async('string');
+        const content = await skillMdFile.async("string");
         const metadata = parseSkillMd(content);
         setParsedMetadata(metadata);
       } else {
@@ -107,7 +104,7 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
       const fileCount = Object.keys(zip.files).length;
       message.success(`解析成功: ${fileCount} 个文件`);
     } catch (err) {
-      setError('ZIP 文件解析失败');
+      setError("ZIP 文件解析失败");
       return false;
     }
 
@@ -116,14 +113,14 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
   };
 
   const parseSkillMd = (content: string): ParsedMetadata => {
-    const lines = content.split('\n');
+    const lines = content.split("\n");
     const metadata: ParsedMetadata = {};
     let inFrontMatter = false;
     let frontMatterLines: string[] = [];
     let readmeLines: string[] = [];
 
     for (const line of lines) {
-      if (line === '---') {
+      if (line === "---") {
         if (!inFrontMatter) {
           inFrontMatter = true;
           continue;
@@ -145,7 +142,7 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
       const match = line.match(/^(\w+):\s*(.+)$/);
       if (match) {
         const [, key, value] = match;
-        if (key === 'tags') {
+        if (key === "tags") {
           try {
             metadata[key as keyof ParsedMetadata] = JSON.parse(value);
           } catch {
@@ -157,7 +154,7 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
       }
     }
 
-    metadata.readme = readmeLines.join('\n').trim();
+    metadata.readme = readmeLines.join("\n").trim();
     return metadata;
   };
 
@@ -166,7 +163,7 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
     visibility: SkillVisibility;
   }) => {
     if (fileList.length === 0) {
-      message.error('请先选择要上传的文件');
+      message.error("请先选择要上传的文件");
       return;
     }
 
@@ -175,7 +172,7 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
 
     // Simulate upload progress
     const progressInterval = setInterval(() => {
-      setUploadProgress(prev => {
+      setUploadProgress((prev) => {
         if (prev >= 90) {
           clearInterval(progressInterval);
           return 90;
@@ -185,24 +182,28 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
     }, 200);
 
     try {
-      const result = await publish(values.namespace, fileList[0], values.visibility);
+      const result = await publish(
+        values.namespace,
+        fileList[0],
+        values.visibility,
+      );
 
       clearInterval(progressInterval);
       setUploadProgress(100);
 
       if (result) {
-        message.success('发布成功！技能已进入审核流程');
+        message.success("发布成功！技能已进入审核流程");
         // Reset form
         setFileList([]);
         setParsedMetadata(null);
         setError(null);
         setUploadProgress(0);
       } else {
-        message.error('发布失败，请重试');
+        message.error("发布失败，请重试");
       }
     } catch (err) {
       clearInterval(progressInterval);
-      message.error('发布失败: ' + (err as Error).message);
+      message.error("发布失败: " + (err as Error).message);
     } finally {
       setUploading(false);
       setTimeout(() => setUploadProgress(0), 1000);
@@ -228,10 +229,13 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
             <CloudUploadOutlined style={{ fontSize: 24 }} />
-            <Title level={4} style={{ margin: 0 }}>发布 Skill 到 Hub</Title>
+            <Title level={4} style={{ margin: 0 }}>
+              发布 Skill 到 Hub
+            </Title>
           </div>
           <Paragraph type="secondary">
-            上传技能包 (ZIP) 到技能仓库。ZIP 包应包含 SKILL.md 元数据文件和技能代码。
+            上传技能包 (ZIP) 到技能仓库。ZIP 包应包含 SKILL.md
+            元数据文件和技能代码。
           </Paragraph>
         </div>
 
@@ -240,7 +244,7 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
           layout="vertical"
           onFinish={handleSubmit}
           initialValues={{
-            visibility: 'PUBLIC' as SkillVisibility,
+            visibility: "NAMESPACE_ONLY" as SkillVisibility,
           }}
         >
           {/* 上传区域 */}
@@ -249,11 +253,7 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
             size="small"
             className="mb-4"
             extra={
-              <a
-                onClick={() => setFormatModalOpen(true)}
-              >
-                SKILL.md 格式说明
-              </a>
+              <a onClick={() => setFormatModalOpen(true)}>SKILL.md 格式说明</a>
             }
           >
             <Dragger
@@ -269,9 +269,7 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
               <p className="ant-upload-hint">支持 ZIP 格式，最大 50MB</p>
             </Dragger>
 
-            {uploading && (
-              <Progress percent={uploadProgress} status="active" />
-            )}
+            {uploading && <Progress percent={uploadProgress} status="active" />}
 
             {error && (
               <Alert
@@ -294,16 +292,24 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
               >
                 <Descriptions size="small" column={2}>
                   {parsedMetadata.displayName && (
-                    <Descriptions.Item label="名称">{parsedMetadata.displayName}</Descriptions.Item>
+                    <Descriptions.Item label="名称">
+                      {parsedMetadata.displayName}
+                    </Descriptions.Item>
                   )}
                   {parsedMetadata.name && (
-                    <Descriptions.Item label="标识">{parsedMetadata.name}</Descriptions.Item>
+                    <Descriptions.Item label="标识">
+                      {parsedMetadata.name}
+                    </Descriptions.Item>
                   )}
                   {parsedMetadata.version && (
-                    <Descriptions.Item label="版本">{parsedMetadata.version}</Descriptions.Item>
+                    <Descriptions.Item label="版本">
+                      {parsedMetadata.version}
+                    </Descriptions.Item>
                   )}
                   {parsedMetadata.author && (
-                    <Descriptions.Item label="作者">{parsedMetadata.author}</Descriptions.Item>
+                    <Descriptions.Item label="作者">
+                      {parsedMetadata.author}
+                    </Descriptions.Item>
                   )}
                 </Descriptions>
                 {parsedMetadata.description && (
@@ -313,7 +319,7 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
                 )}
                 {parsedMetadata.tags && parsedMetadata.tags.length > 0 && (
                   <div style={{ marginTop: 8 }}>
-                    {parsedMetadata.tags.map(tag => (
+                    {parsedMetadata.tags.map((tag) => (
                       <Tag key={tag}>{tag}</Tag>
                     ))}
                   </div>
@@ -346,15 +352,15 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
             <Form.Item
               name="namespace"
               label="命名空间"
-              rules={[{ required: true, message: '请选择命名空间' }]}
+              rules={[{ required: true, message: "请选择命名空间" }]}
             >
               <Select
                 placeholder="选择命名空间"
                 loading={namespaces.length === 0}
-                options={namespaces.map(ns => ({
-                  label: `${ns.displayName} (${ns.slug})`,
+                options={namespaces.map((ns) => ({
+                  label: `${ns.display_name} (${ns.slug})`,
                   value: ns.slug,
-                  disabled: ns.status !== 'ACTIVE',
+                  disabled: ns.status !== "ACTIVE",
                 }))}
               />
             </Form.Item>
@@ -375,8 +381,7 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
               • 公开: 所有人可见可安装
               <br />
               • 仅命名空间内: 只有命名空间成员可见
-              <br />
-              • 私有: 仅自己可见
+              <br />• 私有: 仅自己可见
             </Paragraph>
           </Card>
 
@@ -384,7 +389,9 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
           <Card title="发布流程" size="small" className="mb-4">
             <ol className="pl-4 space-y-1 text-sm text-gray-600">
               <li>上传 ZIP 包后，系统会自动解析 SKILL.md 文件</li>
-              <li>技能将进入 <Tag color="default">草稿</Tag> 状态</li>
+              <li>
+                技能将进入 <Tag color="default">草稿</Tag> 状态
+              </li>
               <li>你可以选择直接发布（私有）或提交审核（公开/命名空间）</li>
               <li>审核通过后，技能将发布到 Hub 供其他用户安装</li>
             </ol>
@@ -410,7 +417,7 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
               loading={publishLoading}
               disabled={fileList.length === 0 || uploading}
             >
-              {publishLoading ? '发布中...' : '发布到 Hub'}
+              {publishLoading ? "发布中..." : "发布到 Hub"}
             </Button>
           </div>
         </Form>
@@ -421,15 +428,29 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
             title="发布结果"
             size="small"
             className="mt-4"
-            extra={<CheckCircleOutlined style={{ color: '#52c41a', fontSize: 20 }} />}
+            extra={
+              <CheckCircleOutlined style={{ color: "#52c41a", fontSize: 20 }} />
+            }
           >
             <Descriptions size="small" column={2}>
-              <Descriptions.Item label="技能 ID">{publishResult.skillId}</Descriptions.Item>
-              <Descriptions.Item label="标识">{publishResult.slug}</Descriptions.Item>
-              <Descriptions.Item label="版本">{publishResult.version}</Descriptions.Item>
-              <Descriptions.Item label="状态">{publishResult.status}</Descriptions.Item>
-              <Descriptions.Item label="文件数">{publishResult.fileCount}</Descriptions.Item>
-              <Descriptions.Item label="大小">{(publishResult.totalSize / 1024).toFixed(1)} KB</Descriptions.Item>
+              <Descriptions.Item label="技能 ID">
+                {publishResult.skillId}
+              </Descriptions.Item>
+              <Descriptions.Item label="标识">
+                {publishResult.slug}
+              </Descriptions.Item>
+              <Descriptions.Item label="版本">
+                {publishResult.version}
+              </Descriptions.Item>
+              <Descriptions.Item label="状态">
+                {publishResult.status}
+              </Descriptions.Item>
+              <Descriptions.Item label="文件数">
+                {publishResult.fileCount}
+              </Descriptions.Item>
+              <Descriptions.Item label="大小">
+                {(publishResult.totalSize / 1024).toFixed(1)} KB
+              </Descriptions.Item>
             </Descriptions>
           </Card>
         )}
@@ -451,15 +472,20 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
           {/* 技能包结构 */}
           <div>
             <Title level={5}>技能包结构</Title>
-            <Paragraph type="secondary">
-              一个标准的技能包结构如下：
-            </Paragraph>
+            <Paragraph type="secondary">一个标准的技能包结构如下：</Paragraph>
             <div className="bg-gray-50 p-3 rounded border border-gray-200 font-mono text-sm">
-              my-skill/<br />
-              ├─ SKILL.md <span className="text-gray-500"># 主入口文件（必需）</span><br />
-              ├─ references/ <span className="text-gray-500"># 参考资料（可选）</span><br />
-              ├─ scripts/ <span className="text-gray-500"># 脚本（可选）</span><br />
-              └─ assets/ <span className="text-gray-500"># 静态资源（可选）</span>
+              my-skill/
+              <br />
+              ├─ SKILL.md{" "}
+              <span className="text-gray-500"># 主入口文件（必需）</span>
+              <br />
+              ├─ references/{" "}
+              <span className="text-gray-500"># 参考资料（可选）</span>
+              <br />
+              ├─ scripts/ <span className="text-gray-500"># 脚本（可选）</span>
+              <br />
+              └─ assets/{" "}
+              <span className="text-gray-500"># 静态资源（可选）</span>
             </div>
           </div>
 
@@ -472,17 +498,16 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
               SKILL.md 使用 YAML frontmatter + Markdown 正文格式：
             </Paragraph>
             <div className="bg-gray-50 p-3 rounded border border-gray-200 font-mono text-sm overflow-x-auto">
-              <pre className="whitespace-pre-wrap">---
-<span className="text-blue-600">name</span>: my-skill
-<span className="text-blue-600">description</span>: 一句话描述这个技能的用途
-<span className="text-blue-600">version</span>: 1.0.0
-<span className="text-blue-600">author</span>: Your Name
-<span className="text-blue-600">tags</span>: ["category1", "category2"]
----
-
-# 技能说明
-
-这里是技能的详细说明...</pre>
+              <pre className="whitespace-pre-wrap">
+                ---
+                <span className="text-blue-600">name</span>: my-skill
+                <span className="text-blue-600">description</span>:
+                一句话描述这个技能的用途
+                <span className="text-blue-600">version</span>: 1.0.0
+                <span className="text-blue-600">author</span>: Your Name
+                <span className="text-blue-600">tags</span>: ["category1",
+                "category2"] --- # 技能说明 这里是技能的详细说明...
+              </pre>
             </div>
           </div>
 
@@ -503,28 +528,60 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
                 <tbody>
                   <tr className="border-b">
                     <td className="py-2 px-3 font-mono text-blue-600">name</td>
-                    <td className="py-2 px-3"><Tag color="red" className="m-0">是</Tag></td>
-                    <td className="py-2 px-3">技能标识，kebab-case 格式（小写字母、数字、连字符）</td>
+                    <td className="py-2 px-3">
+                      <Tag color="red" className="m-0">
+                        是
+                      </Tag>
+                    </td>
+                    <td className="py-2 px-3">
+                      技能标识，kebab-case 格式（小写字母、数字、连字符）
+                    </td>
                   </tr>
                   <tr className="border-b">
-                    <td className="py-2 px-3 font-mono text-blue-600">description</td>
-                    <td className="py-2 px-3"><Tag color="red" className="m-0">是</Tag></td>
+                    <td className="py-2 px-3 font-mono text-blue-600">
+                      description
+                    </td>
+                    <td className="py-2 px-3">
+                      <Tag color="red" className="m-0">
+                        是
+                      </Tag>
+                    </td>
                     <td className="py-2 px-3">技能简短描述</td>
                   </tr>
                   <tr className="border-b">
-                    <td className="py-2 px-3 font-mono text-blue-600">version</td>
-                    <td className="py-2 px-3"><Tag color="default" className="m-0">否</Tag></td>
-                    <td className="py-2 px-3">版本号，遵循语义化版本规范（如 1.0.0）</td>
+                    <td className="py-2 px-3 font-mono text-blue-600">
+                      version
+                    </td>
+                    <td className="py-2 px-3">
+                      <Tag color="default" className="m-0">
+                        否
+                      </Tag>
+                    </td>
+                    <td className="py-2 px-3">
+                      版本号，遵循语义化版本规范（如 1.0.0）
+                    </td>
                   </tr>
                   <tr className="border-b">
-                    <td className="py-2 px-3 font-mono text-blue-600">author</td>
-                    <td className="py-2 px-3"><Tag color="default" className="m-0">否</Tag></td>
+                    <td className="py-2 px-3 font-mono text-blue-600">
+                      author
+                    </td>
+                    <td className="py-2 px-3">
+                      <Tag color="default" className="m-0">
+                        否
+                      </Tag>
+                    </td>
                     <td className="py-2 px-3">作者名称</td>
                   </tr>
                   <tr className="border-b">
                     <td className="py-2 px-3 font-mono text-blue-600">tags</td>
-                    <td className="py-2 px-3"><Tag color="default" className="m-0">否</Tag></td>
-                    <td className="py-2 px-3">标签数组，JSON 格式，如 ["code", "review"]</td>
+                    <td className="py-2 px-3">
+                      <Tag color="default" className="m-0">
+                        否
+                      </Tag>
+                    </td>
+                    <td className="py-2 px-3">
+                      标签数组，JSON 格式，如 ["code", "review"]
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -540,7 +597,21 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
               <li>单文件大小：最大 1MB</li>
               <li>总包大小：最大 50MB</li>
               <li>文件数量：最多 100 个</li>
-              <li>允许的文件类型：<code className="bg-gray-100 px-1 rounded">.md</code>、<code className="bg-gray-100 px-1 rounded">.txt</code>、<code className="bg-gray-100 px-1 rounded">.json</code>、<code className="bg-gray-100 px-1 rounded">.yaml</code>、<code className="bg-gray-100 px-1 rounded">.yml</code>、<code className="bg-gray-100 px-1 rounded">.js</code>、<code className="bg-gray-100 px-1 rounded">.ts</code>、<code className="bg-gray-100 px-1 rounded">.py</code>、<code className="bg-gray-100 px-1 rounded">.sh</code>、<code className="bg-gray-100 px-1 rounded">.png</code>、<code className="bg-gray-100 px-1 rounded">.jpg</code>、<code className="bg-gray-100 px-1 rounded">.svg</code></li>
+              <li>
+                允许的文件类型：
+                <code className="bg-gray-100 px-1 rounded">.md</code>、
+                <code className="bg-gray-100 px-1 rounded">.txt</code>、
+                <code className="bg-gray-100 px-1 rounded">.json</code>、
+                <code className="bg-gray-100 px-1 rounded">.yaml</code>、
+                <code className="bg-gray-100 px-1 rounded">.yml</code>、
+                <code className="bg-gray-100 px-1 rounded">.js</code>、
+                <code className="bg-gray-100 px-1 rounded">.ts</code>、
+                <code className="bg-gray-100 px-1 rounded">.py</code>、
+                <code className="bg-gray-100 px-1 rounded">.sh</code>、
+                <code className="bg-gray-100 px-1 rounded">.png</code>、
+                <code className="bg-gray-100 px-1 rounded">.jpg</code>、
+                <code className="bg-gray-100 px-1 rounded">.svg</code>
+              </li>
             </ul>
           </div>
 
@@ -551,28 +622,20 @@ export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps
               以下是一个完整的 SKILL.md 示例：
             </Paragraph>
             <div className="bg-gray-50 p-3 rounded border border-gray-200 font-mono text-sm overflow-x-auto">
-              <pre className="whitespace-pre-wrap">---
-<span className="text-blue-600">name</span>: email-helper
-<span className="text-blue-600">displayName</span>: 邮件助手
-<span className="text-blue-600">description</span>: 帮助处理邮件相关任务，包括编写、回复、分类等
-<span className="text-blue-600">version</span>: 1.2.0
-<span className="text-blue-600">author</span>: Your Team
-<span className="text-blue-600">tags</span>: ["email", "productivity", "automation"]
----
-
-# 邮件助手
-
-这个技能帮助你处理各种邮件相关任务。
-
-## 功能
-
-- 编写专业邮件
-- 回复常见邮件
-- 分类整理邮件
-
-## 使用方法
-
-直接告诉 AI 你需要处理的邮件内容，它会帮你完成相应任务。</pre>
+              <pre className="whitespace-pre-wrap">
+                ---
+                <span className="text-blue-600">name</span>: email-helper
+                <span className="text-blue-600">displayName</span>: 邮件助手
+                <span className="text-blue-600">description</span>:
+                帮助处理邮件相关任务，包括编写、回复、分类等
+                <span className="text-blue-600">version</span>: 1.2.0
+                <span className="text-blue-600">author</span>: Your Team
+                <span className="text-blue-600">tags</span>: ["email",
+                "productivity", "automation"] --- # 邮件助手
+                这个技能帮助你处理各种邮件相关任务。 ## 功能 - 编写专业邮件 -
+                回复常见邮件 - 分类整理邮件 ## 使用方法 直接告诉 AI
+                你需要处理的邮件内容，它会帮你完成相应任务。
+              </pre>
             </div>
           </div>
         </div>

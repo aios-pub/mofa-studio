@@ -183,12 +183,12 @@ export function ReviewQueue() {
 
   return (
     <div className="p-6">
-      <Card title="审核队列" bordered={false}>
+      <Card title="审核队列" variant="borderless">
         <Tabs
           activeKey={activeTab}
           onChange={(key) => setActiveTab(key as 'pending' | 'my' | 'all')}
           items={[
-            { key: 'pending', label: `待处理 (${reviewTasks?.items.filter(r => r.status === 'PENDING').length || 0})` },
+            { key: 'pending', label: `待处理 (${reviewTasks?.items?.filter(r => r.status === 'PENDING').length || 0})` },
             { key: 'my', label: '我的提交' },
             { key: 'all', label: '全部' },
           ]}

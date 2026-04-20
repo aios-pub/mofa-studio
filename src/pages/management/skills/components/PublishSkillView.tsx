@@ -193,9 +193,15 @@ export function PublishSkillView({
     }, 200);
 
     try {
+      const file = fileList[0].originFileObj;
+      if (!file) {
+        message.error("文件对象无效，请重新选择文件");
+        return;
+      }
+
       const result = await publish(
         values.namespace,
-        fileList[0],
+        file,
         values.visibility,
       );
 

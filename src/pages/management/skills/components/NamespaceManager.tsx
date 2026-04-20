@@ -3,7 +3,7 @@
  * 管理命名空间和成员
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Table,
   Button,
@@ -19,16 +19,15 @@ import {
   Row,
   Col,
   Statistic,
-} from 'antd';
+} from "antd";
 import {
   PlusOutlined,
-  EditOutlined,
   DeleteOutlined,
   TeamOutlined,
   UserAddOutlined,
-} from '@ant-design/icons';
-import { skillHubV2Api } from '@/services';
-import type { HubNamespace, NamespaceMember } from '@/types/skill';
+} from "@ant-design/icons";
+import { skillHubV2Api } from "@/services";
+import type { HubNamespace, NamespaceMember } from "@/types/skill";
 
 export function NamespaceManager() {
   const [namespaces, setNamespaces] = useState<HubNamespace[]>([]);
@@ -36,7 +35,8 @@ export function NamespaceManager() {
   const [loading, setLoading] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [memberModalVisible, setMemberModalVisible] = useState(false);
-  const [selectedNamespace, setSelectedNamespace] = useState<HubNamespace | null>(null);
+  const [selectedNamespace, setSelectedNamespace] =
+    useState<HubNamespace | null>(null);
   const [form] = Form.useForm();
   const [memberForm] = Form.useForm();
 
@@ -53,10 +53,10 @@ export function NamespaceManager() {
       // Load members for each namespace
       for (const ns of data) {
         const nsMembers = await skillHubV2Api.listMembers(ns.id);
-        setMembers(prev => ({ ...prev, [parseInt(ns.id)]: nsMembers }));
+        setMembers((prev) => ({ ...prev, [parseInt(ns.id)]: nsMembers }));
       }
     } catch (error) {
-      message.error('加载命名空间失败');
+      message.error("加载命名空间失败");
     } finally {
       setLoading(false);
     }
@@ -65,12 +65,12 @@ export function NamespaceManager() {
   const handleCreateNamespace = async (values: any) => {
     try {
       await skillHubV2Api.createNamespace(values);
-      message.success('命名空间创建成功');
+      message.success("命名空间创建成功");
       setCreateModalVisible(false);
       form.resetFields();
       loadNamespaces();
     } catch (error) {
-      message.error('创建失败');
+      message.error("创建失败");
     }
   };
 
@@ -78,54 +78,58 @@ export function NamespaceManager() {
     if (!selectedNamespace) return;
 
     try {
-      await skillHubV2Api.addMember(selectedNamespace.id, values.userId, values.role);
-      message.success('成员添加成功');
+      await skillHubV2Api.addMember(
+        selectedNamespace.id,
+        values.userId,
+        values.role,
+      );
+      message.success("成员添加成功");
       setMemberModalVisible(false);
       memberForm.resetFields();
       loadNamespaces();
     } catch (error) {
-      message.error('添加成员失败');
+      message.error("添加成员失败");
     }
   };
 
   const handleRemoveMember = async (namespaceId: number, userId: string) => {
     try {
       await skillHubV2Api.removeMember(String(namespaceId), userId);
-      message.success('成员移除成功');
+      message.success("成员移除成功");
       loadNamespaces();
     } catch (error) {
-      message.error('移除成员失败');
+      message.error("移除成员失败");
     }
   };
 
   const namespaceColumns = [
     {
-      title: 'Slug',
-      dataIndex: 'slug',
-      key: 'slug',
+      title: "Slug",
+      dataIndex: "slug",
+      key: "slug",
       render: (slug: string) => <code>{slug}</code>,
     },
     {
-      title: '显示名称',
-      dataIndex: 'displayName',
-      key: 'displayName',
+      title: "显示名称",
+      dataIndex: "display_name",
+      key: "display_name",
     },
     {
-      title: '类型',
-      dataIndex: 'type',
-      key: 'type',
+      title: "类型",
+      dataIndex: "type",
+      key: "type",
       render: (type: string) => {
         const colors: Record<string, string> = {
-          GLOBAL: 'blue',
-          TEAM: 'green',
-          PERSONAL: 'orange',
+          GLOBAL: "blue",
+          TEAM: "green",
+          PERSONAL: "orange",
         };
         return <Tag color={colors[type]}>{type}</Tag>;
       },
     },
     {
-      title: '成员数',
-      key: 'memberCount',
+      title: "成员数",
+      key: "memberCount",
       render: (_: any, record: HubNamespace) => (
         <Space>
           <TeamOutlined />
@@ -134,16 +138,16 @@ export function NamespaceManager() {
       ),
     },
     {
-      title: '状态',
-      dataIndex: 'status',
-      key: 'status',
+      title: "状态",
+      dataIndex: "status",
+      key: "status",
       render: (status: string) => (
-        <Tag color={status === 'ACTIVE' ? 'green' : 'red'}>{status}</Tag>
+        <Tag color={status === "ACTIVE" ? "green" : "red"}>{status}</Tag>
       ),
     },
     {
-      title: '操作',
-      key: 'actions',
+      title: "操作",
+      key: "actions",
       render: (_: any, record: HubNamespace) => (
         <Space>
           <Button
@@ -164,37 +168,39 @@ export function NamespaceManager() {
 
   const memberColumns = [
     {
-      title: '用户 ID',
-      dataIndex: 'userId',
-      key: 'userId',
+      title: "用户 ID",
+      dataIndex: "userId",
+      key: "userId",
     },
     {
-      title: '角色',
-      dataIndex: 'role',
-      key: 'role',
+      title: "角色",
+      dataIndex: "role",
+      key: "role",
       render: (role: string) => {
         const colors: Record<string, string> = {
-          OWNER: 'red',
-          ADMIN: 'orange',
-          MEMBER: 'blue',
-          VIEWER: 'default',
+          OWNER: "red",
+          ADMIN: "orange",
+          MEMBER: "blue",
+          VIEWER: "default",
         };
         return <Tag color={colors[role]}>{role}</Tag>;
       },
     },
     {
-      title: '添加时间',
-      dataIndex: 'addedAt',
-      key: 'addedAt',
+      title: "添加时间",
+      dataIndex: "addedAt",
+      key: "addedAt",
       render: (date: string) => new Date(date).toLocaleString(),
     },
     {
-      title: '操作',
-      key: 'actions',
+      title: "操作",
+      key: "actions",
       render: (_: any, record: NamespaceMember) => (
         <Popconfirm
           title="确认移除该成员？"
-          onConfirm={() => handleRemoveMember(parseInt(selectedNamespace!.id), record.userId)}
+          onConfirm={() =>
+            handleRemoveMember(parseInt(selectedNamespace!.id), record.userId)
+          }
         >
           <Button type="link" size="small" danger icon={<DeleteOutlined />}>
             移除
@@ -204,7 +210,9 @@ export function NamespaceManager() {
     },
   ];
 
-  const memberList = selectedNamespace ? members[parseInt(selectedNamespace.id)] || [] : [];
+  const memberList = selectedNamespace
+    ? members[parseInt(selectedNamespace.id)] || []
+    : [];
 
   return (
     <div className="p-6">
@@ -222,7 +230,7 @@ export function NamespaceManager() {
           <Card>
             <Statistic
               title="全局命名空间"
-              value={namespaces.filter(ns => ns.type === 'GLOBAL').length}
+              value={namespaces.filter((ns) => ns.type === "GLOBAL").length}
             />
           </Card>
         </Col>
@@ -230,7 +238,7 @@ export function NamespaceManager() {
           <Card>
             <Statistic
               title="团队命名空间"
-              value={namespaces.filter(ns => ns.type === 'TEAM').length}
+              value={namespaces.filter((ns) => ns.type === "TEAM").length}
             />
           </Card>
         </Col>
@@ -278,8 +286,11 @@ export function NamespaceManager() {
             name="slug"
             label="Slug"
             rules={[
-              { required: true, message: '请输入 slug' },
-              { pattern: /^[a-z0-9-]+$/, message: '只能包含小写字母、数字和连字符' },
+              { required: true, message: "请输入 slug" },
+              {
+                pattern: /^[a-z0-9-]+$/,
+                message: "只能包含小写字母、数字和连字符",
+              },
             ]}
           >
             <Input placeholder="my-namespace" />
@@ -287,14 +298,14 @@ export function NamespaceManager() {
           <Form.Item
             name="displayName"
             label="显示名称"
-            rules={[{ required: true, message: '请输入显示名称' }]}
+            rules={[{ required: true, message: "请输入显示名称" }]}
           >
             <Input placeholder="My Namespace" />
           </Form.Item>
           <Form.Item
             name="type"
             label="类型"
-            rules={[{ required: true, message: '请选择类型' }]}
+            rules={[{ required: true, message: "请选择类型" }]}
           >
             <Select>
               <Select.Option value="GLOBAL">全局</Select.Option>
@@ -327,13 +338,13 @@ export function NamespaceManager() {
         >
           <Form.Item
             name="userId"
-            rules={[{ required: true, message: '请输入用户 ID' }]}
+            rules={[{ required: true, message: "请输入用户 ID" }]}
           >
             <Input placeholder="用户 ID" style={{ width: 200 }} />
           </Form.Item>
           <Form.Item
             name="role"
-            rules={[{ required: true, message: '请选择角色' }]}
+            rules={[{ required: true, message: "请选择角色" }]}
           >
             <Select style={{ width: 120 }} placeholder="角色">
               <Select.Option value="OWNER">所有者</Select.Option>

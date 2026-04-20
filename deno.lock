@@ -5,6 +5,7 @@
     "npm:@ant-design/icons@^5.6.1": "5.6.1_react@19.2.4_react-dom@19.2.4__react@19.2.4",
     "npm:@tailwindcss/vite@^4.2.1": "4.2.1_vite@7.3.1",
     "npm:@tanstack/react-query@^5.99.1": "5.99.1_react@19.2.4",
+    "npm:@tanstack/react-router@^1.168.23": "1.168.23_react@19.2.4_react-dom@19.2.4__react@19.2.4",
     "npm:@tauri-apps/api@^2.10.1": "2.10.1",
     "npm:@tauri-apps/cli@*": "2.10.1",
     "npm:@tauri-apps/cli@^2.10.1": "2.10.1",
@@ -21,6 +22,7 @@
     "npm:highlight.js@^11.11.1": "11.11.1",
     "npm:i18next-browser-languagedetector@^8.2.1": "8.2.1",
     "npm:i18next@^25.8.18": "25.8.18_typescript@5.8.3",
+    "npm:jszip@^3.10.1": "3.10.1",
     "npm:katex@~0.16.38": "0.16.38",
     "npm:lucide-react@0.577": "0.577.0_react@19.2.4",
     "npm:react-dom@^19.2.4": "19.2.4_react@19.2.4",
@@ -812,6 +814,10 @@
       ],
       "tarball": "https://registry.npmmirror.com/@tailwindcss/vite/-/vite-4.2.1.tgz"
     },
+    "@tanstack/history@1.161.6": {
+      "integrity": "sha512-NaOGLRrddszbQj9upGat6HG/4TKvXLvu+osAIgfxPYA+eIvYKv8GKDJOrY2D3/U9MRnKfMWD7bU4jeD4xmqyIg==",
+      "tarball": "https://registry.npmmirror.com/@tanstack/history/-/history-1.161.6.tgz"
+    },
     "@tanstack/query-core@5.99.1": {
       "integrity": "sha512-5E8xwxyWvr22yt7zvzP3KOZ5TUElOdVA45NP3/Ao1m9mvc9i18NLTDe9m3M00BH2DR5J20cv7xckMPlhKNs+vQ==",
       "tarball": "https://registry.npmmirror.com/@tanstack/query-core/-/query-core-5.99.1.tgz"
@@ -823,6 +829,43 @@
         "react"
       ],
       "tarball": "https://registry.npmmirror.com/@tanstack/react-query/-/react-query-5.99.1.tgz"
+    },
+    "@tanstack/react-router@1.168.23_react@19.2.4_react-dom@19.2.4__react@19.2.4": {
+      "integrity": "sha512-+GblieDnutG6oipJJPNtRJjrWF8QTZEG/l0532+BngFkVK48oHNOcvIkSoAFYftK1egAwM7KBxXsb0Ou+X6/MQ==",
+      "dependencies": [
+        "@tanstack/history",
+        "@tanstack/react-store",
+        "@tanstack/router-core",
+        "isbot",
+        "react",
+        "react-dom"
+      ],
+      "tarball": "https://registry.npmmirror.com/@tanstack/react-router/-/react-router-1.168.23.tgz"
+    },
+    "@tanstack/react-store@0.9.3_react@19.2.4_react-dom@19.2.4__react@19.2.4": {
+      "integrity": "sha512-y2iHd/N9OkoQbFJLUX1T9vbc2O9tjH0pQRgTcx1/Nz4IlwLvkgpuglXUx+mXt0g5ZDFrEeDnONPqkbfxXJKwRg==",
+      "dependencies": [
+        "@tanstack/store",
+        "react",
+        "react-dom",
+        "use-sync-external-store"
+      ],
+      "tarball": "https://registry.npmmirror.com/@tanstack/react-store/-/react-store-0.9.3.tgz"
+    },
+    "@tanstack/router-core@1.168.15": {
+      "integrity": "sha512-Wr0424NDtD8fT/uALobMZ9DdcfsTyXtW5IPR++7zvW8/7RaIOeaqXpVDId8ywaGtqPWLWOfaUg2zUtYtukoXYA==",
+      "dependencies": [
+        "@tanstack/history",
+        "cookie-es",
+        "seroval",
+        "seroval-plugins"
+      ],
+      "bin": true,
+      "tarball": "https://registry.npmmirror.com/@tanstack/router-core/-/router-core-1.168.15.tgz"
+    },
+    "@tanstack/store@0.9.3": {
+      "integrity": "sha512-8reSzl/qGWGGVKhBoxXPMWzATSbZLZFWhwBAFO9NAyp0TxzfBP0mIrGb8CP8KrQTmvzXlR/vFPPUrHTLBGyFyw==",
+      "tarball": "https://registry.npmmirror.com/@tanstack/store/-/store-0.9.3.tgz"
     },
     "@tauri-apps/api@2.10.1": {
       "integrity": "sha512-hKL/jWf293UDSUN09rR69hrToyIXBb8CjGaWC7gfinvnQrBVvnLr08FeFi38gxtugAVyVcTa5/FD/Xnkb1siBw==",
@@ -1196,6 +1239,10 @@
       "integrity": "sha512-VRhuHOLoKYOy4UbilLbUzbYg93XLjv2PncJC50EuTWPA3gaja1UjBsUP/D/9/juV3vQFr6XBEzn9KCAHdUvOHw==",
       "tarball": "https://registry.npmmirror.com/compute-scroll-into-view/-/compute-scroll-into-view-3.1.1.tgz"
     },
+    "cookie-es@3.1.1": {
+      "integrity": "sha512-UaXxwISYJPTr9hwQxMFYZ7kNhSXboMXP+Z3TRX6f1/NyaGPfuNUZOWP1pUEb75B2HjfklIYLVRfWiFZJyC6Npg==",
+      "tarball": "https://registry.npmmirror.com/cookie-es/-/cookie-es-3.1.1.tgz"
+    },
     "cookie@1.1.1": {
       "integrity": "sha512-ei8Aos7ja0weRpFzJnEA9UHJ/7XQmqglbRwnf2ATjcB9Wq874VKH9kfjjirM6UhU2/E5fFYadylyhFldcqSidQ==",
       "tarball": "https://registry.npmmirror.com/cookie/-/cookie-1.1.1.tgz"
@@ -1206,6 +1253,10 @@
         "toggle-selection"
       ],
       "tarball": "https://registry.npmmirror.com/copy-to-clipboard/-/copy-to-clipboard-3.3.3.tgz"
+    },
+    "core-util-is@1.0.3": {
+      "integrity": "sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==",
+      "tarball": "https://registry.npmmirror.com/core-util-is/-/core-util-is-1.0.3.tgz"
     },
     "csstype@3.2.3": {
       "integrity": "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==",
@@ -1690,6 +1741,14 @@
       ],
       "tarball": "https://registry.npmmirror.com/i18next/-/i18next-25.8.18.tgz"
     },
+    "immediate@3.0.6": {
+      "integrity": "sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==",
+      "tarball": "https://registry.npmmirror.com/immediate/-/immediate-3.0.6.tgz"
+    },
+    "inherits@2.0.4": {
+      "integrity": "sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==",
+      "tarball": "https://registry.npmmirror.com/inherits/-/inherits-2.0.4.tgz"
+    },
     "inline-style-parser@0.2.7": {
       "integrity": "sha512-Nb2ctOyNR8DqQoR0OwRG95uNWIC0C1lCgf5Naz5H6Ji72KZ8OcFZLz2P5sNgwlyoJ8Yif11oMuYs5pBQa86csA==",
       "tarball": "https://registry.npmmirror.com/inline-style-parser/-/inline-style-parser-0.2.7.tgz"
@@ -1718,6 +1777,14 @@
       "integrity": "sha512-+Pgi+vMuUNkJyExiMBt5IlFoMyKnr5zhJ4Uspz58WOhBF5QoIZkFyNHIbBAtHwzVAgk5RtndVNsDRN61/mmDqg==",
       "tarball": "https://registry.npmmirror.com/is-plain-obj/-/is-plain-obj-4.1.0.tgz"
     },
+    "isarray@1.0.0": {
+      "integrity": "sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==",
+      "tarball": "https://registry.npmmirror.com/isarray/-/isarray-1.0.0.tgz"
+    },
+    "isbot@5.1.39": {
+      "integrity": "sha512-obH0yYahGXdzNxo+djmHhBYThUKDkz565cxkIlt2L9hXfv1NlaLKoDBHo6KxXsYrIXx2RK3x5vY36CfZcobxEw==",
+      "tarball": "https://registry.npmmirror.com/isbot/-/isbot-5.1.39.tgz"
+    },
     "jiti@2.6.1": {
       "integrity": "sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ==",
       "bin": true,
@@ -1730,6 +1797,16 @@
       ],
       "tarball": "https://registry.npmmirror.com/json2mq/-/json2mq-0.2.0.tgz"
     },
+    "jszip@3.10.1": {
+      "integrity": "sha512-xXDvecyTpGLrqFrvkrUSoxxfJI5AH7U8zxxtVclpsUtMCq4JQ290LY8AW5c7Ggnr/Y/oK+bQMbqK2qmtk3pN4g==",
+      "dependencies": [
+        "lie",
+        "pako",
+        "readable-stream",
+        "setimmediate"
+      ],
+      "tarball": "https://registry.npmmirror.com/jszip/-/jszip-3.10.1.tgz"
+    },
     "katex@0.16.38": {
       "integrity": "sha512-cjHooZUmIAUmDsHBN+1n8LaZdpmbj03LtYeYPyuYB7OuloiaeaV6N4LcfjcnHVzGWjVQmKrxxTrpDcmSzEZQwQ==",
       "dependencies": [
@@ -1737,6 +1814,13 @@
       ],
       "bin": true,
       "tarball": "https://registry.npmmirror.com/katex/-/katex-0.16.38.tgz"
+    },
+    "lie@3.3.0": {
+      "integrity": "sha512-UaiMJzeWRlEujzAuw5LokY1L5ecNQYZKfmyZ9L7wDHb/p5etKaxXhohBcrw0EYby+G/NA52vRSN4N39dxHAIwQ==",
+      "dependencies": [
+        "immediate"
+      ],
+      "tarball": "https://registry.npmmirror.com/lie/-/lie-3.3.0.tgz"
     },
     "lightningcss-android-arm64@1.31.1": {
       "integrity": "sha512-HXJF3x8w9nQ4jbXRiNppBCqeZPIAfUo8zE/kOEGbW5NZvGc/K7nMxbhIr+YlFlHW5mpbg/YFPdbnCh1wAXCKFg==",
@@ -2451,6 +2535,10 @@
       "bin": true,
       "tarball": "https://registry.npmmirror.com/nanoid/-/nanoid-3.3.11.tgz"
     },
+    "pako@1.0.11": {
+      "integrity": "sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==",
+      "tarball": "https://registry.npmmirror.com/pako/-/pako-1.0.11.tgz"
+    },
     "parse-entities@4.0.2": {
       "integrity": "sha512-GG2AQYWoLgL877gQIKeRPGO1xF9+eG1ujIb5soS5gPvLQ1y2o8FL90w2QWNdf9I361Mpp7726c+lj3U0qK1uGw==",
       "dependencies": [
@@ -2487,6 +2575,10 @@
         "source-map-js"
       ],
       "tarball": "https://registry.npmmirror.com/postcss/-/postcss-8.5.8.tgz"
+    },
+    "process-nextick-args@2.0.1": {
+      "integrity": "sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==",
+      "tarball": "https://registry.npmmirror.com/process-nextick-args/-/process-nextick-args-2.0.1.tgz"
     },
     "property-information@7.1.0": {
       "integrity": "sha512-TwEZ+X+yCJmYfL7TPUOcvBZ4QfoT5YenQiJuX//0th53DE6w0xxLEtfK3iyryQFddXuvkIk51EEgrJQ0WJkOmQ==",
@@ -3000,6 +3092,19 @@
       "integrity": "sha512-9nfp2hYpCwOjAN+8TZFGhtWEwgvWHXqESH8qT89AT/lWklpLON22Lc8pEtnpsZz7VmawabSU0gCjnj8aC0euHQ==",
       "tarball": "https://registry.npmmirror.com/react/-/react-19.2.4.tgz"
     },
+    "readable-stream@2.3.8": {
+      "integrity": "sha512-8p0AUk4XODgIewSi0l8Epjs+EVnWiK7NoDIEGU0HhE7+ZyY8D1IMY7odu5lRrFXGg71L15KG8QrPmum45RTtdA==",
+      "dependencies": [
+        "core-util-is",
+        "inherits",
+        "isarray",
+        "process-nextick-args",
+        "safe-buffer",
+        "string_decoder",
+        "util-deprecate"
+      ],
+      "tarball": "https://registry.npmmirror.com/readable-stream/-/readable-stream-2.3.8.tgz"
+    },
     "rehype-highlight@7.0.2": {
       "integrity": "sha512-k158pK7wdC2qL3M5NcZROZ2tR/l7zOzjxXd5VGdcfIyoijjQqpHd3JKtYSBDpDZ38UI2WJWuFAtkMDxmx5kstA==",
       "dependencies": [
@@ -3151,6 +3256,10 @@
       "bin": true,
       "tarball": "https://registry.npmmirror.com/rollup/-/rollup-4.59.0.tgz"
     },
+    "safe-buffer@5.1.2": {
+      "integrity": "sha512-Gd2UZBJDkXlY7GbJxfsE8/nvKkUEU1G38c1siN6QP6a9PT9MmHB8GnpscSmMJSoF8LOIrt8ud/wPtojys4G6+g==",
+      "tarball": "https://registry.npmmirror.com/safe-buffer/-/safe-buffer-5.1.2.tgz"
+    },
     "scheduler@0.27.0": {
       "integrity": "sha512-eNv+WrVbKu1f3vbYJT/xtiF5syA5HPIMtf9IgY/nKg0sWqzAUEvqY/xm7OcZc/qafLx/iO9FgOmeSAp4v5ti/Q==",
       "tarball": "https://registry.npmmirror.com/scheduler/-/scheduler-0.27.0.tgz"
@@ -3162,9 +3271,24 @@
       ],
       "tarball": "https://registry.npmmirror.com/scroll-into-view-if-needed/-/scroll-into-view-if-needed-3.1.0.tgz"
     },
+    "seroval-plugins@1.5.2_seroval@1.5.2": {
+      "integrity": "sha512-qpY0Cl+fKYFn4GOf3cMiq6l72CpuVaawb6ILjubOQ+diJ54LfOWaSSPsaswN8DRPIPW4Yq+tE1k5aKd7ILyaFg==",
+      "dependencies": [
+        "seroval"
+      ],
+      "tarball": "https://registry.npmmirror.com/seroval-plugins/-/seroval-plugins-1.5.2.tgz"
+    },
+    "seroval@1.5.2": {
+      "integrity": "sha512-xcRN39BdsnO9Tf+VzsE7b3JyTJASItIV1FVFewJKCFcW4s4haIKS3e6vj8PGB9qBwC7tnuOywQMdv5N4qkzi7Q==",
+      "tarball": "https://registry.npmmirror.com/seroval/-/seroval-1.5.2.tgz"
+    },
     "set-cookie-parser@2.7.2": {
       "integrity": "sha512-oeM1lpU/UvhTxw+g3cIfxXHyJRc/uidd3yK1P242gzHds0udQBYzs3y8j4gCCW+ZJ7ad0yctld8RYO+bdurlvw==",
       "tarball": "https://registry.npmmirror.com/set-cookie-parser/-/set-cookie-parser-2.7.2.tgz"
+    },
+    "setimmediate@1.0.5": {
+      "integrity": "sha512-MATJdZp8sLqDl/68LfQmbP8zKPLQNV6BIZoIgrscFDQ+RsvK/BxeDQOgyxKKoh0y/8h3BqVFnCqQ/gd+reiIXA==",
+      "tarball": "https://registry.npmmirror.com/setimmediate/-/setimmediate-1.0.5.tgz"
     },
     "socket.io-client@4.8.3": {
       "integrity": "sha512-uP0bpjWrjQmUt5DTHq9RuoCBdFJF10cdX9X+a368j/Ft0wmaVgxlrjvK3kjvgCODOMMOz9lcaRzxmso0bTWZ/g==",
@@ -3203,6 +3327,13 @@
     "string-convert@0.2.1": {
       "integrity": "sha512-u/1tdPl4yQnPBjnVrmdLo9gtuLvELKsAoRapekWggdiQNvvvum+jYF329d84NAa660KQw7pB2n36KrIKVoXa3A==",
       "tarball": "https://registry.npmmirror.com/string-convert/-/string-convert-0.2.1.tgz"
+    },
+    "string_decoder@1.1.1": {
+      "integrity": "sha512-n/ShnvDi6FHbbVfviro+WojiFzv+s8MPMHBczVePfUpDJLwoLT0ht1l4YwBCbi8pJAveEEdnkHyPyTP/mzRfwg==",
+      "dependencies": [
+        "safe-buffer"
+      ],
+      "tarball": "https://registry.npmmirror.com/string_decoder/-/string_decoder-1.1.1.tgz"
     },
     "stringify-entities@4.0.4": {
       "integrity": "sha512-IwfBptatlO+QCJUo19AqvrPNqlVMpW9YEL2LIVY+Rpv2qsjCGxaDLNRgeGsQWJhfItebuJhsGSLjaBbNSQ+ieg==",
@@ -3349,6 +3480,10 @@
       ],
       "tarball": "https://registry.npmmirror.com/use-sync-external-store/-/use-sync-external-store-1.6.0.tgz"
     },
+    "util-deprecate@1.0.2": {
+      "integrity": "sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==",
+      "tarball": "https://registry.npmmirror.com/util-deprecate/-/util-deprecate-1.0.2.tgz"
+    },
     "vfile-location@5.0.3": {
       "integrity": "sha512-5yXvWDEgqeiYiBe1lbxYF7UMAIm/IcopxMHrMQDq3nvKcjPKIhZklUKL+AE7J7uApI4kwe2snsK+eI6UTj9EHg==",
       "dependencies": [
@@ -3458,6 +3593,7 @@
         "npm:@ant-design/icons@^5.6.1",
         "npm:@tailwindcss/vite@^4.2.1",
         "npm:@tanstack/react-query@^5.99.1",
+        "npm:@tanstack/react-router@^1.168.23",
         "npm:@tauri-apps/api@^2.10.1",
         "npm:@tauri-apps/cli@^2.10.1",
         "npm:@tauri-apps/plugin-opener@^2.5.3",
@@ -3473,6 +3609,7 @@
         "npm:highlight.js@^11.11.1",
         "npm:i18next-browser-languagedetector@^8.2.1",
         "npm:i18next@^25.8.18",
+        "npm:jszip@^3.10.1",
         "npm:katex@~0.16.38",
         "npm:lucide-react@0.577",
         "npm:react-dom@^19.2.4",

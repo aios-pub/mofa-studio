@@ -3,26 +3,36 @@
  * 显示技能包的安全扫描结果
  */
 
-import { ShieldAlert, Shield, ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
-import { Card, Badge, Collapse, Tag, Space, Tooltip, Alert } from 'antd';
-import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/services/api/apiClient';
-import type { SecurityAuditRecord, FindingSeverity, SecurityVerdict } from '@/types/skill';
+import { ShieldAlert, Shield, ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
+import { Card, Badge, Collapse, Tag, Space, Tooltip, Alert } from "antd";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/services/api/apiClient";
+import type {
+  SecurityAuditRecord,
+  FindingSeverity,
+  SecurityVerdict,
+} from "@/types/skill";
 
-const SEVERITY_CONFIG: Record<FindingSeverity, { color: string; text: string }> = {
-  CRITICAL: { color: 'error', text: '严重' },
-  HIGH: { color: 'warning', text: '高危' },
-  MEDIUM: { color: 'processing', text: '中危' },
-  LOW: { color: 'default', text: '低危' },
-  INFO: { color: 'default', text: '信息' },
+const SEVERITY_CONFIG: Record<
+  FindingSeverity,
+  { color: string; text: string }
+> = {
+  CRITICAL: { color: "error", text: "严重" },
+  HIGH: { color: "warning", text: "高危" },
+  MEDIUM: { color: "processing", text: "中危" },
+  LOW: { color: "default", text: "低危" },
+  INFO: { color: "default", text: "信息" },
 };
 
-const VERDICT_CONFIG: Record<SecurityVerdict, { color: string; text: string; icon: string }> = {
-  SAFE: { color: 'success', text: '安全', icon: '✓' },
-  SUSPICIOUS: { color: 'warning', text: '可疑', icon: '!' },
-  DANGEROUS: { color: 'error', text: '危险', icon: '⚠' },
-  BLOCKED: { color: 'error', text: '已阻止', icon: '✕' },
+const VERDICT_CONFIG: Record<
+  SecurityVerdict,
+  { color: string; text: string; icon: string }
+> = {
+  SAFE: { color: "success", text: "安全", icon: "✓" },
+  SUSPICIOUS: { color: "warning", text: "可疑", icon: "!" },
+  DANGEROUS: { color: "error", text: "危险", icon: "⚠" },
+  BLOCKED: { color: "error", text: "已阻止", icon: "✕" },
 };
 
 interface SecurityAuditSectionProps {
@@ -34,11 +44,11 @@ interface SecurityAuditSectionProps {
 
 async function fetchSecurityAudits(
   skillId: string,
-  versionId: string
+  versionId: string,
 ): Promise<SecurityAuditRecord[]> {
   try {
     return await apiClient.get<SecurityAuditRecord[]>(
-      `/api/skill-hub/v1/skills/${skillId}/versions/${versionId}/security-audit`
+      `/api/skill-hub/skills/${skillId}/versions/${versionId}/security-audit`,
     );
   } catch (error: any) {
     // Treat 404 as empty array
@@ -56,7 +66,7 @@ export function SecurityAuditSection({
   bare = false,
 }: SecurityAuditSectionProps) {
   const { data: audits, isLoading } = useQuery({
-    queryKey: ['security-audits', skillId, versionId],
+    queryKey: ["security-audits", skillId, versionId],
     queryFn: () => fetchSecurityAudits(skillId, versionId),
     enabled: !!skillId && !!versionId,
     staleTime: 30000,
@@ -108,8 +118,20 @@ function ScannerCard({
   const [expanded, setExpanded] = useState(false);
   const sortedFindings = [...audit.findings].sort(
     (a, b) =>
-      (a.severity === 'CRITICAL' ? 0 : a.severity === 'HIGH' ? 1 : a.severity === 'MEDIUM' ? 2 : 3) -
-      (b.severity === 'CRITICAL' ? 0 : b.severity === 'HIGH' ? 1 : b.severity === 'MEDIUM' ? 2 : 3)
+      (a.severity === "CRITICAL"
+        ? 0
+        : a.severity === "HIGH"
+          ? 1
+          : a.severity === "MEDIUM"
+            ? 2
+            : 3) -
+      (b.severity === "CRITICAL"
+        ? 0
+        : b.severity === "HIGH"
+          ? 1
+          : b.severity === "MEDIUM"
+            ? 2
+            : 3),
   );
 
   const verdict = VERDICT_CONFIG[audit.verdict];
@@ -119,7 +141,10 @@ function ScannerCard({
       <div className="flex items-center justify-between flex-wrap gap-2">
         <Space>
           <span className="font-mono text-sm">{audit.scannerType}</span>
-          <Badge color={verdict.color} text={`${verdict.icon} ${verdict.text}`} />
+          <Badge
+            color={verdict.color}
+            text={`${verdict.icon} ${verdict.text}`}
+          />
         </Space>
         <Space className="text-sm text-gray-500">
           <span>{audit.findingsCount} 个发现</span>
@@ -142,11 +167,14 @@ function ScannerCard({
               <ChevronDown className="w-4 h-4" />
             )}
           </button>
-          <Collapse activeKey={expanded ? ['findings'] : []}>
+          <Collapse activeKey={expanded ? ["findings"] : []}>
             <Collapse.Panel key="findings" header="">
               <div className="space-y-3">
                 {sortedFindings.map((finding, idx) => (
-                  <FindingItem key={`${finding.ruleId}-${idx}`} finding={finding} />
+                  <FindingItem
+                    key={`${finding.ruleId}-${idx}`}
+                    finding={finding}
+                  />
                 ))}
               </div>
             </Collapse.Panel>
@@ -166,17 +194,26 @@ function ScannerCard({
   );
 }
 
-function FindingItem({ finding }: { finding: SecurityAuditRecord['findings'][number] }) {
+function FindingItem({
+  finding,
+}: {
+  finding: SecurityAuditRecord["findings"][number];
+}) {
   const severity = SEVERITY_CONFIG[finding.severity];
 
   return (
-    <div className="bg-white p-3 rounded border-l-4" style={{ borderLeftColor: severity.color }}>
+    <div
+      className="bg-white p-3 rounded border-l-4"
+      style={{ borderLeftColor: severity.color }}
+    >
       <div className="flex items-start justify-between gap-2 mb-2">
         <Space>
           <Tag color={severity.color}>{severity.text}</Tag>
           <span className="font-medium">{finding.category}</span>
         </Space>
-        <span className="text-xs text-gray-500 font-mono">{finding.ruleId}</span>
+        <span className="text-xs text-gray-500 font-mono">
+          {finding.ruleId}
+        </span>
       </div>
       <div className="font-medium mb-1">{finding.title}</div>
       {finding.message && (

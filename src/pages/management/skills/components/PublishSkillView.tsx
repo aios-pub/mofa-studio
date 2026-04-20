@@ -26,6 +26,7 @@ import {
   InboxOutlined,
   FileTextOutlined,
   CheckCircleOutlined,
+  TeamOutlined,
 } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import { useSkillHubStore } from '@/stores/useSkillHubStore';
@@ -45,7 +46,11 @@ interface ParsedMetadata {
   readme?: string;
 }
 
-export function PublishSkillView() {
+interface PublishSkillViewProps {
+  onSwitchToNamespaces?: () => void;
+}
+
+export function PublishSkillView({ onSwitchToNamespaces }: PublishSkillViewProps) {
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -319,6 +324,25 @@ export function PublishSkillView() {
 
           {/* 发布设置 */}
           <Card title="发布设置" size="small" className="mb-4">
+            {namespaces.length === 0 && (
+              <Alert
+                message="暂无可用命名空间"
+                description="发布技能需要先创建命名空间。请前往命名空间管理页面创建。"
+                type="warning"
+                showIcon
+                action={
+                  <Button
+                    type="primary"
+                    size="small"
+                    icon={<TeamOutlined />}
+                    onClick={onSwitchToNamespaces}
+                  >
+                    前往创建
+                  </Button>
+                }
+                style={{ marginBottom: 16 }}
+              />
+            )}
             <Form.Item
               name="namespace"
               label="命名空间"

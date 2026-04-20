@@ -89,61 +89,61 @@
 **后端位置**: `/Users/lijing/RustroverProjects/agentos/agent-platform-interfaces/src/handler/skill_hub_v2.rs`
 
 #### Search & Browse
-- `GET /api/skill-hub/v1/search` - 搜索技能
-- `GET /api/skill-hub/v1/stats` - 获取统计信息
-- `GET /api/skill-hub/v1/namespaces` - 获取命名空间列表
-- `GET /api/skill-hub/v1/labels` - 获取标签列表
+- `GET /api/skill-hub/search` - 搜索技能
+- `GET /api/skill-hub/stats` - 获取统计信息
+- `GET /api/skill-hub/namespaces` - 获取命名空间列表
+- `GET /api/skill-hub/labels` - 获取标签列表
 
 #### Skill Detail
-- `GET /api/skill-hub/v1/:namespace/:slug` - 获取技能详情
-- `GET /api/skill-hub/v1/:namespace/:slug/versions` - 获取版本列表
-- `GET /api/skill-hub/v1/:namespace/:slug/versions/:version` - 获取版本详情
-- `GET /api/skill-hub/v1/:namespace/:slug/versions/:version/files` - 获取文件列表
-- `GET /api/skill-hub/v1/:namespace/:slug/versions/:version/file` - 获取文件内容
-- `GET /api/skill-hub/v1/:namespace/:slug/versions/:version/download` - 下载技能包
+- `GET /api/skill-hub/:namespace/:slug` - 获取技能详情
+- `GET /api/skill-hub/:namespace/:slug/versions` - 获取版本列表
+- `GET /api/skill-hub/:namespace/:slug/versions/:version` - 获取版本详情
+- `GET /api/skill-hub/:namespace/:slug/versions/:version/files` - 获取文件列表
+- `GET /api/skill-hub/:namespace/:slug/versions/:version/file` - 获取文件内容
+- `GET /api/skill-hub/:namespace/:slug/versions/:version/download` - 下载技能包
 
 #### Publishing
-- `POST /api/skill-hub/v1/:namespace/publish` - 发布技能
-- `POST /api/skill-hub/v1/:namespace/:slug/versions/:version/submit-review` - 提交审核
-- `POST /api/skill-hub/v1/reviews/:id/approve` - 批准审核
-- `POST /api/skill-hub/v1/reviews/:id/reject` - 拒绝审核
-- `GET /api/skill-hub/v1/reviews` - 获取审核列表
+- `POST /api/skill-hub/:namespace/publish` - 发布技能
+- `POST /api/skill-hub/:namespace/:slug/versions/:version/submit-review` - 提交审核
+- `POST /api/skill-hub/reviews/:id/approve` - 批准审核
+- `POST /api/skill-hub/reviews/:id/reject` - 拒绝审核
+- `GET /api/skill-hub/reviews` - 获取审核列表
 
 #### Lifecycle Management
-- `POST /api/skill-hub/v1/:namespace/:slug/archive` - 归档技能
-- `POST /api/skill-hub/v1/:namespace/:slug/versions/:version/yank` - 撤回版本
-- `POST /api/skill-hub/v1/:namespace/:slug/versions/:version/rerelease` - 重新发布
-- `DELETE /api/skill-hub/v1/:namespace/:slug/versions/:version` - 删除版本
+- `POST /api/skill-hub/:namespace/:slug/archive` - 归档技能
+- `POST /api/skill-hub/:namespace/:slug/versions/:version/yank` - 撤回版本
+- `POST /api/skill-hub/:namespace/:slug/versions/:version/rerelease` - 重新发布
+- `DELETE /api/skill-hub/:namespace/:slug/versions/:version` - 删除版本
 
 #### Social
-- `PUT /api/skill-hub/v1/skills/:id/star` - 添加星标
-- `DELETE /api/skill-hub/v1/skills/:id/star` - 取消星标
-- `PUT /api/skill-hub/v1/skills/:id/rating` - 评分
+- `PUT /api/skill-hub/skills/:id/star` - 添加星标
+- `DELETE /api/skill-hub/skills/:id/star` - 取消星标
+- `PUT /api/skill-hub/skills/:id/rating` - 评分
 
 #### Labels
-- `POST /api/skill-hub/v1/labels` - 创建标签
-- `PUT /api/skill-hub/v1/labels/:id` - 更新标签
-- `DELETE /api/skill-hub/v1/labels/:id` - 删除标签
-- `GET /api/skill-hub/v1/skills/:id/labels` - 获取技能标签
-- `POST /api/skill-hub/v1/skills/:id/labels` - 设置技能标签
-- `DELETE /api/skill-hub/v1/skills/:id/labels/:label_id` - 移除技能标签
+- `POST /api/skill-hub/labels` - 创建标签
+- `PUT /api/skill-hub/labels/:id` - 更新标签
+- `DELETE /api/skill-hub/labels/:id` - 删除标签
+- `GET /api/skill-hub/skills/:id/labels` - 获取技能标签
+- `POST /api/skill-hub/skills/:id/labels` - 设置技能标签
+- `DELETE /api/skill-hub/skills/:id/labels/:label_id` - 移除技能标签
 
 #### Reports & Governance
-- `POST /api/skill-hub/v1/:namespace/:slug/reports` - 提交举报
-- `GET /api/skill-hub/v1/admin/reports` - 获取举报列表
-- `POST /api/skill-hub/v1/admin/reports/:id/resolve` - 解决举报
-- `POST /api/skill-hub/v1/admin/reports/:id/dismiss` - 忽略举报
-- `POST /api/skill-hub/v1/admin/skills/:id/hide` - 隐藏技能
-- `POST /api/skill-hub/v1/admin/skills/:id/unhide` - 取消隐藏技能
+- `POST /api/skill-hub/:namespace/:slug/reports` - 提交举报
+- `GET /api/skill-hub/admin/reports` - 获取举报列表
+- `POST /api/skill-hub/admin/reports/:id/resolve` - 解决举报
+- `POST /api/skill-hub/admin/reports/:id/dismiss` - 忽略举报
+- `POST /api/skill-hub/admin/skills/:id/hide` - 隐藏技能
+- `POST /api/skill-hub/admin/skills/:id/unhide` - 取消隐藏技能
 
 #### Namespace Management
-- `POST /api/skill-hub/v1/namespaces` - 创建命名空间
-- `PUT /api/skill-hub/v1/namespaces/:id` - 更新命名空间
-- `DELETE /api/skill-hub/v1/namespaces/:id` - 删除命名空间
-- `GET /api/skill-hub/v1/namespaces/:id/members` - 获取成员列表
-- `POST /api/skill-hub/v1/namespaces/:id/members` - 添加成员
-- `DELETE /api/skill-hub/v1/namespaces/:id/members/:user_id` - 移除成员
-- `PUT /api/skill-hub/v1/namespaces/:id/members/:user_id/role` - 更新成员角色
+- `POST /api/skill-hub/namespaces` - 创建命名空间
+- `PUT /api/skill-hub/namespaces/:id` - 更新命名空间
+- `DELETE /api/skill-hub/namespaces/:id` - 删除命名空间
+- `GET /api/skill-hub/namespaces/:id/members` - 获取成员列表
+- `POST /api/skill-hub/namespaces/:id/members` - 添加成员
+- `DELETE /api/skill-hub/namespaces/:id/members/:user_id` - 移除成员
+- `PUT /api/skill-hub/namespaces/:id/members/:user_id/role` - 更新成员角色
 
 ## 配置和依赖
 
@@ -155,7 +155,7 @@
 
 ### 环境变量
 ```bash
-VITE_SKILLHUB_API_URL=/api/skill-hub/v1
+VITE_SKILLHUB_API_URL=/api/skill-hub
 VITE_ENABLE_SKILLHUB=true
 ```
 
@@ -196,7 +196,7 @@ Rust 后端 (agentos) 已完整实现所有 SkillHub V2 API 端点：
 | UI 组件库 | Radix UI | Ant Design |
 
 ### 配置要点
-1. **后端路由**: 所有 API 端点已在 `/api/skill-hub/v1/*` 路径下注册
+1. **后端路由**: 所有 API 端点已在 `/api/skill-hub/*` 路径下注册
 2. **类型安全**: 前后端类型定义保持一致 (`src/types/skill.ts`)
 3. **状态管理**: 使用 Zustand 进行前端状态管理
 4. **API 调用**: 统一使用 `skillHubV2Api` 进行后端通信

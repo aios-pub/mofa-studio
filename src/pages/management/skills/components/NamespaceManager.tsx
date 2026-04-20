@@ -52,7 +52,7 @@ export function NamespaceManager() {
 
       // Load members for each namespace
       for (const ns of data) {
-        const nsMembers = await skillHubV2Api.listNamespaceMembers(parseInt(ns.id));
+        const nsMembers = await skillHubV2Api.listMembers(ns.id);
         setMembers(prev => ({ ...prev, [parseInt(ns.id)]: nsMembers }));
       }
     } catch (error) {
@@ -78,7 +78,7 @@ export function NamespaceManager() {
     if (!selectedNamespace) return;
 
     try {
-      await skillHubV2Api.addNamespaceMember(parseInt(selectedNamespace.id), values);
+      await skillHubV2Api.addMember(selectedNamespace.id, values.userId, values.role);
       message.success('成员添加成功');
       setMemberModalVisible(false);
       memberForm.resetFields();
@@ -90,7 +90,7 @@ export function NamespaceManager() {
 
   const handleRemoveMember = async (namespaceId: number, userId: string) => {
     try {
-      await skillHubV2Api.removeNamespaceMember(namespaceId, userId);
+      await skillHubV2Api.removeMember(String(namespaceId), userId);
       message.success('成员移除成功');
       loadNamespaces();
     } catch (error) {

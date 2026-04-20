@@ -3,8 +3,8 @@
  * 多 Tab 布局：概览、版本、文件、README
  */
 
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Tabs,
   Descriptions,
@@ -17,25 +17,25 @@ import {
   Divider,
   message,
   Spin,
-} from 'antd';
+} from "antd";
 import {
   StarOutlined,
   StarFilled,
   DownloadOutlined,
   ShareAltOutlined,
   FlagOutlined,
-} from '@ant-design/icons';
-import { useSkillHubStore } from '@/stores/useSkillHubStore';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeHighlight from 'rehype-highlight';
-import 'highlight.js/styles/github-dark.css';
-import { VersionList } from './VersionList';
-import { FileTreeBrowser } from './FileTreeBrowser';
-import { FilePreview } from './FilePreview';
-import { StarButton } from './StarButton';
-import { RatingInput } from './RatingInput';
-import { LabelPanel } from './LabelPanel';
+} from "@ant-design/icons";
+import { useSkillHubStore } from "@/stores/useSkillHubStore";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
+import "highlight.js/styles/github-dark.css";
+import { VersionList } from "./VersionList";
+import { FileTreeBrowser } from "./FileTreeBrowser";
+import { FilePreview } from "./FilePreview";
+import { StarButton } from "./StarButton";
+import { RatingInput } from "./RatingInput";
+import { LabelPanel } from "./LabelPanel";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -57,7 +57,7 @@ export function HubSkillDetail() {
     fileLoading,
   } = useSkillHubStore();
 
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
   const [selectedVersion, setSelectedVersion] = useState<string | undefined>();
 
   useEffect(() => {
@@ -72,7 +72,7 @@ export function HubSkillDetail() {
     if (namespace && slug) {
       loadFiles(namespace, slug, version);
     }
-    setActiveTab('files');
+    setActiveTab("files");
   };
 
   const handleFileSelect = (path: string) => {
@@ -84,24 +84,26 @@ export function HubSkillDetail() {
   const handleShare = () => {
     const url = window.location.href;
     navigator.clipboard.writeText(url);
-    message.success('链接已复制到剪贴板');
+    message.success("链接已复制到剪贴板");
   };
 
   const handleDownload = async () => {
     if (!namespace || !slug) return;
     try {
-      const blob = await useSkillHubStore.getState().publishResult
+      const blob = (await useSkillHubStore.getState().publishResult)
         ? new Blob()
-        : await fetch(`/api/skill-hub/v1/${namespace}/${slug}/download`).then(r => r.blob());
+        : await fetch(`/api/skill-hub/${namespace}/${slug}/download`).then(
+            (r) => r.blob(),
+          );
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `${slug}.zip`;
       a.click();
       URL.revokeObjectURL(url);
-      message.success('下载成功');
+      message.success("下载成功");
     } catch {
-      message.error('下载失败');
+      message.error("下载失败");
     }
   };
 
@@ -126,18 +128,23 @@ export function HubSkillDetail() {
                 {selectedHubSkill.displayName || selectedHubSkill.slug}
               </Title>
               <Tag color="blue">{selectedHubSkill.visibility}</Tag>
-              <Tag color={selectedHubSkill.status === 'ACTIVE' ? 'green' : 'red'}>
+              <Tag
+                color={selectedHubSkill.status === "ACTIVE" ? "green" : "red"}
+              >
                 {selectedHubSkill.status}
               </Tag>
             </div>
             <Paragraph className="text-gray-600 mb-4">
-              {selectedHubSkill.summary || '暂无描述'}
+              {selectedHubSkill.summary || "暂无描述"}
             </Paragraph>
             <Text type="secondary">
               {selectedHubSkill.namespaceSlug}/{selectedHubSkill.slug}
             </Text>
             <Divider type="vertical" />
-            <Text type="secondary">作者: {selectedHubSkill.ownerDisplayName || selectedHubSkill.ownerId}</Text>
+            <Text type="secondary">
+              作者:{" "}
+              {selectedHubSkill.ownerDisplayName || selectedHubSkill.ownerId}
+            </Text>
           </div>
 
           {/* Action Buttons */}
@@ -160,24 +167,28 @@ export function HubSkillDetail() {
         <div className="flex gap-6 mt-4">
           <div>
             <Text type="secondary">下载</Text>
-            <div className="text-lg font-semibold">{selectedHubSkill.downloadCount}</div>
+            <div className="text-lg font-semibold">
+              {selectedHubSkill.downloadCount}
+            </div>
           </div>
           <div>
             <Text type="secondary">Star</Text>
-            <div className="text-lg font-semibold">{selectedHubSkill.starCount}</div>
+            <div className="text-lg font-semibold">
+              {selectedHubSkill.starCount}
+            </div>
           </div>
           <div>
             <Text type="secondary">评分</Text>
             <div className="text-lg font-semibold">
               {selectedHubSkill.ratingCount > 0
                 ? `${selectedHubSkill.ratingAvg} (${selectedHubSkill.ratingCount})`
-                : '-'}
+                : "-"}
             </div>
           </div>
           <div>
             <Text type="secondary">版本</Text>
             <div className="text-lg font-semibold">
-              {latestVersion?.version || '-'}
+              {latestVersion?.version || "-"}
             </div>
           </div>
         </div>
@@ -187,12 +198,15 @@ export function HubSkillDetail() {
       {(labels.length > 0 || tags.length > 0) && (
         <div className="mb-4">
           <Space wrap>
-            {labels.map(label => (
-              <Tag key={label.id} color={label.type === 'RECOMMENDED' ? 'blue' : 'purple'}>
+            {labels.map((label) => (
+              <Tag
+                key={label.id}
+                color={label.type === "RECOMMENDED" ? "blue" : "purple"}
+              >
                 {label.displayName}
               </Tag>
             ))}
-            {tags.map(tag => (
+            {tags.map((tag) => (
               <Tag key={tag} color="default">
                 {tag}
               </Tag>
@@ -207,13 +221,15 @@ export function HubSkillDetail() {
         onChange={setActiveTab}
         items={[
           {
-            key: 'overview',
-            label: '概览',
+            key: "overview",
+            label: "概览",
             children: (
               <div className="space-y-4">
                 <Card title="技能信息" bordered={false}>
                   <Descriptions column={2}>
-                    <Descriptions.Item label="ID">{selectedHubSkill.id}</Descriptions.Item>
+                    <Descriptions.Item label="ID">
+                      {selectedHubSkill.id}
+                    </Descriptions.Item>
                     <Descriptions.Item label="创建时间">
                       {selectedHubSkill.createdAt.toLocaleDateString()}
                     </Descriptions.Item>
@@ -235,7 +251,7 @@ export function HubSkillDetail() {
                       {String(
                         latestVersion.parsedMetadataJson.description ||
                           latestVersion.parsedMetadataJson.readme ||
-                          '# 暂无说明'
+                          "# 暂无说明",
                       )}
                     </ReactMarkdown>
                   </Card>
@@ -244,8 +260,8 @@ export function HubSkillDetail() {
             ),
           },
           {
-            key: 'versions',
-            label: '版本',
+            key: "versions",
+            label: "版本",
             children: (
               <VersionList
                 versions={selectedHubSkillVersions?.items || []}
@@ -254,8 +270,8 @@ export function HubSkillDetail() {
             ),
           },
           {
-            key: 'files',
-            label: '文件',
+            key: "files",
+            label: "文件",
             disabled: !selectedVersion,
             children: selectedVersion ? (
               <div className="flex gap-4">
@@ -282,8 +298,8 @@ export function HubSkillDetail() {
             ),
           },
           {
-            key: 'labels',
-            label: '标签',
+            key: "labels",
+            label: "标签",
             children: <LabelPanel skillId={selectedHubSkill.id} />,
           },
         ]}

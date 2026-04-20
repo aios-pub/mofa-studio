@@ -12,6 +12,7 @@ import {
   AuditOutlined,
   SettingOutlined,
   KeyOutlined,
+  TeamOutlined,
 } from '@ant-design/icons';
 import { LocalSkillsList, HubSkillsView, PublishSkillView } from './skills';
 import { SkillDetail } from './SkillDetail';
@@ -21,13 +22,14 @@ import { MySkillsPage } from './skills/components/MySkillsPage';
 import { MyStarsPage } from './skills/components/MyStarsPage';
 import { GovernanceInbox } from './skills/components/GovernanceInbox';
 import { ApiTokenManagement } from './skills/components/ApiTokenManagement';
+import { NamespaceManager } from './skills/components/NamespaceManager';
 import type { Skill } from '@/services';
 import { skillApi } from '@/services';
 
 const { Text, Title } = Typography;
 
 export default function SkillsListPage() {
-  const [activeTab, setActiveTab] = useState<'local' | 'hub' | 'publish' | 'my-skills' | 'my-stars' | 'governance' | 'review' | 'admin' | 'tokens'>('local');
+  const [activeTab, setActiveTab] = useState<'local' | 'hub' | 'publish' | 'my-skills' | 'my-stars' | 'governance' | 'review' | 'admin' | 'namespaces' | 'tokens'>('local');
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
 
   const handleToggleEnabled = async (skill: Skill) => {
@@ -112,6 +114,15 @@ export default function SkillsListPage() {
       ),
     },
     {
+      key: 'namespaces',
+      label: (
+        <span className="flex items-center gap-2">
+          <TeamOutlined />
+          命名空间
+        </span>
+      ),
+    },
+    {
       key: 'tokens',
       label: (
         <span className="flex items-center gap-2">
@@ -169,7 +180,9 @@ export default function SkillsListPage() {
 
         {activeTab === 'hub' && <HubSkillsView />}
 
-        {activeTab === 'publish' && <PublishSkillView />}
+        {activeTab === 'publish' && (
+          <PublishSkillView onSwitchToNamespaces={() => setActiveTab('namespaces')} />
+        )}
 
         {activeTab === 'my-skills' && <MySkillsPage />}
 
@@ -180,6 +193,8 @@ export default function SkillsListPage() {
         {activeTab === 'review' && <ReviewQueue />}
 
         {activeTab === 'admin' && <AdminGovernancePanel />}
+
+        {activeTab === 'namespaces' && <NamespaceManager />}
 
         {activeTab === 'tokens' && <ApiTokenManagement />}
       </div>

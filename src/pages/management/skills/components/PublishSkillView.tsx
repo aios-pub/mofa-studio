@@ -12,7 +12,7 @@ import {
   Card,
   Upload,
   Progress,
-  message,
+  App,
   Radio,
   Alert,
   Descriptions,
@@ -51,6 +51,7 @@ interface PublishSkillViewProps {
 export function PublishSkillView({
   onSwitchToNamespaces,
 }: PublishSkillViewProps) {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);

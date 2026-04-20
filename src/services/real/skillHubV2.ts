@@ -125,10 +125,27 @@ const publish = async (
   formData.append("file", file);
   formData.append("visibility", visibility);
   formData.append("confirm_warnings", String(confirmWarnings));
+
+  console.log('[skillHubV2] Publishing skill:', {
+    namespace,
+    fileName: file.name,
+    fileSize: file.size,
+    fileSizeMB: (file.size / (1024 * 1024)).toFixed(2),
+    visibility,
+    confirmWarnings,
+  });
+
+  // Debug: Check FormData content
+  console.log('[skillHubV2] FormData entries:', Array.from(formData.entries()).map(([key, value]) => {
+    if (value instanceof File) {
+      return [key, `File: ${value.name}, size: ${value.size}, type: ${value.type}`];
+    }
+    return [key, value];
+  }));
+
   return apiClient.post<PublishSkillResult>(
     `/api/skill-hub/${namespace}/publish`,
     formData,
-    { headers: { "Content-Type": "multipart/form-data" } },
   );
 };
 

@@ -68,7 +68,12 @@ import { permissionRealApi } from "./real/permissions";
 function createProxyService<T extends object>(mockService: T, realService: T): T {
   return new Proxy(mockService, {
     get(_target, prop) {
-      const service = isMockEnabled() ? mockService : realService;
+      const useMock = isMockEnabled();
+      // Debug: Log which service is being used
+      if (prop === 'publish') {
+        console.log('[createProxyService] Using mock:', useMock, 'for property:', prop);
+      }
+      const service = useMock ? mockService : realService;
       const value = service[prop as keyof T];
       if (typeof value === "function") {
         return value.bind(service);

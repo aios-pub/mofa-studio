@@ -101,6 +101,22 @@ axiosInstance.interceptors.request.use(
     // 添加链路追踪 ID (X_REQUEST_ID)
     config.headers["X_REQUEST_ID"] = generateUUID();
 
+    // FormData 请求不要设置 Content-Type，让浏览器自动设置带 boundary 的值
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
+      // Debug: Log FormData requests
+      console.log('[apiClient] FormData request:', {
+        url: config.url,
+        method: config.method,
+        entries: Array.from(config.data.entries()).map(([key, value]) => {
+          if (value instanceof File) {
+            return [key, `File: ${value.name}, size: ${value.size}, type: ${value.type}`];
+          }
+          return [key, value];
+        }),
+      });
+    }
+
     return config;
   },
   (error: AxiosError) => {
@@ -272,9 +288,6 @@ class ApiClient {
       method: "POST",
       url,
       data: formData,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
       onUploadProgress: (progressEvent: { loaded: number; total?: number }) => {
         if (onProgress && progressEvent.total) {
           const percent = Math.round(

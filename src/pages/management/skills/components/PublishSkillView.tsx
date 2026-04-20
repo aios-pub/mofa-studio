@@ -89,16 +89,26 @@ export function PublishSkillView({
     // Parse ZIP to find SKILL.md
     try {
       const zip = await JSZip.loadAsync(file);
-      const skillMdFile = zip.file("SKILL.md") || zip.file("skill.md");
 
-      if (skillMdFile) {
-        const content = await skillMdFile.async("string");
-        const metadata = parseSkillMd(content);
-        setParsedMetadata(metadata);
-      } else {
-        // List files in the ZIP
-        const files = Object.keys(zip.files);
-        message.info(`ZIP 包包含 ${files.length} 个文件 (未找到 SKILL.md)`);
+      // Recursively search for SKILL.md (case-insensitive)
+      const allFiles = Object.keys(zip.files);
+      const skillMdPath = allFiles.find(path => {
+        const fileName = path.split('/').pop()?.toLowerCase();
+        return fileName === 'skill.md';
+      });
+
+      if (skillMdPath) {
+        const skillMdFile = zip.file(skillMdPath);
+        if (skillMdFile) {
+          const content = await skillMdFile.async("string");
+          const metadata = parseSkillMd(content);
+          setParsedMetadata(metadata);
+        }
+      }
+
+      if (!parsedMetadata) {
+        // List files in the ZIP for debugging
+        message.info(`ZIP 包包含 ${allFiles.length} 个文件 (未找到 SKILL.md)。文件列表: ${allFiles.slice(0, 5).join(', ')}${allFiles.length > 5 ? '...' : ''}`);
       }
 
       // Count files and total size

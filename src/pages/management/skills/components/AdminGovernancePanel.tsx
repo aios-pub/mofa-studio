@@ -207,7 +207,7 @@ export function AdminGovernancePanel() {
           items={[
             {
               key: "reports",
-              label: `举报处理 (${reports?.items.filter((r) => r.status === "PENDING").length || 0})`,
+              label: `举报处理 (${(reports?.items || []).filter((r) => r.status === "PENDING").length})`,
             },
             {
               key: "hidden",

@@ -273,6 +273,8 @@ export const useSkillHubStore = create<SkillHubState>((set, get) => ({
     set({ publishLoading: true, publishProgress: 0, publishResult: null });
     try {
       const result = await skillHubV2Api.publish(namespace, file, visibility);
+      console.log('[useSkillHubStore] Publish result:', result);
+      console.log('[useSkillHubStore] slug value:', result.slug);
       set({ publishResult: result, publishProgress: 100 });
       return result;
     } catch (error) {

@@ -375,7 +375,7 @@ export function PublishSkillView({
                 placeholder="选择命名空间"
                 loading={namespaces.length === 0}
                 options={namespaces.map((ns) => ({
-                  label: `${ns.display_name} (${ns.slug})`,
+                  label: `${ns.displayName} (${ns.slug})`,
                   value: ns.slug,
                   disabled: ns.status !== "ACTIVE",
                 }))}

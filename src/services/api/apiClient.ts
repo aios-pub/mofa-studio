@@ -232,6 +232,12 @@ axiosInstance.interceptors.response.use(
   (response: AxiosResponse<ApiResponse>): any => {
     const { data } = response;
 
+    // Debug: Log publish endpoint response
+    if (response.config.url?.includes('/publish')) {
+      console.log('[apiClient] Raw publish response:', data);
+      console.log('[apiClient] Response data field:', data.data);
+    }
+
     // 如果响应直接是数据，返回
     if (data === undefined || data === null) {
       return response.data;
@@ -240,8 +246,11 @@ axiosInstance.interceptors.response.use(
     // 如果有 code 字段，检查业务状态码
     if ("code" in data) {
       if (data.code === 0 || data.code === 200) {
-        // 先转换键名，再转换时间字段
-        return convertDateFields(convertKeysToCamelCase(data.data));
+        const converted = convertDateFields(convertKeysToCamelCase(data.data));
+        if (response.config.url?.includes('/publish')) {
+          console.log('[apiClient] Converted publish result:', converted);
+        }
+        return converted;
       }
 
       // 业务错误 — 使用后端返回的 msg

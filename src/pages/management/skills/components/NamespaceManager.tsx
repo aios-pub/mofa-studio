@@ -122,8 +122,8 @@ export function NamespaceManager() {
     },
     {
       title: "显示名称",
-      dataIndex: "display_name",
-      key: "display_name",
+      dataIndex: "displayName",
+      key: "displayName",
     },
     {
       title: "类型",
@@ -332,7 +332,7 @@ export function NamespaceManager() {
 
       {/* Manage Members Modal */}
       <Modal
-        title={`管理成员 - ${selectedNamespace?.display_name || selectedNamespace?.slug}`}
+        title={`管理成员 - ${selectedNamespace?.displayName || selectedNamespace?.slug}`}
         open={memberModalVisible}
         onCancel={() => {
           setMemberModalVisible(false);

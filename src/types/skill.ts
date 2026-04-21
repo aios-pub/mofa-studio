@@ -64,7 +64,7 @@ export interface HubNamespace {
   id: string;
   tenantId: string;
   slug: string;
-  display_name: string;
+  displayName: string;
   type: NamespaceType;
   description?: string;
   avatarUrl?: string;

@@ -346,7 +346,6 @@ export function HubSkillDetail() {
           {
             key: "files",
             label: "文件",
-            disabled: !selectedVersion,
             children: selectedVersion ? (
               <div className="flex gap-4">
                 <div className="w-1/3">
@@ -367,7 +366,7 @@ export function HubSkillDetail() {
               </div>
             ) : (
               <div className="text-center text-gray-400 py-8">
-                请先选择一个版本
+                请先在「版本」页中选择一个版本以查看文件
               </div>
             ),
           },

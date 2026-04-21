@@ -232,6 +232,14 @@ axiosInstance.interceptors.response.use(
   (response: AxiosResponse<ApiResponse>): any => {
     const { data } = response;
 
+    // Blob / ArrayBuffer 响应直接返回，不做 JSON 键名/日期转换
+    if (
+      response.config.responseType === "blob" ||
+      response.config.responseType === "arraybuffer"
+    ) {
+      return data;
+    }
+
     // Debug: Log publish endpoint response
     if (response.config.url?.includes('/publish')) {
       console.log('[apiClient] Raw publish response:', data);

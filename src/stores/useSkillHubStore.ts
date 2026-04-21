@@ -222,7 +222,11 @@ export const useSkillHubStore = create<SkillHubState>((set, get) => ({
   loadVersions: async (namespace, slug, page = 0) => {
     try {
       const versions = await skillHubV2Api.listVersions(namespace, slug, page);
-      set({ selectedHubSkillVersions: versions });
+      // 兼容后端返回数组格式和分页格式
+      const pageResponse = Array.isArray(versions)
+        ? { items: versions, total: versions.length, page: 0, pageSize: versions.length, totalPages: 1 }
+        : versions;
+      set({ selectedHubSkillVersions: pageResponse });
     } catch (error) {
       console.error('Load versions failed:', error);
     }

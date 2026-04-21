@@ -190,7 +190,7 @@ export function AdminGovernancePanel() {
             <span>管理面板</span>
             <Badge
               count={
-                reports?.items.filter((r) => r.status === "PENDING").length || 0
+                (reports?.items || []).filter((r) => r.status === "PENDING").length
               }
             />
           </Space>

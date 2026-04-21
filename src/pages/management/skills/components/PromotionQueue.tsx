@@ -226,7 +226,7 @@ export function PromotionQueue() {
           <Space>
             <SwapOutlined />
             <span>推广队列</span>
-            <Badge count={promotions?.items.filter(p => p.status === 'PENDING').length || 0} />
+            <Badge count={(promotions?.items || []).filter(p => p.status === 'PENDING').length} />
           </Space>
         }
         extra={

@@ -28,6 +28,7 @@ import type {
   LabelType,
   PromotionTask,
   ApiToken,
+  TenantUser,
 } from "@/types/skill";
 
 // ===== Search & Browse =====
@@ -518,6 +519,10 @@ const removeMember = async (
   );
 };
 
+const listTenantUsers = async (): Promise<TenantUser[]> => {
+  return apiClient.get<TenantUser[]>("/api/skill-hub/users/tenant");
+};
+
 // ===== Promotion =====
 const submitPromotion = async (data: {
   sourceSkillId: string;
@@ -706,6 +711,7 @@ export const skillHubV2RealApi = {
   addMember,
   updateMemberRole,
   removeMember,
+  listTenantUsers,
 
   // Promotion
   submitPromotion,
@@ -746,4 +752,5 @@ export type {
   NamespaceType,
   NamespaceRole,
   LabelType,
+  TenantUser,
 };

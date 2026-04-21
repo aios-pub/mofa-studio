@@ -84,6 +84,16 @@ export interface NamespaceMember {
   createdAt: Date;
 }
 
+// ===== 租户用户 =====
+
+export interface TenantUser {
+  id: string;
+  username: string;
+  email?: string;
+  nickname: string;
+  avatar?: string;
+}
+
 // ===== Hub 技能版本 =====
 
 export interface HubSkillVersion {

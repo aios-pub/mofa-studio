@@ -148,7 +148,7 @@ export function HubSkillCard({
               <div className="flex items-center gap-1">
                 <Rate disabled value={rating} count={1} style={{ fontSize: 12 }} />
                 <span className="text-xs text-[var(--color-text-secondary)]">
-                  {rating.toFixed(1)}
+                  {rating ? rating.toFixed(1) : '-'}
                   {isNew && skill.ratingCount > 0 && ` (${skill.ratingCount})`}
                 </span>
               </div>

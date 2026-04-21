@@ -25,6 +25,7 @@ import type {
   LabelType,
   LabelTranslation,
   PromotionTask,
+  TenantUser,
 } from '@/types/skill';
 
 // Mock data
@@ -535,6 +536,15 @@ const skillHubV2MockApi = {
   updateMemberRole: async (namespaceId: string, userId: string, role: NamespaceRole): Promise<void> => {},
 
   removeMember: async (namespaceId: string, userId: string): Promise<void> => {},
+
+  listTenantUsers: async (): Promise<TenantUser[]> => {
+    return [
+      { id: 'user-1', username: 'admin', email: 'admin@example.com', nickname: '管理员', avatar: null },
+      { id: 'user-2', username: 'developer', email: 'dev@example.com', nickname: '开发者', avatar: null },
+      { id: 'user-3', username: 'tester', email: 'tester@example.com', nickname: '测试员', avatar: null },
+      { id: 'user-4', username: 'reviewer', email: 'reviewer@example.com', nickname: '审核员', avatar: null },
+    ];
+  },
 
   // Stats
   getStats: async (): Promise<HubStats> => ({

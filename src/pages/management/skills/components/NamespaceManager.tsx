@@ -27,11 +27,12 @@ import {
   UserAddOutlined,
 } from "@ant-design/icons";
 import { skillHubV2Api } from "@/services";
-import type { HubNamespace, NamespaceMember } from "@/types/skill";
+import type { HubNamespace, NamespaceMember, TenantUser } from "@/types/skill";
 
 export function NamespaceManager() {
   const [namespaces, setNamespaces] = useState<HubNamespace[]>([]);
   const [members, setMembers] = useState<Record<number, NamespaceMember[]>>({});
+  const [tenantUsers, setTenantUsers] = useState<TenantUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [memberModalVisible, setMemberModalVisible] = useState(false);
@@ -42,6 +43,7 @@ export function NamespaceManager() {
 
   useEffect(() => {
     loadNamespaces();
+    loadTenantUsers();
   }, []);
 
   const loadNamespaces = async () => {
@@ -59,6 +61,15 @@ export function NamespaceManager() {
       message.error("加载命名空间失败");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadTenantUsers = async () => {
+    try {
+      const users = await skillHubV2Api.listTenantUsers();
+      setTenantUsers(users);
+    } catch (error) {
+      message.error("加载用户列表失败");
     }
   };
 
@@ -321,7 +332,7 @@ export function NamespaceManager() {
 
       {/* Manage Members Modal */}
       <Modal
-        title={`管理成员 - ${selectedNamespace?.displayName || selectedNamespace?.slug}`}
+        title={`管理成员 - ${selectedNamespace?.display_name || selectedNamespace?.slug}`}
         open={memberModalVisible}
         onCancel={() => {
           setMemberModalVisible(false);
@@ -338,9 +349,18 @@ export function NamespaceManager() {
         >
           <Form.Item
             name="userId"
-            rules={[{ required: true, message: "请输入用户 ID" }]}
+            rules={[{ required: true, message: "请选择用户" }]}
           >
-            <Input placeholder="用户 ID" style={{ width: 200 }} />
+            <Select
+              style={{ width: 240 }}
+              placeholder="选择用户"
+              showSearch
+              optionFilterProp="label"
+              options={tenantUsers.map(user => ({
+                value: user.id,
+                label: `${user.nickname || user.username}${user.email ? ` (${user.email})` : ''}`,
+              }))}
+            />
           </Form.Item>
           <Form.Item
             name="role"

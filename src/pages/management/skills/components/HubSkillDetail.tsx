@@ -264,8 +264,11 @@ export function HubSkillDetail() {
             label: "版本",
             children: (
               <VersionList
+                namespace={namespace || ''}
+                slug={slug || ''}
                 versions={selectedHubSkillVersions?.items || []}
                 onVersionSelect={handleVersionSelect}
+                onRefresh={() => namespace && slug && loadVersions(namespace, slug)}
               />
             ),
           },

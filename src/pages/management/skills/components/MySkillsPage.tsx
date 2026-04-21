@@ -24,6 +24,8 @@ import {
   StarOutlined,
   DeleteOutlined,
   CopyOutlined,
+  InboxOutlined,
+  UndoOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from '@tanstack/react-router';
 import { skillHubV2Api } from '@/services';
@@ -35,6 +37,12 @@ export function MySkillsPage() {
   const [mySkills, setMySkills] = useState<HubSkill[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<'all' | 'active' | 'hidden' | 'archived'>('all');
+  const [actionLoading, setActionLoading] = useState<string>('');
+
+  const {
+    archiveSkill,
+    unarchiveSkill,
+  } = useSkillHubStore();
 
   useEffect(() => {
     loadMySkills();
@@ -223,6 +231,49 @@ export function MySkillsPage() {
               onClick={() => navigate({ to: '/skills/publish' })}
             />
           </Tooltip>
+          {record.status === 'ACTIVE' && (
+            <Tooltip title="归档">
+              <Button
+                type="text"
+                size="small"
+                danger
+                icon={<InboxOutlined />}
+                loading={actionLoading === `archive-${record.id}`}
+                onClick={async () => {
+                  setActionLoading(`archive-${record.id}`);
+                  try {
+                    await archiveSkill(record.namespaceSlug, record.slug);
+                    loadMySkills();
+                  } catch (error) {
+                    console.error('Archive failed:', error);
+                  } finally {
+                    setActionLoading('');
+                  }
+                }}
+              />
+            </Tooltip>
+          )}
+          {record.status === 'ARCHIVED' && (
+            <Tooltip title="恢复">
+              <Button
+                type="text"
+                size="small"
+                icon={<UndoOutlined />}
+                loading={actionLoading === `unarchive-${record.id}`}
+                onClick={async () => {
+                  setActionLoading(`unarchive-${record.id}`);
+                  try {
+                    await unarchiveSkill(record.namespaceSlug, record.slug);
+                    loadMySkills();
+                  } catch (error) {
+                    console.error('Unarchive failed:', error);
+                  } finally {
+                    setActionLoading('');
+                  }
+                }}
+              />
+            </Tooltip>
+          )}
         </Space>
       ),
     },

@@ -3,6 +3,7 @@
  */
 
 import { create } from 'zustand';
+import { message } from 'antd';
 import type {
   HubSkill,
   HubSkillVersion,
@@ -99,6 +100,12 @@ interface SkillHubState {
   resolveReport: (id: string, data: { action: string; comment?: string }) => Promise<void>;
   hideSkill: (skillId: string, reason?: string) => Promise<void>;
   unhideSkill: (skillId: string) => Promise<void>;
+  archiveSkill: (namespace: string, slug: string) => Promise<SkillLifecycleResponse | null>;
+  unarchiveSkill: (namespace: string, slug: string) => Promise<SkillLifecycleResponse | null>;
+  confirmPublish: (namespace: string, slug: string, version: string) => Promise<SkillLifecycleResponse | null>;
+  withdrawReview: (namespace: string, slug: string, version: string) => Promise<SkillLifecycleResponse | null>;
+  yankVersion: (namespace: string, slug: string, version: string, reason: string) => Promise<void>;
+  rereleaseVersion: (namespace: string, slug: string, version: string) => Promise<SkillLifecycleResponse | null>;
   loadPromotions: (params?: { namespaceId?: string; status?: string; page?: number }) => Promise<void>;
   approvePromotion: (id: string, data?: { comment?: string }) => Promise<void>;
   rejectPromotion: (id: string, data?: { comment?: string }) => Promise<void>;
@@ -367,6 +374,77 @@ export const useSkillHubStore = create<SkillHubState>((set, get) => ({
     } catch (error) {
       console.error('Unhide skill failed:', error);
       throw error;
+    }
+  },
+
+  archiveSkill: async (namespace, slug) => {
+    try {
+      const result = await skillHubV2Api.archiveSkill(namespace, slug);
+      message.success('技能已归档');
+      return result;
+    } catch (error) {
+      console.error('Archive skill failed:', error);
+      message.error('归档技能失败');
+      return null;
+    }
+  },
+
+  unarchiveSkill: async (namespace, slug) => {
+    try {
+      const result = await skillHubV2Api.unarchiveSkill(namespace, slug);
+      message.success('技能已恢复');
+      return result;
+    } catch (error) {
+      console.error('Unarchive skill failed:', error);
+      message.error('恢复技能失败');
+      return null;
+    }
+  },
+
+  confirmPublish: async (namespace, slug, version) => {
+    try {
+      const result = await skillHubV2Api.confirmPublish(namespace, slug, version);
+      message.success('发布确认成功');
+      return result;
+    } catch (error) {
+      console.error('Confirm publish failed:', error);
+      message.error('发布确认失败');
+      return null;
+    }
+  },
+
+  withdrawReview: async (namespace, slug, version) => {
+    try {
+      const result = await skillHubV2Api.withdrawReview(namespace, slug, version);
+      message.success('已撤回审核申请');
+      return result;
+    } catch (error) {
+      console.error('Withdraw review failed:', error);
+      message.error('撤回审核失败');
+      return null;
+    }
+  },
+
+  yankVersion: async (namespace, slug, version, reason) => {
+    try {
+      await skillHubV2Api.yankVersion(version, reason);
+      message.success('版本已下架');
+    } catch (error) {
+      console.error('Yank version failed:', error);
+      message.error('下架版本失败');
+      throw error;
+    }
+  },
+
+  rereleaseVersion: async (namespace, slug, version) => {
+    try {
+      const result = await skillHubV2Api.rereleaseVersion(namespace, slug, version);
+      message.success('版本已重新发布');
+      return result;
+    } catch (error) {
+      console.error('Rerelease version failed:', error);
+      message.error('重新发布失败');
+      return null;
     }
   },
 

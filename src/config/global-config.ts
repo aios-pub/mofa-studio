@@ -127,7 +127,7 @@ function getFloatingMode(): FloatingMode {
  * 从环境变量和 package.json 读取配置
  */
 export const GLOBAL_CONFIG: GlobalConfig = {
-  appName: "AMOS Claw",
+  appName: "AMOS",
   appVersion: pkg.version,
   defaultRoute: import.meta.env.VITE_APP_DEFAULT_ROUTE || "/workbench",
   publicPath: import.meta.env.VITE_APP_PUBLIC_PATH || "/",
@@ -136,7 +136,7 @@ export const GLOBAL_CONFIG: GlobalConfig = {
   routerMode:
     (import.meta.env.VITE_APP_ROUTER_MODE as "frontend" | "backend") ||
     "frontend",
-  appTitle: import.meta.env.VITE_APP_TITLE || "AMOS Claw - AI Agent Management",
+  appTitle: import.meta.env.VITE_APP_TITLE || "AMOS - AI Agent Management",
   floatingMode: getFloatingMode(),
   isFloatingMode: getFloatingMode() === "floating",
   enableAnalytics: parseBoolean(

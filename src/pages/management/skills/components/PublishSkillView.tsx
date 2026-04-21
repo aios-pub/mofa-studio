@@ -3,7 +3,7 @@
  * 支持 ZIP 上传、SKILL.md 预览、命名空间选择
  */
 
-import { useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   Form,
   Select,
@@ -66,9 +66,9 @@ export function PublishSkillView({
     useSkillHubStore();
 
   // Load namespaces on mount
-  useState(() => {
+  useEffect(() => {
     loadNamespaces();
-  });
+  }, []);
 
   const handleFileSelect = async (file: File) => {
     setError(null);
@@ -97,16 +97,17 @@ export function PublishSkillView({
         return fileName === 'skill.md';
       });
 
+      let metadata: ParsedMetadata | null = null;
       if (skillMdPath) {
         const skillMdFile = zip.file(skillMdPath);
         if (skillMdFile) {
           const content = await skillMdFile.async("string");
-          const metadata = parseSkillMd(content);
+          metadata = parseSkillMd(content);
           setParsedMetadata(metadata);
         }
       }
 
-      if (!parsedMetadata) {
+      if (!metadata) {
         // List files in the ZIP for debugging
         message.info(`ZIP 包包含 ${allFiles.length} 个文件 (未找到 SKILL.md)。文件列表: ${allFiles.slice(0, 5).join(', ')}${allFiles.length > 5 ? '...' : ''}`);
       }

@@ -105,7 +105,7 @@ export function HubSkillDetail() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${namespace}--${slug}.zip`;
+      a.download = `${namespace}-${slug}.zip`;
       a.click();
       URL.revokeObjectURL(url);
       message.success("下载成功");

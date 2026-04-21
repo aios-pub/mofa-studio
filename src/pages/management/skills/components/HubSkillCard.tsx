@@ -3,7 +3,8 @@
  * 支持新版 HubSkill 接口
  */
 
-import { Card, Tag, Button, Rate, Typography, Tooltip, Badge } from 'antd';
+import { Card, Tag, Button, Rate, Typography, Tooltip } from 'antd';
+import { formatDate } from '@/utils';
 import {
   DownloadOutlined,
   CloudDownloadOutlined,
@@ -45,8 +46,8 @@ export function HubSkillCard({
 
   // Extract common properties with fallback
   const name = isNew ? (skill.displayName || skill.slug) : skill.name;
-  const description = isNew ? (skill.summary || skill.description) : skill.description;
-  const downloads = skill.downloadCount || skill.downloads || 0;
+  const description = isNew ? (skill.summary || (skill as any).description) : skill.description;
+  const downloads = isNew ? (skill.downloadCount ?? 0) : (skill as HubSkillLegacy).downloads ?? 0;
   const rating = isNew ? skill.ratingAvg : skill.rating;
   const updatedAt = skill.updatedAt;
   const tags = skill.tags || [];
@@ -154,10 +155,10 @@ export function HubSkillCard({
               </div>
             </Tooltip>
           </div>
-          <Tooltip title={`更新于 ${new Date(updatedAt).toLocaleDateString('zh-CN')}`}>
+          <Tooltip title={`更新于 ${formatDate(updatedAt, 'date')}`}>
             <div className="flex items-center gap-1 text-xs text-[var(--color-text-tertiary)]">
               <ClockCircleOutlined />
-              <span>{new Date(updatedAt).toLocaleDateString('zh-CN')}</span>
+              <span>{formatDate(updatedAt, 'date')}</span>
             </div>
           </Tooltip>
         </div>

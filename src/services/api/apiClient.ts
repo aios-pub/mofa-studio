@@ -59,6 +59,108 @@ function generateUUID(): string {
   });
 }
 
+/**
+ * 递归转换对象中的时间字符串为 Date 对象
+ * 匹配常见的日期时间字段名（created_at, updated_at, published_at 等）
+ * 以及以 _at, _time, _on 结尾的字段
+ */
+function convertDateFields<T>(data: T): T {
+  if (data === null || data === undefined) {
+    return data;
+  }
+
+  // 处理数组
+  if (Array.isArray(data)) {
+    return data.map(convertDateFields) as T;
+  }
+
+  // 只处理普通对象
+  if (typeof data !== "object") {
+    return data;
+  }
+
+  const result: any = {};
+  for (const key in data) {
+    if (!Object.prototype.hasOwnProperty.call(data, key)) {
+      continue;
+    }
+
+    const value = (data as any)[key];
+    const lowerKey = key.toLowerCase();
+
+    // 判断是否是日期时间字段
+    const isDateField =
+      lowerKey.endsWith("_at") ||
+      lowerKey.endsWith("_time") ||
+      lowerKey.endsWith("_on") ||
+      lowerKey === "createdat" ||
+      lowerKey === "updatedat" ||
+      lowerKey === "publishedat" ||
+      lowerKey === "timestamp";
+
+    if (isDateField && typeof value === "string" && value) {
+      // 处理 PostgreSQL 时间格式: "2026-04-21 08:36:02.753513"
+      // 将空格替换为 T，使其符合 ISO 8601 格式
+      let dateStr = value;
+      if (dateStr.includes(' ') && !dateStr.includes('T')) {
+        dateStr = dateStr.replace(' ', 'T');
+        // 如果没有时区信息，添加 Z 表示 UTC
+        if (!dateStr.includes('Z') && !dateStr.includes('+') && !dateStr.includes('-', 10)) {
+          dateStr += 'Z';
+        }
+      }
+
+      const parsed = new Date(dateStr);
+      if (!isNaN(parsed.getTime())) {
+        result[key] = parsed;
+      } else {
+        result[key] = convertDateFields(value);
+      }
+    } else {
+      result[key] = convertDateFields(value);
+    }
+  }
+  return result;
+}
+
+/**
+ * 将 snake_case 转换为 camelCase
+ * 例如: tenant_id -> tenantId, download_count -> downloadCount
+ */
+function snakeToCamel(str: string): string {
+  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+}
+
+/**
+ * 递归转换对象的键名从 snake_case 到 camelCase
+ */
+function convertKeysToCamelCase<T>(data: T): T {
+  if (data === null || data === undefined) {
+    return data;
+  }
+
+  // 处理数组
+  if (Array.isArray(data)) {
+    return data.map(convertKeysToCamelCase) as T;
+  }
+
+  // 只处理普通对象
+  if (typeof data !== "object") {
+    return data;
+  }
+
+  const result: any = {};
+  for (const key in data) {
+    if (!Object.prototype.hasOwnProperty.call(data, key)) {
+      continue;
+    }
+
+    const camelKey = snakeToCamel(key);
+    result[camelKey] = convertKeysToCamelCase((data as any)[key]);
+  }
+  return result;
+}
+
 // ==================== 请求拦截器 ====================
 
 /**
@@ -138,7 +240,8 @@ axiosInstance.interceptors.response.use(
     // 如果有 code 字段，检查业务状态码
     if ("code" in data) {
       if (data.code === 0 || data.code === 200) {
-        return data.data;
+        // 先转换键名，再转换时间字段
+        return convertDateFields(convertKeysToCamelCase(data.data));
       }
 
       // 业务错误 — 使用后端返回的 msg
@@ -146,8 +249,8 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(new Error(errorMsg));
     }
 
-    // 直接返回数据
-    return data;
+    // 直接返回数据，先转换键名，再转换时间字段
+    return convertDateFields(convertKeysToCamelCase(data));
   },
   (error: AxiosError<ApiResponse>) => {
     const { response } = error;

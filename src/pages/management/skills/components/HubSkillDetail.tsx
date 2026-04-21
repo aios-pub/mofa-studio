@@ -282,7 +282,7 @@ export function HubSkillDetail() {
             label: "概览",
             children: (
               <div className="space-y-4">
-                <Card title="技能信息" bordered={false}>
+                <Card title="技能信息" variant={false}>
                   <Descriptions column={2}>
                     <Descriptions.Item label="ID">
                       {selectedHubSkill.id}
@@ -300,7 +300,7 @@ export function HubSkillDetail() {
                 </Card>
 
                 {/* Install Command */}
-                <Card title="安装命令" bordered={false}>
+                <Card title="安装命令" variant={false}>
                   <InstallCommand
                     namespace={selectedHubSkill.namespaceSlug}
                     slug={selectedHubSkill.slug}
@@ -312,7 +312,7 @@ export function HubSkillDetail() {
                 </Card>
 
                 {latestVersion?.parsedMetadataJson && (
-                  <Card title="README" bordered={false}>
+                  <Card title="README" variant={false}>
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
                       rehypePlugins={[rehypeHighlight]}

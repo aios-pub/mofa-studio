@@ -3,15 +3,18 @@
  * 基于 Ant Design Table 封装，提供统一的样式和功能
  */
 
-import { forwardRef, useMemo } from 'react';
-import { Table, ConfigProvider } from 'antd';
-import type { TableProps, TablePaginationConfig } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import { LoadingOutlined } from '@ant-design/icons';
-import { EmptyState } from './EmptyState';
+import { forwardRef, useMemo } from "react";
+import { Table, ConfigProvider } from "antd";
+import type { TableProps, TablePaginationConfig } from "antd";
+import type { ColumnsType } from "antd/es/table";
+import { LoadingOutlined } from "@ant-design/icons";
+import { EmptyState } from "./EmptyState";
 
 // 扩展的表格属性
-export interface DataTableProps<T = any> extends Omit<TableProps<T>, 'loading' | 'pagination'> {
+export interface DataTableProps<T = any> extends Omit<
+  TableProps<T>,
+  "loading" | "pagination"
+> {
   /** 列配置 */
   columns: ColumnsType<T>;
   /** 数据源 */
@@ -24,14 +27,14 @@ export interface DataTableProps<T = any> extends Omit<TableProps<T>, 'loading' |
   pagination?: TablePaginationConfig | false;
   /** 空状态配置 */
   emptyConfig?: {
-    type?: 'default' | 'search' | 'data';
+    type?: "default" | "search" | "data";
     title?: string;
     description?: string;
   };
   /** 是否显示边框 */
-  bordered?: boolean;
+  variant?: boolean;
   /** 表格大小 */
-  size?: 'small' | 'middle' | 'large';
+  size?: "small" | "middle" | "large";
   /** 行 key 字段 */
   rowKey?: string | ((record: T) => string);
   /** 是否显示斑马纹 */
@@ -52,15 +55,15 @@ export const DataTable = forwardRef<any, DataTableProps<any>>(
       loadingTip,
       pagination,
       emptyConfig,
-      bordered = false,
-      size = 'middle',
-      rowKey = 'id',
+      variant = false,
+      size = "middle",
+      rowKey = "id",
       striped = false,
       hoverable = true,
-      className = '',
+      className = "",
       ...restProps
     },
-    ref
+    ref,
   ) => {
     // 分页配置
     const paginationConfig: TablePaginationConfig | false = useMemo(() => {
@@ -70,28 +73,28 @@ export const DataTable = forwardRef<any, DataTableProps<any>>(
         showSizeChanger: true,
         showQuickJumper: true,
         showTotal: (total) => `共 ${total} 条`,
-        pageSizeOptions: ['10', '20', '50', '100'],
+        pageSizeOptions: ["10", "20", "50", "100"],
         ...pagination,
-        className: 'px-4 py-3',
+        className: "px-4 py-3",
       };
     }, [pagination]);
 
     // 表格类名
     const tableClassName = useMemo(() => {
-      const classes = ['data-table'];
+      const classes = ["data-table"];
 
-      if (striped) classes.push('data-table--striped');
-      if (hoverable) classes.push('data-table--hoverable');
-      if (bordered) classes.push('data-table--bordered');
+      if (striped) classes.push("data-table--striped");
+      if (hoverable) classes.push("data-table--hoverable");
+      if (variant) classes.push("data-table--variant");
 
-      return classes.join(' ');
-    }, [striped, hoverable, bordered]);
+      return classes.join(" ");
+    }, [striped, hoverable, variant]);
 
     // 自定义空状态
     const locale = {
       emptyText: (
         <EmptyState
-          type={emptyConfig?.type || 'data'}
+          type={emptyConfig?.type || "data"}
           title={emptyConfig?.title}
           description={emptyConfig?.description}
         />
@@ -109,7 +112,7 @@ export const DataTable = forwardRef<any, DataTableProps<any>>(
       <ConfigProvider
         renderEmpty={() => (
           <EmptyState
-            type={emptyConfig?.type || 'data'}
+            type={emptyConfig?.type || "data"}
             title={emptyConfig?.title}
             description={emptyConfig?.description}
           />
@@ -121,7 +124,7 @@ export const DataTable = forwardRef<any, DataTableProps<any>>(
           dataSource={dataSource}
           pagination={paginationConfig}
           loading={loadingConfig}
-          bordered={bordered}
+          variant={variant}
           size={size}
           rowKey={rowKey}
           locale={locale}
@@ -130,9 +133,9 @@ export const DataTable = forwardRef<any, DataTableProps<any>>(
         />
       </ConfigProvider>
     );
-  }
+  },
 );
 
-DataTable.displayName = 'DataTable';
+DataTable.displayName = "DataTable";
 
 export default DataTable;

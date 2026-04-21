@@ -333,7 +333,9 @@ function DataSettings() {
         agents,
         conversations,
         prompts,
-        settings: JSON.parse(localStorage.getItem("AMOS-claw-app-store") || "{}"),
+        settings: JSON.parse(
+          localStorage.getItem("AMOS-claw-app-store") || "{}",
+        ),
         exportedAt: new Date().toISOString(),
       };
 
@@ -498,7 +500,7 @@ function AboutSettings() {
             <Descriptions
               column={1}
               size="small"
-              bordered
+              variant
               style={{ maxWidth: 400, margin: "0 auto", textAlign: "left" }}
             >
               <Descriptions.Item label="Framework">

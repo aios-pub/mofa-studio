@@ -3,9 +3,9 @@
  * 用于展示信息的键值对
  */
 
-import React from 'react';
-import { Descriptions as AntDescriptions, Empty, Skeleton } from 'antd';
-import type { DescriptionsProps } from 'antd';
+import React from "react";
+import { Descriptions as AntDescriptions, Empty, Skeleton } from "antd";
+import type { DescriptionsProps } from "antd";
 
 // 描述项类型
 export interface DescriptionItem {
@@ -19,7 +19,10 @@ export interface DescriptionItem {
   show?: boolean;
 }
 
-export interface DataDescriptionsProps extends Omit<DescriptionsProps, 'items'> {
+export interface DataDescriptionsProps extends Omit<
+  DescriptionsProps,
+  "items"
+> {
   /** 描述项列表 */
   items: DescriptionItem[];
   /** 是否加载中 */
@@ -33,9 +36,9 @@ export interface DataDescriptionsProps extends Omit<DescriptionsProps, 'items'> 
   /** 标签宽度 */
   labelWidth?: number | string;
   /** 是否显示边框 */
-  bordered?: boolean;
+  variant?: boolean;
   /** 尺寸 */
-  size?: 'small' | 'default' | 'middle';
+  size?: "small" | "default" | "middle";
   /** 是否显示冒号 */
   colon?: boolean;
 }
@@ -47,20 +50,23 @@ export const DataDescriptions: React.FC<DataDescriptionsProps> = ({
   items,
   loading = false,
   empty = false,
-  emptyText = '暂无数据',
+  emptyText = "暂无数据",
   columns = 3,
   labelWidth,
-  bordered = false,
-  size = 'default',
+  variant = false,
+  size = "default",
   colon = true,
-  className = '',
+  className = "",
   ...restProps
 }) => {
   // 加载状态
   if (loading) {
     return (
       <div className={`p-4 ${className}`}>
-        <Skeleton active paragraph={{ rows: Math.ceil(items.length / columns) }} />
+        <Skeleton
+          active
+          paragraph={{ rows: Math.ceil(items.length / columns) }}
+        />
       </div>
     );
   }
@@ -75,20 +81,20 @@ export const DataDescriptions: React.FC<DataDescriptionsProps> = ({
   }
 
   // 过滤显示的项目
-  const visibleItems = items.filter(item => item.show !== false);
+  const visibleItems = items.filter((item) => item.show !== false);
 
   // 转换为 Ant Design 格式
   const antdItems = visibleItems.map((item, index) => ({
     key: index,
     label: item.label,
-    children: item.value ?? '-',
+    children: item.value ?? "-",
     span: item.span || 1,
     labelStyle: labelWidth ? { width: labelWidth } : undefined,
   }));
 
   return (
     <AntDescriptions
-      bordered={bordered}
+      variant={variant}
       size={size}
       colon={colon}
       column={columns}
@@ -117,9 +123,9 @@ export interface SimpleDescriptionsProps {
   /** 标签宽度 */
   labelWidth?: number | string;
   /** 是否显示边框 */
-  bordered?: boolean;
+  variant?: boolean;
   /** 尺寸 */
-  size?: 'small' | 'default' | 'middle';
+  size?: "small" | "default" | "middle";
   /** 类名 */
   className?: string;
 }
@@ -134,15 +140,15 @@ export const SimpleDescriptions: React.FC<SimpleDescriptionsProps> = ({
   loading = false,
   columns = 3,
   labelWidth,
-  bordered = false,
-  size = 'default',
-  className = '',
+  variant = false,
+  size = "default",
+  className = "",
 }) => {
   const items: DescriptionItem[] = fields.map((field) => ({
     label: field.label,
     value: field.render
       ? field.render(data?.[field.key], data || {})
-      : data?.[field.key] ?? '-',
+      : (data?.[field.key] ?? "-"),
     span: field.span || 1,
   }));
 
@@ -153,7 +159,7 @@ export const SimpleDescriptions: React.FC<SimpleDescriptionsProps> = ({
       empty={!data}
       columns={columns}
       labelWidth={labelWidth}
-      bordered={bordered}
+      variant={variant}
       size={size}
       className={className}
     />
@@ -169,7 +175,7 @@ export interface VerticalDescriptionsProps {
   /** 标签宽度 */
   labelWidth?: number | string;
   /** 标签对齐 */
-  labelAlign?: 'left' | 'right';
+  labelAlign?: "left" | "right";
   /** 间隙大小 */
   gutter?: number;
   /** 类名 */
@@ -184,16 +190,20 @@ export const VerticalDescriptions: React.FC<VerticalDescriptionsProps> = ({
   items,
   loading = false,
   labelWidth = 100,
-  labelAlign = 'right',
+  labelAlign = "right",
   gutter = 16,
-  className = '',
+  className = "",
 }) => {
   if (loading) {
     return (
       <div className={`space-y-3 ${className}`}>
         {Array.from({ length: items.length || 3 }).map((_, index) => (
           <div key={index} className="flex items-center gap-4">
-            <Skeleton.Button active size="small" style={{ width: labelWidth }} />
+            <Skeleton.Button
+              active
+              size="small"
+              style={{ width: labelWidth }}
+            />
             <Skeleton.Input active size="small" className="flex-1" />
           </div>
         ))}
@@ -201,7 +211,7 @@ export const VerticalDescriptions: React.FC<VerticalDescriptionsProps> = ({
     );
   }
 
-  const visibleItems = items.filter(item => item.show !== false);
+  const visibleItems = items.filter((item) => item.show !== false);
 
   return (
     <div className={className} style={{ gap: gutter }}>
@@ -221,7 +231,7 @@ export const VerticalDescriptions: React.FC<VerticalDescriptionsProps> = ({
             {item.label}:
           </div>
           <div className="flex-1 text-[var(--color-text-primary)]">
-            {item.value ?? '-'}
+            {item.value ?? "-"}
           </div>
         </div>
       ))}

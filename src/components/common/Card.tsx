@@ -6,11 +6,11 @@
 import React from "react";
 import { Card as AntCard } from "antd";
 
-export type CardVariant = "default" | "bordered" | "elevated" | "ghost";
+export type CardVariant = "default" | "variant" | "elevated" | "ghost";
 
 export interface CardProps extends Omit<
   React.ComponentProps<typeof AntCard>,
-  "bordered" | "variant"
+  "variant" | "variant"
 > {
   variant?: CardVariant;
   hoverable?: boolean;
@@ -19,7 +19,7 @@ export interface CardProps extends Omit<
 const variantStyles: Record<CardVariant, string> = {
   default:
     "bg-[var(--color-bg-paper)] border border-[var(--color-border)] shadow-[var(--shadow-xs)]",
-  bordered: "bg-[var(--color-bg-paper)] border border-[var(--color-border)]",
+  variant: "bg-[var(--color-bg-paper)] border border-[var(--color-border)]",
   elevated: "bg-[var(--color-bg-paper)] shadow-[var(--shadow-md)]",
   ghost: "bg-transparent",
 };

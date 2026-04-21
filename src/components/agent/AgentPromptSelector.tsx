@@ -2,7 +2,7 @@
  * Agent 关联提示词选择器 — 全部使用 antd 组件
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Input,
   Checkbox,
@@ -13,14 +13,10 @@ import {
   Spin,
   Empty,
   Button,
-} from 'antd';
-import {
-  SearchOutlined,
-  TagOutlined,
-  RightOutlined,
-} from '@ant-design/icons';
-import { promptApi } from '@/services';
-import type { Prompt } from '@/services';
+} from "antd";
+import { SearchOutlined, TagOutlined, RightOutlined } from "@ant-design/icons";
+import { promptApi } from "@/services";
+import type { Prompt } from "@/services";
 
 const { Text, Paragraph } = Typography;
 
@@ -37,7 +33,7 @@ export default function AgentPromptSelector({
   maxHeight,
 }: AgentPromptSelectorProps) {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [expandedPrompt, setExpandedPrompt] = useState<string | null>(null);
 
@@ -51,7 +47,7 @@ export default function AgentPromptSelector({
       const data = await promptApi.getAll();
       setPrompts(data);
     } catch (error) {
-      console.error('Failed to load prompts:', error);
+      console.error("Failed to load prompts:", error);
     } finally {
       setLoading(false);
     }
@@ -85,7 +81,9 @@ export default function AgentPromptSelector({
   );
 
   // 已选择的提示词对象
-  const selectedPromptObjects = prompts.filter((p) => selectedPrompts.includes(p.id));
+  const selectedPromptObjects = prompts.filter((p) =>
+    selectedPrompts.includes(p.id),
+  );
 
   if (loading) {
     return (
@@ -96,11 +94,14 @@ export default function AgentPromptSelector({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {/* 已选择的提示词标签 */}
       {selectedPromptObjects.length > 0 && (
         <div>
-          <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+          <Text
+            type="secondary"
+            style={{ fontSize: 12, display: "block", marginBottom: 4 }}
+          >
             已关联 ({selectedPromptObjects.length})
           </Text>
           <Space wrap>
@@ -131,16 +132,22 @@ export default function AgentPromptSelector({
 
       {/* 提示词列表 */}
       {filteredPrompts.length === 0 ? (
-        <Empty description="暂无匹配的提示词" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        <Empty
+          description="暂无匹配的提示词"
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+        />
       ) : (
-        <div style={{ maxHeight: maxHeight ?? 360, overflowY: 'auto' }}>
+        <div style={{ maxHeight: maxHeight ?? 360, overflowY: "auto" }}>
           <Collapse
-            bordered={false}
+            variant={false}
             size="small"
             defaultActiveKey={Object.keys(groupedPrompts)}
             expandIconPosition="start"
-            style={{ background: 'transparent' }}
-            items={Object.entries(groupedPrompts).map(function ([category, categoryPrompts]) {
+            style={{ background: "transparent" }}
+            items={Object.entries(groupedPrompts).map(function ([
+              category,
+              categoryPrompts,
+            ]) {
               return {
                 key: category,
                 label: (
@@ -150,7 +157,9 @@ export default function AgentPromptSelector({
                   </Space>
                 ),
                 children: (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div
+                    style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                  >
                     {categoryPrompts.map(function (prompt) {
                       const isSelected = selectedPrompts.includes(prompt.id);
                       const isExpanded = expandedPrompt === prompt.id;
@@ -159,21 +168,21 @@ export default function AgentPromptSelector({
                         <div
                           key={prompt.id}
                           style={{
-                            border: `1px solid ${isSelected ? 'var(--color-primary, #1677ff)' : 'var(--color-border, #d9d9d9)'}`,
+                            border: `1px solid ${isSelected ? "var(--color-primary, #1677ff)" : "var(--color-border, #d9d9d9)"}`,
                             borderRadius: 6,
                             background: isSelected
-                              ? 'var(--color-primary-bg, rgba(22,119,255,0.04))'
-                              : 'transparent',
-                            overflow: 'hidden',
+                              ? "var(--color-primary-bg, rgba(22,119,255,0.04))"
+                              : "transparent",
+                            overflow: "hidden",
                           }}
                         >
                           {/* 头部：Checkbox + 展开按钮 */}
                           <div
                             style={{
-                              display: 'flex',
-                              alignItems: 'center',
+                              display: "flex",
+                              alignItems: "center",
                               gap: 8,
-                              padding: '8px 12px',
+                              padding: "8px 12px",
                             }}
                           >
                             <Checkbox
@@ -183,7 +192,10 @@ export default function AgentPromptSelector({
                               <div>
                                 <Space size={4}>
                                   <Text strong>{prompt.name}</Text>
-                                  <Text type="secondary" style={{ fontSize: 12 }}>
+                                  <Text
+                                    type="secondary"
+                                    style={{ fontSize: 12 }}
+                                  >
                                     v{prompt.version}
                                   </Text>
                                 </Space>
@@ -204,15 +216,17 @@ export default function AgentPromptSelector({
                               icon={
                                 <RightOutlined
                                   style={{
-                                    transition: 'transform 0.2s',
-                                    transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                                    transition: "transform 0.2s",
+                                    transform: isExpanded
+                                      ? "rotate(90deg)"
+                                      : "rotate(0deg)",
                                   }}
                                 />
                               }
                               onClick={() =>
                                 setExpandedPrompt(isExpanded ? null : prompt.id)
                               }
-                              style={{ marginLeft: 'auto' }}
+                              style={{ marginLeft: "auto" }}
                             />
                           </div>
 
@@ -220,15 +234,17 @@ export default function AgentPromptSelector({
                           {isExpanded && (
                             <div
                               style={{
-                                padding: '0 12px 12px',
-                                borderTop: '1px solid var(--color-border, #d9d9d9)',
+                                padding: "0 12px 12px",
+                                borderTop:
+                                  "1px solid var(--color-border, #d9d9d9)",
                               }}
                             >
                               <div
                                 style={{
                                   padding: 8,
                                   borderRadius: 4,
-                                  background: 'var(--color-fill-quaternary, #fafafa)',
+                                  background:
+                                    "var(--color-fill-quaternary, #fafafa)",
                                   marginTop: 8,
                                 }}
                               >
@@ -236,9 +252,9 @@ export default function AgentPromptSelector({
                                   <pre
                                     style={{
                                       fontSize: 12,
-                                      whiteSpace: 'pre-wrap',
-                                      fontFamily: 'monospace',
-                                      color: 'var(--color-text-secondary)',
+                                      whiteSpace: "pre-wrap",
+                                      fontFamily: "monospace",
+                                      color: "var(--color-text-secondary)",
                                       margin: 0,
                                     }}
                                   >
@@ -251,7 +267,11 @@ export default function AgentPromptSelector({
                                 <div style={{ marginTop: 8 }}>
                                   <Text
                                     type="secondary"
-                                    style={{ fontSize: 12, display: 'block', marginBottom: 4 }}
+                                    style={{
+                                      fontSize: 12,
+                                      display: "block",
+                                      marginBottom: 4,
+                                    }}
                                   >
                                     变量
                                   </Text>
@@ -259,9 +279,12 @@ export default function AgentPromptSelector({
                                     {prompt.variables.map((variable) => (
                                       <Tag
                                         key={variable.name}
-                                        color={variable.required ? 'red' : 'default'}
+                                        color={
+                                          variable.required ? "red" : "default"
+                                        }
                                       >
-                                        <code>{`{{${variable.name}}}`}</code> ({variable.type})
+                                        <code>{`{{${variable.name}}}`}</code> (
+                                        {variable.type})
                                       </Tag>
                                     ))}
                                   </Space>

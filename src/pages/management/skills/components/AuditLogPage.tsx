@@ -3,7 +3,7 @@
  * 审计日志页面
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   Table,
   Space,
@@ -14,10 +14,10 @@ import {
   Button,
   DatePicker,
   Descriptions,
-} from 'antd';
-import { SearchOutlined, ExportOutlined } from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
-import dayjs from 'dayjs';
+} from "antd";
+import { SearchOutlined, ExportOutlined } from "@ant-design/icons";
+import type { ColumnsType } from "antd/es/table";
+import dayjs from "dayjs";
 
 const { Title, Text, RangePicker } = Typography;
 const { Option } = Select;
@@ -38,10 +38,12 @@ interface AuditLogEntry {
 export function AuditLogPage() {
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
   const [actionFilter, setActionFilter] = useState<string | undefined>();
   const [resourceFilter, setResourceFilter] = useState<string | undefined>();
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(
+    null,
+  );
   const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null);
 
   const loadAuditLogs = async () => {
@@ -50,33 +52,33 @@ export function AuditLogPage() {
       // Mock data - replace with actual API call
       const mockLogs: AuditLogEntry[] = [
         {
-          id: '1',
-          timestamp: '2024-04-19T10:30:00Z',
-          userId: 'user1',
-          username: 'admin',
-          action: 'CREATE',
-          resourceType: 'SKILL',
-          resourceId: 'skill123',
-          details: { namespace: 'global', slug: 'my-skill', version: '1.0.0' },
-          ipAddress: '192.168.1.1',
-          userAgent: 'Mozilla/5.0...',
+          id: "1",
+          timestamp: "2024-04-19T10:30:00Z",
+          userId: "user1",
+          username: "admin",
+          action: "CREATE",
+          resourceType: "SKILL",
+          resourceId: "skill123",
+          details: { namespace: "global", slug: "my-skill", version: "1.0.0" },
+          ipAddress: "192.168.1.1",
+          userAgent: "Mozilla/5.0...",
         },
         {
-          id: '2',
-          timestamp: '2024-04-19T11:15:00Z',
-          userId: 'user2',
-          username: 'user1',
-          action: 'UPDATE',
-          resourceType: 'LABEL',
-          resourceId: 'label456',
-          details: { labelId: 'recommended', action: 'assign' },
-          ipAddress: '192.168.1.2',
-          userAgent: 'Mozilla/5.0...',
+          id: "2",
+          timestamp: "2024-04-19T11:15:00Z",
+          userId: "user2",
+          username: "user1",
+          action: "UPDATE",
+          resourceType: "LABEL",
+          resourceId: "label456",
+          details: { labelId: "recommended", action: "assign" },
+          ipAddress: "192.168.1.2",
+          userAgent: "Mozilla/5.0...",
         },
       ];
       setLogs(mockLogs);
     } catch (error) {
-      console.error('Failed to load audit logs:', error);
+      console.error("Failed to load audit logs:", error);
     } finally {
       setLoading(false);
     }
@@ -88,92 +90,98 @@ export function AuditLogPage() {
 
   const getActionColor = (action: string) => {
     switch (action) {
-      case 'CREATE':
-        return 'green';
-      case 'UPDATE':
-        return 'blue';
-      case 'DELETE':
-        return 'red';
-      case 'LOGIN':
-        return 'cyan';
-      case 'LOGOUT':
-        return 'default';
+      case "CREATE":
+        return "green";
+      case "UPDATE":
+        return "blue";
+      case "DELETE":
+        return "red";
+      case "LOGIN":
+        return "cyan";
+      case "LOGOUT":
+        return "default";
       default:
-        return 'default';
+        return "default";
     }
   };
 
   const columns: ColumnsType<AuditLogEntry> = [
     {
-      title: '时间',
-      dataIndex: 'timestamp',
-      key: 'timestamp',
+      title: "时间",
+      dataIndex: "timestamp",
+      key: "timestamp",
       width: 180,
-      sorter: (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      sorter: (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
       render: (timestamp: string) => {
         const date = new Date(timestamp);
-        return date.toLocaleString('zh-CN');
+        return date.toLocaleString("zh-CN");
       },
     },
     {
-      title: '用户',
-      dataIndex: 'username',
-      key: 'username',
+      title: "用户",
+      dataIndex: "username",
+      key: "username",
       width: 120,
     },
     {
-      title: '操作',
-      dataIndex: 'action',
-      key: 'action',
+      title: "操作",
+      dataIndex: "action",
+      key: "action",
       width: 100,
       filters: [
-        { text: '创建', value: 'CREATE' },
-        { text: '更新', value: 'UPDATE' },
-        { text: '删除', value: 'DELETE' },
-        { text: '登录', value: 'LOGIN' },
-        { text: '登出', value: 'LOGOUT' },
+        { text: "创建", value: "CREATE" },
+        { text: "更新", value: "UPDATE" },
+        { text: "删除", value: "DELETE" },
+        { text: "登录", value: "LOGIN" },
+        { text: "登出", value: "LOGOUT" },
       ],
       render: (action: string) => (
         <Tag color={getActionColor(action)}>{action}</Tag>
       ),
     },
     {
-      title: '资源类型',
-      dataIndex: 'resourceType',
-      key: 'resourceType',
+      title: "资源类型",
+      dataIndex: "resourceType",
+      key: "resourceType",
       width: 120,
     },
     {
-      title: '资源ID',
-      dataIndex: 'resourceId',
-      key: 'resourceId',
+      title: "资源ID",
+      dataIndex: "resourceId",
+      key: "resourceId",
       ellipsis: true,
     },
     {
-      title: 'IP地址',
-      dataIndex: 'ipAddress',
-      key: 'ipAddress',
+      title: "IP地址",
+      dataIndex: "ipAddress",
+      key: "ipAddress",
       width: 140,
     },
   ];
 
-  const filteredLogs = logs.filter(log => {
+  const filteredLogs = logs.filter((log) => {
     const matchSearch =
       !searchText ||
       log.username.toLowerCase().includes(searchText.toLowerCase()) ||
       log.resourceId.toLowerCase().includes(searchText.toLowerCase());
     const matchAction = !actionFilter || log.action === actionFilter;
-    const matchResource = !resourceFilter || log.resourceType === resourceFilter;
-    const matchDate = !dateRange || (() => {
-      const logDate = new Date(log.timestamp);
-      return logDate >= dateRange[0].toDate() && logDate <= dateRange[1].toDate();
-    })();
+    const matchResource =
+      !resourceFilter || log.resourceType === resourceFilter;
+    const matchDate =
+      !dateRange ||
+      (() => {
+        const logDate = new Date(log.timestamp);
+        return (
+          logDate >= dateRange[0].toDate() && logDate <= dateRange[1].toDate()
+        );
+      })();
     return matchSearch && matchAction && matchResource && matchDate;
   });
 
   const handleExport = () => {
     // Mock export - implement actual export logic
-    console.log('Exporting audit logs...');
+    console.log("Exporting audit logs...");
   };
 
   return (
@@ -190,7 +198,7 @@ export function AuditLogPage() {
           placeholder="搜索用户名或资源ID"
           prefix={<SearchOutlined />}
           value={searchText}
-          onChange={e => setSearchText(e.target.value)}
+          onChange={(e) => setSearchText(e.target.value)}
           style={{ width: 250 }}
           allowClear
         />
@@ -221,7 +229,9 @@ export function AuditLogPage() {
         </Select>
         <DatePicker.RangePicker
           value={dateRange}
-          onChange={dates => setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs] | null)}
+          onChange={(dates) =>
+            setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs] | null)
+          }
           format="YYYY-MM-DD"
         />
         <Button icon={<ExportOutlined />} onClick={handleExport}>
@@ -240,13 +250,14 @@ export function AuditLogPage() {
               total: filteredLogs.length,
               pageSize: 20,
               showSizeChanger: true,
-              showTotal: total => `共 ${total} 条记录`,
+              showTotal: (total) => `共 ${total} 条记录`,
             }}
-            onRow={record => ({
+            onRow={(record) => ({
               onClick: () => setSelectedLog(record),
               style: {
-                cursor: 'pointer',
-                background: selectedLog?.id === record.id ? '#f0f0f0' : undefined,
+                cursor: "pointer",
+                background:
+                  selectedLog?.id === record.id ? "#f0f0f0" : undefined,
               },
             })}
           />
@@ -256,9 +267,9 @@ export function AuditLogPage() {
           <div className="w-96">
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <Title level={5}>日志详情</Title>
-              <Descriptions column={1} size="small" bordered>
+              <Descriptions column={1} size="small" variant>
                 <Descriptions.Item label="时间">
-                  {new Date(selectedLog.timestamp).toLocaleString('zh-CN')}
+                  {new Date(selectedLog.timestamp).toLocaleString("zh-CN")}
                 </Descriptions.Item>
                 <Descriptions.Item label="用户">
                   {selectedLog.username} ({selectedLog.userId})

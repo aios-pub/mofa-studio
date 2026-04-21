@@ -299,7 +299,7 @@ export interface HubSkill {
   displayName?: string;
   summary?: string;
   ownerId: string;
-  ownerDisplayName?: string;
+  ownerName?: string;
   visibility: SkillVisibility;
   status: SkillStatus;
   latestVersion?: HubSkillVersion;

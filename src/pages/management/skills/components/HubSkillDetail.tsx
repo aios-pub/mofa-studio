@@ -13,19 +13,21 @@ import {
   Space,
   Typography,
   Card,
-  Badge,
   Divider,
   message,
   Spin,
+  Tooltip,
 } from "antd";
 import {
-  StarOutlined,
-  StarFilled,
   DownloadOutlined,
   ShareAltOutlined,
   FlagOutlined,
+  CloudDownloadOutlined,
+  CheckCircleOutlined,
+  ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { useSkillHubStore } from "@/stores/useSkillHubStore";
+import { InstallCommand } from "@/components/skill-hub/install-command";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
@@ -55,6 +57,9 @@ export function HubSkillDetail() {
     selectedFileContent,
     selectedFileName,
     fileLoading,
+    installSkillFromHub,
+    installingSkillIds,
+    installedSkillIds,
   } = useSkillHubStore();
 
   const [activeTab, setActiveTab] = useState("overview");
@@ -90,21 +95,39 @@ export function HubSkillDetail() {
   const handleDownload = async () => {
     if (!namespace || !slug) return;
     try {
-      const blob = (await useSkillHubStore.getState().publishResult)
-        ? new Blob()
-        : await fetch(`/api/skill-hub/${namespace}/${slug}/download`).then(
-            (r) => r.blob(),
-          );
+      const blob = await useSkillHubStore
+        .getState()
+        .downloadSkillBundle(namespace, slug);
+      if (!blob) {
+        message.error("下载失败");
+        return;
+      }
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${slug}.zip`;
+      a.download = `${namespace}--${slug}.zip`;
       a.click();
       URL.revokeObjectURL(url);
       message.success("下载成功");
     } catch {
       message.error("下载失败");
     }
+  };
+
+  const handleInstall = async () => {
+    if (!namespace || !slug || !selectedHubSkill) return;
+    const success = await installSkillFromHub(
+      namespace,
+      slug,
+      selectedHubSkill.id,
+    );
+    if (success) {
+      message.success("安装成功");
+    }
+  };
+
+  const handleBack = () => {
+    navigate("/management/skills");
   };
 
   if (detailLoading || !selectedHubSkill) {
@@ -117,8 +140,25 @@ export function HubSkillDetail() {
 
   const { latestVersion, labels, tags } = selectedHubSkill;
 
+  const isInstalling = selectedHubSkill
+    ? installingSkillIds.has(selectedHubSkill.id)
+    : false;
+  const isInstalled = selectedHubSkill
+    ? installedSkillIds.has(selectedHubSkill.id)
+    : false;
+
   return (
     <div className="p-6 max-w-6xl mx-auto">
+      {/* Back Button */}
+      <Button
+        icon={<ArrowLeftOutlined />}
+        onClick={handleBack}
+        className="mb-4"
+        type="text"
+      >
+        返回 Skill Hub
+      </Button>
+
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-start justify-between">
@@ -142,8 +182,7 @@ export function HubSkillDetail() {
             </Text>
             <Divider type="vertical" />
             <Text type="secondary">
-              作者:{" "}
-              {selectedHubSkill.ownerDisplayName || selectedHubSkill.ownerId}
+              作者: {selectedHubSkill.ownerName || selectedHubSkill.ownerId}
             </Text>
           </div>
 
@@ -151,9 +190,27 @@ export function HubSkillDetail() {
           <Space>
             <StarButton skillId={selectedHubSkill.id} />
             <RatingInput skillId={selectedHubSkill.id} />
-            <Button icon={<DownloadOutlined />} onClick={handleDownload}>
-              下载
+            <Button
+              type={isInstalled ? "default" : "primary"}
+              icon={
+                isInstalling ? (
+                  <Spin size="small" />
+                ) : isInstalled ? (
+                  <CheckCircleOutlined />
+                ) : (
+                  <CloudDownloadOutlined />
+                )
+              }
+              onClick={handleInstall}
+              disabled={isInstalling || isInstalled}
+            >
+              {isInstalling ? "安装中..." : isInstalled ? "已安装" : "安装"}
             </Button>
+            <Tooltip title="下载 ZIP 包">
+              <Button icon={<DownloadOutlined />} onClick={handleDownload}>
+                下载
+              </Button>
+            </Tooltip>
             <Button icon={<ShareAltOutlined />} onClick={handleShare}>
               分享
             </Button>
@@ -242,6 +299,18 @@ export function HubSkillDetail() {
                   </Descriptions>
                 </Card>
 
+                {/* Install Command */}
+                <Card title="安装命令" bordered={false}>
+                  <InstallCommand
+                    namespace={selectedHubSkill.namespaceSlug}
+                    slug={selectedHubSkill.slug}
+                    version={latestVersion?.version}
+                  />
+                  <Paragraph type="secondary" className="mt-2 text-xs">
+                    复制以上命令到终端执行，即可通过 CLI 安装此技能
+                  </Paragraph>
+                </Card>
+
                 {latestVersion?.parsedMetadataJson && (
                   <Card title="README" bordered={false}>
                     <ReactMarkdown
@@ -264,11 +333,13 @@ export function HubSkillDetail() {
             label: "版本",
             children: (
               <VersionList
-                namespace={namespace || ''}
-                slug={slug || ''}
+                namespace={namespace || ""}
+                slug={slug || ""}
                 versions={selectedHubSkillVersions?.items || []}
                 onVersionSelect={handleVersionSelect}
-                onRefresh={() => namespace && slug && loadVersions(namespace, slug)}
+                onRefresh={() =>
+                  namespace && slug && loadVersions(namespace, slug)
+                }
               />
             ),
           },

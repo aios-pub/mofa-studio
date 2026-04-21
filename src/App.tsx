@@ -6,6 +6,7 @@ import { ToastProvider } from './components/common';
 import Dashboard from './pages/workbench/Dashboard';
 import Conversation from './pages/workbench/Conversation';
 import { AgentListPage, PromptListPage, SkillsListPage, TestSetsListPage, ProvidersListPage, ChannelsListPage } from './pages/management';
+import { HubSkillDetail } from './pages/management/skills';
 import SchedulerPage from './pages/scheduler';
 import AnalyticsPage from './pages/analytics/AnalyticsPage';
 import MonitoringPage from './pages/monitoring/MonitoringPage';
@@ -54,6 +55,7 @@ function App() {
                   <Route path="/management/agents" element={<AgentListPage />} />
                   <Route path="/management/prompts" element={<PromptListPage />} />
                   <Route path="/management/skills" element={<SkillsListPage />} />
+                  <Route path="/management/skills/hub/:namespace/:slug" element={<HubSkillDetail />} />
                   <Route path="/management/test-sets" element={<TestSetsListPage />} />
                   <Route path="/management/providers" element={<ProvidersListPage />} />
                   <Route path="/management/channels" element={<ChannelsListPage />} />

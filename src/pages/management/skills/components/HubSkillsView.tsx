@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 import {
   Input,
   Select,
-  Card,
   Tag,
   Button,
   Space,
@@ -20,7 +19,7 @@ import {
 } from 'antd';
 import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useSkillHubStore } from '@/stores/useSkillHubStore';
-import type { HubSkill, SkillVisibility, HubLabel } from '@/types/skill';
+import type { HubSkill } from '@/types/skill';
 import { HubSkillCard } from './HubSkillCard';
 
 const { Search } = Input;
@@ -39,7 +38,8 @@ export function HubSkillsView() {
     namespaces,
     namespaceLoading,
     labels,
-    labelsLoading,
+    installingSkillIds,
+    installedSkillIds,
     setSearchQuery,
     setSelectedNamespace,
     setSelectedLabels,
@@ -47,6 +47,7 @@ export function HubSkillsView() {
     search,
     loadNamespaces,
     loadLabels,
+    installSkillFromHub,
   } = useSkillHubStore();
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -61,6 +62,10 @@ export function HubSkillsView() {
   const handleSearch = () => {
     setCurrentPage(1);
     search();
+  };
+
+  const handleInstallSkill = async (skill: HubSkill) => {
+    await installSkillFromHub(skill.namespaceSlug, skill.slug, skill.id);
   };
 
   const handleLabelChange = (labelId: string, checked: boolean) => {
@@ -175,7 +180,7 @@ export function HubSkillsView() {
                 <Text type="secondary" className="mr-2">相关标签:</Text>
                 <Space wrap>
                   {facets.labels.map(l => (
-                    <Tag key={l.id} color={l.type === 'RECOMMENDED' ? 'blue' : 'purple'}>
+                    <Tag key={l.id} color="blue">
                       {l.displayName} ({l.count})
                     </Tag>
                   ))}
@@ -204,6 +209,9 @@ export function HubSkillsView() {
               <HubSkillCard
                 key={skill.id}
                 skill={skill}
+                isInstalled={installedSkillIds.has(skill.id)}
+                isInstalling={installingSkillIds.has(skill.id)}
+                onInstall={() => handleInstallSkill(skill)}
                 onClick={() => navigate(`/management/skills/hub/${skill.namespaceSlug}/${skill.slug}`)}
               />
             ))}
@@ -218,7 +226,7 @@ export function HubSkillsView() {
                 total={searchResults.total}
                 onChange={page => {
                   setCurrentPage(page);
-                  // In a real implementation, you'd trigger a new search with the page
+                  search(page - 1);
                 }}
                 showSizeChanger={false}
                 showTotal={(total) => `共 ${total} 个`}

@@ -16,10 +16,9 @@ import type {
   HubStats,
   PageResponse,
   SkillVisibility,
-  NamespaceRole,
-  LabelType,
   PublishSkillResult,
   PromotionTask,
+  SkillLifecycleResponse,
 } from '../types/skill';
 import { skillHubV2Api } from '@/services';
 
@@ -60,6 +59,10 @@ interface SkillHubState {
   publishProgress: number;
   publishResult: PublishSkillResult | null;
 
+  // === Installing ===
+  installingSkillIds: Set<string>;
+  installedSkillIds: Set<string>;
+
   // === Reviews ===
   reviewTasks: PageResponse<ReviewTask> | null;
   reviewLoading: boolean;
@@ -80,7 +83,7 @@ interface SkillHubState {
   setSelectedNamespace: (namespace: string) => void;
   setSelectedLabels: (labels: string[]) => void;
   setSortBy: (sort: 'newest' | 'popular' | 'rating') => void;
-  search: () => Promise<void>;
+  search: (page?: number) => Promise<void>;
   loadNamespaces: () => Promise<void>;
   loadLabels: (locale?: string) => Promise<void>;
   loadSkillDetail: (namespace: string, slug: string) => Promise<void>;
@@ -110,6 +113,8 @@ interface SkillHubState {
   approvePromotion: (id: string, data?: { comment?: string }) => Promise<void>;
   rejectPromotion: (id: string, data?: { comment?: string }) => Promise<void>;
   loadStats: () => Promise<void>;
+  downloadSkillBundle: (namespace: string, slug: string, version?: string) => Promise<Blob | null>;
+  installSkillFromHub: (namespace: string, slug: string, skillId: string, version?: string) => Promise<boolean>;
   reset: () => void;
 }
 
@@ -136,6 +141,8 @@ const initialState = {
   publishLoading: false,
   publishProgress: 0,
   publishResult: null,
+  installingSkillIds: new Set<string>(),
+  installedSkillIds: new Set<string>(),
   reviewTasks: null,
   reviewLoading: false,
   reports: null,
@@ -156,7 +163,7 @@ export const useSkillHubStore = create<SkillHubState>((set, get) => ({
 
   setSortBy: (sort) => set({ sortBy: sort }),
 
-  search: async () => {
+  search: async (page = 0) => {
     const { searchQuery, selectedNamespace, selectedLabels, sortBy } = get();
     set({ searchLoading: true });
     try {
@@ -165,7 +172,7 @@ export const useSkillHubStore = create<SkillHubState>((set, get) => ({
         namespace: selectedNamespace || undefined,
         labels: selectedLabels.length > 0 ? selectedLabels : undefined,
         sort: sortBy,
-        page: 0,
+        page,
         size: 20,
       });
       set({ searchResults: result });
@@ -425,7 +432,7 @@ export const useSkillHubStore = create<SkillHubState>((set, get) => ({
     }
   },
 
-  yankVersion: async (namespace, slug, version, reason) => {
+  yankVersion: async (_namespace, _slug, version, reason) => {
     try {
       await skillHubV2Api.yankVersion(version, reason);
       message.success('版本已下架');
@@ -491,5 +498,159 @@ export const useSkillHubStore = create<SkillHubState>((set, get) => ({
     }
   },
 
+  downloadSkillBundle: async (_namespace, _slug, _version) => {
+    try {
+      const blob = await skillHubV2Api.downloadBundle(_namespace, _slug, _version);
+      return blob;
+    } catch (error) {
+      console.error('Download skill bundle failed:', error);
+      return null;
+    }
+  },
+
+  installSkillFromHub: async (namespace, slug, skillId, version) => {
+    const { installingSkillIds, installedSkillIds } = get();
+    if (installingSkillIds.has(skillId) || installedSkillIds.has(skillId)) {
+      return false;
+    }
+
+    set({ installingSkillIds: new Set([...installingSkillIds, skillId]) });
+    try {
+      const blob = await skillHubV2Api.downloadBundle(namespace, slug, version);
+      if (!blob) {
+        message.error('下载技能包失败');
+        set({ installingSkillIds: new Set([...get().installingSkillIds].filter(id => id !== skillId)) });
+        return false;
+      }
+
+      // Parse ZIP to extract metadata
+      const JSZip = (await import('jszip')).default;
+      const zip = await JSZip.loadAsync(blob);
+
+      // Find SKILL.md
+      const allFiles = Object.keys(zip.files);
+      const skillMdPath = allFiles.find(path => {
+        const fileName = path.split('/').pop()?.toLowerCase();
+        return fileName === 'skill.md';
+      });
+
+      if (!skillMdPath) {
+        message.error('技能包中未找到 SKILL.md 文件');
+        set({ installingSkillIds: new Set([...get().installingSkillIds].filter(id => id !== skillId)) });
+        return false;
+      }
+
+      const skillMdFile = zip.file(skillMdPath);
+      if (!skillMdFile) {
+        message.error('无法读取 SKILL.md 文件');
+        set({ installingSkillIds: new Set([...get().installingSkillIds].filter(id => id !== skillId)) });
+        return false;
+      }
+
+      const content = await skillMdFile.async('string');
+      const metadata = parseSkillMd(content);
+
+      if (!metadata.name) {
+        message.error('SKILL.md 中未找到技能名称');
+        set({ installingSkillIds: new Set([...get().installingSkillIds].filter(id => id !== skillId)) });
+        return false;
+      }
+
+      // Create local skill via skillApi
+      const { skillApi } = await import('@/services');
+      await skillApi.create({
+        name: metadata.displayName || metadata.name,
+        description: metadata.description || metadata.readme || '',
+        version: metadata.version || '1.0.0',
+        author: metadata.author || namespace,
+        category: metadata.category || 'custom',
+        tags: metadata.tags || [],
+        parameters: metadata.parameters || [],
+        timeout: metadata.timeout || 30000,
+        enabled: true,
+      });
+
+      const currentInstalling = get().installingSkillIds;
+      const currentInstalled = get().installedSkillIds;
+      set({
+        installingSkillIds: new Set([...currentInstalling].filter(id => id !== skillId)),
+        installedSkillIds: new Set([...currentInstalled, skillId]),
+      });
+      message.success(`技能 "${metadata.displayName || metadata.name}" 安装成功`);
+      return true;
+    } catch (error) {
+      console.error('Install skill failed:', error);
+      message.error('安装技能失败');
+      set({ installingSkillIds: new Set([...get().installingSkillIds].filter(id => id !== skillId)) });
+      return false;
+    }
+  },
+
   reset: () => set(initialState),
 }));
+
+// Parse SKILL.md frontmatter
+interface ParsedMetadata {
+  name?: string;
+  displayName?: string;
+  description?: string;
+  version?: string;
+  author?: string;
+  category?: string;
+  tags?: string[];
+  parameters?: unknown[];
+  timeout?: number;
+  readme?: string;
+}
+
+function parseSkillMd(content: string): ParsedMetadata {
+  const lines = content.split('\n');
+  const metadata: ParsedMetadata = {};
+  let inFrontMatter = false;
+  let frontMatterLines: string[] = [];
+  let readmeLines: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (i === 0 && line.trim() === '---') {
+      inFrontMatter = true;
+      continue;
+    }
+    if (inFrontMatter && line.trim() === '---') {
+      inFrontMatter = false;
+      continue;
+    }
+    if (inFrontMatter) {
+      frontMatterLines.push(line);
+    } else {
+      readmeLines.push(line);
+    }
+  }
+
+  for (const line of frontMatterLines) {
+    const match = line.match(/^([^:]+):\s*(.*)$/);
+    if (match) {
+      const [, key, value] = match;
+      if (key === 'tags') {
+        try {
+          metadata[key as keyof ParsedMetadata] = JSON.parse(value);
+        } catch {
+          // Skip invalid JSON
+        }
+      } else if (key === 'parameters') {
+        try {
+          metadata[key as keyof ParsedMetadata] = JSON.parse(value);
+        } catch {
+          // Skip invalid JSON
+        }
+      } else if (key === 'timeout') {
+        (metadata as Record<string, unknown>)[key] = parseInt(value, 10);
+      } else {
+        (metadata as Record<string, unknown>)[key] = value;
+      }
+    }
+  }
+
+  metadata.readme = readmeLines.join('\n').trim();
+  return metadata;
+}

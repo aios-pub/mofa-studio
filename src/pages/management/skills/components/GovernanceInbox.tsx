@@ -148,9 +148,9 @@ export function GovernanceInbox() {
   };
 
   const pendingCount = {
-    reviews: reviewTasks?.items.filter(r => r.status === 'PENDING').length || 0,
-    promotions: promotions?.items.filter(p => p.status === 'PENDING').length || 0,
-    reports: reports?.items.filter(r => r.status === 'PENDING').length || 0,
+    reviews: (reviewTasks?.items || []).filter(r => r.status === 'PENDING').length,
+    promotions: (promotions?.items || []).filter(p => p.status === 'PENDING').length,
+    reports: (reports?.items || []).filter(r => r.status === 'PENDING').length,
   };
 
   const totalPending = pendingCount.reviews + pendingCount.promotions + pendingCount.reports;

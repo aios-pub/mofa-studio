@@ -3,7 +3,7 @@
  * 显示当前用户拥有的技能
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   Card,
   Table,
@@ -15,7 +15,7 @@ import {
   Row,
   Col,
   Statistic,
-} from 'antd';
+} from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -26,23 +26,22 @@ import {
   CopyOutlined,
   InboxOutlined,
   UndoOutlined,
-} from '@ant-design/icons';
-import { useNavigate } from '@tanstack/react-router';
-import { skillHubV2Api } from '@/services';
-import type { HubSkill, SkillStatus } from '@/types/skill';
-import { useSkillHubStore } from '@/stores/useSkillHubStore';
+} from "@ant-design/icons";
+import { useNavigate } from "@tanstack/react-router";
+import { skillHubV2Api } from "@/services";
+import type { HubSkill, SkillStatus } from "@/types/skill";
+import { useSkillHubStore } from "@/stores/useSkillHubStore";
 
 export function MySkillsPage() {
   const navigate = useNavigate();
   const [mySkills, setMySkills] = useState<HubSkill[]>([]);
   const [loading, setLoading] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'active' | 'hidden' | 'archived'>('all');
-  const [actionLoading, setActionLoading] = useState<string>('');
+  const [filter, setFilter] = useState<
+    "all" | "active" | "hidden" | "archived"
+  >("all");
+  const [actionLoading, setActionLoading] = useState<string>("");
 
-  const {
-    archiveSkill,
-    unarchiveSkill,
-  } = useSkillHubStore();
+  const { archiveSkill, unarchiveSkill } = useSkillHubStore();
 
   useEffect(() => {
     loadMySkills();
@@ -58,7 +57,7 @@ export function MySkillsPage() {
       });
       setMySkills(result.skills || []);
     } catch (error) {
-      console.error('Failed to load my skills:', error);
+      console.error("Failed to load my skills:", error);
     } finally {
       setLoading(false);
     }
@@ -69,46 +68,54 @@ export function MySkillsPage() {
       await skillHubV2Api.starSkill(skillId);
       loadMySkills();
     } catch (error) {
-      console.error('Failed to toggle star:', error);
+      console.error("Failed to toggle star:", error);
     }
   };
 
   const getStatusColor = (status: SkillStatus) => {
     switch (status) {
-      case 'ACTIVE': return 'success';
-      case 'HIDDEN': return 'warning';
-      case 'ARCHIVED': return 'default';
-      default: return 'default';
+      case "ACTIVE":
+        return "success";
+      case "HIDDEN":
+        return "warning";
+      case "ARCHIVED":
+        return "default";
+      default:
+        return "default";
     }
   };
 
   const getStatusText = (status: SkillStatus) => {
     switch (status) {
-      case 'ACTIVE': return '活跃';
-      case 'HIDDEN': return '隐藏';
-      case 'ARCHIVED': return '归档';
-      default: return status;
+      case "ACTIVE":
+        return "活跃";
+      case "HIDDEN":
+        return "隐藏";
+      case "ARCHIVED":
+        return "归档";
+      default:
+        return status;
     }
   };
 
-  const filteredSkills = mySkills.filter(skill => {
-    if (filter === 'all') return true;
+  const filteredSkills = mySkills.filter((skill) => {
+    if (filter === "all") return true;
     return skill.status.toLowerCase() === filter;
   });
 
   const stats = {
     total: mySkills.length,
-    active: mySkills.filter(s => s.status === 'ACTIVE').length,
-    hidden: mySkills.filter(s => s.status === 'HIDDEN').length,
-    archived: mySkills.filter(s => s.status === 'ARCHIVED').length,
+    active: mySkills.filter((s) => s.status === "ACTIVE").length,
+    hidden: mySkills.filter((s) => s.status === "HIDDEN").length,
+    archived: mySkills.filter((s) => s.status === "ARCHIVED").length,
     totalDownloads: mySkills.reduce((sum, s) => sum + s.downloadCount, 0),
     totalStars: mySkills.reduce((sum, s) => sum + s.starCount, 0),
   };
 
   const columns = [
     {
-      title: '技能',
-      key: 'skill',
+      title: "技能",
+      key: "skill",
       render: (_: unknown, record: HubSkill) => (
         <Space direction="vertical" size={0}>
           <div className="font-medium">{record.displayName || record.slug}</div>
@@ -116,7 +123,7 @@ export function MySkillsPage() {
             {record.namespaceSlug}/{record.slug}
           </div>
           <div className="flex items-center gap-2 mt-1">
-            {record.labels?.slice(0, 3).map(label => (
+            {record.labels?.slice(0, 3).map((label) => (
               <Tag key={label.id} color="blue" className="text-xs">
                 {label.displayName}
               </Tag>
@@ -129,30 +136,30 @@ export function MySkillsPage() {
       ),
     },
     {
-      title: '状态',
-      dataIndex: 'status',
-      key: 'status',
+      title: "状态",
+      dataIndex: "status",
+      key: "status",
       width: 100,
       render: (status: SkillStatus) => (
         <Tag color={getStatusColor(status)}>{getStatusText(status)}</Tag>
       ),
     },
     {
-      title: '版本',
-      key: 'version',
+      title: "版本",
+      key: "version",
       width: 120,
       render: (_: unknown, record: HubSkill) => (
         <div className="text-sm">
-          <div>最新: {record.latestVersion?.version || '-'}</div>
+          <div>最新: {record.latestVersion?.version || "-"}</div>
           <div className="text-xs text-gray-500">
-            {record.latestVersion?.status || '-'}
+            {record.latestVersion?.status || "-"}
           </div>
         </div>
       ),
     },
     {
-      title: '统计',
-      key: 'stats',
+      title: "统计",
+      key: "stats",
       width: 150,
       render: (_: unknown, record: HubSkill) => (
         <Space size="large" className="text-sm">
@@ -169,7 +176,9 @@ export function MySkillsPage() {
             </Space>
           </Tooltip>
           {record.ratingCount > 0 && (
-            <Tooltip title={`评分: ${record.ratingAvg.toFixed(1)} (${record.ratingCount}个评分)`}>
+            <Tooltip
+              title={`评分: ${record.ratingAvg.toFixed(1)} (${record.ratingCount}个评分)`}
+            >
               <Space size={4}>
                 <span>☆</span>
                 <span>{record.ratingAvg.toFixed(1)}</span>
@@ -180,23 +189,23 @@ export function MySkillsPage() {
       ),
     },
     {
-      title: '可见性',
-      dataIndex: 'visibility',
-      key: 'visibility',
+      title: "可见性",
+      dataIndex: "visibility",
+      key: "visibility",
       width: 120,
       render: (visibility: string) => {
         const config: Record<string, { color: string; text: string }> = {
-          PUBLIC: { color: 'green', text: '公开' },
-          NAMESPACE_ONLY: { color: 'blue', text: '命名空间' },
-          PRIVATE: { color: 'default', text: '私有' },
+          PUBLIC: { color: "green", text: "公开" },
+          NAMESPACE_ONLY: { color: "blue", text: "命名空间" },
+          PRIVATE: { color: "default", text: "私有" },
         };
-        const c = config[visibility] || { color: 'default', text: visibility };
+        const c = config[visibility] || { color: "default", text: visibility };
         return <Tag color={c.color}>{c.text}</Tag>;
       },
     },
     {
-      title: '操作',
-      key: 'actions',
+      title: "操作",
+      key: "actions",
       width: 200,
       render: (_: unknown, record: HubSkill) => (
         <Space size="small">
@@ -205,10 +214,14 @@ export function MySkillsPage() {
               type="text"
               size="small"
               icon={<EyeOutlined />}
-              onClick={() => navigate({ to: `/skills/hub/${record.namespaceSlug}/${record.slug}` })}
+              onClick={() =>
+                navigate({
+                  to: `/skills/hub/${record.namespaceSlug}/${record.slug}`,
+                })
+              }
             />
           </Tooltip>
-          <Tooltip title={record.starCount > 0 ? '取消 Star' : 'Star'}>
+          <Tooltip title={record.starCount > 0 ? "取消 Star" : "Star"}>
             <Button
               type="text"
               size="small"
@@ -217,21 +230,17 @@ export function MySkillsPage() {
             />
           </Tooltip>
           <Tooltip title="编辑">
-            <Button
-              type="text"
-              size="small"
-              icon={<EditOutlined />}
-            />
+            <Button type="text" size="small" icon={<EditOutlined />} />
           </Tooltip>
           <Tooltip title="发布新版本">
             <Button
               type="text"
               size="small"
               icon={<CloudUploadOutlined />}
-              onClick={() => navigate({ to: '/skills/publish' })}
+              onClick={() => navigate({ to: "/skills/publish" })}
             />
           </Tooltip>
-          {record.status === 'ACTIVE' && (
+          {record.status === "ACTIVE" && (
             <Tooltip title="归档">
               <Button
                 type="text"
@@ -245,15 +254,15 @@ export function MySkillsPage() {
                     await archiveSkill(record.namespaceSlug, record.slug);
                     loadMySkills();
                   } catch (error) {
-                    console.error('Archive failed:', error);
+                    console.error("Archive failed:", error);
                   } finally {
-                    setActionLoading('');
+                    setActionLoading("");
                   }
                 }}
               />
             </Tooltip>
           )}
-          {record.status === 'ARCHIVED' && (
+          {record.status === "ARCHIVED" && (
             <Tooltip title="恢复">
               <Button
                 type="text"
@@ -266,9 +275,9 @@ export function MySkillsPage() {
                     await unarchiveSkill(record.namespaceSlug, record.slug);
                     loadMySkills();
                   } catch (error) {
-                    console.error('Unarchive failed:', error);
+                    console.error("Unarchive failed:", error);
                   } finally {
-                    setActionLoading('');
+                    setActionLoading("");
                   }
                 }}
               />
@@ -289,7 +298,11 @@ export function MySkillsPage() {
         </Col>
         <Col span={4}>
           <Card>
-            <Statistic title="活跃" value={stats.active} valueStyle={{ color: '#3f8600' }} />
+            <Statistic
+              title="活跃"
+              value={stats.active}
+              valueStyle={{ color: "#3f8600" }}
+            />
           </Card>
         </Col>
         <Col span={4}>
@@ -299,7 +312,11 @@ export function MySkillsPage() {
         </Col>
         <Col span={4}>
           <Card>
-            <Statistic title="总 Stars" value={stats.totalStars} valueStyle={{ color: '#cf1322' }} />
+            <Statistic
+              title="总 Stars"
+              value={stats.totalStars}
+              valueStyle={{ color: "#cf1322" }}
+            />
           </Card>
         </Col>
         <Col span={4}>
@@ -318,32 +335,32 @@ export function MySkillsPage() {
         title="我的技能"
         extra={
           <Space>
-            <Button.Group>
+            <Space.Compact>
               <Button
-                type={filter === 'all' ? 'primary' : 'default'}
-                onClick={() => setFilter('all')}
+                type={filter === "all" ? "primary" : "default"}
+                onClick={() => setFilter("all")}
               >
                 全部
               </Button>
               <Button
-                type={filter === 'active' ? 'primary' : 'default'}
-                onClick={() => setFilter('active')}
+                type={filter === "active" ? "primary" : "default"}
+                onClick={() => setFilter("active")}
               >
                 活跃
               </Button>
               <Button
-                type={filter === 'hidden' ? 'primary' : 'default'}
-                onClick={() => setFilter('hidden')}
+                type={filter === "hidden" ? "primary" : "default"}
+                onClick={() => setFilter("hidden")}
               >
                 隐藏
               </Button>
               <Button
-                type={filter === 'archived' ? 'primary' : 'default'}
-                onClick={() => setFilter('archived')}
+                type={filter === "archived" ? "primary" : "default"}
+                onClick={() => setFilter("archived")}
               >
                 归档
               </Button>
-            </Button.Group>
+            </Space.Compact>
             <Button type="primary" icon={<CloudUploadOutlined />}>
               发布新技能
             </Button>

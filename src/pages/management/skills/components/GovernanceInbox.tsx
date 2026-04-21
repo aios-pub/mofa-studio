@@ -64,7 +64,7 @@ export function GovernanceInbox() {
     // Combine all items into a single list
     const allItems: GovernanceItem[] = [];
 
-    reviewTasks?.items.forEach((review: ReviewTask) => {
+    (reviewTasks?.items || []).forEach((review: ReviewTask) => {
       allItems.push({
         id: review.id,
         type: 'review',
@@ -76,7 +76,7 @@ export function GovernanceInbox() {
       });
     });
 
-    promotions?.items.forEach((promotion: PromotionTask) => {
+    (promotions?.items || []).forEach((promotion: PromotionTask) => {
       allItems.push({
         id: promotion.id,
         type: 'promotion',
@@ -88,7 +88,7 @@ export function GovernanceInbox() {
       });
     });
 
-    reports?.items.forEach((report: SkillReport) => {
+    (reports?.items || []).forEach((report: SkillReport) => {
       allItems.push({
         id: report.id,
         type: 'report',

@@ -27,7 +27,7 @@ import {
   InboxOutlined,
   UndoOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "react-router-dom";
 import { skillHubV2Api } from "@/services";
 import type { HubSkill, SkillStatus } from "@/types/skill";
 import { useSkillHubStore } from "@/stores/useSkillHubStore";

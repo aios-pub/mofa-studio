@@ -122,7 +122,7 @@ export function NamespaceManager() {
     },
     {
       title: "显示名称",
-      dataIndex: "displayName",
+      dataIndex: "display_name",
       key: "displayName",
     },
     {
@@ -180,7 +180,7 @@ export function NamespaceManager() {
   const memberColumns = [
     {
       title: "用户 ID",
-      dataIndex: "userId",
+      dataIndex: "user_id",
       key: "userId",
     },
     {
@@ -199,7 +199,7 @@ export function NamespaceManager() {
     },
     {
       title: "添加时间",
-      dataIndex: "addedAt",
+      dataIndex: "created_at",
       key: "addedAt",
       render: (date: string) => new Date(date).toLocaleString(),
     },
@@ -356,9 +356,9 @@ export function NamespaceManager() {
               placeholder="选择用户"
               showSearch
               optionFilterProp="label"
-              options={tenantUsers.map(user => ({
+              options={tenantUsers.map((user) => ({
                 value: user.id,
-                label: `${user.nickname || user.username}${user.email ? ` (${user.email})` : ''}`,
+                label: `${user.nickname || user.username}${user.email ? ` (${user.email})` : ""}`,
               }))}
             />
           </Form.Item>

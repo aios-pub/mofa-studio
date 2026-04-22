@@ -45,7 +45,10 @@ import { useUserInfo } from "@/stores/useUserStore";
 const { Text } = Typography;
 import { isMockEnabled, octosMockApi } from "@/services";
 import { OctosApiClient } from "@/services/real/octos";
-import { initConfig, prepareConfigForSave } from "@/services/real/octosConfigAdapter";
+import {
+  initConfig,
+  prepareConfigForSave,
+} from "@/services/real/octosConfigAdapter";
 import OctosLlmProviderTab from "./OctosLlmProviderTab";
 import OctosChannelsTab from "./OctosChannelsTab";
 import OctosGatewaySettingsTab from "./OctosGatewaySettingsTab";
@@ -60,19 +63,27 @@ interface Props {
 }
 
 function getClaw(agent: Agent): Record<string, unknown> {
-  return ((agent.customParams as Record<string, unknown>)?.claw as Record<string, unknown>) || {};
+  return (
+    ((agent.customParams as Record<string, unknown>)?.claw as Record<
+      string,
+      unknown
+    >) || {}
+  );
 }
 
 export default function OctosManagementPanel({ agent }: Props) {
   const [profiles, setProfiles] = useState<OctosProfileResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [connected, setConnected] = useState<boolean | null>(null);
-  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(
+    null,
+  );
   const [saving, setSaving] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("profiles");
   const [purgeReport, setPurgeReport] = useState<any>(null);
   const [purgeModalOpen, setPurgeModalOpen] = useState(false);
+  const [profileAgentCodes, setProfileAgentCodes] = useState<Record<string, string>>({});
 
   const { message } = App.useApp();
   const { email: userEmail } = useUserInfo();
@@ -103,7 +114,7 @@ export default function OctosManagementPanel({ agent }: Props) {
         list.map(async (p) => ({
           ...p,
           config: await initConfig(p.config),
-        }))
+        })),
       );
       setProfiles(convertedList);
       setConnected(true);
@@ -121,6 +132,11 @@ export default function OctosManagementPanel({ agent }: Props) {
   useEffect(() => {
     fetchProfiles();
   }, [fetchProfiles]);
+
+  // 当 agent 变化时更新 editableAgentCode
+  useEffect(() => {
+    setEditableAgentCode(agent.agent_code);
+  }, [agent.agent_code]);
 
   const selectedProfile = profiles.find((p) => p.id === selectedProfileId);
 
@@ -143,10 +159,10 @@ export default function OctosManagementPanel({ agent }: Props) {
       const backendConfig = await prepareConfigForSave(selectedProfile.config);
       const updated = await callApi((c) =>
         c.updateProfile(selectedProfile.id, {
-          id: selectedProfile.id,
           name: selectedProfile.name,
           config: backendConfig,
           email: userEmail, // 使用当前登录用户的邮箱
+          agent_code: profileAgentCodes[selectedProfile.id] ?? agent.agent_code, // Agent 唯一编码
         }),
       );
       // 将返回的配置转换回前端格式
@@ -173,7 +189,9 @@ export default function OctosManagementPanel({ agent }: Props) {
           if (action === "stop") return c.stopGateway(profileId);
           return c.restartGateway(profileId);
         });
-        message.success(`${action === "start" ? "启动" : action === "stop" ? "停止" : "重启"}成功`);
+        message.success(
+          `${action === "start" ? "启动" : action === "stop" ? "停止" : "重启"}成功`,
+        );
         fetchProfiles();
       } catch (e: any) {
         message.error(e?.message || "操作失败");
@@ -188,7 +206,9 @@ export default function OctosManagementPanel({ agent }: Props) {
         await callApi((c) => c.deleteProfile(profileId));
         message.success("已删除");
         if (selectedProfileId === profileId) {
-          setSelectedProfileId(profiles.find((p) => p.id !== profileId)?.id || null);
+          setSelectedProfileId(
+            profiles.find((p) => p.id !== profileId)?.id || null,
+          );
         }
         fetchProfiles();
       } catch (e: any) {
@@ -226,7 +246,10 @@ export default function OctosManagementPanel({ agent }: Props) {
 
   // Not connected
   if (connected === false) {
-    const hasToken = !!((getClaw(agent).authConfig as Record<string, unknown>)?.authToken || (getClaw(agent).authConfig as Record<string, unknown>)?.token);
+    const hasToken = !!(
+      (getClaw(agent).authConfig as Record<string, unknown>)?.authToken ||
+      (getClaw(agent).authConfig as Record<string, unknown>)?.token
+    );
     return (
       <Alert
         type="error"
@@ -234,15 +257,30 @@ export default function OctosManagementPanel({ agent }: Props) {
         message="无法连接 Octos 服务"
         description={
           <div className="space-y-2 mt-2">
-            <p>端点地址：<Typography.Text code>{(getClaw(agent).endpointUrl as string) || "未配置"}</Typography.Text></p>
-            <p>Auth Token：{hasToken ? <Tag color="green">已配置</Tag> : <Tag color="red">未配置</Tag>}</p>
+            <p>
+              端点地址：
+              <Typography.Text code>
+                {(getClaw(agent).endpointUrl as string) || "未配置"}
+              </Typography.Text>
+            </p>
+            <p>
+              Auth Token：
+              {hasToken ? (
+                <Tag color="green">已配置</Tag>
+              ) : (
+                <Tag color="red">未配置</Tag>
+              )}
+            </p>
             {!hasToken && (
               <p className="text-xs">
                 请编辑此 Claw 实例，填入 Octos 服务启动时的 --auth-token 参数值
               </p>
             )}
             <p className="text-xs text-[var(--color-text-tertiary)]">
-              启动命令示例：<Typography.Text code className="text-xs">octos serve --host 0.0.0.0 --port 8080 --auth-token YOUR_TOKEN</Typography.Text>
+              启动命令示例：
+              <Typography.Text code className="text-xs">
+                octos serve --host 0.0.0.0 --port 8080 --auth-token YOUR_TOKEN
+              </Typography.Text>
             </p>
           </div>
         }
@@ -258,7 +296,10 @@ export default function OctosManagementPanel({ agent }: Props) {
   return (
     <div className="space-y-4">
       {/* System Status Banner */}
-      <Card size="small" className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+      <Card
+        size="small"
+        className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200"
+      >
         <Space>
           <InfoCircleOutlined className="text-blue-500" />
           <Text type="secondary" className="text-xs">
@@ -268,7 +309,8 @@ export default function OctosManagementPanel({ agent }: Props) {
             {connected ? "已连接" : "未连接"}
           </Tag>
           <Text type="secondary" className="text-xs">
-            {profiles.length} 个 Profile，{profiles.filter((p) => p.status.running).length} 个运行中
+            {profiles.length} 个 Profile，
+            {profiles.filter((p) => p.status.running).length} 个运行中
           </Text>
         </Space>
       </Card>
@@ -291,10 +333,7 @@ export default function OctosManagementPanel({ agent }: Props) {
                   }
                 }}
               >
-                <Button
-                  size="small"
-                  icon={<RocketOutlined />}
-                >
+                <Button size="small" icon={<RocketOutlined />}>
                   全部启动
                 </Button>
               </Popconfirm>
@@ -310,11 +349,7 @@ export default function OctosManagementPanel({ agent }: Props) {
                   }
                 }}
               >
-                <Button
-                  size="small"
-                  danger
-                  icon={<ClearOutlined />}
-                >
+                <Button size="small" danger icon={<ClearOutlined />}>
                   全部停止
                 </Button>
               </Popconfirm>
@@ -505,7 +540,9 @@ export default function OctosManagementPanel({ agent }: Props) {
                   />
                 ),
                 // 仅当 Profile 无 parent_id 时显示（非子账户）
-                style: { display: selectedProfile.parent_id ? 'none' : undefined },
+                style: {
+                  display: selectedProfile.parent_id ? "none" : undefined,
+                },
               },
               {
                 key: "monitor",
@@ -515,9 +552,7 @@ export default function OctosManagementPanel({ agent }: Props) {
                   </span>
                 ),
                 children: (
-                  <OctosMonitorTab
-                    apiClient={api || (octosMockApi as any)}
-                  />
+                  <OctosMonitorTab apiClient={api || (octosMockApi as any)} />
                 ),
               },
             ]}
@@ -526,6 +561,21 @@ export default function OctosManagementPanel({ agent }: Props) {
           {/* Save Bar */}
           <div className="flex items-center justify-between pt-4 border-t border-[var(--color-border)]">
             <Space>
+              <div className="flex items-center gap-2">
+                <Text type="secondary" className="text-sm">Agent Code:</Text>
+                <Input
+                  value={profileAgentCodes[selectedProfile.id] ?? agent.agent_code}
+                  onChange={(e) =>
+                    setProfileAgentCodes((prev) => ({
+                      ...prev,
+                      [selectedProfile.id]: e.target.value,
+                    }))
+                  }
+                  placeholder="agent_code"
+                  className="w-48"
+                  size="small"
+                />
+              </div>
               <Button
                 icon={<ReloadOutlined />}
                 onClick={() => handleStartStop(selectedProfile.id, "restart")}
@@ -547,7 +597,9 @@ export default function OctosManagementPanel({ agent }: Props) {
         onCancel={() => setCreateOpen(false)}
         onOk={async () => {
           try {
-            const form = document.getElementById("octos-create-form") as HTMLFormElement;
+            const form = document.getElementById(
+              "octos-create-form",
+            ) as HTMLFormElement;
             const formData = new FormData(form);
             const id = formData.get("id") as string;
             const name = formData.get("name") as string;
@@ -567,6 +619,8 @@ export default function OctosManagementPanel({ agent }: Props) {
                   gateway: {},
                   env_vars: {},
                 },
+                email: userEmail,
+                agent_code: agent.agent_code,
               }),
             );
             message.success("创建成功");
@@ -595,7 +649,11 @@ export default function OctosManagementPanel({ agent }: Props) {
         open={purgeModalOpen}
         onCancel={() => setPurgeModalOpen(false)}
         footer={[
-          <Button key="close" type="primary" onClick={() => setPurgeModalOpen(false)}>
+          <Button
+            key="close"
+            type="primary"
+            onClick={() => setPurgeModalOpen(false)}
+          >
             关闭
           </Button>,
         ]}
@@ -611,7 +669,9 @@ export default function OctosManagementPanel({ agent }: Props) {
             <div>
               <Text type="secondary">释放空间:</Text>
               <div className="mt-1">
-                <Text strong>{(purgeReport.bytes_freed / 1024 / 1024).toFixed(2)} MB</Text>
+                <Text strong>
+                  {(purgeReport.bytes_freed / 1024 / 1024).toFixed(2)} MB
+                </Text>
               </div>
             </div>
             <div>
@@ -619,11 +679,13 @@ export default function OctosManagementPanel({ agent }: Props) {
               <div className="mt-1 max-h-40 overflow-y-auto">
                 {purgeReport.files_removed?.length > 0 ? (
                   <ul className="list-disc pl-4 text-xs">
-                    {purgeReport.files_removed.map((file: string, idx: number) => (
-                      <li key={idx} className="text-gray-600">
-                        {file}
-                      </li>
-                    ))}
+                    {purgeReport.files_removed.map(
+                      (file: string, idx: number) => (
+                        <li key={idx} className="text-gray-600">
+                          {file}
+                        </li>
+                      ),
+                    )}
                   </ul>
                 ) : (
                   <Text type="secondary">无</Text>

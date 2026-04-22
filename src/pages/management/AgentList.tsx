@@ -2614,6 +2614,8 @@ function ClawEditModal({
         .catch(() => {});
       form.setFieldsValue({
         instanceName: agent.agent_name || "",
+        agentCode: agent.agent_code || "",
+        systemPrompt: agent.system_prompt || `你是${agentType}`,
         version: clawVal(agent, "version") || "",
         endpointUrl: clawVal(agent, "endpointUrl") || "",
         authToken: (existingAuthConfig?.authToken ||
@@ -2663,6 +2665,8 @@ function ClawEditModal({
       const model = provider?.models?.find((m: any) => m.id === values.modelId);
       await agentApi.update(agent.id, {
         agent_name: values.instanceName,
+        agent_code: values.agentCode,
+        system_prompt: values.systemPrompt || `你是${agentType}`,
         agent_category: agentType,
         provider: { id: values.providerId, provider_name: provider?.name || "" },
         model_id: values.modelId,
@@ -2707,6 +2711,26 @@ function ClawEditModal({
           rules={[{ required: true }]}
         >
           <Input />
+        </Form.Item>
+        <Form.Item
+          name="agentCode"
+          label="编码"
+          rules={[
+            { required: true, message: "请输入编码" },
+            {
+              pattern: /^[a-zA-Z0-9_-]+$/,
+              message: "仅支持英文、数字、下划线和横线",
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name="systemPrompt"
+          label="系统提示词"
+          rules={[{ required: true, message: "请输入系统提示词" }]}
+        >
+          <Input.TextArea rows={3} placeholder="系统提示词" />
         </Form.Item>
         <Form.Item name="version" label="版本">
           <Input />

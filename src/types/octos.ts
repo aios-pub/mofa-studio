@@ -61,13 +61,13 @@ export interface OctosProfileConfig {
   // Provider 配置 - 支持两种模式：
   // 1. 新模式：复用 provider 管理 (provider_id + model_id)
   // 2. 旧模式：直接配置 (provider + model + base_url + api_key_env)
-  provider_id?: string | null;      // Provider ID (复用 provider 管理)
-  model_id?: string | null;         // 模型 ID (从 provider 的模型列表中选择)
-  provider?: string | null;         // 旧模式：Provider 名称
-  model?: string | null;            // 旧模式：模型名称
-  base_url?: string | null;         // 旧模式：Base URL
-  api_key_env?: string | null;      // 旧模式：API Key 环境变量名
-  api_type?: string | null;         // API 类型
+  provider_id?: string | null; // Provider ID (复用 provider 管理)
+  model_id?: string | null; // 模型 ID (从 provider 的模型列表中选择)
+  provider?: string | null; // 旧模式：Provider 名称
+  model?: string | null; // 旧模式：模型名称
+  base_url?: string | null; // 旧模式：Base URL
+  api_key_env?: string | null; // 旧模式：API Key 环境变量名
+  api_type?: string | null; // API 类型
 
   // 回退模型 - 支持两种模式：
   // 1. 新模式：复用 provider 管理 (fallback_configs)
@@ -78,7 +78,7 @@ export interface OctosProfileConfig {
   // 渠道配置 - 支持两种模式：
   // 1. 新模式：复用渠道管理 (channel_ids)
   // 2. 旧模式：直接配置 (channels)
-  channel_ids?: string[];           // Channel ID 列表 (复用渠道管理)
+  channel_ids?: string[]; // Channel ID 列表 (复用渠道管理)
   channels?: OctosChannelCredentials[] | Record<string, unknown>[];
 
   gateway?: OctosGatewaySettings;
@@ -106,6 +106,8 @@ export interface OctosUpdateProfileRequest {
   config?: OctosProfileConfig;
   /** OTP 登录邮箱 */
   email?: string;
+  /** Agent 唯一编码 */
+  agent_code?: string;
 }
 
 /** Profile 响应 */
@@ -143,7 +145,12 @@ export interface OctosProviderModelEntry {
   input: number;
   output: number;
   max_output: number;
-  endpoints?: { id: string; label: string; base_url?: string; api_key_env?: string }[];
+  endpoints?: {
+    id: string;
+    label: string;
+    base_url?: string;
+    api_key_env?: string;
+  }[];
 }
 
 /** Provider 目录条目 */
@@ -153,42 +160,73 @@ export interface OctosProviderCatalogEntry {
 }
 
 /** 支持的渠道类型 */
-export type OctosChannelType = 'telegram' | 'discord' | 'slack' | 'whatsapp' | 'feishu' | 'email' | 'wecom_bot' | 'qq_bot' | 'wechat';
+export type OctosChannelType =
+  | "telegram"
+  | "discord"
+  | "slack"
+  | "whatsapp"
+  | "feishu"
+  | "email"
+  | "wecom_bot"
+  | "qq_bot"
+  | "wechat";
 
-export const OCTOS_CHANNEL_TYPES: OctosChannelType[] = ['telegram', 'discord', 'slack', 'whatsapp', 'feishu', 'email', 'wecom_bot', 'qq_bot', 'wechat'];
+export const OCTOS_CHANNEL_TYPES: OctosChannelType[] = [
+  "telegram",
+  "discord",
+  "slack",
+  "whatsapp",
+  "feishu",
+  "email",
+  "wecom_bot",
+  "qq_bot",
+  "wechat",
+];
 
 export const OCTOS_CHANNEL_LABELS: Record<OctosChannelType, string> = {
-  telegram: 'Telegram',
-  discord: 'Discord',
-  slack: 'Slack',
-  whatsapp: 'WhatsApp',
-  feishu: '飞书',
-  email: '邮件',
-  wecom_bot: '企业微信',
-  qq_bot: 'QQ Bot',
-  wechat: '微信',
+  telegram: "Telegram",
+  discord: "Discord",
+  slack: "Slack",
+  whatsapp: "WhatsApp",
+  feishu: "飞书",
+  email: "邮件",
+  wecom_bot: "企业微信",
+  qq_bot: "QQ Bot",
+  wechat: "微信",
 };
 
 export const OCTOS_CHANNEL_ICONS: Record<OctosChannelType, string> = {
-  telegram: '✈️',
-  discord: '💬',
-  slack: '📱',
-  whatsapp: '📱',
-  feishu: '🐦',
-  email: '📧',
-  wecom_bot: '💼',
-  qq_bot: '🐧',
-  wechat: '💚',
+  telegram: "✈️",
+  discord: "💬",
+  slack: "📱",
+  whatsapp: "📱",
+  feishu: "🐦",
+  email: "📧",
+  wecom_bot: "💼",
+  qq_bot: "🐧",
+  wechat: "💚",
 };
 
 /** 支持的 Provider */
 export const OCTOS_PROVIDERS = [
-  'anthropic', 'openai', 'gemini', 'r9s', 'openrouter', 'deepseek',
-  'groq', 'moonshot', 'dashscope', 'minimax', 'zhipu', 'zai',
-  'nvidia', 'ollama', 'vllm',
+  "anthropic",
+  "openai",
+  "gemini",
+  "r9s",
+  "openrouter",
+  "deepseek",
+  "groq",
+  "moonshot",
+  "dashscope",
+  "minimax",
+  "zhipu",
+  "zai",
+  "nvidia",
+  "ollama",
+  "vllm",
 ] as const;
 
-export type OctosProviderName = typeof OCTOS_PROVIDERS[number];
+export type OctosProviderName = (typeof OCTOS_PROVIDERS)[number];
 
 // ── Hooks & Sandbox ─────────────────────────────────────────────
 
@@ -211,7 +249,7 @@ export interface DockerConfig {
 /** 沙箱配置 */
 export interface SandboxConfig {
   enabled?: boolean;
-  mode?: 'auto' | 'macos' | 'docker' | 'bwrap';
+  mode?: "auto" | "macos" | "docker" | "bwrap";
   allow_network?: boolean;
   docker?: DockerConfig;
 }
@@ -287,7 +325,7 @@ export interface OctosPurgeReport {
 /** WhatsApp 桥接 QR 信息 */
 export interface OctosBridgeQrInfo {
   qr: string | null;
-  status: 'waiting' | 'connected' | 'disconnected' | 'logged_out';
+  status: "waiting" | "connected" | "disconnected" | "logged_out";
   ws_port: number;
   http_port: number;
   phone_number: string | null;

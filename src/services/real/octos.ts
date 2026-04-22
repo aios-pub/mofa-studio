@@ -26,10 +26,10 @@ export class OctosApiClient {
   constructor(baseUrl: string, authToken?: string) {
     // 开发环境使用代理避免 CORS
     const isDev = import.meta.env.DEV;
-    const shouldUseProxy = isDev && baseUrl && !baseUrl.startsWith('/');
+    const shouldUseProxy = isDev && baseUrl && !baseUrl.startsWith("/");
 
     this.http = axios.create({
-      baseURL: shouldUseProxy ? '/octos-proxy' : baseUrl,
+      baseURL: shouldUseProxy ? "/octos-proxy" : baseUrl,
       timeout: 15000,
       headers: {
         "Content-Type": "application/json",
@@ -68,6 +68,8 @@ export class OctosApiClient {
     enabled?: boolean;
     data_dir?: string | null;
     config?: OctosProfileConfig;
+    email?: string;
+    agent_code?: string;
   }): Promise<OctosProfileResponse> {
     const { data } = await this.http.post("/api/admin/profiles", params);
     return data;
@@ -103,7 +105,9 @@ export class OctosApiClient {
     return data;
   }
 
-  async gatewayStatus(id: string): Promise<{ running: boolean; pid: number | null }> {
+  async gatewayStatus(
+    id: string,
+  ): Promise<{ running: boolean; pid: number | null }> {
     const { data } = await this.http.get(`/api/admin/profiles/${id}/status`);
     return data;
   }
@@ -154,14 +158,27 @@ export class OctosApiClient {
 
   async installProfileSkill(
     id: string,
-    data: { repo: string; force: boolean; branch: string }
-  ): Promise<{ ok: boolean; installed: string[]; skipped: string[]; deps_installed: boolean }> {
-    const { data: responseData } = await this.http.post(`/api/admin/profiles/${id}/skills`, data);
+    data: { repo: string; force: boolean; branch: string },
+  ): Promise<{
+    ok: boolean;
+    installed: string[];
+    skipped: string[];
+    deps_installed: boolean;
+  }> {
+    const { data: responseData } = await this.http.post(
+      `/api/admin/profiles/${id}/skills`,
+      data,
+    );
     return responseData;
   }
 
-  async removeProfileSkill(id: string, name: string): Promise<OctosActionResponse> {
-    const { data } = await this.http.delete(`/api/admin/profiles/${id}/skills/${name}`);
+  async removeProfileSkill(
+    id: string,
+    name: string,
+  ): Promise<OctosActionResponse> {
+    const { data } = await this.http.delete(
+      `/api/admin/profiles/${id}/skills/${name}`,
+    );
     return data;
   }
 
@@ -179,13 +196,21 @@ export class OctosApiClient {
     return data;
   }
 
-  async toggleWatchdog(enabled: boolean): Promise<{ ok: boolean; watchdog_enabled: boolean }> {
-    const { data } = await this.http.post("/api/admin/monitor/watchdog", { enabled });
+  async toggleWatchdog(
+    enabled: boolean,
+  ): Promise<{ ok: boolean; watchdog_enabled: boolean }> {
+    const { data } = await this.http.post("/api/admin/monitor/watchdog", {
+      enabled,
+    });
     return data;
   }
 
-  async toggleAlerts(enabled: boolean): Promise<{ ok: boolean; alerts_enabled: boolean }> {
-    const { data } = await this.http.post("/api/admin/monitor/alerts", { enabled });
+  async toggleAlerts(
+    enabled: boolean,
+  ): Promise<{ ok: boolean; alerts_enabled: boolean }> {
+    const { data } = await this.http.post("/api/admin/monitor/alerts", {
+      enabled,
+    });
     return data;
   }
 
@@ -199,7 +224,9 @@ export class OctosApiClient {
   // ==================== WhatsApp QR ====================
 
   async getWhatsAppQr(id: string): Promise<OctosBridgeQrInfo> {
-    const { data } = await this.http.get(`/api/admin/profiles/${id}/whatsapp/qr`);
+    const { data } = await this.http.get(
+      `/api/admin/profiles/${id}/whatsapp/qr`,
+    );
     return data;
   }
 
@@ -213,20 +240,25 @@ export class OctosApiClient {
   // ==================== SSE Log Stream URL ====================
 
   getLogStreamUrl(profileId: string): string {
-    const claw = (this.http.defaults.headers?.Authorization as string)?.toString() || "";
+    const claw =
+      (this.http.defaults.headers?.Authorization as string)?.toString() || "";
     const token = claw.replace("Bearer ", "");
     const baseURL = this.http.defaults.baseURL || "";
     const path = `/api/admin/profiles/${profileId}/logs`;
     // 移除 baseURL 末尾的斜杠和 path 开头的斜杠，然后正确拼接
-    const cleanBaseURL = baseURL.endsWith('/') ? baseURL.slice(0, -1) : baseURL;
-    const fullPath = token ? `${path}?token=${encodeURIComponent(token)}` : path;
+    const cleanBaseURL = baseURL.endsWith("/") ? baseURL.slice(0, -1) : baseURL;
+    const fullPath = token
+      ? `${path}?token=${encodeURIComponent(token)}`
+      : path;
     return cleanBaseURL + fullPath;
   }
 
   // ==================== 子账户 ====================
 
   async listSubAccounts(parentId: string): Promise<OctosProfileResponse[]> {
-    const { data } = await this.http.get(`/api/admin/profiles/${parentId}/accounts`);
+    const { data } = await this.http.get(
+      `/api/admin/profiles/${parentId}/accounts`,
+    );
     return data;
   }
 
@@ -242,22 +274,40 @@ export class OctosApiClient {
       env_vars?: Record<string, string>;
     },
   ): Promise<OctosProfileResponse> {
-    const { data } = await this.http.post(`/api/admin/profiles/${parentId}/accounts`, params);
+    const { data } = await this.http.post(
+      `/api/admin/profiles/${parentId}/accounts`,
+      params,
+    );
     return data;
   }
 
-  async startSubGateway(parentId: string, subAccountId: string): Promise<OctosActionResponse> {
-    const { data } = await this.http.post(`/api/admin/profiles/${parentId}/accounts/${subAccountId}/start`);
+  async startSubGateway(
+    parentId: string,
+    subAccountId: string,
+  ): Promise<OctosActionResponse> {
+    const { data } = await this.http.post(
+      `/api/admin/profiles/${parentId}/accounts/${subAccountId}/start`,
+    );
     return data;
   }
 
-  async stopSubGateway(parentId: string, subAccountId: string): Promise<OctosActionResponse> {
-    const { data } = await this.http.post(`/api/admin/profiles/${parentId}/accounts/${subAccountId}/stop`);
+  async stopSubGateway(
+    parentId: string,
+    subAccountId: string,
+  ): Promise<OctosActionResponse> {
+    const { data } = await this.http.post(
+      `/api/admin/profiles/${parentId}/accounts/${subAccountId}/stop`,
+    );
     return data;
   }
 
-  async getSubAccountStatus(parentId: string, subAccountId: string): Promise<{ running: boolean; pid: number | null }> {
-    const { data } = await this.http.get(`/api/admin/profiles/${parentId}/accounts/${subAccountId}/status`);
+  async getSubAccountStatus(
+    parentId: string,
+    subAccountId: string,
+  ): Promise<{ running: boolean; pid: number | null }> {
+    const { data } = await this.http.get(
+      `/api/admin/profiles/${parentId}/accounts/${subAccountId}/status`,
+    );
     return data;
   }
 }
@@ -267,10 +317,14 @@ export class OctosApiClient {
  * 读取 customParams.claw 中的 endpointUrl 和 authConfig
  */
 export function createOctosApiClient(agent: Agent): OctosApiClient {
-  const claw = ((agent.customParams as Record<string, unknown>)?.claw as Record<string, unknown>) || {};
+  const claw =
+    ((agent.customParams as Record<string, unknown>)?.claw as Record<
+      string,
+      unknown
+    >) || {};
   const baseUrl = (claw.endpointUrl as string) || "";
   const authConfig = (claw.authConfig as Record<string, unknown>) || {};
-  const authToken = (authConfig.authToken as string) ||
-    (authConfig.token as string) || "";
+  const authToken =
+    (authConfig.authToken as string) || (authConfig.token as string) || "";
   return new OctosApiClient(baseUrl, authToken);
 }

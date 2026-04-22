@@ -249,7 +249,7 @@ function InstalledSkillsView({
               </Space>
             }
             description={
-              <Space direction="vertical" size={0}>
+              <Space orientation="vertical" size={0}>
                 {skill.source_repo && (
                   <Text type="secondary" className="text-xs">
                     来源: {skill.source_repo}
@@ -351,7 +351,7 @@ function RecommendSkillsView({
                     : "border-[var(--color-border)] bg-[var(--color-bg-secondary)]"
               }`}
             >
-              <Space direction="vertical" size={8} className="w-full">
+              <Space orientation="vertical" size={8} className="w-full">
                 <div className="flex items-start justify-between">
                   <Space>
                     <span className="text-xl">⚡</span>

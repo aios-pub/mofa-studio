@@ -173,7 +173,7 @@ export function SkillDetail({
               </Text>
             }
             value={skill.category}
-            valueStyle={{ fontSize: 14 }}
+            styles={{ content: { fontSize: 14 } }}
           />
         </Card>
         <Card
@@ -189,7 +189,7 @@ export function SkillDetail({
             }
             value={(skill.timeout ?? 30000) / 1000}
             suffix="s"
-            valueStyle={{ fontSize: 14 }}
+            styles={{ content: { fontSize: 14 } }}
           />
         </Card>
         <Card
@@ -206,7 +206,7 @@ export function SkillDetail({
             value={
               Array.isArray(skill.parameters) ? skill.parameters.length : 0
             }
-            valueStyle={{ fontSize: 14 }}
+            styles={{ content: { fontSize: 14 } }}
           />
         </Card>
         <Card
@@ -221,7 +221,7 @@ export function SkillDetail({
               </Text>
             }
             value={new Date(skill.createdAt).toLocaleDateString("zh-CN")}
-            valueStyle={{ fontSize: 14 }}
+            styles={{ content: { fontSize: 14 } }}
           />
         </Card>
       </div>

@@ -111,7 +111,7 @@ export default function OctosMonitorTab({ apiClient }: Props) {
             }
             size="small"
           >
-            <Space direction="vertical" size={16} className="w-full">
+            <Space orientation="vertical" size={16} className="w-full">
               <div>
                 <Text type="secondary">自动重启异常退出的 Profile</Text>
               </div>
@@ -146,7 +146,7 @@ export default function OctosMonitorTab({ apiClient }: Props) {
             }
             size="small"
           >
-            <Space direction="vertical" size={16} className="w-full">
+            <Space orientation="vertical" size={16} className="w-full">
               <div>
                 <Text type="secondary">在检测到问题时发送通知</Text>
               </div>
@@ -177,7 +177,7 @@ export default function OctosMonitorTab({ apiClient }: Props) {
         <Title level={5} className="mb-2">
           关于监控功能
         </Title>
-        <Space direction="vertical" size={8}>
+        <Space orientation="vertical" size={8}>
           <Text type="secondary" className="text-xs">
             • <strong>看门狗</strong>：检测到 Profile 进程异常退出时，自动重新启动
           </Text>

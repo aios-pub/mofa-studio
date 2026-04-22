@@ -182,7 +182,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
                   }`}
                   onClick={() => handleChannelToggle(channel.id)}
                 >
-                  <Space direction="vertical" size={4} className="w-full">
+                  <Space orientation="vertical" size={4} className="w-full">
                     <div className="flex items-start justify-between">
                       <Space>
                         <span className="text-2xl">{typeConfig?.icon}</span>

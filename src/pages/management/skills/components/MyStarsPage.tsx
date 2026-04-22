@@ -85,7 +85,7 @@ export function MyStarsPage() {
       title: '技能',
       key: 'skill',
       render: (_: unknown, record: HubSkill) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <div className="font-medium">{record.display_name || record.slug}</div>
           <div className="text-xs text-gray-500">
             {record.namespace_slug}/{record.slug}

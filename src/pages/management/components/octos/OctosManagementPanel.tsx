@@ -660,7 +660,7 @@ export default function OctosManagementPanel({ agent }: Props) {
         ]}
       >
         {purgeReport && (
-          <Space direction="vertical" size={12} className="w-full">
+          <Space orientation="vertical" size={12} className="w-full">
             <div>
               <Text type="secondary">Profile ID:</Text>
               <div className="mt-1">

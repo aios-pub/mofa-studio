@@ -248,7 +248,7 @@ export function GovernanceInbox() {
                   </Space>
                 }
                 description={
-                  <Space direction="vertical" size={0}>
+                  <Space orientation="vertical" size={0}>
                     {item.subtitle && (
                       <Text type="secondary" className="text-sm">
                         {item.subtitle}

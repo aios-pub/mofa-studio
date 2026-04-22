@@ -117,7 +117,7 @@ export function MySkillsPage() {
       title: "技能",
       key: "skill",
       render: (_: unknown, record: HubSkill) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <div className="font-medium">{record.display_name || record.slug}</div>
           <div className="text-xs text-gray-500">
             {record.namespace_slug}/{record.slug}
@@ -301,7 +301,7 @@ export function MySkillsPage() {
             <Statistic
               title="活跃"
               value={stats.active}
-              valueStyle={{ color: "#3f8600" }}
+              styles={{ content: { color: "#3f8600" } }}
             />
           </Card>
         </Col>
@@ -315,7 +315,7 @@ export function MySkillsPage() {
             <Statistic
               title="总 Stars"
               value={stats.totalStars}
-              valueStyle={{ color: "#cf1322" }}
+              styles={{ content: { color: "#cf1322" } }}
             />
           </Card>
         </Col>

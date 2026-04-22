@@ -192,7 +192,7 @@ export default function EvaluationPage() {
       key: 'evaluator',
       width: 150,
       render: (evaluator: string, record: EvaluationRecord) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <Tag color={evaluator === 'auto' ? 'blue' : 'purple'}>
             {evaluator === 'auto' ? t('evaluation.auto', '自动') : t('evaluation.manual', '人工')}
           </Tag>
@@ -261,7 +261,7 @@ export default function EvaluationPage() {
                     title={metric?.name || score.metricId}
                     value={score.value}
                     precision={1}
-                    valueStyle={{ color: getScoreColor(score.value), fontSize: '24px' }}
+                    styles={{ content: { color: getScoreColor(score.value), fontSize: '24px' } }}
                     prefix={<StarOutlined />}
                   />
                   {score.reason && (
@@ -335,9 +335,11 @@ export default function EvaluationPage() {
                 value={summary.avgScore}
                 precision={1}
                 suffix="/ 10"
-                valueStyle={{
-                  color: getScoreColor(summary.avgScore),
-                  fontSize: '28px',
+                styles={{
+                  content: {
+                    color: getScoreColor(summary.avgScore),
+                    fontSize: '28px',
+                  },
                 }}
                 prefix={<StarOutlined />}
               />

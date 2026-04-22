@@ -298,7 +298,7 @@ export default function TracingPage() {
               <Statistic
                 title={t('tracing.totalTraces', '总追踪数')}
                 value={stats.total_traces}
-                valueStyle={{ color: 'var(--color-text-primary)' }}
+                styles={{ content: { color: 'var(--color-text-primary)' } }}
               />
             </Card>
           </Col>
@@ -308,7 +308,7 @@ export default function TracingPage() {
                 title={t('tracing.errorRate', '错误率')}
                 value={stats.error_rate.toFixed(1)}
                 suffix="%"
-                valueStyle={{ color: '#ef4444' }}
+                styles={{ content: { color: '#ef4444' } }}
               />
             </Card>
           </Col>
@@ -317,7 +317,7 @@ export default function TracingPage() {
               <Statistic
                 title={t('tracing.avgDuration', '平均耗时')}
                 value={formatDuration(stats.avg_duration)}
-                valueStyle={{ color: 'var(--color-text-primary)' }}
+                styles={{ content: { color: 'var(--color-text-primary)' } }}
               />
             </Card>
           </Col>
@@ -326,7 +326,7 @@ export default function TracingPage() {
               <Statistic
                 title={t('tracing.p95Duration', 'P95 耗时')}
                 value={formatDuration(stats.p95_duration)}
-                valueStyle={{ color: 'var(--color-text-primary)' }}
+                styles={{ content: { color: 'var(--color-text-primary)' } }}
               />
             </Card>
           </Col>

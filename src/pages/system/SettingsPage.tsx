@@ -138,7 +138,7 @@ function GeneralSettings() {
           onChange={(e) => handleLanguageChange(e.target.value)}
           style={{ width: "100%" }}
         >
-          <Space direction="vertical" style={{ width: "100%" }} size="small">
+          <Space orientation="vertical" style={{ width: "100%" }} size="small">
             {supportedLanguages.map((lang) => (
               <Radio
                 key={lang.code}
@@ -169,7 +169,7 @@ function GeneralSettings() {
         }
         extra={<Text type="secondary">Configure notification preferences</Text>}
       >
-        <Space direction="vertical" style={{ width: "100%" }} size="middle">
+        <Space orientation="vertical" style={{ width: "100%" }} size="middle">
           <NotificationToggle
             label="Desktop notifications"
             description="Show desktop notifications for important events"
@@ -250,7 +250,7 @@ function AppearanceSettings() {
                   value={option.id}
                   style={{ height: "auto", padding: "16px 24px" }}
                 >
-                  <Space direction="vertical" align="center" size={4}>
+                  <Space orientation="vertical" align="center" size={4}>
                     <Icon style={{ fontSize: 24 }} />
                     <Text strong>{option.label}</Text>
                     <Text type="secondary" style={{ fontSize: 12 }}>
@@ -276,7 +276,7 @@ function ShortcutsSettings() {
     <div className="space-y-6">
       <Title level={4}>{t("settings.keyboardShortcuts")}</Title>
 
-      <Space direction="vertical" style={{ width: "100%" }} size="middle">
+      <Space orientation="vertical" style={{ width: "100%" }} size="middle">
         {shortcuts.map((category) => (
           <Card
             key={category.category}
@@ -389,7 +389,7 @@ function DataSettings() {
     <div className="space-y-6">
       <Title level={4}>{t("settings.data")}</Title>
 
-      <Space direction="vertical" style={{ width: "100%" }} size="middle">
+      <Space orientation="vertical" style={{ width: "100%" }} size="middle">
         {/* 备份数据 */}
         <Card
           title={
@@ -406,7 +406,7 @@ function DataSettings() {
             <Text type="secondary">Export all your data to a JSON file</Text>
           }
         >
-          <Space direction="vertical" style={{ width: "100%" }}>
+          <Space orientation="vertical" style={{ width: "100%" }}>
             <Paragraph type="secondary">
               Export all your conversations, agents, prompts, and settings to a
               JSON file for backup.
@@ -436,7 +436,7 @@ function DataSettings() {
           }
           extra={<Text type="secondary">Import data from a backup file</Text>}
         >
-          <Space direction="vertical" style={{ width: "100%" }}>
+          <Space orientation="vertical" style={{ width: "100%" }}>
             <Paragraph type="secondary">
               Import your data from a previously exported backup file.
             </Paragraph>
@@ -483,7 +483,7 @@ function AboutSettings() {
 
           <Divider />
 
-          <Space direction="vertical" size="large" style={{ width: "100%" }}>
+          <Space orientation="vertical" size="large" style={{ width: "100%" }}>
             <Tag color="blue" style={{ padding: "4px 12px", fontSize: 14 }}>
               {t("settings.version")}: 0.1.0
             </Tag>

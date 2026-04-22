@@ -515,7 +515,7 @@ function TestSetDetail({
               </Text>
             }
             value={testSet.category || "未分类"}
-            valueStyle={{ fontSize: 14 }}
+            styles={{ content: { fontSize: 14 } }}
           />
         </Card>
         <Card
@@ -530,7 +530,7 @@ function TestSetDetail({
               </Text>
             }
             value={cases.length}
-            valueStyle={{ fontSize: 14 }}
+            styles={{ content: { fontSize: 14 } }}
           />
         </Card>
         <Card
@@ -551,7 +551,7 @@ function TestSetDetail({
                   ? "已完成"
                   : testSet.status
             }
-            valueStyle={{ fontSize: 14 }}
+            styles={{ content: { fontSize: 14 } }}
           />
         </Card>
         <Card
@@ -566,7 +566,7 @@ function TestSetDetail({
               </Text>
             }
             value={reports.length}
-            valueStyle={{ fontSize: 14 }}
+            styles={{ content: { fontSize: 14 } }}
           />
         </Card>
       </div>

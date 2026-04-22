@@ -168,7 +168,7 @@ export default function OctosSubAccountsTab({ profileId, apiClient }: Props) {
                   </Space>
                 }
               >
-                <Space direction="vertical" size={4} className="w-full">
+                <Space orientation="vertical" size={4} className="w-full">
                   {sub.public_subdomain && (
                     <div>
                       <Text type="secondary" className="text-xs">

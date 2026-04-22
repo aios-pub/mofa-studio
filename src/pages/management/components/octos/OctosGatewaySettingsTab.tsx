@@ -182,10 +182,10 @@ export default function OctosGatewaySettingsTab({ config, onChange }: Props) {
 
                 {/* 已有 Hooks 列表 */}
                 {config.hooks && config.hooks.length > 0 && (
-                  <Space direction="vertical" size={8} className="w-full">
+                  <Space orientation="vertical" size={8} className="w-full">
                     {config.hooks.map((hook, index) => (
                       <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                        <Space direction="vertical" size={0}>
+                        <Space orientation="vertical" size={0}>
                           <Text strong>{hook.event}</Text>
                           <Text type="secondary" className="text-xs">
                             命令: {hook.command.join(" ")}

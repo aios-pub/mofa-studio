@@ -120,7 +120,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
       key: "latency",
       width: 120,
       render: (_: unknown, r: OctosSharedProviderMetrics) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <Text type="secondary" className="text-xs">
             EMA: {r.latency_ema_ms}ms
           </Text>
@@ -152,7 +152,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
       key: "counts",
       width: 100,
       render: (_: unknown, r: OctosSharedProviderMetrics) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <Text className="text-xs">
             <CheckCircleOutlined className="text-green-500 mr-1" />
             {r.success_count}
@@ -200,7 +200,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
               title="总错误数"
               value={totalErrors}
               prefix={<CloseCircleOutlined />}
-              valueStyle={{ color: totalErrors > 0 ? "#ff4d4f" : undefined }}
+              styles={{ content: { color: totalErrors > 0 ? "#ff4d4f" : undefined } }}
             />
           </Card>
         </Col>
@@ -212,8 +212,10 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
               precision={1}
               suffix="%"
               prefix={<CheckCircleOutlined />}
-              valueStyle={{
-                color: avgSuccessRate >= 0.95 ? "#52c41a" : avgSuccessRate >= 0.8 ? "#faad14" : "#ff4d4f",
+              styles={{
+                content: {
+                  color: avgSuccessRate >= 0.95 ? "#52c41a" : avgSuccessRate >= 0.8 ? "#faad14" : "#ff4d4f",
+                },
               }}
             />
           </Card>

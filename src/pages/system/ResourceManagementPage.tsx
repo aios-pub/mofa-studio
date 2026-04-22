@@ -596,7 +596,7 @@ export default function ResourceManagementPage() {
                         : `${quota.targetType === 'user' ? '用户' : quota.targetType === 'department' ? '部门' : 'Agent'}: ${quota.targetName}`}
                     </p>
 
-                    <Space direction="vertical" className="w-full" size="middle">
+                    <Space orientation="vertical" className="w-full" size="middle">
                       {/* Tokens */}
                       <div>
                         <div className="flex justify-between text-xs mb-1">
@@ -718,7 +718,7 @@ export default function ResourceManagementPage() {
           <Row gutter={[16, 16]}>
             <Col xs={24} lg={12}>
               <Card title="Token 消耗分布">
-                <Space direction="vertical" className="w-full">
+                <Space orientation="vertical" className="w-full">
                   {Object.entries(usageStats.tokensByProvider ?? {}).map(([providerId, tokens]) => {
                     const percentage = (tokens / usageStats.totalTokens) * 100 || 0;
                     return (
@@ -743,7 +743,7 @@ export default function ResourceManagementPage() {
             </Col>
             <Col xs={24} lg={12}>
               <Card title="费用分布">
-                <Space direction="vertical" className="w-full">
+                <Space orientation="vertical" className="w-full">
                   {Object.entries(usageStats.costByProvider ?? {}).map(([providerId, cost]) => {
                     const percentage = (cost / usageStats.totalCost) * 100 || 0;
                     return (

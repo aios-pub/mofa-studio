@@ -106,7 +106,7 @@ export function PromotionQueue() {
       key: 'source',
       width: 200,
       render: (_: unknown, record: PromotionTask) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <div className="text-xs text-gray-500">
             {record.source_namespace_slug}
           </div>
@@ -122,7 +122,7 @@ export function PromotionQueue() {
       key: 'target',
       width: 150,
       render: (_: unknown, record: PromotionTask) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <div>
             <SwapOutlined className="mr-1" />
             {record.target_namespace_slug}

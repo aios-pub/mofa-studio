@@ -73,20 +73,39 @@ export interface OctosProfileConfig {
   // 1. 新模式：复用 provider 管理 (fallback_configs)
   // 2. 旧模式：直接配置 (fallback_models)
   fallback_configs?: OctosFallbackConfig[];
-  fallback_models?: OctosFallbackModel[];
+  fallback_models?: OctosFallbackModel[] | Record<string, unknown>[];
 
   // 渠道配置 - 支持两种模式：
   // 1. 新模式：复用渠道管理 (channel_ids)
   // 2. 旧模式：直接配置 (channels)
   channel_ids?: string[];           // Channel ID 列表 (复用渠道管理)
-  channels: OctosChannelCredentials[]; // 旧模式：渠道配置列表
+  channels?: OctosChannelCredentials[] | Record<string, unknown>[];
 
-  gateway: OctosGatewaySettings;
-  email?: OctosEmailSettings | null;
-  env_vars: Record<string, string>;
+  gateway?: OctosGatewaySettings;
+  email?: OctosEmailSettings | null | Record<string, unknown>;
+  env_vars?: Record<string, string>;
   admin_mode?: boolean;
   hooks?: HookConfig[];
   sandbox?: SandboxConfig;
+
+  // 允许额外的未知字段（对应 Rust 的 flatten extra）
+  [key: string]: unknown;
+}
+
+/** Profile 更新请求参数 (PUT /api/admin/profiles/:id) */
+export interface OctosUpdateProfileRequest {
+  /** Profile 名称 */
+  name?: string;
+  /** 公开子域名，设置为 null 可清除 */
+  public_subdomain?: string | null;
+  /** 是否启用 */
+  enabled?: boolean;
+  /** 数据目录，设置为 null 可清除 */
+  data_dir?: string | null;
+  /** Profile 配置 */
+  config?: OctosProfileConfig;
+  /** OTP 登录邮箱 */
+  email?: string;
 }
 
 /** Profile 响应 */

@@ -40,6 +40,7 @@ import {
 import type { Agent } from "@/types";
 import type { OctosProfileResponse, OctosProfileConfig } from "@/types/octos";
 import { createOctosApiClient } from "@/services";
+import { useUserInfo } from "@/stores/useUserStore";
 
 const { Text } = Typography;
 import { isMockEnabled, octosMockApi } from "@/services";
@@ -74,6 +75,7 @@ export default function OctosManagementPanel({ agent }: Props) {
   const [purgeModalOpen, setPurgeModalOpen] = useState(false);
 
   const { message } = App.useApp();
+  const { email: userEmail } = useUserInfo();
 
   const api = useMemo(() => {
     if (isMockEnabled()) return null;
@@ -140,7 +142,12 @@ export default function OctosManagementPanel({ agent }: Props) {
       // 将前端配置转换为后端格式
       const backendConfig = await prepareConfigForSave(selectedProfile.config);
       const updated = await callApi((c) =>
-        c.updateProfile(selectedProfile.id, { config: backendConfig }),
+        c.updateProfile(selectedProfile.id, {
+          id: selectedProfile.id,
+          name: selectedProfile.name,
+          config: backendConfig,
+          email: userEmail, // 使用当前登录用户的邮箱
+        }),
       );
       // 将返回的配置转换回前端格式
       const frontendUpdated = {
@@ -156,7 +163,7 @@ export default function OctosManagementPanel({ agent }: Props) {
     } finally {
       setSaving(false);
     }
-  }, [selectedProfile, callApi]);
+  }, [selectedProfile, callApi, userEmail]);
 
   const handleStartStop = useCallback(
     async (profileId: string, action: "start" | "stop" | "restart") => {

@@ -16,6 +16,7 @@ import type {
   OctosPurgeReport,
   OctosBridgeQrInfo,
   OctosOverviewResponse,
+  OctosUpdateProfileRequest,
 } from "@/types/octos";
 import type { Agent } from "@/types";
 
@@ -74,13 +75,7 @@ export class OctosApiClient {
 
   async updateProfile(
     id: string,
-    params: {
-      name?: string;
-      public_subdomain?: string | null;
-      enabled?: boolean;
-      data_dir?: string | null;
-      config?: OctosProfileConfig;
-    },
+    params: OctosUpdateProfileRequest,
   ): Promise<OctosProfileResponse> {
     const { data } = await this.http.put(`/api/admin/profiles/${id}`, params);
     return data;

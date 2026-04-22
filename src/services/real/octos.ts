@@ -22,8 +22,13 @@ import type { Agent } from "@/types";
 
 export class OctosApiClient {
   private http: AxiosInstance;
+  private originalBaseUrl: string;
+  private authToken?: string;
 
   constructor(baseUrl: string, authToken?: string) {
+    this.originalBaseUrl = baseUrl;
+    this.authToken = authToken;
+
     // 开发环境使用代理避免 CORS
     const isDev = import.meta.env.DEV;
     const shouldUseProxy = isDev && baseUrl && !baseUrl.startsWith("/");
@@ -242,16 +247,28 @@ export class OctosApiClient {
   // ==================== SSE Log Stream URL ====================
 
   getLogStreamUrl(profileId: string): string {
-    const claw =
-      (this.http.defaults.headers?.Authorization as string)?.toString() || "";
-    const token = claw.replace("Bearer ", "");
-    const baseURL = this.http.defaults.baseURL || "";
+    const isDev = import.meta.env.DEV;
+    const shouldUseProxy = isDev && this.originalBaseUrl && !this.originalBaseUrl.startsWith("/");
+
     const path = `/api/admin/profiles/${profileId}/logs`;
-    // 移除 baseURL 末尾的斜杠和 path 开头的斜杠，然后正确拼接
+
+    // 构建查询参数
+    const params = new URLSearchParams();
+    if (this.authToken) {
+      params.append("token", this.authToken);
+    }
+    // 开发环境使用代理时，需要将目标地址作为参数传递
+    if (shouldUseProxy) {
+      params.append("target", this.originalBaseUrl);
+    }
+
+    const queryString = params.toString();
+    const fullPath = queryString ? `${path}?${queryString}` : path;
+
+    // 开发环境使用代理，否则直接使用原始 URL
+    const baseURL = shouldUseProxy ? "/octos-proxy" : this.originalBaseUrl;
     const cleanBaseURL = baseURL.endsWith("/") ? baseURL.slice(0, -1) : baseURL;
-    const fullPath = token
-      ? `${path}?token=${encodeURIComponent(token)}`
-      : path;
+
     return cleanBaseURL + fullPath;
   }
 

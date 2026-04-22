@@ -15,21 +15,30 @@ function dynamicProxyPlugin() {
     name: 'dynamic-octos-proxy',
     configureServer(server: any) {
       server.middlewares.use('/octos-proxy', (req: any, res: any, next: any) => {
-        // 从请求头获取目标地址
-        const targetUrl = req.headers['x-octos-target'] as string;
+        // 从请求头获取目标地址（普通请求）
+        let targetUrl = req.headers['x-octos-target'] as string;
+
+        // 如果没有请求头，尝试从 URL 参数获取（SSE 连接）
+        if (!targetUrl && req.url) {
+          const urlObj = new URL(req.url, `http://${req.headers.host}`);
+          targetUrl = urlObj.searchParams.get('target') || undefined;
+        }
 
         if (!targetUrl) {
           res.statusCode = 400;
-          res.end('Missing X-Octos-Target header');
+          res.end('Missing X-Octos-Target header or target parameter');
           return;
         }
 
         try {
           const target = new URL(targetUrl);
+          // 获取不带查询参数的路径
+          const reqPath = req.url ? req.url.split('?')[0] : '';
+
           const options = {
             hostname: target.hostname,
             port: target.port || (target.protocol === 'https:' ? 443 : 80),
-            path: req.url,
+            path: reqPath,
             method: req.method,
             headers: {
               ...req.headers,

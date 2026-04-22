@@ -4,7 +4,7 @@
  * 处理渠道配置（使用 channel_ids）与后端 channels 格式之间的转换
  */
 
-import type { OctosProfileConfig, LlmProfileConfig, LlmFallbackConfig, OctosFallbackModel, OctosChannelCredentials } from "@/types/octos";
+import type { OctosProfileConfig, LlmModelSelectionConfig, OctosChannelCredentials } from "@/types/octos";
 import { providerApi, channelApi } from "@/services";
 
 /**
@@ -36,24 +36,23 @@ function getApiKeyEnv(providerType: string): string {
 }
 
 /**
- * 获取 LLM 配置，优先从 llm 对象获取，回退到旧结构
+ * 获取主模型配置，优先从 llm.primary.route.provider_id 获取
  */
-function getLlmConfig(config: OctosProfileConfig): LlmProfileConfig {
-  if (config.llm) {
-    return config.llm;
+function getPrimaryProviderId(config: OctosProfileConfig): string | null {
+  if (config.llm?.primary?.route?.provider_id) {
+    return config.llm.primary.route.provider_id;
   }
-  // 从旧结构构建 LlmConfig
-  return {
-    provider_id: config.provider_id,
-    model_id: config.model_id,
-    provider: config.provider,
-    model: config.model,
-    base_url: config.base_url,
-    api_key_env: config.api_key_env,
-    api_type: config.api_type,
-    fallback_configs: config.fallback_configs,
-    fallback_models: config.fallback_models,
-  };
+  return config.provider_id || null;
+}
+
+/**
+ * 获取主模型 ID，优先从 llm.primary.model_id 获取
+ */
+function getPrimaryModelId(config: OctosProfileConfig): string | null {
+  if (config.llm?.primary?.model_id) {
+    return config.llm.primary.model_id;
+  }
+  return config.model_id || null;
 }
 
 /**
@@ -164,80 +163,66 @@ function channelToOctosFormat(channel: any): OctosChannelCredentials {
 
 /**
  * 将前端配置转换为后端格式
- * - provider_id + model_id → provider + model + base_url + api_key_env
- * - fallback_configs → fallback_models
+ * - 新的 llm 结构直接发送给后端（无需转换）
+ * - 如果有旧的 provider_id/model_id，自动迁移到 llm.primary 结构
  * - channel_ids → channels (带完整凭据)
- * - llm 对象中的配置也会被转换
  */
 export async function toBackendFormat(frontendConfig: OctosProfileConfig): Promise<OctosProfileConfig> {
   const backendConfig: OctosProfileConfig = { ...frontendConfig };
-  const llmConfig = getLlmConfig(frontendConfig);
 
-  // 处理 llm 对象中的配置（新版结构）
-  if (llmConfig.provider_id) {
-    try {
-      const provider = await providerApi.getById(llmConfig.provider_id);
-      const model = provider.models.find((m: any) => m.id === llmConfig.model_id);
-
-      // 在 llm 对象中存储后端格式
-      backendConfig.llm = {
-        ...llmConfig,
-        provider: provider.type,
-        model: model?.name || null,
-        base_url: provider.baseUrl,
-        api_key_env: getApiKeyEnv(provider.type),
-      };
-    } catch (error) {
-      console.error("Failed to resolve provider for backend format:", error);
-      // 如果无法解析，保留原值
-      backendConfig.llm = llmConfig;
-    }
-  } else if (frontendConfig.provider_id) {
-    // 向后兼容：处理旧结构中的 provider_id
-    try {
-      const provider = await providerApi.getById(frontendConfig.provider_id);
-      const model = provider.models.find((m: any) => m.id === frontendConfig.model_id);
-
-      backendConfig.provider = provider.type;
-      backendConfig.model = model?.name || null;
-      backendConfig.base_url = provider.baseUrl;
-      backendConfig.api_key_env = getApiKeyEnv(provider.type);
-
-      // 保留新版配置用于回显
-      backendConfig.provider_id = frontendConfig.provider_id;
-      backendConfig.model_id = frontendConfig.model_id;
-    } catch (error) {
-      console.error("Failed to resolve provider for backend format:", error);
-    }
+  // 如果已经有新的 llm 结构，直接使用
+  if (frontendConfig.llm?.primary) {
+    // 新版结构直接发送给后端
+    return backendConfig;
   }
 
-  // 转换回退配置
-  const fallbackConfigs = llmConfig.fallback_configs || frontendConfig.fallback_configs;
-  if (fallbackConfigs && fallbackConfigs.length > 0) {
-    const fallbackModels: OctosFallbackModel[] = [];
-    for (const fb of fallbackConfigs) {
-      if (fb.provider_id) {
-        try {
-          const provider = await providerApi.getById(fb.provider_id);
-          const model = provider.models.find((m: any) => m.id === fb.model_id);
-          fallbackModels.push({
-            provider: provider.type,
-            model: model?.name || null,
+  // 尝试从旧结构迁移到新结构
+  const providerId = getPrimaryProviderId(frontendConfig);
+  const modelId = getPrimaryModelId(frontendConfig);
+
+  if (providerId && modelId) {
+    try {
+      const provider = await providerApi.getById(providerId);
+
+      // 构建新的 llm 结构
+      backendConfig.llm = {
+        primary: {
+          family_id: provider.type,
+          model_id: modelId,
+          route: {
+            provider_id: providerId,
             base_url: provider.baseUrl,
             api_key_env: getApiKeyEnv(provider.type),
-            api_type: provider.type,
-          });
-        } catch (error) {
-          console.error(`Failed to resolve fallback provider ${fb.provider_id}:`, error);
+          },
+        },
+        fallbacks: [],
+      };
+
+      // 处理旧格式的 fallback_configs
+      if (frontendConfig.fallback_configs && frontendConfig.fallback_configs.length > 0) {
+        const fallbacks: LlmModelSelectionConfig[] = [];
+        for (const fb of frontendConfig.fallback_configs) {
+          if (fb.provider_id) {
+            try {
+              const fbProvider = await providerApi.getById(fb.provider_id);
+              fallbacks.push({
+                family_id: fbProvider.type,
+                model_id: fb.model_id || undefined,
+                route: {
+                  provider_id: fb.provider_id,
+                  base_url: fbProvider.baseUrl,
+                  api_key_env: getApiKeyEnv(fbProvider.type),
+                },
+              });
+            } catch (error) {
+              console.error(`Failed to resolve fallback provider ${fb.provider_id}:`, error);
+            }
+          }
         }
+        backendConfig.llm.fallbacks = fallbacks;
       }
-    }
-    // 在 llm 对象中存储
-    if (backendConfig.llm) {
-      backendConfig.llm.fallback_models = fallbackModels;
-    } else {
-      backendConfig.fallback_models = fallbackModels;
-      backendConfig.fallback_configs = fallbackConfigs;
+    } catch (error) {
+      console.error("Failed to resolve provider for backend format:", error);
     }
   }
 
@@ -262,144 +247,101 @@ export async function toBackendFormat(frontendConfig: OctosProfileConfig): Promi
 
 /**
  * 将后端配置转换为前端格式
- * - 尝试将 provider + model 匹配到 provider_id + model_id
- * - 如果无法匹配，保留旧版配置
- * - 处理 llm 对象中的配置
+ * - 新的 llm 结构直接使用
+ * - 如果是旧结构，尝试迁移到新结构
+ * - channels → channel_ids
  */
 export async function toFrontendFormat(backendConfig: OctosProfileConfig): Promise<OctosProfileConfig> {
   const frontendConfig: OctosProfileConfig = { ...backendConfig };
-  const llmConfig = backendConfig.llm;
 
-  // 处理 llm 对象中的配置（新版结构）
-  if (llmConfig) {
-    // 如果 llm 对象中已经有新版配置，直接返回
-    if (llmConfig.provider_id && llmConfig.model_id) {
-      return frontendConfig;
-    }
+  // 如果已经有新的 llm 结构，直接使用
+  if (backendConfig.llm?.primary) {
+    return frontendConfig;
+  }
 
-    // 尝试将 llm 中的旧版配置匹配到新版
-    if (llmConfig.provider && llmConfig.model) {
-      try {
-        const providers = await providerApi.getAll();
-        // 查找匹配的 provider（通过 type 和 baseUrl）
-        const matchedProvider = providers.find(
-          (p: any) => p.type === llmConfig.provider && p.baseUrl === llmConfig.base_url
+  // 尝试从旧结构迁移到新结构
+  const providerId = backendConfig.provider_id;
+  const modelId = backendConfig.model_id;
+
+  if (providerId && modelId) {
+    // 已经有新版配置，直接返回
+    return frontendConfig;
+  }
+
+  // 尝试将旧版配置（provider + model）匹配到新版
+  if (backendConfig.provider && backendConfig.model) {
+    try {
+      const providers = await providerApi.getAll();
+      // 查找匹配的 provider（通过 type 和 baseUrl）
+      const matchedProvider = providers.find(
+        (p: any) => p.type === backendConfig.provider && p.baseUrl === backendConfig.base_url
+      );
+
+      if (matchedProvider) {
+        // 查找匹配的模型（通过 name）
+        const matchedModel = matchedProvider.models.find(
+          (m: any) => m.name === backendConfig.model && m.enabled
         );
 
-        if (matchedProvider) {
-          // 查找匹配的模型（通过 name）
-          const matchedModel = matchedProvider.models.find(
-            (m: any) => m.name === llmConfig.model && m.enabled
-          );
-
-          if (matchedModel) {
-            frontendConfig.llm = {
-              ...llmConfig,
-              provider_id: matchedProvider.id,
+        if (matchedModel) {
+          // 构建新的 llm 结构
+          frontendConfig.llm = {
+            primary: {
+              family_id: matchedProvider.type,
               model_id: matchedModel.id,
-            };
-          }
+              route: {
+                provider_id: matchedProvider.id,
+                base_url: matchedProvider.baseUrl,
+                api_key_env: getApiKeyEnv(matchedProvider.type),
+              },
+            },
+            fallbacks: [],
+          };
         }
-      } catch (error) {
-        console.error("Failed to match backend llm config to frontend format:", error);
       }
+    } catch (error) {
+      console.error("Failed to match backend config to frontend format:", error);
     }
+  }
 
-    // 尝试转换 llm 中的回退模型
-    if (llmConfig.fallback_models && llmConfig.fallback_models.length > 0) {
-      const fallbackConfigs: LlmFallbackConfig[] = [];
-      try {
-        const providers = await providerApi.getAll();
+  // 尝试转换回退模型
+  if (backendConfig.fallback_models && backendConfig.fallback_models.length > 0) {
+    const fallbacks: LlmModelSelectionConfig[] = [];
+    try {
+      const providers = await providerApi.getAll();
 
-        for (const fb of llmConfig.fallback_models) {
-          // 查找匹配的 provider
-          const matchedProvider = providers.find(
-            (p: any) => p.type === fb.provider && p.baseUrl === fb.base_url
-          );
-
-          if (matchedProvider) {
-            // 查找匹配的模型
-            const matchedModel = matchedProvider.models.find(
-              (m: any) => m.name === fb.model && m.enabled
-            );
-
-            fallbackConfigs.push({
-              provider_id: matchedProvider.id,
-              model_id: matchedModel?.id || null,
-            });
-          }
-        }
-
-        if (fallbackConfigs.length > 0 && frontendConfig.llm) {
-          frontendConfig.llm.fallback_configs = fallbackConfigs;
-        }
-      } catch (error) {
-        console.error("Failed to match llm fallback configs:", error);
-      }
-    }
-  } else {
-    // 向后兼容：处理旧结构中的配置
-    // 如果已经有新版配置，直接返回
-    if (backendConfig.provider_id && backendConfig.model_id) {
-      return frontendConfig;
-    }
-
-    // 尝试将旧版配置匹配到新版
-    if (backendConfig.provider && backendConfig.model) {
-      try {
-        const providers = await providerApi.getAll();
-        // 查找匹配的 provider（通过 type 和 baseUrl）
+      for (const fb of backendConfig.fallback_models) {
+        // 查找匹配的 provider
         const matchedProvider = providers.find(
-          (p: any) => p.type === backendConfig.provider && p.baseUrl === backendConfig.base_url
+          (p: any) => p.type === fb.provider && p.baseUrl === fb.base_url
         );
 
         if (matchedProvider) {
-          // 查找匹配的模型（通过 name）
+          // 查找匹配的模型
           const matchedModel = matchedProvider.models.find(
-            (m: any) => m.name === backendConfig.model && m.enabled
+            (m: any) => m.name === fb.model && m.enabled
           );
 
-          if (matchedModel) {
-            frontendConfig.provider_id = matchedProvider.id;
-            frontendConfig.model_id = matchedModel.id;
-          }
-        }
-      } catch (error) {
-        console.error("Failed to match backend config to frontend format:", error);
-      }
-    }
-
-    // 尝试转换回退模型
-    if (backendConfig.fallback_models && backendConfig.fallback_models.length > 0) {
-      const fallbackConfigs: LlmFallbackConfig[] = [];
-      try {
-        const providers = await providerApi.getAll();
-
-        for (const fb of backendConfig.fallback_models) {
-          // 查找匹配的 provider
-          const matchedProvider = providers.find(
-            (p: any) => p.type === fb.provider && p.baseUrl === fb.base_url
-          );
-
-          if (matchedProvider) {
-            // 查找匹配的模型
-            const matchedModel = matchedProvider.models.find(
-              (m: any) => m.name === fb.model && m.enabled
-            );
-
-            fallbackConfigs.push({
+          fallbacks.push({
+            family_id: matchedProvider.type,
+            model_id: matchedModel?.id,
+            route: {
               provider_id: matchedProvider.id,
-              model_id: matchedModel?.id || null,
-            });
-          }
+              base_url: matchedProvider.baseUrl,
+              api_key_env: getApiKeyEnv(matchedProvider.type),
+            },
+          });
         }
-
-        if (fallbackConfigs.length > 0) {
-          frontendConfig.fallback_configs = fallbackConfigs;
-        }
-      } catch (error) {
-        console.error("Failed to match fallback configs:", error);
       }
+
+      if (fallbacks.length > 0) {
+        frontendConfig.llm = {
+          ...frontendConfig.llm,
+          fallbacks,
+        };
+      }
+    } catch (error) {
+      console.error("Failed to match fallback configs:", error);
     }
   }
 

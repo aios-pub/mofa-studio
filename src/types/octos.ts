@@ -27,8 +27,46 @@ export interface OctosChannelCredentials {
   [key: string]: string | number;
 }
 
-/** LLM Profile 配置 */
+// ==================== LLM 配置 ====================
+
+/** LLM 路由配置 */
+export interface LlmRouteConfig {
+  /** Provider ID (复用 provider 管理) */
+  provider_id?: string;
+  /** Base URL */
+  base_url?: string;
+  /** API Key 环境变量名 */
+  api_key_env?: string;
+}
+
+/** LLM 模型选择配置 */
+export interface LlmModelSelectionConfig {
+  /** 模型家族/提供者家族 (如 "moonshot", "deepseek") */
+  family_id?: string | null;
+  /** 具体模型标识符 (如 "kimi-k2.5") */
+  model_id?: string | null;
+  /** 选择的提供者路由 */
+  route?: LlmRouteConfig | null;
+  /** 可选的模型行为提示 */
+  model_hints?: Record<string, unknown> | null;
+  /** 输出价格 (每百万 token USD) */
+  cost_per_m?: number | null;
+  /** 是否为强大的模型 (用于大型工具密集型运行) */
+  strong?: boolean | null;
+}
+
+/** LLM Profile 配置 (新版) */
 export interface LlmProfileConfig {
+  /** 主模型配置 */
+  primary?: LlmModelSelectionConfig | null;
+  /** 回退模型配置列表 */
+  fallbacks?: LlmModelSelectionConfig[];
+}
+
+// ==================== 旧版 LLM 配置 (向后兼容) ====================
+
+/** @deprecated 旧版 LLM 配置，使用 LlmProfileConfig 代替 */
+export interface LegacyLlmConfig {
   /** Provider ID (复用 provider 管理) */
   provider_id?: string | null;
   /** 模型 ID (从 provider 的模型列表中选择) */
@@ -59,7 +97,7 @@ export interface LlmFallbackModel {
   api_type?: string | null;
 }
 
-/** 回退配置 - 新模式 (复用 Provider 管理) */
+/** 回退配置 - 旧模式 (复用 Provider 管理) */
 export interface LlmFallbackConfig {
   provider_id: string | null;
   model_id: string | null;

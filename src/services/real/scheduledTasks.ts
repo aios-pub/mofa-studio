@@ -1,27 +1,10 @@
 /**
  * ScheduledTasks 真实 API
  * 后端端点: /api/task/...
- *
- * 后端字段映射 (snake_case → camelCase):
- *   task_type      → type
- *   cron_expression → cronExpression
- *   status(active/paused) → status(enabled/disabled)
- *   success_count  → successCount
- *   failure_count  → failureCount
- *   last_run_at    → lastRunAt
- *   last_run_status → lastRunStatus
- *   next_run_at    → nextRunAt
- *   created_by     → createdBy
- *   create_time    → createdAt
- *   update_time    → updatedAt
- *   started_at     → startedAt
- *   completed_at   → completedAt
- *   task_id        → taskId
- *   task_name      → taskName
  */
 
 import { apiClient } from "../api/apiClient";
-import { parseDate, toSnakeCase, toCamelCase, convertKeys } from "./fieldMapper";
+import { parseDate } from "./fieldMapper";
 import type {
   ScheduledTask,
   TaskExecution,
@@ -119,19 +102,19 @@ function mapTaskFromBackend(raw: BackendTask): ScheduledTask {
     name: raw.name,
     description: raw.description || undefined,
     type: raw.task_type as TaskType,
-    cronExpression: raw.cron_expression,
+    cron_expression: raw.cron_expression,
     status: STATUS_MAP[raw.status] || "disabled",
-    config: (convertKeys(raw.config, toCamelCase) as TaskConfig) || ({} as TaskConfig),
-    lastRunAt: parseDate(raw.last_run_at),
-    lastRunStatus: raw.last_run_status
+    config: (raw.config as TaskConfig) || ({} as TaskConfig),
+    last_run_at: parseDate(raw.last_run_at),
+    last_run_status: raw.last_run_status
       ? (EXECUTION_STATUS_MAP[raw.last_run_status] ?? raw.last_run_status as ExecutionStatus)
       : undefined,
-    nextRunAt: parseDate(raw.next_run_at),
-    successCount: raw.success_count ?? 0,
-    failureCount: raw.failure_count ?? 0,
-    createdAt: parseDate(raw.create_time) ?? new Date(),
-    updatedAt: parseDate(raw.update_time) ?? new Date(),
-    createdBy: raw.created_by || "",
+    next_run_at: parseDate(raw.next_run_at),
+    success_count: raw.success_count ?? 0,
+    failure_count: raw.failure_count ?? 0,
+    created_at: parseDate(raw.create_time) ?? new Date(),
+    updated_at: parseDate(raw.update_time) ?? new Date(),
+    created_by: raw.created_by || "",
   };
 }
 
@@ -141,10 +124,10 @@ function mapTaskToBackend(task: Partial<ScheduledTask>): Record<string, unknown>
   if (task.name !== undefined) result.name = task.name;
   if (task.description !== undefined) result.description = task.description;
   if (task.type !== undefined) result.task_type = task.type;
-  if (task.cronExpression !== undefined) result.cron_expression = task.cronExpression;
+  if (task.cron_expression !== undefined) result.cron_expression = task.cron_expression;
   if (task.status !== undefined) result.status = STATUS_REVERSE_MAP[task.status];
-  if (task.config !== undefined) result.config = convertKeys(task.config, toSnakeCase);
-  if (task.createdBy !== undefined) result.created_by = task.createdBy;
+  if (task.config !== undefined) result.config = task.config;
+  if (task.created_by !== undefined) result.created_by = task.created_by;
 
   return result;
 }
@@ -152,10 +135,10 @@ function mapTaskToBackend(task: Partial<ScheduledTask>): Record<string, unknown>
 function mapExecutionFromBackend(raw: BackendExecution): TaskExecution {
   return {
     id: raw.id,
-    taskId: raw.task_id,
-    taskName: raw.task_name,
-    startedAt: parseDate(raw.started_at) ?? new Date(),
-    completedAt: parseDate(raw.completed_at),
+    task_id: raw.task_id,
+    task_name: raw.task_name,
+    started_at: parseDate(raw.started_at) ?? new Date(),
+    completed_at: parseDate(raw.completed_at),
     status: EXECUTION_STATUS_MAP[raw.status] ?? (raw.status as ExecutionStatus),
     duration: raw.duration,
     result: raw.result,
@@ -205,13 +188,13 @@ const scheduledTaskRealApi = {
     data: Omit<
       ScheduledTask,
       | "id"
-      | "createdAt"
-      | "updatedAt"
-      | "successCount"
-      | "failureCount"
-      | "lastRunAt"
-      | "lastRunStatus"
-      | "nextRunAt"
+      | "created_at"
+      | "updated_at"
+      | "success_count"
+      | "failure_count"
+      | "last_run_at"
+      | "last_run_status"
+      | "next_run_at"
     >,
   ): Promise<ScheduledTask> {
     const body = mapTaskToBackend(data);
@@ -255,7 +238,7 @@ const scheduledTaskRealApi = {
   },
 
   async getExecutions(filter?: {
-    taskId?: string;
+    task_id?: string;
     status?: ExecutionStatus;
     limit?: number;
   }): Promise<TaskExecution[]> {
@@ -265,8 +248,8 @@ const scheduledTaskRealApi = {
     const rawList = await apiClient.get<BackendExecution[]>("/api/task/executions", { params });
     let executions = rawList.map(mapExecutionFromBackend);
 
-    if (filter?.taskId) {
-      executions = executions.filter((e) => e.taskId === filter.taskId);
+    if (filter?.task_id) {
+      executions = executions.filter((e) => e.task_id === filter.task_id);
     }
     if (filter?.status) {
       executions = executions.filter((e) => e.status === filter.status);
@@ -293,7 +276,7 @@ const scheduledTaskRealApi = {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const todayExecutions = executions.filter((e) => new Date(e.startedAt) >= today);
+    const todayExecutions = executions.filter((e) => new Date(e.started_at) >= today);
     const successCount = executions.filter((e) => e.status === "success").length;
 
     return {
@@ -310,11 +293,11 @@ const scheduledTaskRealApi = {
     if (cachedTaskTypes) return cachedTaskTypes;
     const rawList = await apiClient.get<Record<string, unknown>[]>("/api/task/types");
     const mapped: TaskTypeDescriptor[] = rawList.map((raw) => ({
-      taskType: (raw.task_type ?? raw.taskType) as string,
+      task_type: (raw.task_type ?? raw.taskType) as string,
       label: (raw.label ?? "") as string,
       description: (raw.description ?? "") as string,
       icon: mapIcon((raw.icon ?? "") as string),
-      configSchema: (raw.config_schema ?? raw.configSchema) as Record<string, unknown> | undefined,
+      config_schema: (raw.config_schema ?? raw.configSchema) as Record<string, unknown> | undefined,
     }));
     cachedTaskTypes = mapped;
     return mapped;

@@ -52,11 +52,15 @@ export interface Agent {
   /** 最大完成 token 数 */
   max_completion_tokens?: number;
   /** 输入参数配置（前端使用） */
-  inputParameters?: AgentInputParameter[];
+  input_parameters?: AgentInputParameter[];
   /** 平台标识 */
   platform?: number;
   /** 状态（前端用） */
   status?: AgentStatus;
+  /** 创建时间 */
+  created_at?: Date;
+  /** 更新时间 */
+  updated_at?: Date;
 
   // 别名，兼容旧代码
   /** @deprecated 使用 agent_name */
@@ -75,8 +79,11 @@ export interface Agent {
   providerName?: string;
   /** @deprecated 使用 custom_params */
   customParams?: Record<string, unknown>;
-
+  /** @deprecated 使用 input_parameters */
+  inputParameters?: AgentInputParameter[];
+  /** @deprecated 使用 created_at */
   createdAt?: Date;
+  /** @deprecated 使用 updated_at */
   updatedAt?: Date;
 }
 

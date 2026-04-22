@@ -128,8 +128,8 @@ function AgentTestConfigForm({
 
       <Form.Item label="选择测试集" required className="mb-2">
         <Select
-          value={config.testSetId || undefined}
-          onChange={(v) => onChange({ ...config, testSetId: v })}
+          value={config.test_set_id || undefined}
+          onChange={(v) => onChange({ ...config, test_set_id: v })}
           placeholder="选择要运行的测试集"
           loading={loading}
           showSearch
@@ -145,8 +145,8 @@ function AgentTestConfigForm({
       <Form.Item label="选择 Agent（可多选）" required className="mb-0">
         <Select
           mode="multiple"
-          value={config.agentIds || []}
-          onChange={(v) => onChange({ ...config, agentIds: v })}
+          value={config.agent_ids || []}
+          onChange={(v) => onChange({ ...config, agent_ids: v })}
           placeholder="选择要测试的 Agent"
           loading={loading}
           showSearch
@@ -167,14 +167,14 @@ function AgentTestConfigForm({
         />
       </Form.Item>
 
-      {config.agentIds && config.agentIds.length > 0 && config.testSetId && (
+      {config.agent_ids && config.agent_ids.length > 0 && config.test_set_id && (
         <div className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-1">
-          <Tag color="blue">{config.agentIds.length} 个 Agent</Tag>
+          <Tag color="blue">{config.agent_ids.length} 个 Agent</Tag>
           <span>×</span>
           <Tag color="blue">
-            {testSets.find((t) => t.id === config.testSetId)?.name || "测试集"}
+            {testSets.find((t) => t.id === config.test_set_id)?.name || "测试集"}
           </Tag>
-          <span>= 每次 {config.agentIds.length} 组测试</span>
+          <span>= 每次 {config.agent_ids.length} 组测试</span>
         </div>
       )}
     </div>
@@ -208,7 +208,7 @@ function AgentLoopConfigForm({
     loadAgents();
   }, [loadAgents]);
 
-  const selectedAgent = agents.find((a) => a.id === config.agentId);
+  const selectedAgent = agents.find((a) => a.id === config.agent_id);
 
   return (
     <div className="space-y-4 p-3 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
@@ -218,8 +218,8 @@ function AgentLoopConfigForm({
 
       <Form.Item label="选择 Agent" required className="mb-2">
         <Select
-          value={config.agentId || undefined}
-          onChange={(v) => onChange({ ...config, agentId: v })}
+          value={config.agent_id || undefined}
+          onChange={(v) => onChange({ ...config, agent_id: v })}
           placeholder="选择要调度的 Agent"
           loading={loading}
           showSearch
@@ -262,8 +262,8 @@ function AgentLoopConfigForm({
       <div className="grid grid-cols-2 gap-3">
         <Form.Item label="最大迭代次数" className="mb-0">
           <InputNumber
-            value={config.maxIterations ?? 10}
-            onChange={(v) => onChange({ ...config, maxIterations: v ?? 10 })}
+            value={config.max_iterations ?? 10}
+            onChange={(v) => onChange({ ...config, max_iterations: v ?? 10 })}
             min={1}
             max={100}
             style={{ width: "100%" }}
@@ -272,8 +272,8 @@ function AgentLoopConfigForm({
         </Form.Item>
         <Form.Item label="超时时间" className="mb-0">
           <InputNumber
-            value={config.timeoutSeconds ?? 3600}
-            onChange={(v) => onChange({ ...config, timeoutSeconds: v ?? 3600 })}
+            value={config.timeout_seconds ?? 3600}
+            onChange={(v) => onChange({ ...config, timeout_seconds: v ?? 3600 })}
             min={60}
             max={86400}
             style={{ width: "100%" }}
@@ -323,21 +323,21 @@ function GenericConfigForm({
 // ==================== 主弹窗 ====================
 export default function TaskFormModal({
   task,
-  taskTypes,
+  task_types,
   onClose,
   onSave,
 }: {
   task: ScheduledTask | null;
-  taskTypes?: TaskTypeDescriptor[];
+  task_types?: TaskTypeDescriptor[];
   onClose: () => void;
   onSave: (data: Partial<ScheduledTask>) => Promise<void>;
 }) {
   // 合并后端动态类型 + 前端静态 fallback
   const typeOptions =
-    taskTypes && taskTypes.length > 0
-      ? taskTypes
+    task_types && task_types.length > 0
+      ? task_types
       : Object.entries(taskTypeConfig).map(([type, cfg]) => ({
-          taskType: type,
+          task_type: type,
           label: cfg.label,
           description: cfg.description,
           icon: cfg.icon,
@@ -346,8 +346,8 @@ export default function TaskFormModal({
   const [formData, setFormData] = useState({
     name: task?.name || "",
     description: task?.description || "",
-    type: (task?.type || (typeOptions[0]?.taskType ?? "")) as TaskType,
-    cronExpression: task?.cronExpression || "0 0 * * *",
+    type: (task?.type || (typeOptions[0]?.task_type ?? "")) as TaskType,
+    cron_expression: task?.cron_expression || "0 0 * * *",
     status: (task?.status || "enabled") as TaskStatus,
     config: (task?.config || {}) as TaskConfig,
   });
@@ -369,18 +369,18 @@ export default function TaskFormModal({
     }
     // agent_test 类型校验
     if (formData.type === "agent_test") {
-      if (!formData.config.testSetId) {
+      if (!formData.config.test_set_id) {
         message.warning("请选择测试集");
         return;
       }
-      if (!formData.config.agentIds || formData.config.agentIds.length === 0) {
+      if (!formData.config.agent_ids || formData.config.agent_ids.length === 0) {
         message.warning("请至少选择一个 Agent");
         return;
       }
     }
     // agent_loop 类型校验
     if (formData.type === "agent_loop") {
-      if (!formData.config.agentId) {
+      if (!formData.config.agent_id) {
         message.warning("请选择 Agent");
         return;
       }
@@ -454,7 +454,7 @@ export default function TaskFormModal({
             style={{ width: "100%" }}
             options={typeOptions.map((t) => ({
               label: `${t.icon} ${t.label}${t.description ? ` - ${t.description}` : ""}`,
-              value: t.taskType,
+              value: t.task_type,
             }))}
           />
         </Form.Item>
@@ -495,9 +495,9 @@ export default function TaskFormModal({
                 children: (
                   <div className="cron-visual-container">
                     <Cron
-                      value={formData.cronExpression}
+                      value={formData.cron_expression}
                       setValue={(value: string) =>
-                        setFormData({ ...formData, cronExpression: value })
+                        setFormData({ ...formData, cron_expression: value })
                       }
                       locale={cronZhLocale}
                       humanizeLabels
@@ -526,7 +526,7 @@ export default function TaskFormModal({
                         当前表达式：
                       </span>
                       <code className="text-sm font-mono bg-[var(--color-bg-tertiary)] px-2 py-0.5 rounded">
-                        {formData.cronExpression}
+                        {formData.cron_expression}
                       </code>
                     </div>
                   </div>
@@ -538,9 +538,9 @@ export default function TaskFormModal({
                 children: (
                   <div className="space-y-2">
                     <Select
-                      value={formData.cronExpression}
+                      value={formData.cron_expression}
                       onChange={(v) =>
-                        setFormData({ ...formData, cronExpression: v })
+                        setFormData({ ...formData, cron_expression: v })
                       }
                       style={{ width: "100%" }}
                       options={cronPresets.map((preset) => ({
@@ -561,7 +561,7 @@ export default function TaskFormModal({
                         当前表达式：
                       </span>
                       <code className="text-sm font-mono bg-[var(--color-bg-tertiary)] px-2 py-0.5 rounded">
-                        {formData.cronExpression}
+                        {formData.cron_expression}
                       </code>
                     </div>
                   </div>
@@ -573,10 +573,10 @@ export default function TaskFormModal({
                 children: (
                   <div className="space-y-2">
                     <Input
-                      value={formData.cronExpression}
+                      value={formData.cron_expression}
                       onChange={(e) => {
                         const val = e.target.value;
-                        setFormData({ ...formData, cronExpression: val });
+                        setFormData({ ...formData, cron_expression: val });
                         const parts = val.trim().split(/\s+/);
                         setCronError(
                           parts.length !== 5
@@ -606,14 +606,14 @@ export default function TaskFormModal({
                           key={preset.value}
                           size="small"
                           type={
-                            formData.cronExpression === preset.value
+                            formData.cron_expression === preset.value
                               ? "primary"
                               : "default"
                           }
                           onClick={() => {
                             setFormData({
                               ...formData,
-                              cronExpression: preset.value,
+                              cron_expression: preset.value,
                             });
                             setCronError(undefined);
                           }}

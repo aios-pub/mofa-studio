@@ -15,7 +15,7 @@ import { scheduledTaskApi, taskTypeConfig } from '@/services';
 
 // 合并后端动态类型 + 前端静态 fallback
 function getTaskTypeConfig(type: string, dynamicTypes: TaskTypeDescriptor[]) {
-  const dynamic = dynamicTypes.find((t) => t.taskType === type);
+  const dynamic = dynamicTypes.find((t) => t.task_type === type);
   if (dynamic) return { label: dynamic.label, description: dynamic.description, icon: dynamic.icon };
   return taskTypeConfig[type as keyof typeof taskTypeConfig] ?? { label: type, description: '', icon: '📋' };
 }
@@ -31,7 +31,7 @@ function groupExecutionsByDay(executions: TaskExecution[], days: number): number
     const dayEnd = new Date(dayStart);
     dayEnd.setDate(dayEnd.getDate() + 1);
     const count = executions.filter((e) => {
-      const d = new Date(e.startedAt);
+      const d = new Date(e.started_at);
       return d >= dayStart && d < dayEnd;
     }).length;
     result.push(count);
@@ -97,8 +97,8 @@ function TypeCard({ type, tasks, activityData, dynamicTypes, onClick }: {
 }) {
   const config = getTaskTypeConfig(type, dynamicTypes);
   const enabled = tasks.filter((t) => t.status === 'enabled').length;
-  const totalSuccess = tasks.reduce((s, t) => s + t.successCount, 0);
-  const totalFailure = tasks.reduce((s, t) => s + t.failureCount, 0);
+  const totalSuccess = tasks.reduce((s, t) => s + t.success_count, 0);
+  const totalFailure = tasks.reduce((s, t) => s + t.failure_count, 0);
   const rate = totalSuccess + totalFailure > 0
     ? (totalSuccess / (totalSuccess + totalFailure)) * 100 : null;
 
@@ -139,7 +139,7 @@ interface Props {
 export default function OverviewTab({ onNavigateToTasks }: Props) {
   const [tasks, setTasks] = useState<ScheduledTask[]>([]);
   const [executions, setExecutions] = useState<TaskExecution[]>([]);
-  const [taskTypes, setTaskTypes] = useState<TaskTypeDescriptor[]>([]);
+  const [task_types, setTaskTypes] = useState<TaskTypeDescriptor[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
@@ -165,8 +165,8 @@ export default function OverviewTab({ onNavigateToTasks }: Props) {
   const stats = useMemo(() => {
     const enabled = tasks.filter((t) => t.status === 'enabled').length;
     const disabled = tasks.filter((t) => t.status === 'disabled').length;
-    const totalSuccess = tasks.reduce((s, t) => s + t.successCount, 0);
-    const totalFailure = tasks.reduce((s, t) => s + t.failureCount, 0);
+    const totalSuccess = tasks.reduce((s, t) => s + t.success_count, 0);
+    const totalFailure = tasks.reduce((s, t) => s + t.failure_count, 0);
     const rate = totalSuccess + totalFailure > 0 ? (totalSuccess / (totalSuccess + totalFailure)) * 100 : 0;
     return { total: tasks.length, enabled, disabled, totalSuccess, totalFailure, rate };
   }, [tasks]);
@@ -186,13 +186,13 @@ export default function OverviewTab({ onNavigateToTasks }: Props) {
   // 按任务类型分组的活动数据
   const activityByType = useMemo(() => {
     const map: Record<string, number[]> = {};
-    // 建立 taskId → type 的映射
-    const taskTypeMap: Record<string, string> = {};
-    tasks.forEach((t) => { taskTypeMap[t.id] = t.type; });
+    // 建立 task_id → type 的映射
+    const task_typeMap: Record<string, string> = {};
+    tasks.forEach((t) => { task_typeMap[t.id] = t.type; });
 
     for (const type of Object.keys(tasksByType)) {
       const typeTaskIds = new Set(tasksByType[type].map((t) => t.id));
-      const typeExecs = executions.filter((e) => typeTaskIds.has(e.taskId));
+      const typeExecs = executions.filter((e) => typeTaskIds.has(e.task_id));
       map[type] = groupExecutionsByDay(typeExecs, 7);
     }
     return map;
@@ -256,7 +256,7 @@ export default function OverviewTab({ onNavigateToTasks }: Props) {
               type={type}
               tasks={tasksByType[type] || []}
               activityData={activityByType[type] || Array(7).fill(0)}
-              dynamicTypes={taskTypes}
+              dynamicTypes={task_types}
               onClick={() => onNavigateToTasks?.(type as TaskType)}
             />
           ))}

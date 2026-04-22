@@ -56,7 +56,7 @@ const formatDuration = (ms: number | undefined) => {
 interface Props {
   task: ScheduledTask;
   executions: TaskExecution[];
-  taskTypes?: TaskTypeDescriptor[];
+  task_types?: TaskTypeDescriptor[];
   onExecute: (id: string) => void;
   onToggle: (id: string) => void;
   onEdit: (task: ScheduledTask) => void;
@@ -67,7 +67,7 @@ interface Props {
 export default function TaskDetail({
   task,
   executions,
-  taskTypes,
+  task_types,
   onExecute,
   onToggle,
   onEdit,
@@ -75,28 +75,28 @@ export default function TaskDetail({
   onViewAllExecutions,
 }: Props) {
   const taskExecutions = useMemo(
-    () => executions.filter((e) => e.taskId === task.id).slice(0, 5),
+    () => executions.filter((e) => e.task_id === task.id).slice(0, 5),
     [executions, task.id],
   );
 
-  const successRate = task.successCount + task.failureCount > 0
-    ? (task.successCount / (task.successCount + task.failureCount)) * 100
+  const successRate = task.success_count + task.failure_count > 0
+    ? (task.success_count / (task.success_count + task.failure_count)) * 100
     : null;
 
   // 上下文元数据（参考 apalis-board MetaKey）
   const contextItems = [
     { key: '任务类型', value: (() => {
-      const dynamic = taskTypes?.find((t) => t.taskType === task.type);
+      const dynamic = task_types?.find((t) => t.task_type === task.type);
       const staticCfg = taskTypeConfig[task.type as keyof typeof taskTypeConfig];
       const cfg = dynamic ? { icon: dynamic.icon, label: dynamic.label } : staticCfg;
       return cfg ? `${cfg.icon} ${cfg.label}` : task.type;
     })() },
-    { key: 'Cron 表达式', value: task.cronExpression, mono: true },
+    { key: 'Cron 表达式', value: task.cron_expression, mono: true },
     { key: '状态', value: task.status === 'enabled' ? '已启用' : '已禁用', tag: true },
     { key: '成功率', value: successRate !== null ? `${successRate.toFixed(1)}%` : '-', highlight: successRate !== null ? (successRate >= 90 ? 'green' : successRate >= 70 ? 'orange' : 'red') : undefined },
-    { key: '创建人', value: task.createdBy || '-' },
-    { key: '创建时间', value: formatDate(task.createdAt) },
-    { key: '更新时间', value: formatDate(task.updatedAt) },
+    { key: '创建人', value: task.created_by || '-' },
+    { key: '创建时间', value: formatDate(task.created_at) },
+    { key: '更新时间', value: formatDate(task.updated_at) },
   ];
 
   return (
@@ -144,7 +144,7 @@ export default function TaskDetail({
               {task.status === 'enabled' ? '已启用' : '已禁用'}
             </Tag>
             <span className="text-xs text-[var(--color-text-tertiary)]">
-              {parseCronToText(task.cronExpression)}
+              {parseCronToText(task.cron_expression)}
             </span>
           </div>
           <div className="flex gap-1.5">
@@ -197,7 +197,7 @@ export default function TaskDetail({
                       </Tag>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5 text-xs text-[var(--color-text-tertiary)]">
-                      <span>{formatDate(exec.startedAt)}</span>
+                      <span>{formatDate(exec.started_at)}</span>
                       {exec.duration && <span>耗时 {formatDuration(exec.duration)}</span>}
                     </div>
                   </div>

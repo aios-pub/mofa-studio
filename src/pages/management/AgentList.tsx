@@ -62,10 +62,10 @@ import { clawTypeConfig, channelProxyTypeConfig } from "@/types/claw";
 import { channelTypeConfig } from "@/services/mock/channels";
 import OctosManagementPanel from "./components/octos/OctosManagementPanel";
 
-/** 从 agent.customParams.claw 提取 Agent 类型配置 */
+/** 从 agent.custom_params.claw 提取 Agent 类型配置 */
 function getClaw(agent: Agent): Record<string, unknown> {
   return (
-    ((agent.customParams as Record<string, unknown>)?.claw as Record<
+    ((agent.custom_params as Record<string, unknown>)?.claw as Record<
       string,
       unknown
     >) || {}
@@ -613,7 +613,7 @@ function AgentFormModal({
         stream: agent.stream ?? true,
         thinking: agent.thinking ?? { enabled: false },
         enabled: agent.enabled,
-        customParams: agent.custom_params || {},
+        custom_params: agent.custom_params || {},
       });
       setSelectedProviderId(agent.provider?.id);
       // 加载已有的提示词关联
@@ -627,7 +627,7 @@ function AgentFormModal({
         stream: true,
         thinking: { enabled: false },
         enabled: true,
-        customParams: {},
+        custom_params: {},
       });
       setSelectedProviderId("");
     }
@@ -706,8 +706,8 @@ function AgentFormModal({
             : { enabled: !!values.thinking },
         enabled: values.enabled ?? true,
         custom_params:
-          values.customParams && Object.keys(values.customParams).length > 0
-            ? values.customParams
+          values.custom_params && Object.keys(values.custom_params).length > 0
+            ? values.custom_params
             : undefined,
       };
 
@@ -869,7 +869,7 @@ function AgentFormModal({
           </Form.Item>
         </div>
 
-        <Form.Item name="customParams" label="自定义参数">
+        <Form.Item name="custom_params" label="自定义参数">
           <CustomParamsEditor />
         </Form.Item>
       </Form>
@@ -918,7 +918,7 @@ function AgentBasicInfo({
         stream: agent.stream ?? true,
         thinking: agent.thinking ?? { enabled: false },
         enabled: agent.enabled,
-        customParams: agent.custom_params || {},
+        custom_params: agent.custom_params || {},
       });
       loadEditPrompts(agent.id);
     }
@@ -994,8 +994,8 @@ function AgentBasicInfo({
             : { enabled: !!values.thinking },
         enabled: values.enabled,
         custom_params:
-          values.customParams && Object.keys(values.customParams).length > 0
-            ? values.customParams
+          values.custom_params && Object.keys(values.custom_params).length > 0
+            ? values.custom_params
             : undefined,
       });
 
@@ -1131,7 +1131,7 @@ function AgentBasicInfo({
             />
           </Form.Item>
 
-          <Form.Item name="customParams" label="自定义参数">
+          <Form.Item name="custom_params" label="自定义参数">
             <CustomParamsEditor />
           </Form.Item>
         </Form>
@@ -1231,13 +1231,13 @@ function AgentBasicInfo({
         )}
       </div>
 
-      {agent.customParams && Object.keys(agent.customParams).length > 0 && (
+      {agent.custom_params && Object.keys(agent.custom_params).length > 0 && (
         <div>
           <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
             自定义参数
           </label>
           <div className="space-y-1">
-            {Object.entries(agent.customParams).map(([key, value]) => (
+            {Object.entries(agent.custom_params).map(([key, value]) => (
               <div key={key} className="flex items-center gap-2">
                 <Typography.Text className="text-sm text-[var(--color-text-secondary)] w-32 flex-shrink-0">
                   {key}
@@ -1257,10 +1257,10 @@ function AgentBasicInfo({
       )}
 
       <div className="text-xs text-[var(--color-text-tertiary)]">
-        {agent.createdAt &&
-          `创建时间: ${new Date(agent.createdAt).toLocaleString()} `}
-        {agent.updatedAt &&
-          `| 更新时间: ${new Date(agent.updatedAt).toLocaleString()}`}
+        {agent.created_at &&
+          `创建时间: ${new Date(agent.created_at).toLocaleString()} `}
+        {agent.updated_at &&
+          `| 更新时间: ${new Date(agent.updated_at).toLocaleString()}`}
       </div>
     </div>
   );
@@ -2116,7 +2116,7 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
                 <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
                   类型
                 </label>
-                <Input value={config?.label || clawType} readOnly />
+                <Input value={config?.label || agent.agent_category || ""} readOnly />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
@@ -2146,7 +2146,7 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
               )}
             </div>
 
-            {/* Auth Config from customParams.claw */}
+            {/* Auth Config from custom_params.claw */}
             {clawParams?.authConfig &&
               typeof clawParams.authConfig === "object" &&
               Object.keys(clawParams.authConfig as Record<string, unknown>)

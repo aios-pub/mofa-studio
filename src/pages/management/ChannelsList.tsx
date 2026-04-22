@@ -722,10 +722,10 @@ function ChannelAgentsView({
                   <span className="text-xl">{agent.avatar}</span>
                   <div>
                     <div className="font-medium text-[var(--color-text-primary)]">
-                      {agent.name}
+                      {agent.agent_name}
                     </div>
                     <div className="text-sm text-[var(--color-text-tertiary)]">
-                      {agent.systemPrompt?.slice(0, 50) || agent.agentCode}
+                      {agent.system_prompt?.slice(0, 50) || agent.agent_code}
                     </div>
                   </div>
                 </div>
@@ -759,10 +759,10 @@ function ChannelAgentsView({
                   <span className="text-xl">{agent.avatar}</span>
                   <div>
                     <div className="font-medium text-[var(--color-text-primary)]">
-                      {agent.name}
+                      {agent.agent_name}
                     </div>
                     <div className="text-sm text-[var(--color-text-tertiary)]">
-                      {agent.systemPrompt?.slice(0, 50) || agent.agentCode}
+                      {agent.system_prompt?.slice(0, 50) || agent.agent_code}
                     </div>
                   </div>
                 </div>

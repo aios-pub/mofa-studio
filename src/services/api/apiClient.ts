@@ -123,43 +123,6 @@ function convertDateFields<T>(data: T): T {
   return result;
 }
 
-/**
- * 将 snake_case 转换为 camelCase
- * 例如: tenant_id -> tenantId, download_count -> downloadCount
- */
-function snakeToCamel(str: string): string {
-  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-}
-
-/**
- * 递归转换对象的键名从 snake_case 到 camelCase
- */
-function convertKeysToCamelCase<T>(data: T): T {
-  if (data === null || data === undefined) {
-    return data;
-  }
-
-  // 处理数组
-  if (Array.isArray(data)) {
-    return data.map(convertKeysToCamelCase) as T;
-  }
-
-  // 只处理普通对象
-  if (typeof data !== "object") {
-    return data;
-  }
-
-  const result: any = {};
-  for (const key in data) {
-    if (!Object.prototype.hasOwnProperty.call(data, key)) {
-      continue;
-    }
-
-    const camelKey = snakeToCamel(key);
-    result[camelKey] = convertKeysToCamelCase((data as any)[key]);
-  }
-  return result;
-}
 
 // ==================== 请求拦截器 ====================
 
@@ -254,7 +217,7 @@ axiosInstance.interceptors.response.use(
     // 如果有 code 字段，检查业务状态码
     if ("code" in data) {
       if (data.code === 0 || data.code === 200) {
-        const converted = convertDateFields(convertKeysToCamelCase(data.data));
+        const converted = convertDateFields(data.data);
         if (response.config.url?.includes('/publish')) {
           console.log('[apiClient] Converted publish result:', converted);
         }
@@ -266,8 +229,8 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(new Error(errorMsg));
     }
 
-    // 直接返回数据，先转换键名，再转换时间字段
-    return convertDateFields(convertKeysToCamelCase(data));
+    // 直接返回数据，只转换时间字段
+    return convertDateFields(data);
   },
   (error: AxiosError<ApiResponse>) => {
     const { response } = error;

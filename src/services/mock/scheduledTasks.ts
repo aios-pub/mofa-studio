@@ -29,30 +29,30 @@ export interface ScheduledTask {
   name: string;
   description?: string;
   type: TaskType;
-  cronExpression: string;
+  cron_expression: string;
   status: TaskStatus;
   config: TaskConfig;
-  lastRunAt?: Date;
-  lastRunStatus?: ExecutionStatus;
-  nextRunAt?: Date;
-  successCount: number;
-  failureCount: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdBy: string;
+  last_run_at?: Date;
+  last_run_status?: ExecutionStatus;
+  next_run_at?: Date;
+  success_count: number;
+  failure_count: number;
+  created_at: Date;
+  updated_at: Date;
+  created_by: string;
 }
 
 // 任务配置
 export interface TaskConfig {
   // Agent Loop 调度任务（调度单位 = Agent）
-  agentId?: string;
+  agent_id?: string;
   prompt?: string;
-  maxIterations?: number;
-  timeoutSeconds?: number;
+  max_iterations?: number;
+  timeout_seconds?: number;
 
   // Agent 测试任务
-  agentIds?: string[];
-  testSetId?: string;
+  agent_ids?: string[];
+  test_set_id?: string;
 
   // 通用扩展字段
   [key: string]: unknown;
@@ -60,20 +60,20 @@ export interface TaskConfig {
 
 // 任务类型描述符 — 由后端注册 handler 时提供
 export interface TaskTypeDescriptor {
-  taskType: string;
+  task_type: string;
   label: string;
   description: string;
   icon: string;
-  configSchema?: Record<string, unknown>;
+  config_schema?: Record<string, unknown>;
 }
 
 // 执行记录
 export interface TaskExecution {
   id: string;
-  taskId: string;
-  taskName: string;
-  startedAt: Date;
-  completedAt?: Date;
+  task_id: string;
+  task_name: string;
+  started_at: Date;
+  completed_at?: Date;
   status: ExecutionStatus;
   duration?: number; // 毫秒
   result?: string;
@@ -106,118 +106,118 @@ const generateMockTasks = (): ScheduledTask[] => {
       name: "每日 Agent 健康检查",
       description: "运行所有 Agent 的基础能力测试集",
       type: "agent_test",
-      cronExpression: "0 6 * * *",
+      cron_expression: "0 6 * * *",
       status: "enabled",
       config: {
         agentIds: ["agent-1", "agent-2", "agent-3"],
         testSetId: "testset-1",
       },
-      lastRunAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
-      lastRunStatus: "success",
-      nextRunAt: new Date(Date.now() + 18 * 60 * 60 * 1000),
-      successCount: 45,
-      failureCount: 2,
-      createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      createdBy: "张三",
+      last_run_at: new Date(Date.now() - 6 * 60 * 60 * 1000),
+      last_run_status: "success",
+      next_run_at: new Date(Date.now() + 18 * 60 * 60 * 1000),
+      success_count: 45,
+      failure_count: 2,
+      created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      created_by: "张三",
     },
     {
       id: "task-2",
       name: "每周使用报告",
       description: "生成并发送每周使用统计报告",
       type: "report",
-      cronExpression: "0 9 * * 1",
+      cron_expression: "0 9 * * 1",
       status: "enabled",
       config: {
         reportType: "usage",
         recipients: ["admin@aios.pub", "manager@aios.pub"],
       },
-      lastRunAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-      lastRunStatus: "success",
-      nextRunAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-      successCount: 12,
-      failureCount: 0,
-      createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-      createdBy: "李四",
+      last_run_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      last_run_status: "success",
+      next_run_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+      success_count: 12,
+      failure_count: 0,
+      created_at: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+      updated_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      created_by: "李四",
     },
     {
       id: "task-3",
       name: "日志清理",
       description: "清理 30 天前的系统日志",
       type: "cleanup",
-      cronExpression: "0 0 * * *",
+      cron_expression: "0 0 * * *",
       status: "enabled",
       config: {
         retentionDays: 30,
         cleanupTarget: "logs",
       },
-      lastRunAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      lastRunStatus: "success",
-      nextRunAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      successCount: 30,
-      failureCount: 0,
-      createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-      createdBy: "张三",
+      last_run_at: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      last_run_status: "success",
+      next_run_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      success_count: 30,
+      failure_count: 0,
+      created_at: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+      updated_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+      created_by: "张三",
     },
     {
       id: "task-4",
       name: "数据库备份",
       description: "每日凌晨备份数据库",
       type: "backup",
-      cronExpression: "0 2 * * *",
+      cron_expression: "0 2 * * *",
       status: "enabled",
       config: {
         backupTarget: "database",
         backupPath: "/backups/db",
       },
-      lastRunAt: new Date(Date.now() - 22 * 60 * 60 * 1000),
-      lastRunStatus: "success",
-      nextRunAt: new Date(Date.now() + 2 * 60 * 60 * 1000),
-      successCount: 60,
-      failureCount: 1,
-      createdAt: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-      createdBy: "王五",
+      last_run_at: new Date(Date.now() - 22 * 60 * 60 * 1000),
+      last_run_status: "success",
+      next_run_at: new Date(Date.now() + 2 * 60 * 60 * 1000),
+      success_count: 60,
+      failure_count: 1,
+      created_at: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000),
+      updated_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      created_by: "王五",
     },
     {
       id: "task-5",
       name: "Provider 模型同步",
       description: "同步 Provider 可用模型列表",
       type: "sync",
-      cronExpression: "0 */6 * * *",
+      cron_expression: "0 */6 * * *",
       status: "disabled",
       config: {
         syncTarget: "models",
       },
-      lastRunAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-      lastRunStatus: "failure",
-      successCount: 20,
-      failureCount: 5,
-      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-      createdBy: "李四",
+      last_run_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+      last_run_status: "failure",
+      success_count: 20,
+      failure_count: 5,
+      created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+      updated_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+      created_by: "李四",
     },
     {
       id: "task-6",
       name: "性能报告",
       description: "生成每日性能分析报告",
       type: "report",
-      cronExpression: "0 8 * * *",
+      cron_expression: "0 8 * * *",
       status: "enabled",
       config: {
         reportType: "performance",
         recipients: ["tech@example.com"],
       },
-      lastRunAt: new Date(Date.now() - 16 * 60 * 60 * 1000),
-      lastRunStatus: "success",
-      nextRunAt: new Date(Date.now() + 8 * 60 * 60 * 1000),
-      successCount: 28,
-      failureCount: 2,
-      createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-      createdBy: "张三",
+      last_run_at: new Date(Date.now() - 16 * 60 * 60 * 1000),
+      last_run_status: "success",
+      next_run_at: new Date(Date.now() + 8 * 60 * 60 * 1000),
+      success_count: 28,
+      failure_count: 2,
+      created_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
+      updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+      created_by: "张三",
     },
   ];
 
@@ -239,7 +239,7 @@ const generateMockExecutions = (): TaskExecution[] => {
   tasks.forEach((task) => {
     // 为每个任务生成最近 10 条执行记录
     for (let i = 0; i < 10; i++) {
-      const startedAt = new Date(
+      const started_at = new Date(
         Date.now() - i * 24 * 60 * 60 * 1000 - Math.random() * 60 * 60 * 1000,
       );
       const status = statuses[Math.floor(Math.random() * statuses.length)];
@@ -247,12 +247,12 @@ const generateMockExecutions = (): TaskExecution[] => {
 
       executions.push({
         id: `exec-${task.id}-${i}`,
-        taskId: task.id,
-        taskName: task.name,
-        startedAt,
-        completedAt: new Date(startedAt.getTime() + duration),
+        task_id: task.id,
+        task_name: task.name,
+        started_at,
+        completed_at: new Date(started_at.getTime() + duration),
         status:
-          i === 0 && task.lastRunStatus === "running" ? "running" : status,
+          i === 0 && task.last_run_status === "running" ? "running" : status,
         duration: status !== "running" ? duration : undefined,
         result: status === "success" ? "执行成功" : undefined,
         error: status === "failure" ? "连接超时" : undefined,
@@ -265,7 +265,7 @@ const generateMockExecutions = (): TaskExecution[] => {
   });
 
   return executions.sort(
-    (a, b) => b.startedAt.getTime() - a.startedAt.getTime(),
+    (a, b) => b.started_at.getTime() - a.started_at.getTime(),
   );
 };
 
@@ -376,13 +376,13 @@ export const scheduledTaskApi = {
     data: Omit<
       ScheduledTask,
       | "id"
-      | "createdAt"
-      | "updatedAt"
-      | "successCount"
-      | "failureCount"
-      | "lastRunAt"
-      | "lastRunStatus"
-      | "nextRunAt"
+      | "created_at"
+      | "updated_at"
+      | "success_count"
+      | "failure_count"
+      | "last_run_at"
+      | "last_run_status"
+      | "next_run_at"
     >,
   ): Promise<ScheduledTask> {
     await delay(300);
@@ -391,13 +391,13 @@ export const scheduledTaskApi = {
     const task: ScheduledTask = {
       ...data,
       id: `task-${Date.now()}`,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      successCount: 0,
-      failureCount: 0,
-      nextRunAt:
+      created_at: new Date(),
+      updated_at: new Date(),
+      success_count: 0,
+      failure_count: 0,
+      next_run_at:
         data.status === "enabled"
-          ? calculateNextRun(data.cronExpression)
+          ? calculateNextRun(data.cron_expression)
           : undefined,
     };
 
@@ -419,13 +419,13 @@ export const scheduledTaskApi = {
     mockTasks[index] = {
       ...mockTasks[index],
       ...data,
-      updatedAt: new Date(),
+      updated_at: new Date(),
     };
 
-    if (data.cronExpression || data.status) {
-      mockTasks[index].nextRunAt =
+    if (data.cron_expression || data.status) {
+      mockTasks[index].next_run_at =
         mockTasks[index].status === "enabled"
-          ? calculateNextRun(mockTasks[index].cronExpression)
+          ? calculateNextRun(mockTasks[index].cron_expression)
           : undefined;
     }
 
@@ -453,10 +453,10 @@ export const scheduledTaskApi = {
     if (!task) return undefined;
 
     task.status = task.status === "enabled" ? "disabled" : "enabled";
-    task.updatedAt = new Date();
-    task.nextRunAt =
+    task.updated_at = new Date();
+    task.next_run_at =
       task.status === "enabled"
-        ? calculateNextRun(task.cronExpression)
+        ? calculateNextRun(task.cron_expression)
         : undefined;
 
     return task;
@@ -472,11 +472,11 @@ export const scheduledTaskApi = {
 
     const execution: TaskExecution = {
       id: `exec-${id}-${Date.now()}`,
-      taskId: id,
-      taskName: task.name,
-      startedAt: new Date(),
+      task_id: id,
+      task_name: task.name,
+      started_at: new Date(),
       status: "success",
-      completedAt: new Date(Date.now() + 5000),
+      completed_at: new Date(Date.now() + 5000),
       duration: 5000,
       result: "执行成功",
       details: {
@@ -487,17 +487,17 @@ export const scheduledTaskApi = {
     mockExecutions.unshift(execution);
 
     // 更新任务统计
-    task.lastRunAt = execution.startedAt;
-    task.lastRunStatus = "success";
-    task.successCount++;
-    task.updatedAt = new Date();
+    task.last_run_at = execution.started_at;
+    task.last_run_status = "success";
+    task.success_count++;
+    task.updated_at = new Date();
 
     return execution;
   },
 
   // 获取执行记录
   async getExecutions(filter?: {
-    taskId?: string;
+    task_id?: string;
     status?: ExecutionStatus;
     limit?: number;
   }): Promise<TaskExecution[]> {
@@ -506,8 +506,8 @@ export const scheduledTaskApi = {
 
     let executions = [...mockExecutions];
 
-    if (filter?.taskId) {
-      executions = executions.filter((e) => e.taskId === filter.taskId);
+    if (filter?.task_id) {
+      executions = executions.filter((e) => e.task_id === filter.task_id);
     }
     if (filter?.status) {
       executions = executions.filter((e) => e.status === filter.status);
@@ -542,8 +542,8 @@ export const scheduledTaskApi = {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const todayExecutions = mockExecutions.filter((e) => e.startedAt >= today);
-    const successCount = mockExecutions.filter(
+    const todayExecutions = mockExecutions.filter((e) => e.started_at >= today);
+    const success_count = mockExecutions.filter(
       (e) => e.status === "success",
     ).length;
 
@@ -554,7 +554,7 @@ export const scheduledTaskApi = {
       totalExecutions: mockExecutions.length,
       successRate:
         mockExecutions.length > 0
-          ? (successCount / mockExecutions.length) * 100
+          ? (success_count / mockExecutions.length) * 100
           : 0,
       executionsToday: todayExecutions.length,
     };

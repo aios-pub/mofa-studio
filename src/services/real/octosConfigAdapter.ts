@@ -4,7 +4,11 @@
  * 处理渠道配置（使用 channel_ids）与后端 channels 格式之间的转换
  */
 
-import type { OctosProfileConfig, LlmModelSelectionConfig, OctosChannelCredentials } from "@/types/octos";
+import type {
+  OctosProfileConfig,
+  LlmModelSelectionConfig,
+  OctosChannelCredentials,
+} from "@/types/octos";
 import { providerApi, channelApi } from "@/services";
 
 /**
@@ -68,7 +72,7 @@ function channelToOctosFormat(channel: any): OctosChannelCredentials {
 
   // 根据渠道类型映射配置到 Octos 期望的格式
   switch (channel.type) {
-    case 'feishu':
+    case "feishu":
       octosChannel.app_id_env = channel.config.app_id;
       octosChannel.app_secret_env = channel.config.app_secret;
       if (channel.config.encrypt_key) {
@@ -88,14 +92,14 @@ function channelToOctosFormat(channel: any): OctosChannelCredentials {
       }
       break;
 
-    case 'telegram':
+    case "telegram":
       octosChannel.bot_token_env = channel.config.bot_token;
       if (channel.config.webhook_url) {
         octosChannel.webhook_url = channel.config.webhook_url;
       }
       break;
 
-    case 'discord':
+    case "discord":
       octosChannel.bot_token_env = channel.config.bot_token;
       octosChannel.application_id_env = channel.config.application_id;
       if (channel.config.public_key) {
@@ -103,7 +107,7 @@ function channelToOctosFormat(channel: any): OctosChannelCredentials {
       }
       break;
 
-    case 'slack':
+    case "slack":
       octosChannel.bot_token_env = channel.config.bot_token;
       octosChannel.signing_secret_env = channel.config.signing_secret;
       if (channel.config.app_token) {
@@ -111,7 +115,7 @@ function channelToOctosFormat(channel: any): OctosChannelCredentials {
       }
       break;
 
-    case 'whatsapp':
+    case "whatsapp":
       octosChannel.phone_number_id_env = channel.config.phone_number_id;
       octosChannel.access_token_env = channel.config.access_token;
       if (channel.config.business_account_id) {
@@ -119,7 +123,7 @@ function channelToOctosFormat(channel: any): OctosChannelCredentials {
       }
       break;
 
-    case 'email':
+    case "email":
       octosChannel.smtp_host = channel.config.smtp_host;
       octosChannel.smtp_port = channel.config.smtp_port;
       octosChannel.username_env = channel.config.smtp_user;
@@ -127,9 +131,9 @@ function channelToOctosFormat(channel: any): OctosChannelCredentials {
       octosChannel.from_address = channel.config.from_address;
       break;
 
-    case 'wechat_work':
-    case 'wecom_bot':
-      octosChannel.type = 'wecom_bot';
+    case "wechat_work":
+    case "wecom_bot":
+      octosChannel.type = "wecom_bot";
       octosChannel.corp_id_env = channel.config.corp_id;
       octosChannel.agent_id_env = channel.config.agent_id;
       octosChannel.secret_env = channel.config.secret;
@@ -138,11 +142,12 @@ function channelToOctosFormat(channel: any): OctosChannelCredentials {
       }
       break;
 
-    case 'qq_bot':
-      octosChannel.bot_token_env = channel.config.bot_token || channel.config.access_token;
+    case "qq_bot":
+      octosChannel.bot_token_env =
+        channel.config.bot_token || channel.config.access_token;
       break;
 
-    case 'wechat':
+    case "wechat":
       octosChannel.app_id_env = channel.config.app_id;
       octosChannel.app_secret_env = channel.config.app_secret;
       octosChannel.token_env = channel.config.token;
@@ -163,11 +168,10 @@ function channelToOctosFormat(channel: any): OctosChannelCredentials {
 
 /**
  * 将前端配置转换为后端格式
- * - 新的 llm 结构直接发送给后端（无需转换）
- * - 如果有旧的 provider_id/model_id，自动迁移到 llm.primary 结构
- * - channel_ids → channels (带完整凭据)
  */
-export async function toBackendFormat(frontendConfig: OctosProfileConfig): Promise<OctosProfileConfig> {
+export async function toBackendFormat(
+  frontendConfig: OctosProfileConfig,
+): Promise<OctosProfileConfig> {
   const backendConfig: OctosProfileConfig = { ...frontendConfig };
 
   // 如果已经有新的 llm 结构，直接使用
@@ -197,30 +201,6 @@ export async function toBackendFormat(frontendConfig: OctosProfileConfig): Promi
         },
         fallbacks: [],
       };
-
-      // 处理旧格式的 fallback_configs
-      if (frontendConfig.fallback_configs && frontendConfig.fallback_configs.length > 0) {
-        const fallbacks: LlmModelSelectionConfig[] = [];
-        for (const fb of frontendConfig.fallback_configs) {
-          if (fb.provider_id) {
-            try {
-              const fbProvider = await providerApi.getById(fb.provider_id);
-              fallbacks.push({
-                family_id: fbProvider.type,
-                model_id: fb.model_id || undefined,
-                route: {
-                  route_id: fb.provider_id,
-                  base_url: fbProvider.baseUrl,
-                  api_key_env: getApiKeyEnv(fbProvider.type),
-                },
-              });
-            } catch (error) {
-              console.error(`Failed to resolve fallback provider ${fb.provider_id}:`, error);
-            }
-          }
-        }
-        backendConfig.llm.fallbacks = fallbacks;
-      }
     } catch (error) {
       console.error("Failed to resolve provider for backend format:", error);
     }
@@ -231,7 +211,7 @@ export async function toBackendFormat(frontendConfig: OctosProfileConfig): Promi
     try {
       const channels = await channelApi.getAll();
       const selectedChannels = channels.filter((c: any) =>
-        frontendConfig.channel_ids?.includes(c.id)
+        frontendConfig.channel_ids?.includes(c.id),
       );
 
       backendConfig.channels = selectedChannels.map(channelToOctosFormat);
@@ -251,7 +231,9 @@ export async function toBackendFormat(frontendConfig: OctosProfileConfig): Promi
  * - 如果是旧结构，尝试迁移到新结构
  * - channels → channel_ids
  */
-export async function toFrontendFormat(backendConfig: OctosProfileConfig): Promise<OctosProfileConfig> {
+export async function toFrontendFormat(
+  backendConfig: OctosProfileConfig,
+): Promise<OctosProfileConfig> {
   const frontendConfig: OctosProfileConfig = { ...backendConfig };
 
   // 如果已经有新的 llm 结构，直接使用
@@ -274,13 +256,15 @@ export async function toFrontendFormat(backendConfig: OctosProfileConfig): Promi
       const providers = await providerApi.getAll();
       // 查找匹配的 provider（通过 type 和 baseUrl）
       const matchedProvider = providers.find(
-        (p: any) => p.type === backendConfig.provider && p.baseUrl === backendConfig.base_url
+        (p: any) =>
+          p.type === backendConfig.provider &&
+          p.baseUrl === backendConfig.base_url,
       );
 
       if (matchedProvider) {
         // 查找匹配的模型（通过 name）
         const matchedModel = matchedProvider.models.find(
-          (m: any) => m.name === backendConfig.model && m.enabled
+          (m: any) => m.name === backendConfig.model && m.enabled,
         );
 
         if (matchedModel) {
@@ -300,12 +284,18 @@ export async function toFrontendFormat(backendConfig: OctosProfileConfig): Promi
         }
       }
     } catch (error) {
-      console.error("Failed to match backend config to frontend format:", error);
+      console.error(
+        "Failed to match backend config to frontend format:",
+        error,
+      );
     }
   }
 
   // 尝试转换回退模型
-  if (backendConfig.fallback_models && backendConfig.fallback_models.length > 0) {
+  if (
+    backendConfig.fallback_models &&
+    backendConfig.fallback_models.length > 0
+  ) {
     const fallbacks: LlmModelSelectionConfig[] = [];
     try {
       const providers = await providerApi.getAll();
@@ -313,13 +303,13 @@ export async function toFrontendFormat(backendConfig: OctosProfileConfig): Promi
       for (const fb of backendConfig.fallback_models) {
         // 查找匹配的 provider
         const matchedProvider = providers.find(
-          (p: any) => p.type === fb.provider && p.baseUrl === fb.base_url
+          (p: any) => p.type === fb.provider && p.baseUrl === fb.base_url,
         );
 
         if (matchedProvider) {
           // 查找匹配的模型
           const matchedModel = matchedProvider.models.find(
-            (m: any) => m.name === fb.model && m.enabled
+            (m: any) => m.name === fb.model && m.enabled,
           );
 
           fallbacks.push({
@@ -358,7 +348,9 @@ export async function toFrontendFormat(backendConfig: OctosProfileConfig): Promi
       for (const backendChannel of backendConfig.channels) {
         // 优先使用 _channel_id 进行精确匹配（如果存在）
         if (backendChannel._channel_id) {
-          const channel = channels.find((c: any) => c.id === backendChannel._channel_id);
+          const channel = channels.find(
+            (c: any) => c.id === backendChannel._channel_id,
+          );
           if (channel) {
             matchedChannelIds.push(channel.id);
             continue;
@@ -372,36 +364,47 @@ export async function toFrontendFormat(backendConfig: OctosProfileConfig): Promi
 
           // 根据渠道类型进行更精确的匹配
           switch (backendChannel.type) {
-            case 'feishu':
+            case "feishu":
               // 尝试通过 app_id 精确匹配（如果后端存储的是实际值）
-              return c.config.app_id && backendChannel.app_id_env &&
-                     c.config.app_id === backendChannel.app_id_env;
+              return (
+                c.config.app_id &&
+                backendChannel.app_id_env &&
+                c.config.app_id === backendChannel.app_id_env
+              );
 
-            case 'telegram':
+            case "telegram":
               return c.config.bot_token === backendChannel.bot_token_env;
 
-            case 'discord':
-              return c.config.bot_token === backendChannel.bot_token_env &&
-                     c.config.application_id === backendChannel.application_id_env;
+            case "discord":
+              return (
+                c.config.bot_token === backendChannel.bot_token_env &&
+                c.config.application_id === backendChannel.application_id_env
+              );
 
-            case 'slack':
+            case "slack":
               return c.config.bot_token === backendChannel.bot_token_env;
 
-            case 'whatsapp':
-              return c.config.phone_number_id === backendChannel.phone_number_id_env;
+            case "whatsapp":
+              return (
+                c.config.phone_number_id === backendChannel.phone_number_id_env
+              );
 
-            case 'email':
-              return c.config.smtp_host === backendChannel.smtp_host &&
-                     c.config.from_address === backendChannel.from_address;
+            case "email":
+              return (
+                c.config.smtp_host === backendChannel.smtp_host &&
+                c.config.from_address === backendChannel.from_address
+              );
 
-            case 'wecom_bot':
+            case "wecom_bot":
               return c.config.corp_id === backendChannel.corp_id_env;
 
-            case 'qq_bot':
-              return c.config.bot_token === backendChannel.bot_token_env ||
-                     c.config.access_token === backendChannel.bot_token_env;
+            case "qq_bot":
+              return (
+                c.config.bot_token === backendChannel.bot_token_env ||
+                c.config.access_token === backendChannel.bot_token_env
+              );
 
-            case 'wechat':
+            case "wechat":
               return c.config.app_id === backendChannel.app_id_env;
 
             default:
@@ -435,13 +438,17 @@ export async function toFrontendFormat(backendConfig: OctosProfileConfig): Promi
 /**
  * 初始化配置：将后端数据转换为前端格式
  */
-export async function initConfig(config: OctosProfileConfig): Promise<OctosProfileConfig> {
+export async function initConfig(
+  config: OctosProfileConfig,
+): Promise<OctosProfileConfig> {
   return toFrontendFormat(config);
 }
 
 /**
  * 准备保存配置：将前端数据转换为后端格式
  */
-export async function prepareConfigForSave(config: OctosProfileConfig): Promise<OctosProfileConfig> {
+export async function prepareConfigForSave(
+  config: OctosProfileConfig,
+): Promise<OctosProfileConfig> {
   return toBackendFormat(config);
 }

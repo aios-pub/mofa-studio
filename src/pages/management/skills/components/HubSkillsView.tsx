@@ -65,7 +65,7 @@ export function HubSkillsView() {
   };
 
   const handleInstallSkill = async (skill: HubSkill) => {
-    await installSkillFromHub(skill.namespaceSlug, skill.slug, skill.id);
+    await installSkillFromHub(skill.namespace_slug, skill.slug, skill.id);
   };
 
   const handleLabelChange = (labelId: string, checked: boolean) => {
@@ -116,7 +116,7 @@ export function HubSkillsView() {
             >
               {namespaces.map(ns => (
                 <Select.Option key={ns.id} value={ns.slug}>
-                  {ns.displayName}
+                  {ns.display_name}
                 </Select.Option>
               ))}
             </Select>
@@ -152,7 +152,7 @@ export function HubSkillsView() {
                     color={label.type === 'RECOMMENDED' ? 'blue' : 'purple'}
                     className="m-0"
                   >
-                    {label.displayName}
+                    {label.display_name}
                   </Tag>
                 </Checkbox>
               ))}
@@ -170,7 +170,7 @@ export function HubSkillsView() {
                 <Text type="secondary" className="mr-2">命名空间:</Text>
                 <Space wrap>
                   {facets.namespaces.map(ns => (
-                    <Tag key={ns.slug}>{ns.displayName} ({ns.count})</Tag>
+                    <Tag key={ns.slug}>{ns.display_name} ({ns.count})</Tag>
                   ))}
                 </Space>
               </div>
@@ -181,7 +181,7 @@ export function HubSkillsView() {
                 <Space wrap>
                   {facets.labels.map(l => (
                     <Tag key={l.id} color="blue">
-                      {l.displayName} ({l.count})
+                      {l.display_name} ({l.count})
                     </Tag>
                   ))}
                 </Space>
@@ -212,7 +212,7 @@ export function HubSkillsView() {
                 isInstalled={installedSkillIds.has(skill.id)}
                 isInstalling={installingSkillIds.has(skill.id)}
                 onInstall={() => handleInstallSkill(skill)}
-                onClick={() => navigate(`/management/skills/hub/${skill.namespaceSlug}/${skill.slug}`)}
+                onClick={() => navigate(`/management/skills/hub/${skill.namespace_slug}/${skill.slug}`)}
               />
             ))}
           </div>

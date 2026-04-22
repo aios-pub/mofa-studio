@@ -237,17 +237,17 @@ export function ReviewQueue() {
               {selectedReview.id}
             </Descriptions.Item>
             <Descriptions.Item label="技能版本 ID">
-              {selectedReview.skillVersionId}
+              {selectedReview.skill_version_id}
             </Descriptions.Item>
             <Descriptions.Item label="提交者">
-              {selectedReview.submittedBy}
+              {selectedReview.submitted_by}
             </Descriptions.Item>
             <Descriptions.Item label="提交时间">
-              {new Date(selectedReview.submittedAt).toLocaleString("zh-CN")}
+              {new Date(selectedReview.submitted_at).toLocaleString("zh-CN")}
             </Descriptions.Item>
-            {selectedReview.reviewComment && (
+            {selectedReview.review_comment && (
               <Descriptions.Item label="审核意见">
-                {selectedReview.reviewComment}
+                {selectedReview.review_comment}
               </Descriptions.Item>
             )}
           </Descriptions>

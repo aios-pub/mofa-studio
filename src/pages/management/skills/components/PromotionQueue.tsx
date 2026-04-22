@@ -60,9 +60,9 @@ export function PromotionQueue() {
   const handleSubmitPromotion = async (values: any) => {
     try {
       await skillHubV2Api.submitPromotion({
-        sourceSkillId: values.sourceSkillId,
-        sourceVersionId: values.sourceVersionId,
-        targetNamespaceId: values.targetNamespaceId,
+        sourceSkillId: values.source_skill_id,
+        sourceVersionId: values.source_version_id,
+        targetNamespaceId: values.target_namespace_id,
       });
       message.success('推广请求已提交');
       setSubmitModalVisible(false);
@@ -108,10 +108,10 @@ export function PromotionQueue() {
       render: (_: unknown, record: PromotionTask) => (
         <Space direction="vertical" size={0}>
           <div className="text-xs text-gray-500">
-            {record.sourceNamespaceSlug}
+            {record.source_namespace_slug}
           </div>
           <div>
-            <code>{record.sourceSkillSlug}</code>
+            <code>{record.source_skill_slug}</code>
           </div>
           <Tag>{record.sourceVersion}</Tag>
         </Space>
@@ -125,9 +125,9 @@ export function PromotionQueue() {
         <Space direction="vertical" size={0}>
           <div>
             <SwapOutlined className="mr-1" />
-            {record.targetNamespaceSlug}
+            {record.target_namespace_slug}
           </div>
-          {record.targetSkillId && (
+          {record.target_skill_id && (
             <Tag color="blue">已存在</Tag>
           )}
         </Space>
@@ -148,7 +148,7 @@ export function PromotionQueue() {
       key: 'submittedBy',
       width: 100,
       render: (_: unknown, record: PromotionTask) => (
-        <span className="text-xs">{record.submittedBy.slice(0, 8)}</span>
+        <span className="text-xs">{record.submitted_by.slice(0, 8)}</span>
       ),
     },
     {
@@ -156,8 +156,8 @@ export function PromotionQueue() {
       key: 'reviewedBy',
       width: 100,
       render: (_: unknown, record: PromotionTask) => (
-        record.reviewedBy ? (
-          <span className="text-xs">{record.reviewedBy.slice(0, 8)}</span>
+        record.reviewed_by ? (
+          <span className="text-xs">{record.reviewed_by.slice(0, 8)}</span>
         ) : '-'
       ),
     },
@@ -351,14 +351,14 @@ export function PromotionQueue() {
               </div>
               <div>
                 <span className="text-gray-600">来源: </span>
-                <Tag color="blue">{selectedPromotion.sourceNamespaceSlug}</Tag>
-                <code>{selectedPromotion.sourceSkillSlug}</code>
+                <Tag color="blue">{selectedPromotion.source_namespace_slug}</Tag>
+                <code>{selectedPromotion.source_skill_slug}</code>
                 <Tag>{selectedPromotion.sourceVersion}</Tag>
               </div>
               <div>
                 <span className="text-gray-600">目标: </span>
-                <Tag color="green">{selectedPromotion.targetNamespaceSlug}</Tag>
-                {selectedPromotion.targetSkillId && (
+                <Tag color="green">{selectedPromotion.target_namespace_slug}</Tag>
+                {selectedPromotion.target_skill_id && (
                   <Tag color="orange">已存在技能</Tag>
                 )}
               </div>
@@ -371,30 +371,30 @@ export function PromotionQueue() {
               </div>
               <div>
                 <span className="text-gray-600">提交者: </span>
-                <span>{selectedPromotion.submittedBy.slice(0, 8)}</span>
+                <span>{selectedPromotion.submitted_by.slice(0, 8)}</span>
               </div>
               <div>
                 <span className="text-gray-600">提交时间: </span>
-                <span>{new Date(selectedPromotion.submittedAt).toLocaleString('zh-CN')}</span>
+                <span>{new Date(selectedPromotion.submitted_at).toLocaleString('zh-CN')}</span>
               </div>
-              {selectedPromotion.reviewedBy && (
+              {selectedPromotion.reviewed_by && (
                 <>
                   <div>
                     <span className="text-gray-600">处理者: </span>
-                    <span>{selectedPromotion.reviewedBy.slice(0, 8)}</span>
+                    <span>{selectedPromotion.reviewed_by.slice(0, 8)}</span>
                   </div>
                   <div>
                     <span className="text-gray-600">处理时间: </span>
                     <span>
-                      {selectedPromotion.reviewedAt
-                        ? new Date(selectedPromotion.reviewedAt).toLocaleString('zh-CN')
+                      {selectedPromotion.reviewed_at
+                        ? new Date(selectedPromotion.reviewed_at).toLocaleString('zh-CN')
                         : '-'}
                     </span>
                   </div>
-                  {selectedPromotion.reviewComment && (
+                  {selectedPromotion.review_comment && (
                     <div>
                       <span className="text-gray-600">处理说明: </span>
-                      <span>{selectedPromotion.reviewComment}</span>
+                      <span>{selectedPromotion.review_comment}</span>
                     </div>
                   )}
                 </>

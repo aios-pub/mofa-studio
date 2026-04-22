@@ -32,223 +32,223 @@ import type {
 const mockNamespaces: HubNamespace[] = [
   {
     id: '1',
-    tenantId: 'default',
+    tenant_id: 'default',
     slug: 'global',
-    displayName: 'Global Namespace',
+    display_name: 'Global Namespace',
     type: 'GLOBAL' as NamespaceType,
     description: 'Global skill namespace for all users',
     status: 'ACTIVE',
-    memberCount: 100,
-    skillCount: 50,
-    createdBy: 'system',
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date(),
+    member_count: 100,
+    skill_count: 50,
+    created_by: 'system',
+    created_at: new Date('2024-01-01'),
+    updated_at: new Date(),
   },
   {
     id: '2',
-    tenantId: 'default',
+    tenant_id: 'default',
     slug: 'team-a',
-    displayName: 'Team A',
+    display_name: 'Team A',
     type: 'TEAM' as NamespaceType,
     description: 'Team A namespace',
     status: 'ACTIVE',
-    memberCount: 10,
-    skillCount: 5,
-    createdBy: 'admin',
-    createdAt: new Date('2024-02-01'),
-    updatedAt: new Date(),
+    member_count: 10,
+    skill_count: 5,
+    created_by: 'admin',
+    created_at: new Date('2024-02-01'),
+    updated_at: new Date(),
   },
 ];
 
 const mockLabels: HubLabel[] = [
-  { id: '1', slug: 'verified', type: 'RECOMMENDED' as LabelType, displayName: '已认证', visibleInFilter: true, sortOrder: 1 },
-  { id: '2', slug: 'official', type: 'RECOMMENDED' as LabelType, displayName: '官方', visibleInFilter: true, sortOrder: 2 },
-  { id: '3', slug: 'popular', type: 'RECOMMENDED' as LabelType, displayName: '热门', visibleInFilter: true, sortOrder: 3 },
-  { id: '4', slug: 'experimental', type: 'PRIVILEGED' as LabelType, displayName: '实验性', visibleInFilter: true, sortOrder: 10 },
+  { id: '1', slug: 'verified', type: 'RECOMMENDED' as LabelType, display_name: '已认证', visible_in_filter: true, sort_order: 1 },
+  { id: '2', slug: 'official', type: 'RECOMMENDED' as LabelType, display_name: '官方', visible_in_filter: true, sort_order: 2 },
+  { id: '3', slug: 'popular', type: 'RECOMMENDED' as LabelType, display_name: '热门', visible_in_filter: true, sort_order: 3 },
+  { id: '4', slug: 'experimental', type: 'PRIVILEGED' as LabelType, display_name: '实验性', visible_in_filter: true, sort_order: 10 },
 ];
 
 const mockVersions: HubSkillVersion[] = [
   {
     id: 'v1',
-    skillId: '1',
+    skill_id: '1',
     version: '1.0.0',
     status: 'PUBLISHED',
     changelog: 'Initial release',
-    fileCount: 5,
-    totalSize: 10240,
-    publishedAt: new Date('2024-01-01'),
-    bundleReady: true,
-    downloadReady: true,
-    createdBy: 'admin',
-    createdAt: new Date('2024-01-01'),
+    file_count: 5,
+    total_size: 10240,
+    published_at: new Date('2024-01-01'),
+    bundle_ready: true,
+    download_ready: true,
+    created_by: 'admin',
+    created_at: new Date('2024-01-01'),
   },
   {
     id: 'v2',
-    skillId: '1',
+    skill_id: '1',
     version: '1.1.0',
     status: 'PUBLISHED',
     changelog: 'Added new features',
-    fileCount: 6,
-    totalSize: 11264,
-    publishedAt: new Date('2024-02-01'),
-    bundleReady: true,
-    downloadReady: true,
-    createdBy: 'admin',
-    createdAt: new Date('2024-02-01'),
+    file_count: 6,
+    total_size: 11264,
+    published_at: new Date('2024-02-01'),
+    bundle_ready: true,
+    download_ready: true,
+    created_by: 'admin',
+    created_at: new Date('2024-02-01'),
   },
   {
     id: 'v3',
-    skillId: '1',
+    skill_id: '1',
     version: '2.0.0',
     status: 'DRAFT',
     changelog: 'Major update',
-    fileCount: 7,
-    totalSize: 12288,
-    bundleReady: false,
-    downloadReady: false,
-    createdBy: 'admin',
-    createdAt: new Date('2024-03-01'),
+    file_count: 7,
+    total_size: 12288,
+    bundle_ready: false,
+    download_ready: false,
+    created_by: 'admin',
+    created_at: new Date('2024-03-01'),
   },
 ];
 
 const mockFiles: HubSkillFile[] = [
   {
     id: 'f1',
-    versionId: 'v1',
-    filePath: 'src/main.ts',
-    fileSize: 1024,
-    contentType: 'text/typescript',
+    version_id: 'v1',
+    file_path: 'src/main.ts',
+    file_size: 1024,
+    content_type: 'text/typescript',
     sha256: 'abc123',
-    createdAt: new Date(),
+    created_at: new Date(),
   },
   {
     id: 'f2',
-    versionId: 'v1',
-    filePath: 'README.md',
-    fileSize: 512,
-    contentType: 'text/markdown',
+    version_id: 'v1',
+    file_path: 'README.md',
+    file_size: 512,
+    content_type: 'text/markdown',
     sha256: 'def456',
-    createdAt: new Date(),
+    created_at: new Date(),
   },
   {
     id: 'f3',
-    versionId: 'v1',
-    filePath: 'package.json',
-    fileSize: 256,
-    contentType: 'application/json',
+    version_id: 'v1',
+    file_path: 'package.json',
+    file_size: 256,
+    content_type: 'application/json',
     sha256: 'ghi789',
-    createdAt: new Date(),
+    created_at: new Date(),
   },
 ];
 
 const mockSkills: HubSkill[] = [
   {
     id: '1',
-    tenantId: 'default',
-    namespaceId: '1',
-    namespaceSlug: 'global',
+    tenant_id: 'default',
+    namespace_id: '1',
+    namespace_slug: 'global',
     slug: 'web-search',
-    displayName: 'Web Search',
+    display_name: 'Web Search',
     summary: 'Search the web for information',
-    ownerId: 'admin',
-    ownerDisplayName: 'Admin',
+    owner_id: 'admin',
+    owner_display_name: 'Admin',
     visibility: 'PUBLIC' as SkillVisibility,
     status: 'ACTIVE',
-    latestVersion: mockVersions[1],
-    downloadCount: 1250,
-    starCount: 45,
-    ratingAvg: 4.5,
-    ratingCount: 30,
+    latest_version: mockVersions[1],
+    download_count: 1250,
+    star_count: 45,
+    rating_avg: 4.5,
+    rating_count: 30,
     hidden: false,
     tags: ['search', 'web', 'api'],
     labels: [mockLabels[0], mockLabels[2]],
-    canManageLifecycle: false,
-    canSubmitPromotion: false,
-    canInteract: true,
-    canReport: true,
-    createdBy: 'admin',
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date(),
+    can_manage_lifecycle: false,
+    can_submit_promotion: false,
+    can_interact: true,
+    can_report: true,
+    created_by: 'admin',
+    created_at: new Date('2024-01-01'),
+    updated_at: new Date(),
   },
   {
     id: '2',
-    tenantId: 'default',
-    namespaceId: '1',
-    namespaceSlug: 'global',
+    tenant_id: 'default',
+    namespace_id: '1',
+    namespace_slug: 'global',
     slug: 'code-executor',
-    displayName: 'Code Executor',
+    display_name: 'Code Executor',
     summary: 'Execute code in a sandboxed environment',
-    ownerId: 'admin',
-    ownerDisplayName: 'Admin',
+    owner_id: 'admin',
+    owner_display_name: 'Admin',
     visibility: 'PUBLIC' as SkillVisibility,
     status: 'ACTIVE',
-    latestVersion: mockVersions[0],
-    downloadCount: 890,
-    starCount: 32,
-    ratingAvg: 4.2,
-    ratingCount: 18,
+    latest_version: mockVersions[0],
+    download_count: 890,
+    star_count: 32,
+    rating_avg: 4.2,
+    rating_count: 18,
     hidden: false,
     tags: ['code', 'execution', 'sandbox'],
     labels: [mockLabels[1]],
-    canManageLifecycle: false,
-    canSubmitPromotion: false,
-    canInteract: true,
-    canReport: true,
-    createdBy: 'admin',
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date(),
+    can_manage_lifecycle: false,
+    can_submit_promotion: false,
+    can_interact: true,
+    can_report: true,
+    created_by: 'admin',
+    created_at: new Date('2024-01-15'),
+    updated_at: new Date(),
   },
   {
     id: '3',
-    tenantId: 'default',
-    namespaceId: '2',
-    namespaceSlug: 'team-a',
+    tenant_id: 'default',
+    namespace_id: '2',
+    namespace_slug: 'team-a',
     slug: 'data-processor',
-    displayName: 'Data Processor',
+    display_name: 'Data Processor',
     summary: 'Process large datasets efficiently',
-    ownerId: 'user1',
-    ownerDisplayName: 'User One',
+    owner_id: 'user1',
+    owner_display_name: 'User One',
     visibility: 'NAMESPACE_ONLY' as SkillVisibility,
     status: 'ACTIVE',
-    downloadCount: 120,
-    starCount: 8,
-    ratingAvg: 4.8,
-    ratingCount: 5,
+    download_count: 120,
+    star_count: 8,
+    rating_avg: 4.8,
+    rating_count: 5,
     hidden: false,
     tags: ['data', 'processing', 'etl'],
     labels: [mockLabels[3]],
-    canManageLifecycle: false,
-    canSubmitPromotion: false,
-    canInteract: true,
-    canReport: true,
-    createdBy: 'user1',
-    createdAt: new Date('2024-02-01'),
-    updatedAt: new Date(),
+    can_manage_lifecycle: false,
+    can_submit_promotion: false,
+    can_interact: true,
+    can_report: true,
+    created_by: 'user1',
+    created_at: new Date('2024-02-01'),
+    updated_at: new Date(),
   },
 ];
 
 const mockReviews: ReviewTask[] = [
   {
     id: 'r1',
-    skillVersionId: 'v3',
-    namespaceId: '1',
+    skill_version_id: 'v3',
+    namespace_id: '1',
     status: 'PENDING',
     version: 1,
-    submittedBy: 'admin',
-    submittedAt: new Date('2024-03-01'),
+    submit_user_id: 'admin',
+    submitted_at: new Date('2024-03-01'),
   },
 ];
 
 const mockReports: SkillReport[] = [
   {
     id: 'rep1',
-    skillId: '2',
-    namespaceId: '1',
-    reporterId: 'user1',
+    skill_id: '2',
+    namespace_id: '1',
+    reporter_id: 'user1',
     reason: 'Inappropriate content',
     details: 'The skill contains inappropriate language',
     status: 'PENDING',
-    createdAt: new Date('2024-03-01'),
+    created_at: new Date('2024-03-01'),
   },
 ];
 
@@ -266,12 +266,12 @@ const skillHubV2MockApi = {
     let filtered = [...mockSkills];
     if (params.q) {
       filtered = filtered.filter(s =>
-        s.displayName?.toLowerCase().includes(params.q!.toLowerCase()) ||
+        s.display_name?.toLowerCase().includes(params.q!.toLowerCase()) ||
         s.summary?.toLowerCase().includes(params.q!.toLowerCase())
       );
     }
     if (params.namespace) {
-      filtered = filtered.filter(s => s.namespaceSlug === params.namespace);
+      filtered = filtered.filter(s => s.namespace_slug === params.namespace);
     }
     if (params.labels?.length) {
       filtered = filtered.filter(s =>
@@ -279,11 +279,11 @@ const skillHubV2MockApi = {
       );
     }
     if (params.sort === 'popular') {
-      filtered.sort((a, b) => b.downloadCount - a.downloadCount);
+      filtered.sort((a, b) => b.download_count - a.download_count);
     } else if (params.sort === 'rating') {
-      filtered.sort((a, b) => b.ratingAvg - a.ratingAvg);
+      filtered.sort((a, b) => b.rating_avg - a.rating_avg);
     } else {
-      filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      filtered.sort((a, b) => b.created_at.getTime() - a.created_at.getTime());
     }
     const page = params.page || 0;
     const size = params.size || 20;
@@ -293,29 +293,29 @@ const skillHubV2MockApi = {
       skills: items,
       total: filtered.length,
       page,
-      pageSize: size,
+      page_size: size,
     };
   },
 
   getSkillDetail: async (namespace: string, slug: string): Promise<HubSkill> => {
-    const skill = mockSkills.find(s => s.namespaceSlug === namespace && s.slug === slug);
+    const skill = mockSkills.find(s => s.namespace_slug === namespace && s.slug === slug);
     if (!skill) throw new Error('Skill not found');
     return skill;
   },
 
   listVersions: async (namespace: string, slug: string, page = 0, size = 20): Promise<PageResponse<HubSkillVersion>> => {
-    const skill = mockSkills.find(s => s.namespaceSlug === namespace && s.slug === slug);
+    const skill = mockSkills.find(s => s.namespace_slug === namespace && s.slug === slug);
     if (!skill) throw new Error('Skill not found');
-    const versions = mockVersions.filter(v => v.skillId === skill.id);
+    const versions = mockVersions.filter(v => v.skill_id === skill.id);
     const start = page * size;
     const items = versions.slice(start, start + size);
-    return { items, total: versions.length, page, pageSize: size, totalPages: Math.ceil(versions.length / size) };
+    return { items, total: versions.length, page, page_size: size, total_pages: Math.ceil(versions.length / size) };
   },
 
   getVersionDetail: async (namespace: string, slug: string, version: string): Promise<HubSkillVersion> => {
-    const skill = mockSkills.find(s => s.namespaceSlug === namespace && s.slug === slug);
+    const skill = mockSkills.find(s => s.namespace_slug === namespace && s.slug === slug);
     if (!skill) throw new Error('Skill not found');
-    const ver = mockVersions.find(v => v.skillId === skill.id && v.version === version);
+    const ver = mockVersions.find(v => v.skill_id === skill.id && v.version === version);
     if (!ver) throw new Error('Version not found');
     return ver;
   },
@@ -334,118 +334,118 @@ const skillHubV2MockApi = {
 
   // Publishing & Lifecycle
   publish: async (namespace: string, file: File, visibility: SkillVisibility): Promise<PublishSkillResult> => ({
-    skillId: 'new-' + Date.now(),
+    skill_id: 'new-' + Date.now(),
     namespace,
     slug: file.name.replace('.zip', ''),
     version: '1.0.0',
     status: 'DRAFT',
-    fileCount: 1,
-    totalSize: file.size,
+    file_count: 1,
+    total_size: file.size,
   }),
 
   submitReview: async (namespace: string, slug: string, version: string): Promise<SkillLifecycleResponse> => ({
-    skillId: '1',
-    versionId: 'v3',
+    skill_id: '1',
+    version_id: 'v3',
     action: 'submit_review',
     newStatus: 'PENDING_REVIEW',
   }),
 
   confirmPublish: async (namespace: string, slug: string, version: string): Promise<SkillLifecycleResponse> => ({
-    skillId: '1',
-    versionId: 'v3',
+    skill_id: '1',
+    version_id: 'v3',
     action: 'confirm_publish',
     newStatus: 'PUBLISHED',
   }),
 
   rereleaseVersion: async (namespace: string, slug: string, version: string): Promise<SkillLifecycleResponse> => ({
-    skillId: '1',
-    versionId: 'v3',
+    skill_id: '1',
+    version_id: 'v3',
     action: 'rerelease',
     newStatus: 'DRAFT',
   }),
 
   withdrawReview: async (namespace: string, slug: string, version: string): Promise<SkillLifecycleResponse> => ({
-    skillId: '1',
-    versionId: 'v3',
+    skill_id: '1',
+    version_id: 'v3',
     action: 'withdraw_review',
     newStatus: 'UPLOADED',
   }),
 
   deleteVersion: async (namespace: string, slug: string, version: string): Promise<SkillLifecycleResponse> => ({
-    skillId: '1',
-    versionId: 'v3',
+    skill_id: '1',
+    version_id: 'v3',
     action: 'delete',
     newStatus: 'DELETED',
   }),
 
   archiveSkill: async (namespace: string, slug: string): Promise<SkillLifecycleResponse> => ({
-    skillId: '1',
+    skill_id: '1',
     action: 'archive',
     newStatus: 'ARCHIVED',
   }),
 
   unarchiveSkill: async (namespace: string, slug: string): Promise<SkillLifecycleResponse> => ({
-    skillId: '1',
+    skill_id: '1',
     action: 'unarchive',
     newStatus: 'ACTIVE',
   }),
 
   // Social
-  starSkill: async (skillId: string): Promise<void> => {
-    const skill = mockSkills.find(s => s.id === skillId);
-    if (skill) skill.starCount++;
+  starSkill: async (skill_id: string): Promise<void> => {
+    const skill = mockSkills.find(s => s.id === skill_id);
+    if (skill) skill.star_count++;
   },
 
-  unstarSkill: async (skillId: string): Promise<void> => {
-    const skill = mockSkills.find(s => s.id === skillId);
-    if (skill) skill.starCount--;
+  unstarSkill: async (skill_id: string): Promise<void> => {
+    const skill = mockSkills.find(s => s.id === skill_id);
+    if (skill) skill.star_count--;
   },
 
-  checkStarred: async (skillId: string): Promise<boolean> => false,
+  checkStarred: async (skill_id: string): Promise<boolean> => false,
 
-  rateSkill: async (skillId: string, score: number): Promise<void> => {},
+  rateSkill: async (skill_id: string, score: number): Promise<void> => {},
 
-  getRating: async (skillId: string): Promise<SkillRatingStatus> => ({ score: 0, hasRated: false }),
+  getRating: async (skill_id: string): Promise<SkillRatingStatus> => ({ score: 0, hasRated: false }),
 
   // Labels
   getLabels: async (locale = 'zh-CN'): Promise<HubLabel[]> => mockLabels,
 
-  getSkillLabels: async (skillId: string): Promise<HubLabel[]> => {
-    const skill = mockSkills.find(s => s.id === skillId);
+  getSkillLabels: async (skill_id: string): Promise<HubLabel[]> => {
+    const skill = mockSkills.find(s => s.id === skill_id);
     return skill?.labels || [];
   },
 
-  assignLabels: async (skillId: string, labelIds: string[]): Promise<void> => {},
+  assignLabels: async (skill_id: string, labelIds: string[]): Promise<void> => {},
 
-  removeLabel: async (skillId: string, labelId: string): Promise<void> => {},
+  removeLabel: async (skill_id: string, labelId: string): Promise<void> => {},
 
   createLabel: async (data: { slug: string; type: LabelType; translations: LabelTranslation[] }): Promise<LabelDefinition> => ({
     id: 'new-' + Date.now(),
-    tenantId: 'default',
+    tenant_id: 'default',
     slug: data.slug,
     type: data.type,
-    visibleInFilter: true,
-    sortOrder: 0,
+    visible_in_filter: true,
+    sort_order: 0,
     translations: data.translations,
-    createdAt: new Date(),
+    created_at: new Date(),
   }),
 
   updateLabel: async (id: string, data: Partial<LabelDefinition>): Promise<LabelDefinition> => ({
     id,
-    tenantId: 'default',
+    tenant_id: 'default',
     slug: data.slug || '',
     type: data.type || 'RECOMMENDED',
-    visibleInFilter: true,
-    sortOrder: 0,
+    visible_in_filter: true,
+    sort_order: 0,
     translations: [],
-    createdAt: new Date(),
+    created_at: new Date(),
   }),
 
   deleteLabel: async (id: string): Promise<void> => {},
 
   // Tags
   getTags: async (namespace: string, slug: string): Promise<string[]> => {
-    const skill = mockSkills.find(s => s.namespaceSlug === namespace && s.slug === slug);
+    const skill = mockSkills.find(s => s.namespace_slug === namespace && s.slug === slug);
     return skill?.tags || [];
   },
 
@@ -454,30 +454,30 @@ const skillHubV2MockApi = {
   removeTag: async (namespace: string, slug: string, tagName: string): Promise<void> => {},
 
   // Reviews
-  submitReviewTask: async (skillVersionId: string): Promise<ReviewTask> => mockReviews[0],
+  submitReviewTask: async (skill_version_id: string): Promise<ReviewTask> => mockReviews[0],
 
   listReviews: async (params: { status?: string; page?: number; size?: number }): Promise<PageResponse<ReviewTask>> => ({
     items: mockReviews,
     total: mockReviews.length,
     page: 0,
-    pageSize: 20,
-    totalPages: 1,
+    page_size: 20,
+    total_pages: 1,
   }),
 
-  listPendingReviews: async (namespaceId: string, page = 0, size = 20): Promise<PageResponse<ReviewTask>> => ({
+  listPendingReviews: async (namespace_id: string, page = 0, size = 20): Promise<PageResponse<ReviewTask>> => ({
     items: mockReviews,
     total: mockReviews.length,
     page,
-    pageSize: size,
-    totalPages: 1,
+    page_size: size,
+    total_pages: 1,
   }),
 
   listMyReviewSubmissions: async (page = 0, size = 20): Promise<PageResponse<ReviewTask>> => ({
     items: [],
     total: 0,
     page,
-    pageSize: size,
-    totalPages: 0,
+    page_size: size,
+    total_pages: 0,
   }),
 
   getReviewDetail: async (id: string): Promise<ReviewTask> => mockReviews[0],
@@ -495,47 +495,47 @@ const skillHubV2MockApi = {
     items: mockReports,
     total: mockReports.length,
     page: 0,
-    pageSize: 20,
-    totalPages: 1,
+    page_size: 20,
+    total_pages: 1,
   }),
 
   resolveReport: async (id: string, data: { action: string; comment?: string }): Promise<void> => {},
 
   // Admin
-  hideSkill: async (skillId: string, reason?: string): Promise<void> => {
-    const skill = mockSkills.find(s => s.id === skillId);
+  hideSkill: async (skill_id: string, reason?: string): Promise<void> => {
+    const skill = mockSkills.find(s => s.id === skill_id);
     if (skill) skill.hidden = true;
   },
 
-  unhideSkill: async (skillId: string): Promise<void> => {
-    const skill = mockSkills.find(s => s.id === skillId);
+  unhideSkill: async (skill_id: string): Promise<void> => {
+    const skill = mockSkills.find(s => s.id === skill_id);
     if (skill) skill.hidden = false;
   },
 
-  yankVersion: async (versionId: string, reason?: string): Promise<void> => {},
+  yankVersion: async (version_id: string, reason?: string): Promise<void> => {},
 
   // Namespaces
   listNamespaces: async (): Promise<HubNamespace[]> => mockNamespaces,
 
-  createNamespace: async (data: { slug: string; displayName: string; type: NamespaceType }): Promise<HubNamespace> => ({
+  createNamespace: async (data: { slug: string; display_name: string; type: NamespaceType }): Promise<HubNamespace> => ({
     id: 'new-' + Date.now(),
-    tenantId: 'default',
+    tenant_id: 'default',
     ...data,
     status: 'ACTIVE',
-    createdBy: 'admin',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    created_by: 'admin',
+    created_at: new Date(),
+    updated_at: new Date(),
   }),
 
   getNamespace: async (id: string): Promise<HubNamespace> => mockNamespaces[0],
 
-  listMembers: async (namespaceId: string): Promise<NamespaceMember[]> => [],
+  listMembers: async (namespace_id: string): Promise<NamespaceMember[]> => [],
 
-  addMember: async (namespaceId: string, userId: string, role: NamespaceRole): Promise<void> => {},
+  addMember: async (namespace_id: string, userId: string, role: NamespaceRole): Promise<void> => {},
 
-  updateMemberRole: async (namespaceId: string, userId: string, role: NamespaceRole): Promise<void> => {},
+  updateMemberRole: async (namespace_id: string, userId: string, role: NamespaceRole): Promise<void> => {},
 
-  removeMember: async (namespaceId: string, userId: string): Promise<void> => {},
+  removeMember: async (namespace_id: string, userId: string): Promise<void> => {},
 
   listTenantUsers: async (): Promise<TenantUser[]> => {
     return [
@@ -549,22 +549,22 @@ const skillHubV2MockApi = {
   // Stats
   getStats: async (): Promise<HubStats> => ({
     totalSkills: mockSkills.length,
-    totalDownloads: mockSkills.reduce((sum, s) => sum + s.downloadCount, 0),
+    totalDownloads: mockSkills.reduce((sum, s) => sum + s.download_count, 0),
     totalNamespaces: mockNamespaces.length,
-    totalRatings: mockSkills.reduce((sum, s) => sum + s.ratingCount, 0),
+    totalRatings: mockSkills.reduce((sum, s) => sum + s.rating_count, 0),
   }),
 
   // Promotion
-  submitPromotion: async (data: { sourceSkillId: string; sourceVersionId: string; targetNamespaceId: string }): Promise<{ id: string }> => ({
+  submitPromotion: async (data: { source_skill_id: string; source_version_id: string; target_namespace_id: string }): Promise<{ id: string }> => ({
     id: 'promo-' + Date.now(),
   }),
 
-  listPromotions: async (params: { namespaceId?: string; status?: string; page?: number; pageSize?: number }): Promise<PageResponse<PromotionTask>> => ({
+  listPromotions: async (params: { namespace_id?: string; status?: string; page?: number; page_size?: number }): Promise<PageResponse<PromotionTask>> => ({
     items: [],
     total: 0,
     page: params.page || 0,
-    pageSize: params.pageSize || 20,
-    totalPages: 0,
+    page_size: params.page_size || 20,
+    total_pages: 0,
   }),
 
   approvePromotion: async (id: string, data?: { comment?: string }): Promise<any> => ({
@@ -585,12 +585,12 @@ const skillHubV2MockApi = {
     size: params?.size || 20,
   }),
 
-  createToken: async (data: { name: string; scopes?: string[]; expirationMode?: string; customExpiresAt?: string }): Promise<{ token: string; id: string; name: string; tokenPrefix: string; createdAt: string }> => ({
+  createToken: async (data: { name: string; scopes?: string[]; expirationMode?: string; customExpiresAt?: string }): Promise<{ token: string; id: string; name: string; tokenPrefix: string; created_at: string }> => ({
     token: 'mock-token-' + Date.now() + '-' + Math.random().toString(36).substring(7),
     id: 'token-' + Date.now(),
     name: data.name,
     tokenPrefix: 'mock_' + Math.random().toString(36).substring(2, 10),
-    createdAt: new Date().toISOString(),
+    created_at: new Date().toISOString(),
   }),
 
   deleteToken: async (id: string): Promise<void> => {},

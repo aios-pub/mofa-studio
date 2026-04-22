@@ -316,7 +316,7 @@ export function AdminGovernancePanel() {
               </div>
               <div>
                 <span className="text-gray-600">技能 ID: </span>
-                <span>{selectedReport.skillId.slice(0, 8)}</span>
+                <span>{selectedReport.skill_id.slice(0, 8)}</span>
               </div>
               <div>
                 <span className="text-gray-600">举报原因: </span>
@@ -328,12 +328,12 @@ export function AdminGovernancePanel() {
               </div>
               <div>
                 <span className="text-gray-600">举报者: </span>
-                <span>{selectedReport.reporterId.slice(0, 8)}</span>
+                <span>{selectedReport.reporter_id.slice(0, 8)}</span>
               </div>
               <div>
                 <span className="text-gray-600">举报时间: </span>
                 <span>
-                  {new Date(selectedReport.createdAt).toLocaleString("zh-CN")}
+                  {new Date(selectedReport.created_at).toLocaleString("zh-CN")}
                 </span>
               </div>
             </div>

@@ -25,7 +25,7 @@ interface HubSkillCardProps {
 }
 
 function isNewHubSkill(skill: HubSkill | HubSkillLegacy): skill is HubSkill {
-  return 'namespaceSlug' in skill;
+  return 'namespace_slug' in skill;
 }
 
 function formatDownloads(num: number) {
@@ -45,11 +45,11 @@ export function HubSkillCard({
   const isNew = isNewHubSkill(skill);
 
   // Extract common properties with fallback
-  const name = isNew ? (skill.displayName || skill.slug) : skill.name;
+  const name = isNew ? (skill.display_name || skill.slug) : skill.name;
   const description = isNew ? (skill.summary || (skill as any).description) : skill.description;
-  const downloads = isNew ? (skill.downloadCount ?? 0) : (skill as HubSkillLegacy).downloads ?? 0;
-  const rating = isNew ? skill.ratingAvg : skill.rating;
-  const updatedAt = skill.updatedAt;
+  const downloads = isNew ? (skill.download_count ?? 0) : (skill as HubSkillLegacy).downloads ?? 0;
+  const rating = isNew ? skill.rating_avg : skill.rating;
+  const updatedAt = skill.updated_at;
   const tags = skill.tags || [];
   const labels = isNew ? skill.labels : [];
 
@@ -96,8 +96,8 @@ export function HubSkillCard({
               )}
             </div>
             <Text type="secondary" style={{ fontSize: 12 }}>
-              {isNew ? `${skill.namespaceSlug}/` : ''}
-              {isNew ? skill.ownerDisplayName || skill.ownerId : skill.author}
+              {isNew ? `${skill.namespace_slug}/` : ''}
+              {isNew ? skill.owner_display_name || skill.owner_id : skill.author}
             </Text>
           </div>
           {version && (
@@ -118,7 +118,7 @@ export function HubSkillCard({
         <div className="flex flex-wrap gap-1 mb-3">
           {labels.slice(0, 2).map(label => (
             <Tag key={label.id} color={label.type === 'RECOMMENDED' ? 'blue' : 'purple'} style={{ fontSize: 11, margin: 0 }}>
-              {label.displayName}
+              {label.display_name}
             </Tag>
           ))}
           {tags.slice(0, labels.length > 0 ? 1 : 3).map((tag) => (
@@ -141,7 +141,7 @@ export function HubSkillCard({
               <Tooltip title="Star">
                 <div className="flex items-center gap-1 text-xs text-[var(--color-text-secondary)]">
                   <StarOutlined />
-                  <span>{skill.starCount}</span>
+                  <span>{skill.star_count}</span>
                 </div>
               </Tooltip>
             )}
@@ -150,7 +150,7 @@ export function HubSkillCard({
                 <Rate disabled value={rating} count={1} style={{ fontSize: 12 }} />
                 <span className="text-xs text-[var(--color-text-secondary)]">
                   {rating ? rating.toFixed(1) : '-'}
-                  {isNew && skill.ratingCount > 0 && ` (${skill.ratingCount})`}
+                  {isNew && skill.rating_count > 0 && ` (${skill.rating_count})`}
                 </span>
               </div>
             </Tooltip>

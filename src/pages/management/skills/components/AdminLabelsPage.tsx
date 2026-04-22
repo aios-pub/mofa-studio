@@ -46,7 +46,7 @@ export function AdminLabelsPage() {
         type: label.type,
         visibleInFilter: label.visibleInFilter,
         sortOrder: label.sortOrder,
-        translations: [{ locale: 'zh-CN', displayName: label.displayName }],
+        translations: [{ locale: 'zh-CN', displayName: label.display_name }],
         createdAt: new Date(),
       }));
       setLabels(labelDefinitions);
@@ -130,7 +130,7 @@ export function AdminLabelsPage() {
       key: 'displayName',
       render: (translations: LabelTranslation[]) => {
         const zhTranslation = translations.find(t => t.locale === 'zh-CN');
-        return zhTranslation?.displayName || translations[0]?.displayName || '-';
+        return zhTranslation?.display_name || translations[0]?.display_name || '-';
       },
     },
     {

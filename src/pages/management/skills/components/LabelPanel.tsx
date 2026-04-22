@@ -71,7 +71,7 @@ export function LabelPanel({ skillId, editable = false }: LabelPanelProps) {
                     className="mr-1"
                   />
                 )}
-                {label.displayName}
+                {label.display_name}
               </Tag>
             ))}
         </Space>
@@ -94,7 +94,7 @@ export function LabelPanel({ skillId, editable = false }: LabelPanelProps) {
                     className="mr-1"
                   />
                 )}
-                {label.displayName}
+                {label.display_name}
               </Tag>
             ))}
         </Space>

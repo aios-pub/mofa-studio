@@ -165,7 +165,7 @@ export function HubSkillDetail() {
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <Title level={2} className="m-0">
-                {selectedHubSkill.displayName || selectedHubSkill.slug}
+                {selectedHubSkill.display_name || selectedHubSkill.slug}
               </Title>
               <Tag color="blue">{selectedHubSkill.visibility}</Tag>
               <Tag
@@ -178,11 +178,11 @@ export function HubSkillDetail() {
               {selectedHubSkill.summary || "暂无描述"}
             </Paragraph>
             <Text type="secondary">
-              {selectedHubSkill.namespaceSlug}/{selectedHubSkill.slug}
+              {selectedHubSkill.namespace_slug}/{selectedHubSkill.slug}
             </Text>
             <Divider type="vertical" />
             <Text type="secondary">
-              作者: {selectedHubSkill.ownerName || selectedHubSkill.ownerId}
+              作者: {selectedHubSkill.owner_name || selectedHubSkill.owner_id}
             </Text>
           </div>
 
@@ -225,20 +225,20 @@ export function HubSkillDetail() {
           <div>
             <Text type="secondary">下载</Text>
             <div className="text-lg font-semibold">
-              {selectedHubSkill.downloadCount}
+              {selectedHubSkill.download_count}
             </div>
           </div>
           <div>
             <Text type="secondary">Star</Text>
             <div className="text-lg font-semibold">
-              {selectedHubSkill.starCount}
+              {selectedHubSkill.star_count}
             </div>
           </div>
           <div>
             <Text type="secondary">评分</Text>
             <div className="text-lg font-semibold">
-              {selectedHubSkill.ratingCount > 0
-                ? `${selectedHubSkill.ratingAvg} (${selectedHubSkill.ratingCount})`
+              {selectedHubSkill.rating_count > 0
+                ? `${selectedHubSkill.rating_avg} (${selectedHubSkill.rating_count})`
                 : "-"}
             </div>
           </div>
@@ -260,7 +260,7 @@ export function HubSkillDetail() {
                 key={label.id}
                 color={label.type === "RECOMMENDED" ? "blue" : "purple"}
               >
-                {label.displayName}
+                {label.display_name}
               </Tag>
             ))}
             {tags.map((tag) => (
@@ -288,10 +288,10 @@ export function HubSkillDetail() {
                       {selectedHubSkill.id}
                     </Descriptions.Item>
                     <Descriptions.Item label="创建时间">
-                      {selectedHubSkill.createdAt.toLocaleDateString()}
+                      {selectedHubSkill.created_at.toLocaleDateString()}
                     </Descriptions.Item>
                     <Descriptions.Item label="更新时间">
-                      {selectedHubSkill.updatedAt.toLocaleDateString()}
+                      {selectedHubSkill.updated_at.toLocaleDateString()}
                     </Descriptions.Item>
                     <Descriptions.Item label="可见性">
                       {selectedHubSkill.visibility}
@@ -302,7 +302,7 @@ export function HubSkillDetail() {
                 {/* Install Command */}
                 <Card title="安装命令" variant={false}>
                   <InstallCommand
-                    namespace={selectedHubSkill.namespaceSlug}
+                    namespace={selectedHubSkill.namespace_slug}
                     slug={selectedHubSkill.slug}
                     version={latestVersion?.version}
                   />

@@ -69,9 +69,9 @@ export function GovernanceInbox() {
         id: review.id,
         type: 'review',
         title: '审核请求',
-        subtitle: `Version ${review.version} · ${review.namespaceId || ''}`,
+        subtitle: `Version ${review.version} · ${review.namespace_id || ''}`,
         status: review.status,
-        timestamp: review.submittedAt.toISOString(),
+        timestamp: review.submitted_at.toISOString(),
         data: review,
       });
     });
@@ -81,9 +81,9 @@ export function GovernanceInbox() {
         id: promotion.id,
         type: 'promotion',
         title: '推广请求',
-        subtitle: `${promotion.sourceNamespaceSlug} → ${promotion.targetNamespaceSlug}`,
+        subtitle: `${promotion.source_namespace_slug} → ${promotion.target_namespace_slug}`,
         status: promotion.status,
-        timestamp: promotion.submittedAt.toISOString(),
+        timestamp: promotion.submitted_at.toISOString(),
         data: promotion,
       });
     });
@@ -95,7 +95,7 @@ export function GovernanceInbox() {
         title: '举报',
         subtitle: report.reason,
         status: report.status,
-        timestamp: report.createdAt.toISOString(),
+        timestamp: report.created_at.toISOString(),
         data: report,
       });
     });

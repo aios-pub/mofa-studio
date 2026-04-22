@@ -183,7 +183,7 @@ export function AdminUsersPage() {
       title: '创建时间',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      sorter: (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      sorter: (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     },
     {
       title: '最后登录',
@@ -214,7 +214,7 @@ export function AdminUsersPage() {
       !searchText ||
       user.username.toLowerCase().includes(searchText.toLowerCase()) ||
       user.email.toLowerCase().includes(searchText.toLowerCase()) ||
-      user.displayName.toLowerCase().includes(searchText.toLowerCase());
+      user.display_name.toLowerCase().includes(searchText.toLowerCase());
     const matchStatus = !statusFilter || user.status === statusFilter;
     const matchRole = !roleFilter || user.role === roleFilter;
     return matchSearch && matchStatus && matchRole;

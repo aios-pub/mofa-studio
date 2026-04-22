@@ -264,7 +264,7 @@ export function VersionList({ namespace, slug, versions, onVersionSelect, onRefr
               dot={config.icon}
               label={
                 <div className="text-xs text-gray-500">
-                  {new Date(version.createdAt).toLocaleDateString()}
+                  {new Date(version.created_at).toLocaleDateString()}
                 </div>
               }
             >
@@ -278,7 +278,7 @@ export function VersionList({ namespace, slug, versions, onVersionSelect, onRefr
                     <p className="text-sm text-gray-600 mb-1">{version.changelog}</p>
                   )}
                   <div className="text-xs text-gray-500">
-                    {version.fileCount} 个文件 · {(version.totalSize / 1024).toFixed(1)} KB
+                    {version.file_count} 个文件 · {(version.total_size / 1024).toFixed(1)} KB
                   </div>
                   {version.yankReason && (
                     <p className="text-sm text-red-500 mt-1">下架原因: {version.yankReason}</p>

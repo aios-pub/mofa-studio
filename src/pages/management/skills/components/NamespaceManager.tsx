@@ -91,7 +91,7 @@ export function NamespaceManager() {
     try {
       await skillHubV2Api.addMember(
         selectedNamespace.id,
-        values.userId,
+        values.user_id,
         values.role,
       );
       message.success("成员添加成功");
@@ -210,7 +210,7 @@ export function NamespaceManager() {
         <Popconfirm
           title="确认移除该成员？"
           onConfirm={() =>
-            handleRemoveMember(parseInt(selectedNamespace!.id), record.userId)
+            handleRemoveMember(parseInt(selectedNamespace!.id), record.user_id)
           }
         >
           <Button type="link" size="small" danger icon={<DeleteOutlined />}>
@@ -332,7 +332,7 @@ export function NamespaceManager() {
 
       {/* Manage Members Modal */}
       <Modal
-        title={`管理成员 - ${selectedNamespace?.displayName || selectedNamespace?.slug}`}
+        title={`管理成员 - ${selectedNamespace?.display_name || selectedNamespace?.slug}`}
         open={memberModalVisible}
         onCancel={() => {
           setMemberModalVisible(false);

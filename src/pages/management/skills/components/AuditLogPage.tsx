@@ -272,7 +272,7 @@ export function AuditLogPage() {
                   {new Date(selectedLog.timestamp).toLocaleString("zh-CN")}
                 </Descriptions.Item>
                 <Descriptions.Item label="用户">
-                  {selectedLog.username} ({selectedLog.userId})
+                  {selectedLog.username} ({selectedLog.user_id})
                 </Descriptions.Item>
                 <Descriptions.Item label="操作">
                   <Tag color={getActionColor(selectedLog.action)}>

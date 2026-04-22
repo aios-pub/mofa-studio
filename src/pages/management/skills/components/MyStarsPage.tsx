@@ -51,7 +51,7 @@ export function MyStarsPage() {
       // Categorize by namespace
       const categorized: Record<string, HubSkill[]> = {};
       result.skills.forEach(skill => {
-        const ns = skill.namespaceSlug;
+        const ns = skill.namespace_slug;
         if (!categorized[ns]) {
           categorized[ns] = [];
         }
@@ -77,7 +77,7 @@ export function MyStarsPage() {
   const stats = {
     total: myStars.length,
     namespaces: Object.keys(categorizedStars).length,
-    totalDownloads: myStars.reduce((sum, s) => sum + s.downloadCount, 0),
+    totalDownloads: myStars.reduce((sum, s) => sum + s.download_count, 0),
   };
 
   const columns = [
@@ -86,9 +86,9 @@ export function MyStarsPage() {
       key: 'skill',
       render: (_: unknown, record: HubSkill) => (
         <Space direction="vertical" size={0}>
-          <div className="font-medium">{record.displayName || record.slug}</div>
+          <div className="font-medium">{record.display_name || record.slug}</div>
           <div className="text-xs text-gray-500">
-            {record.namespaceSlug}/{record.slug}
+            {record.namespace_slug}/{record.slug}
           </div>
           {record.summary && (
             <div className="text-xs text-gray-400 line-clamp-2 mt-1">
@@ -106,7 +106,7 @@ export function MyStarsPage() {
         <Space size={4} wrap>
           {labels?.slice(0, 3).map(label => (
             <Tag key={label.id} color="blue" className="text-xs">
-              {label.displayName}
+              {label.display_name}
             </Tag>
           ))}
           {labels && labels.length > 3 && (
@@ -120,7 +120,7 @@ export function MyStarsPage() {
       key: 'version',
       width: 100,
       render: (_: unknown, record: HubSkill) => (
-        <Tag color="green">{record.latestVersion?.version || '-'}</Tag>
+        <Tag color="green">{record.latest_version?.version || '-'}</Tag>
       ),
     },
     {
@@ -130,8 +130,8 @@ export function MyStarsPage() {
       render: (_: unknown, record: HubSkill) => (
         <Space size="small">
           <span className="text-yellow-500">★</span>
-          <span>{record.ratingAvg.toFixed(1)}</span>
-          <span className="text-xs text-gray-500">({record.ratingCount})</span>
+          <span>{record.rating_avg.toFixed(1)}</span>
+          <span className="text-xs text-gray-500">({record.rating_count})</span>
         </Space>
       ),
     },
@@ -152,7 +152,7 @@ export function MyStarsPage() {
               type="text"
               size="small"
               icon={<EyeOutlined />}
-              onClick={() => navigate({ to: `/skills/hub/${record.namespaceSlug}/${record.slug}` })}
+              onClick={() => navigate({ to: `/skills/hub/${record.namespace_slug}/${record.slug}` })}
             />
           </Tooltip>
           <Tooltip title="下载">

@@ -309,9 +309,9 @@ export function PublishSkillView({
                 style={{ marginBottom: 16 }}
               >
                 <Descriptions size="small" column={2}>
-                  {parsedMetadata.displayName && (
+                  {parsedMetadata.display_name && (
                     <Descriptions.Item label="名称">
-                      {parsedMetadata.displayName}
+                      {parsedMetadata.display_name}
                     </Descriptions.Item>
                   )}
                   {parsedMetadata.name && (
@@ -376,7 +376,7 @@ export function PublishSkillView({
                 placeholder="选择命名空间"
                 loading={namespaces.length === 0}
                 options={namespaces.map((ns) => ({
-                  label: `${ns.displayName} (${ns.slug})`,
+                  label: `${ns.display_name} (${ns.slug})`,
                   value: ns.slug,
                   disabled: ns.status !== "ACTIVE",
                 }))}
@@ -452,7 +452,7 @@ export function PublishSkillView({
           >
             <Descriptions size="small" column={2}>
               <Descriptions.Item label="技能 ID">
-                {publishResult.skillId}
+                {publishResult.skill_id}
               </Descriptions.Item>
               <Descriptions.Item label="标识">
                 {publishResult.slug}
@@ -464,10 +464,10 @@ export function PublishSkillView({
                 {publishResult.status}
               </Descriptions.Item>
               <Descriptions.Item label="文件数">
-                {publishResult.fileCount}
+                {publishResult.file_count}
               </Descriptions.Item>
               <Descriptions.Item label="大小">
-                {(publishResult.totalSize / 1024).toFixed(1)} KB
+                {(publishResult.total_size / 1024).toFixed(1)} KB
               </Descriptions.Item>
             </Descriptions>
           </Card>

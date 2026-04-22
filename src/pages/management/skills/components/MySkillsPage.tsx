@@ -108,8 +108,8 @@ export function MySkillsPage() {
     active: mySkills.filter((s) => s.status === "ACTIVE").length,
     hidden: mySkills.filter((s) => s.status === "HIDDEN").length,
     archived: mySkills.filter((s) => s.status === "ARCHIVED").length,
-    totalDownloads: mySkills.reduce((sum, s) => sum + s.downloadCount, 0),
-    totalStars: mySkills.reduce((sum, s) => sum + s.starCount, 0),
+    totalDownloads: mySkills.reduce((sum, s) => sum + s.download_count, 0),
+    totalStars: mySkills.reduce((sum, s) => sum + s.star_count, 0),
   };
 
   const columns = [
@@ -118,14 +118,14 @@ export function MySkillsPage() {
       key: "skill",
       render: (_: unknown, record: HubSkill) => (
         <Space direction="vertical" size={0}>
-          <div className="font-medium">{record.displayName || record.slug}</div>
+          <div className="font-medium">{record.display_name || record.slug}</div>
           <div className="text-xs text-gray-500">
-            {record.namespaceSlug}/{record.slug}
+            {record.namespace_slug}/{record.slug}
           </div>
           <div className="flex items-center gap-2 mt-1">
             {record.labels?.slice(0, 3).map((label) => (
               <Tag key={label.id} color="blue" className="text-xs">
-                {label.displayName}
+                {label.display_name}
               </Tag>
             ))}
             {record.labels && record.labels.length > 3 && (
@@ -150,9 +150,9 @@ export function MySkillsPage() {
       width: 120,
       render: (_: unknown, record: HubSkill) => (
         <div className="text-sm">
-          <div>最新: {record.latestVersion?.version || "-"}</div>
+          <div>最新: {record.latest_version?.version || "-"}</div>
           <div className="text-xs text-gray-500">
-            {record.latestVersion?.status || "-"}
+            {record.latest_version?.status || "-"}
           </div>
         </div>
       ),
@@ -166,22 +166,22 @@ export function MySkillsPage() {
           <Tooltip title="下载次数">
             <Space size={4}>
               <span>⬇</span>
-              <span>{record.downloadCount}</span>
+              <span>{record.download_count}</span>
             </Space>
           </Tooltip>
           <Tooltip title="Star 数">
             <Space size={4}>
               <span>★</span>
-              <span>{record.starCount}</span>
+              <span>{record.star_count}</span>
             </Space>
           </Tooltip>
-          {record.ratingCount > 0 && (
+          {record.rating_count > 0 && (
             <Tooltip
-              title={`评分: ${record.ratingAvg.toFixed(1)} (${record.ratingCount}个评分)`}
+              title={`评分: ${record.rating_avg.toFixed(1)} (${record.rating_count}个评分)`}
             >
               <Space size={4}>
                 <span>☆</span>
-                <span>{record.ratingAvg.toFixed(1)}</span>
+                <span>{record.rating_avg.toFixed(1)}</span>
               </Space>
             </Tooltip>
           )}
@@ -216,16 +216,16 @@ export function MySkillsPage() {
               icon={<EyeOutlined />}
               onClick={() =>
                 navigate({
-                  to: `/skills/hub/${record.namespaceSlug}/${record.slug}`,
+                  to: `/skills/hub/${record.namespace_slug}/${record.slug}`,
                 })
               }
             />
           </Tooltip>
-          <Tooltip title={record.starCount > 0 ? "取消 Star" : "Star"}>
+          <Tooltip title={record.star_count > 0 ? "取消 Star" : "Star"}>
             <Button
               type="text"
               size="small"
-              icon={record.starCount > 0 ? <StarFilled /> : <StarOutlined />}
+              icon={record.star_count > 0 ? <StarFilled /> : <StarOutlined />}
               onClick={() => handleToggleStar(record.id)}
             />
           </Tooltip>
@@ -251,7 +251,7 @@ export function MySkillsPage() {
                 onClick={async () => {
                   setActionLoading(`archive-${record.id}`);
                   try {
-                    await archiveSkill(record.namespaceSlug, record.slug);
+                    await archiveSkill(record.namespace_slug, record.slug);
                     loadMySkills();
                   } catch (error) {
                     console.error("Archive failed:", error);
@@ -272,7 +272,7 @@ export function MySkillsPage() {
                 onClick={async () => {
                   setActionLoading(`unarchive-${record.id}`);
                   try {
-                    await unarchiveSkill(record.namespaceSlug, record.slug);
+                    await unarchiveSkill(record.namespace_slug, record.slug);
                     loadMySkills();
                   } catch (error) {
                     console.error("Unarchive failed:", error);

@@ -83,7 +83,9 @@ export default function OctosManagementPanel({ agent }: Props) {
   const [activeTab, setActiveTab] = useState("profiles");
   const [purgeReport, setPurgeReport] = useState<any>(null);
   const [purgeModalOpen, setPurgeModalOpen] = useState(false);
-  const [profileAgentCodes, setProfileAgentCodes] = useState<Record<string, string>>({});
+  const [profileAgentCodes, setProfileAgentCodes] = useState<
+    Record<string, string>
+  >({});
 
   const { message } = App.useApp();
   const { email: userEmail } = useUserInfo();
@@ -557,9 +559,13 @@ export default function OctosManagementPanel({ agent }: Props) {
           <div className="flex items-center justify-between pt-4 border-t border-[var(--color-border)]">
             <Space>
               <div className="flex items-center gap-2">
-                <Text type="secondary" className="text-sm">Agent Code:</Text>
+                <Text type="secondary" className="text-sm">
+                  Agent Code:
+                </Text>
                 <Input
-                  value={profileAgentCodes[selectedProfile.id] ?? agent.agent_code}
+                  value={
+                    profileAgentCodes[selectedProfile.id] ?? agent.agent_code
+                  }
                   onChange={(e) =>
                     setProfileAgentCodes((prev) => ({
                       ...prev,

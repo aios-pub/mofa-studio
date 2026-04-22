@@ -248,7 +248,8 @@ export class OctosApiClient {
 
   getLogStreamUrl(profileId: string): string {
     const isDev = import.meta.env.DEV;
-    const shouldUseProxy = isDev && this.originalBaseUrl && !this.originalBaseUrl.startsWith("/");
+    const shouldUseProxy =
+      isDev && this.originalBaseUrl && !this.originalBaseUrl.startsWith("/");
 
     const path = `/api/admin/profiles/${profileId}/logs`;
 

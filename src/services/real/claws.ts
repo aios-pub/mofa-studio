@@ -144,15 +144,6 @@ export const clawRealApi = {
     await apiClient.delete(`/api/claw/channel/unassign/${mappingId}`);
   },
 
-  /** 列出渠道映射（agentId 为 agent.id） */
-  async listChannelMappings(agentId: string): Promise<ClawChannelMapping[]> {
-    const data = await apiClient.get<BackendChannelMapping[]>(
-      `/api/claw/channel/mappings?agent_id=${agentId}`,
-    );
-    if (!Array.isArray(data)) return [];
-    return data.map(fromBackendMapping);
-  },
-
   /** 列出 CLI 会话（agentId 为 agent.id） */
   async listCliSessions(agentId: string): Promise<CliToolSession[]> {
     const data = await apiClient.get<BackendCliSession[]>(

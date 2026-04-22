@@ -26,7 +26,10 @@ import {
   CloudServerOutlined,
   InfoCircleOutlined,
 } from "@ant-design/icons";
-import type { OctosProfileConfig, LlmModelSelectionConfig } from "@/types/octos";
+import type {
+  OctosProfileConfig,
+  LlmModelSelectionConfig,
+} from "@/types/octos";
 import { providerApi } from "@/services";
 
 const { Text } = Typography;
@@ -56,13 +59,15 @@ function getPrimaryModelId(config: OctosProfileConfig): string | null {
 /**
  * 获取回退配置列表，优先从 llm.fallbacks 获取
  */
-function getFallbackConfigs(config: OctosProfileConfig): LlmModelSelectionConfig[] {
+function getFallbackConfigs(
+  config: OctosProfileConfig,
+): LlmModelSelectionConfig[] {
   if (config.llm?.fallbacks) {
     return config.llm.fallbacks;
   }
   // 从旧结构转换
   if (config.fallback_configs) {
-    return config.fallback_configs.map(fb => ({
+    return config.fallback_configs.map((fb) => ({
       route: {
         route_id: fb.provider_id || undefined,
       },
@@ -70,18 +75,6 @@ function getFallbackConfigs(config: OctosProfileConfig): LlmModelSelectionConfig
     }));
   }
   return [];
-}
-
-/**
- * 检查是否使用旧模式配置
- */
-function isLegacyLlmConfig(config: OctosProfileConfig): boolean {
-  // 如果有 llm 对象且包含 primary，说明是新版
-  if (config.llm?.primary) {
-    return false;
-  }
-  // 如果有 provider 字段但没有 provider_id，说明是旧版
-  return !config.provider_id && !!config.provider;
 }
 
 /**
@@ -112,8 +105,12 @@ interface Props {
 export default function OctosLlmProviderTab({ config, onChange }: Props) {
   const [providers, setProviders] = useState<ProviderWithModels[]>([]);
   const [loading, setLoading] = useState(true);
-  const [testResult, setTestResult] = useState<TestState>({ state: "idle", error: "" });
-  const [selectedProvider, setSelectedProvider] = useState<ProviderWithModels | null>(null);
+  const [testResult, setTestResult] = useState<TestState>({
+    state: "idle",
+    error: "",
+  });
+  const [selectedProvider, setSelectedProvider] =
+    useState<ProviderWithModels | null>(null);
 
   // 加载 Providers 列表
   useEffect(() => {
@@ -142,15 +139,21 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
 
       // 如果当前配置了 provider_id，则设置选中的 provider
       if (currentProviderId) {
-        const current = providersWithModels.find((p) => p.id === currentProviderId);
+        const current = providersWithModels.find(
+          (p) => p.id === currentProviderId,
+        );
         setSelectedProvider(current || null);
       } else if (config.provider && config.base_url) {
         // 尝试从旧版配置匹配到 Provider
         const matched = providersWithModels.find(
-          (p) => p.type === config.provider && data.find((d: any) => d.id === p.id)?.baseUrl === config.base_url
+          (p) =>
+            p.type === config.provider &&
+            data.find((d: any) => d.id === p.id)?.baseUrl === config.base_url,
         );
         if (matched) {
-          const matchedModel = matched.models.find((m) => m.name === config.model);
+          const matchedModel = matched.models.find(
+            (m) => m.name === config.model,
+          );
           if (matchedModel) {
             // 自动迁移到新版配置（使用 llm 对象）
             onChange({
@@ -158,7 +161,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
               llm: {
                 primary: {
                   family_id: matched.type,
-                  model_id: matchedModel.id,
+                  model_id: matchedModel.name,
                   route: {
                     route_id: matched.id,
                   },
@@ -172,17 +175,25 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
       }
 
       // 尝试迁移回退模型配置
-      if (config.fallback_models && config.fallback_models.length > 0 && !config.llm?.fallbacks) {
+      if (
+        config.fallback_models &&
+        config.fallback_models.length > 0 &&
+        !config.llm?.fallbacks
+      ) {
         const fallbacks: LlmModelSelectionConfig[] = [];
         for (const fb of config.fallback_models) {
           const matchedProvider = providersWithModels.find(
-            (p) => p.type === fb.provider && data.find((d: any) => d.id === p.id)?.baseUrl === fb.base_url
+            (p) =>
+              p.type === fb.provider &&
+              data.find((d: any) => d.id === p.id)?.baseUrl === fb.base_url,
           );
           if (matchedProvider) {
-            const matchedModel = matchedProvider.models.find((m) => m.name === fb.model);
+            const matchedModel = matchedProvider.models.find(
+              (m) => m.name === fb.model,
+            );
             fallbacks.push({
               family_id: matchedProvider.type,
-              model_id: matchedModel?.id,
+              model_id: matchedModel?.name,
               route: {
                 route_id: matchedProvider.id,
               },
@@ -237,7 +248,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
         ...config.llm,
         primary: {
           family_id: provider.type,
-          model_id: firstEnabledModel?.id,
+          model_id: firstEnabledModel?.name,
           route: {
             route_id: providerId,
           },
@@ -249,19 +260,23 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
   // 选择模型
   const handleModelChange = (modelId: string | null) => {
     const providerId = getPrimaryProviderId(config);
-    const provider = providerId ? providers.find((p) => p.id === providerId) : null;
+    const provider = providerId
+      ? providers.find((p) => p.id === providerId)
+      : null;
 
     onChange({
       ...config,
       llm: {
         ...config.llm,
-        primary: provider ? {
-          family_id: getFamilyId(provider),
-          model_id: modelId || undefined,
-          route: {
-            route_id: providerId || undefined,
-          },
-        } : null,
+        primary: provider
+          ? {
+              family_id: getFamilyId(provider),
+              model_id: modelId || undefined,
+              route: {
+                route_id: providerId || undefined,
+              },
+            }
+          : null,
       },
     });
   };
@@ -292,9 +307,6 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
       message.error(errorMsg);
     }
   };
-
-  // 检查是否使用旧模式配置
-  const isLegacyMode = isLegacyLlmConfig(config);
 
   if (loading) {
     return (
@@ -330,18 +342,6 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
         className="text-xs"
       />
 
-      {/* 旧模式提示 */}
-      {isLegacyMode && (
-        <Alert
-          type="warning"
-          showIcon
-          message="此 Profile 使用旧版配置方式"
-          description="建议重新选择 Provider 以使用新版配置，旧版配置方式可能在未来版本中移除"
-          className="text-xs"
-          closable
-        />
-      )}
-
       {/* Provider 选择 */}
       <Card size="small" className="bg-[var(--color-bg-secondary)]">
         <div className="space-y-4">
@@ -358,7 +358,9 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
                 label: (
                   <Space>
                     <span>{p.name}</span>
-                    <Tag color="blue" className="text-xs">{p.type}</Tag>
+                    <Tag color="blue" className="text-xs">
+                      {p.type}
+                    </Tag>
                     <Text type="secondary" className="text-xs">
                       {p.models.filter((m) => m.enabled).length} 个可用模型
                     </Text>
@@ -369,7 +371,10 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
               showSearch
               filterOption={(input, option) => {
                 const label = option?.label as any;
-                const text = typeof label === 'object' && label?.props?.children?.[0] ? label.props.children[0] : '';
+                const text =
+                  typeof label === "object" && label?.props?.children?.[0]
+                    ? label.props.children[0]
+                    : "";
                 return String(text).toLowerCase().includes(input.toLowerCase());
               }}
             />
@@ -394,17 +399,20 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
                   }))}
                 showSearch
                 filterOption={(input, option) =>
-                  (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+                  (option?.label as string)
+                    ?.toLowerCase()
+                    .includes(input.toLowerCase())
                 }
               />
               <Text type="secondary" className="text-xs mt-1 block">
-                {selectedProvider.models.filter((m) => m.enabled).length} 个可用模型
+                {selectedProvider.models.filter((m) => m.enabled).length}{" "}
+                个可用模型
               </Text>
             </div>
           )}
 
           {/* 测试连接 */}
-          {(getPrimaryProviderId(config) || isLegacyMode) && (
+          {getPrimaryProviderId(config) && (
             <div className="flex items-start gap-4 pt-2 border-t border-[var(--color-border)]">
               <Space direction="vertical" size={4} className="flex-1">
                 <Button
@@ -445,35 +453,6 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
         </div>
       </Card>
 
-      {/* 旧模式配置显示 (只读) */}
-      {isLegacyMode && (
-        <>
-          <Divider orientation="left" className="text-xs">
-            旧版配置 (只读)
-          </Divider>
-          <Card size="small" className="bg-[var(--color-bg-tertiary)]">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <Text type="secondary" className="block mb-1">Provider</Text>
-                <Text>{config.provider || "-"}</Text>
-              </div>
-              <div>
-                <Text type="secondary" className="block mb-1">Model</Text>
-                <Text>{config.model || "-"}</Text>
-              </div>
-              <div>
-                <Text type="secondary" className="block mb-1">Base URL</Text>
-                <Text code className="text-xs">{config.base_url || "-"}</Text>
-              </div>
-              <div>
-                <Text type="secondary" className="block mb-1">API Key Env</Text>
-                <Text code className="text-xs">{config.api_key_env || "-"}</Text>
-              </div>
-            </div>
-          </Card>
-        </>
-      )}
-
       {/* 回退模型 */}
       <Divider orientation="left" className="text-xs">
         回退模型
@@ -496,7 +475,9 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
         <div className="space-y-3">
           {getFallbackConfigs(config).map((fb, idx) => {
             const fbProviderId = fb.route?.route_id;
-            const fbProvider = fbProviderId ? providers.find((p) => p.id === fbProviderId) : null;
+            const fbProvider = fbProviderId
+              ? providers.find((p) => p.id === fbProviderId)
+              : null;
             return (
               <Card
                 key={idx}
@@ -510,7 +491,9 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
                     icon={<DeleteOutlined />}
                     onClick={() => {
                       const currentFallbacks = getFallbackConfigs(config);
-                      const newFallbacks = currentFallbacks.filter((_, i) => i !== idx);
+                      const newFallbacks = currentFallbacks.filter(
+                        (_, i) => i !== idx,
+                      );
                       onChange({
                         ...config,
                         llm: {
@@ -531,13 +514,17 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
                     value={fbProviderId || undefined}
                     placeholder="选择 Provider..."
                     onChange={(providerId) => {
-                      const provider = providers.find((p) => p.id === providerId);
+                      const provider = providers.find(
+                        (p) => p.id === providerId,
+                      );
                       const currentFallbacks = getFallbackConfigs(config);
                       const newFallbacks = [...currentFallbacks];
                       newFallbacks[idx] = {
                         family_id: provider ? getFamilyId(provider) : undefined,
-                        model_id: provider?.models.find((m) => m.enabled)?.id,
-                        route: providerId ? { route_id: providerId } : undefined,
+                        model_id: provider?.models.find((m) => m.enabled)?.name,
+                        route: providerId
+                          ? { route_id: providerId }
+                          : undefined,
                       };
                       onChange({
                         ...config,
@@ -551,7 +538,9 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
                       label: (
                         <Space>
                           <span>{p.name}</span>
-                          <Tag color="blue" className="text-xs">{p.type}</Tag>
+                          <Tag color="blue" className="text-xs">
+                            {p.type}
+                          </Tag>
                         </Space>
                       ),
                       value: p.id,
@@ -600,7 +589,10 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
         icon={<PlusOutlined />}
         onClick={() => {
           const currentFallbacks = getFallbackConfigs(config);
-          const newFallbacks = [...currentFallbacks, { route: { route_id: undefined }, model_id: undefined }];
+          const newFallbacks = [
+            ...currentFallbacks,
+            { route: { route_id: undefined }, model_id: undefined },
+          ];
           onChange({
             ...config,
             llm: {

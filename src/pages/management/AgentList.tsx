@@ -1964,7 +1964,6 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
   const [activeTab, setActiveTab] = useState<
     "basic" | "connection" | "channel" | "octos"
   >("basic");
-  const [mappings, setMappings] = useState<ClawChannelMapping[]>([]);
   const [editOpen, setEditOpen] = useState(false);
   const [connectOpen, setConnectOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
@@ -1975,13 +1974,6 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
   const agentType = agent.agent_category as ClawType;
   const config = clawTypeConfig[agentType];
   const clawParams = getClaw(agent);
-
-  useEffect(() => {
-    clawApi
-      .listChannelMappings(agent.id)
-      .then(setMappings)
-      .catch(() => {});
-  }, [agent.id]);
 
   const handleTest = async () => {
     try {
@@ -2369,10 +2361,6 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
         agentId={agent.id}
         onClose={() => setAssignOpen(false)}
         onAssigned={() => {
-          clawApi
-            .listChannelMappings(agent.id)
-            .then(setMappings)
-            .catch(() => {});
           setAssignOpen(false);
         }}
       />

@@ -134,11 +134,6 @@ export const clawMockApi = {
     await new Promise((r) => setTimeout(r, 200));
   },
 
-  async listChannelMappings(agentId: string): Promise<ClawChannelMapping[]> {
-    await new Promise((r) => setTimeout(r, 200));
-    return mockMappings.filter((m) => m.agentId === agentId);
-  },
-
   async listCliSessions(agentId: string): Promise<CliToolSession[]> {
     await new Promise((r) => setTimeout(r, 200));
     return mockSessions.filter((s) => s.agentId === agentId);

@@ -26,7 +26,7 @@ import {
   CloudServerOutlined,
   InfoCircleOutlined,
 } from "@ant-design/icons";
-import type { OctosProfileConfig, LlmProfileConfig, LlmModelSelectionConfig, LlmFallbackConfig } from "@/types/octos";
+import type { OctosProfileConfig, LlmModelSelectionConfig } from "@/types/octos";
 import { providerApi } from "@/services";
 
 const { Text } = Typography;
@@ -34,11 +34,11 @@ const { Text } = Typography;
 // ==================== 辅助函数：处理新旧结构 ====================
 
 /**
- * 获取主模型配置，优先从 llm.primary.route.provider_id 获取
+ * 获取主模型配置，优先从 llm.primary.route.route_id 获取
  */
 function getPrimaryProviderId(config: OctosProfileConfig): string | null {
-  if (config.llm?.primary?.route?.provider_id) {
-    return config.llm.primary.route.provider_id;
+  if (config.llm?.primary?.route?.route_id) {
+    return config.llm.primary.route.route_id;
   }
   return config.provider_id || null;
 }
@@ -64,7 +64,7 @@ function getFallbackConfigs(config: OctosProfileConfig): LlmModelSelectionConfig
   if (config.fallback_configs) {
     return config.fallback_configs.map(fb => ({
       route: {
-        provider_id: fb.provider_id || undefined,
+        route_id: fb.provider_id || undefined,
       },
       model_id: fb.model_id || undefined,
     }));
@@ -160,7 +160,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
                   family_id: matched.type,
                   model_id: matchedModel.id,
                   route: {
-                    provider_id: matched.id,
+                    route_id: matched.id,
                   },
                 },
                 fallbacks: [],
@@ -184,7 +184,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
               family_id: matchedProvider.type,
               model_id: matchedModel?.id,
               route: {
-                provider_id: matchedProvider.id,
+                route_id: matchedProvider.id,
               },
             });
           }
@@ -207,55 +207,18 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
     }
   };
 
-  const updateConfig = (patch: Partial<OctosProfileConfig>) => {
-    // 处理 LLM 配置更新
-    const llmKeys = ["provider_id", "model_id", "provider", "model", "base_url", "api_key_env", "fallback_configs", "fallback_models"];
-    const hasLlmKey = Object.keys(patch).some(key => llmKeys.includes(key));
-
-    if (hasLlmKey) {
-      // 更新 llm 对象
-      const currentLlm = config.llm || { primary: null, fallbacks: [] };
-      const newLlm: LlmProfileConfig = { ...currentLlm };
-
-      // 处理主模型配置更新
-      if ("provider_id" in patch || "model_id" in patch) {
-        const providerId = patch.provider_id !== undefined ? patch.provider_id : getPrimaryProviderId(config);
-        const modelId = patch.model_id !== undefined ? patch.model_id : getPrimaryModelId(config);
-        const provider = providerId ? providers.find((p) => p.id === providerId) : null;
-
-        newLlm.primary = providerId && modelId ? {
-          family_id: provider ? getFamilyId(provider) : undefined,
-          model_id: modelId || undefined,
-          route: providerId ? { provider_id: providerId } : undefined,
-        } : null;
-      }
-
-      // 处理回退配置更新
-      if ("fallback_configs" in patch) {
-        newLlm.fallbacks = (patch.fallback_configs || []).map((fb: LlmFallbackConfig) => {
-          const provider = fb.provider_id ? providers.find((p) => p.id === fb.provider_id) : null;
-          return {
-            family_id: provider ? getFamilyId(provider) : undefined,
-            model_id: fb.model_id || undefined,
-            route: fb.provider_id ? { provider_id: fb.provider_id } : undefined,
-          };
-        });
-      }
-
-      onChange({
-        ...config,
-        llm: newLlm,
-      });
-    } else {
-      onChange({ ...config, ...patch });
-    }
-  };
-
   // 选择 Provider
   const handleProviderChange = (providerId: string | null) => {
     if (!providerId) {
       setSelectedProvider(null);
-      updateConfig({ provider_id: null, model_id: null });
+      // 清除配置
+      onChange({
+        ...config,
+        llm: {
+          ...config.llm,
+          primary: null,
+        },
+      });
       return;
     }
 
@@ -266,20 +229,41 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
 
     // 默认选择第一个启用的模型
     const firstEnabledModel = provider.models.find((m) => m.enabled);
-    updateConfig({
-      provider_id: providerId,
-      model_id: firstEnabledModel?.id || null,
-      // 清除旧模式的配置
-      provider: null,
-      model: null,
-      base_url: null,
-      api_key_env: null,
+
+    // 直接构建新的 llm 配置
+    onChange({
+      ...config,
+      llm: {
+        ...config.llm,
+        primary: {
+          family_id: provider.type,
+          model_id: firstEnabledModel?.id,
+          route: {
+            route_id: providerId,
+          },
+        },
+      },
     });
   };
 
   // 选择模型
   const handleModelChange = (modelId: string | null) => {
-    updateConfig({ model_id: modelId });
+    const providerId = getPrimaryProviderId(config);
+    const provider = providerId ? providers.find((p) => p.id === providerId) : null;
+
+    onChange({
+      ...config,
+      llm: {
+        ...config.llm,
+        primary: provider ? {
+          family_id: getFamilyId(provider),
+          model_id: modelId || undefined,
+          route: {
+            route_id: providerId || undefined,
+          },
+        } : null,
+      },
+    });
   };
 
   // 测试连接
@@ -511,7 +495,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
       ) : (
         <div className="space-y-3">
           {getFallbackConfigs(config).map((fb, idx) => {
-            const fbProviderId = fb.route?.provider_id;
+            const fbProviderId = fb.route?.route_id;
             const fbProvider = fbProviderId ? providers.find((p) => p.id === fbProviderId) : null;
             return (
               <Card
@@ -553,7 +537,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
                       newFallbacks[idx] = {
                         family_id: provider ? getFamilyId(provider) : undefined,
                         model_id: provider?.models.find((m) => m.enabled)?.id,
-                        route: providerId ? { provider_id: providerId } : undefined,
+                        route: providerId ? { route_id: providerId } : undefined,
                       };
                       onChange({
                         ...config,
@@ -616,7 +600,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
         icon={<PlusOutlined />}
         onClick={() => {
           const currentFallbacks = getFallbackConfigs(config);
-          const newFallbacks = [...currentFallbacks, { route: { provider_id: undefined }, model_id: undefined }];
+          const newFallbacks = [...currentFallbacks, { route: { route_id: undefined }, model_id: undefined }];
           onChange({
             ...config,
             llm: {

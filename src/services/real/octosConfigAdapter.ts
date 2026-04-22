@@ -36,11 +36,11 @@ function getApiKeyEnv(providerType: string): string {
 }
 
 /**
- * 获取主模型配置，优先从 llm.primary.route.provider_id 获取
+ * 获取主模型配置，优先从 llm.primary.route.route_id 获取
  */
 function getPrimaryProviderId(config: OctosProfileConfig): string | null {
-  if (config.llm?.primary?.route?.provider_id) {
-    return config.llm.primary.route.provider_id;
+  if (config.llm?.primary?.route?.route_id) {
+    return config.llm.primary.route.route_id;
   }
   return config.provider_id || null;
 }
@@ -190,7 +190,7 @@ export async function toBackendFormat(frontendConfig: OctosProfileConfig): Promi
           family_id: provider.type,
           model_id: modelId,
           route: {
-            provider_id: providerId,
+            route_id: providerId,
             base_url: provider.baseUrl,
             api_key_env: getApiKeyEnv(provider.type),
           },
@@ -209,7 +209,7 @@ export async function toBackendFormat(frontendConfig: OctosProfileConfig): Promi
                 family_id: fbProvider.type,
                 model_id: fb.model_id || undefined,
                 route: {
-                  provider_id: fb.provider_id,
+                  route_id: fb.provider_id,
                   base_url: fbProvider.baseUrl,
                   api_key_env: getApiKeyEnv(fbProvider.type),
                 },
@@ -290,7 +290,7 @@ export async function toFrontendFormat(backendConfig: OctosProfileConfig): Promi
               family_id: matchedProvider.type,
               model_id: matchedModel.id,
               route: {
-                provider_id: matchedProvider.id,
+                route_id: matchedProvider.id,
                 base_url: matchedProvider.baseUrl,
                 api_key_env: getApiKeyEnv(matchedProvider.type),
               },
@@ -326,7 +326,7 @@ export async function toFrontendFormat(backendConfig: OctosProfileConfig): Promi
             family_id: matchedProvider.type,
             model_id: matchedModel?.id,
             route: {
-              provider_id: matchedProvider.id,
+              route_id: matchedProvider.id,
               base_url: matchedProvider.baseUrl,
               api_key_env: getApiKeyEnv(matchedProvider.type),
             },

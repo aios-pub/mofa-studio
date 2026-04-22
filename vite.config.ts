@@ -18,10 +18,19 @@ function dynamicProxyPlugin() {
         // 从请求头获取目标地址（普通请求）
         let targetUrl = req.headers['x-octos-target'] as string;
 
-        // 如果没有请求头，尝试从 URL 参数获取（SSE 连接）
-        if (!targetUrl && req.url) {
+        // 解析 URL 参数（用于 SSE 和其他无法传递请求头的场景）
+        let urlToken: string | undefined;
+        let urlTarget: string | undefined;
+
+        if (req.url) {
           const urlObj = new URL(req.url, `http://${req.headers.host}`);
-          targetUrl = urlObj.searchParams.get('target') || undefined;
+          urlToken = urlObj.searchParams.get('token') || undefined;
+          urlTarget = urlObj.searchParams.get('target') || undefined;
+        }
+
+        // 如果没有请求头，尝试从 URL 参数获取（SSE 连接）
+        if (!targetUrl) {
+          targetUrl = urlTarget;
         }
 
         if (!targetUrl) {
@@ -43,17 +52,16 @@ function dynamicProxyPlugin() {
             headers: {
               ...req.headers,
               host: target.host,
-              // 移除代理专用头
-              'x-octos-target': undefined,
             },
           };
 
-          // 清理 undefined 的 header
-          Object.keys(options.headers).forEach(key => {
-            if (options.headers[key] === undefined) {
-              delete options.headers[key];
-            }
-          });
+          // 如果 URL 中有 token 参数，转换为 Authorization 请求头
+          if (urlToken && !req.headers.authorization) {
+            options.headers.authorization = `Bearer ${urlToken}`;
+          }
+
+          // 移除代理专用头
+          delete options.headers['x-octos-target'];
 
           const proxyReq = http.request(options, (proxyRes: any) => {
             res.writeHead(proxyRes.statusCode, proxyRes.headers);

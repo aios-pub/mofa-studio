@@ -31,12 +31,16 @@ export interface OctosChannelCredentials {
 
 /** LLM 路由配置 */
 export interface LlmRouteConfig {
-  /** Provider ID (复用 provider 管理) */
-  provider_id?: string;
+  /** Route ID (对应后端的 route_id) */
+  route_id?: string;
   /** Base URL */
   base_url?: string;
   /** API Key 环境变量名 */
   api_key_env?: string;
+  /** API 类型 */
+  api_type?: string;
+  /** 标签 */
+  label?: string;
 }
 
 /** LLM 模型选择配置 */

@@ -33,6 +33,8 @@ export class OctosApiClient {
       timeout: 15000,
       headers: {
         "Content-Type": "application/json",
+        // 使用请求头传递目标地址
+        ...(shouldUseProxy ? { "X-Octos-Target": baseUrl } : {}),
         ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       },
     });

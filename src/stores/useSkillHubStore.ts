@@ -572,6 +572,9 @@ export const useSkillHubStore = create<SkillHubState>((set, get) => ({
         parameters: metadata.parameters || [],
         timeout: metadata.timeout || 30000,
         enabled: true,
+        hubSkillId: skillId,
+        installedVersion: version,
+        source: 'installed',
       });
 
       const currentInstalling = get().installingSkillIds;

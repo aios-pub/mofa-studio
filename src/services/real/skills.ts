@@ -55,6 +55,9 @@ interface BackendSkill {
   tenant_id?: string;
   create_time: string;
   update_time: string;
+  hub_skill_id?: number;
+  installed_version?: string;
+  source?: string;
 }
 
 // ==================== 字段映射 ====================
@@ -80,6 +83,9 @@ function mapSkill(raw: BackendSkill): Skill {
     timeout: raw.timeout ?? 30000,
     enabled: raw.enabled,
     installed: true,
+    hubSkillId: raw.hub_skill_id ? String(raw.hub_skill_id) : undefined,
+    installedVersion: raw.installed_version,
+    source: (raw.source || 'local') as Skill['source'],
     createdAt: parseDate(raw.create_time) ?? new Date(),
     updatedAt: parseDate(raw.update_time) ?? new Date(),
   };
@@ -92,6 +98,9 @@ function mapSkillToBackend(skill: Partial<Skill>): Record<string, unknown> {
   if (skill.category !== undefined) result.category = skill.category;
   if (skill.parameters !== undefined) result.parameters = skill.parameters;
   if (skill.enabled !== undefined) result.enabled = skill.enabled;
+  if (skill.hubSkillId !== undefined) result.hub_skill_id = skill.hubSkillId ? Number(skill.hubSkillId) : null;
+  if (skill.installedVersion !== undefined) result.installed_version = skill.installedVersion;
+  if (skill.source !== undefined) result.source = skill.source;
   return result;
 }
 

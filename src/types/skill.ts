@@ -26,6 +26,9 @@ export interface Skill {
   parameters: SkillParameter[];
   enabled: boolean;
   installed?: boolean;
+  hubSkillId?: string;
+  installedVersion?: string;
+  source?: SkillSource;
   createdAt: Date;
   updatedAt: Date;
 }

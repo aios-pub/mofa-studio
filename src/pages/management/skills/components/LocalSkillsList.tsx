@@ -25,6 +25,7 @@ import {
 } from "@ant-design/icons";
 import type { Skill } from "@/services";
 import { skillApi } from "@/services";
+import { SkillSourceTag } from "./SkillSourceTag";
 
 const { Text, Title } = Typography;
 
@@ -309,6 +310,9 @@ export function LocalSkillsList({
                               {skill.name}
                             </Text>
                             {getTypeTag(skill.type)}
+                            {skill.source && (
+                              <SkillSourceTag source={skill.source} />
+                            )}
                           </div>
                           <Text type="secondary" style={{ fontSize: 12 }}>
                             {Array.isArray(skill.parameters)

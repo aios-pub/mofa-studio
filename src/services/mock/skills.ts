@@ -12,6 +12,9 @@ export interface Skill {
   parameters: SkillParameter[];
   timeout: number;
   enabled: boolean;
+  hubSkillId?: string;
+  installedVersion?: string;
+  source?: 'local' | 'hub' | 'installed';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -193,6 +196,9 @@ export const skillApi = {
       parameters: data.parameters || [],
       timeout: data.timeout || 30000,
       enabled: true,
+      hubSkillId: data.hubSkillId,
+      installedVersion: data.installedVersion,
+      source: data.source || 'local',
       createdAt: new Date(),
       updatedAt: new Date(),
     };

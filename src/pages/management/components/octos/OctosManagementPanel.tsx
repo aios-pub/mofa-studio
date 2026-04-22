@@ -133,11 +133,6 @@ export default function OctosManagementPanel({ agent }: Props) {
     fetchProfiles();
   }, [fetchProfiles]);
 
-  // 当 agent 变化时更新 editableAgentCode
-  useEffect(() => {
-    setEditableAgentCode(agent.agent_code);
-  }, [agent.agent_code]);
-
   const selectedProfile = profiles.find((p) => p.id === selectedProfileId);
 
   const handleConfigChange = useCallback(

@@ -107,7 +107,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
       placement="right"
       onClose={onClose}
       open={open}
-      width={340}
+      size={{ width: 340 }}
       className="settings-drawer"
       styles={{
         body: { padding: 0 },

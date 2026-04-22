@@ -93,7 +93,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             placement="left"
             open={!sidebarCollapsed}
             onClose={() => setSidebarCollapsed(true)}
-            width={280}
+            size={{ width: 280 }}
             className="p-0"
             styles={{
               body: { padding: 0 },

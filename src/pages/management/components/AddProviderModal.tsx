@@ -417,7 +417,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
       width={currentStep === 0 ? 720 : 560}
       footer={renderFooter()}
       destroyOnHidden={false}
-      maskClosable={false}
+      mask={{ closable: false }}
     >
       {/* 步骤条 */}
       <div className="mb-6">

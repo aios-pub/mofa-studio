@@ -483,7 +483,7 @@ export default function PromptListPage() {
       <Drawer
         title={editingPrompt ? '编辑提示词' : '新建提示词'}
         placement="right"
-        width={720}
+        size={{ width: 720 }}
         open={editorOpen}
         onClose={handleEditorCancel}
         destroyOnHidden

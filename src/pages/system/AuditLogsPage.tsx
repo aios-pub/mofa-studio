@@ -406,7 +406,7 @@ export default function AuditLogsPage() {
       <Drawer
         title={t('auditLog.details', '日志详情')}
         placement="right"
-        width={500}
+        size={{ width: 500 }}
         onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
       >

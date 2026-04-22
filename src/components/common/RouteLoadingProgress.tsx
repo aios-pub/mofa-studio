@@ -66,7 +66,7 @@ export function RouteLoadingProgress() {
         percent={progress}
         showInfo={false}
         strokeColor="var(--color-primary)"
-        trailColor="transparent"
+        railColor="transparent"
         size="small"
         className="!h-[3px]"
       />

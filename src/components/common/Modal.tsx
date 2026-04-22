@@ -283,7 +283,7 @@ export const BaseDrawer: React.FC<BaseDrawerProps> = ({
 
   return (
     <Drawer
-      width={width}
+      size={{ width }}
       onClose={onClose}
       footer={footer}
       className={`base-drawer ${className}`}

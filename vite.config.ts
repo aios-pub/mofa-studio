@@ -96,6 +96,9 @@ export default defineConfig(async ({ mode }) => {
         "@": path.resolve(__dirname, "./src"),
       },
     },
+    optimizeDeps: {
+      include: ['react', 'react-dom', 'antd', '@ant-design/icons', '@ant-design/cssinjs'],
+    },
 
     // 多页面应用配置
     build: {

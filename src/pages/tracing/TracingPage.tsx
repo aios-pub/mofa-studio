@@ -386,7 +386,7 @@ export default function TracingPage() {
       <Drawer
         title={t('tracing.traceDetails', '追踪详情')}
         placement="right"
-        width={450}
+        size={{ width: 450 }}
         onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
       >

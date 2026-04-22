@@ -142,7 +142,7 @@ export default function AgentPromptSelector({
             variant={false}
             size="small"
             defaultActiveKey={Object.keys(groupedPrompts)}
-            expandIconPosition="start"
+            expandIconPlacement="start"
             style={{ background: "transparent" }}
             items={Object.entries(groupedPrompts).map(function ([
               category,

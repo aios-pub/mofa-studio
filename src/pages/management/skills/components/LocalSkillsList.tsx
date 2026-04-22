@@ -266,7 +266,7 @@ export function LocalSkillsList({
           <Collapse
             activeKey={expandedCategories}
             onChange={handleCategoryChange}
-            expandIconPosition="start"
+            expandIconPlacement="start"
             variant={false}
             style={{ background: "transparent" }}
             items={Object.entries(groupedSkills).map(

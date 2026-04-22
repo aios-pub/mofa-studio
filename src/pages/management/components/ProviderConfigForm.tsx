@@ -143,7 +143,7 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
 
         {/* 描述信息 */}
         <Alert
-          message={config.description}
+          title={config.description}
           type="info"
           showIcon
           className="mb-3"

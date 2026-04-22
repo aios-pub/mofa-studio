@@ -338,7 +338,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
       <Alert
         type="info"
         showIcon
-        message="从已配置的 Providers 中选择，无需重新配置 API Key"
+        title="从已配置的 Providers 中选择，无需重新配置 API Key"
         className="text-xs"
       />
 
@@ -461,7 +461,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
         type="info"
         showIcon
         icon={<InfoCircleOutlined />}
-        message="回退模型配置"
+        title="回退模型配置"
         description="当主 Provider 失败时，网关将按顺序尝试回退模型"
         className="text-xs"
       />

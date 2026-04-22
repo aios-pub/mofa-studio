@@ -211,7 +211,7 @@ function InstalledSkillsView({
           type="info"
           showIcon
           icon={<InfoCircleOutlined />}
-          message="提示"
+          title="提示"
           description="前往「推荐安装」标签页，从系统 Skills 中选择要安装的 Skills"
           className="mt-4 text-left"
         />
@@ -302,7 +302,7 @@ function RecommendSkillsView({
         <Alert
           type="info"
           showIcon
-          message="提示"
+          title="提示"
           description="请先在 Skills 管理页面添加并启用 Skills"
           className="mt-4 text-left"
         />
@@ -317,14 +317,14 @@ function RecommendSkillsView({
           type="success"
           showIcon
           icon={<CheckCircleOutlined />}
-          message="所有推荐的 Skills 都已安装"
+          title="所有推荐的 Skills 都已安装"
           description="系统中已启用的 Skills 都已在此 Profile 中安装"
         />
       ) : (
         <Alert
           type="info"
           showIcon
-          message={`发现 ${recommendedSkills.length} 个可安装的 Skills`}
+          title={`发现 ${recommendedSkills.length} 个可安装的 Skills`}
           description="以下 Skills 在系统中已启用，建议安装到 Octos 以获得完整功能"
         />
       )}
@@ -404,7 +404,7 @@ function RecommendSkillsView({
                   <Alert
                     type="info"
                     showIcon
-                    message="推荐安装"
+                    title="推荐安装"
                     className="text-xs py-1"
                   />
                 )}
@@ -419,7 +419,7 @@ function RecommendSkillsView({
         type="info"
         showIcon
         icon={<InfoCircleOutlined />}
-        message="Skills 说明"
+        title="Skills 说明"
         description={
           <ul className="text-xs space-y-1 mt-2 list-disc pl-4">
             <li>绿色卡片表示已安装的 Skills</li>

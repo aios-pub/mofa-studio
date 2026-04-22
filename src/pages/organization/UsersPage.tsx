@@ -459,7 +459,7 @@ export default function UsersPage() {
           )}
         </Form>
         {formError && (
-          <Alert type="error" message={formError} showIcon closable onClose={() => setFormError(null)} className="mt-3" />
+          <Alert type="error" title={formError} showIcon closable onClose={() => setFormError(null)} className="mt-3" />
         )}
       </Modal>
     </div>

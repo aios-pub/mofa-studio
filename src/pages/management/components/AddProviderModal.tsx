@@ -439,7 +439,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
       {error && currentStep !== 3 && (
         <Alert
           type="error"
-          message={error}
+          title={error}
           showIcon
           closable
           onClose={() => setError(null)}

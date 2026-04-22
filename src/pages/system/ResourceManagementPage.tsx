@@ -447,7 +447,7 @@ export default function ResourceManagementPage() {
             <Alert
               type="success"
               showIcon
-              message="密钥创建成功"
+              title="密钥创建成功"
               description={
                 <div>
                   <p>请复制保存以下密钥，此密钥仅显示一次：</p>
@@ -997,7 +997,7 @@ function CreateKeyModal({
         </Form.Item>
       </Form>
       {error && (
-        <Alert type="error" message={error} showIcon closable onClose={() => setError(null)} className="mt-3" />
+        <Alert type="error" title={error} showIcon closable onClose={() => setError(null)} className="mt-3" />
       )}
     </Modal>
   );
@@ -1071,7 +1071,7 @@ function QuotaEditModal({
         </Form.Item>
       </Form>
       {error && (
-        <Alert type="error" message={error} showIcon closable onClose={() => setError(null)} className="mt-3" />
+        <Alert type="error" title={error} showIcon closable onClose={() => setError(null)} className="mt-3" />
       )}
     </Modal>
   );
@@ -1196,7 +1196,7 @@ function CreateQuotaModal({
         </Form.Item>
       </Form>
       {error && (
-        <Alert type="error" message={error} showIcon closable onClose={() => setError(null)} className="mt-3" />
+        <Alert type="error" title={error} showIcon closable onClose={() => setError(null)} className="mt-3" />
       )}
     </Modal>
   );
@@ -1255,7 +1255,7 @@ function EditProviderModal({
     >
       <Alert
         type="warning"
-        message="Provider 已被删除"
+        title="Provider 已被删除"
         description="请为此 API 密钥重新关联一个有效的 Provider"
         showIcon
         className="mb-4"
@@ -1275,7 +1275,7 @@ function EditProviderModal({
       {error && (
         <Alert
           type="error"
-          message={error}
+          title={error}
           showIcon
           closable
           onClose={() => setError(null)}

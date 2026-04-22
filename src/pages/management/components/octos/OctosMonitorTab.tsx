@@ -94,7 +94,7 @@ export default function OctosMonitorTab({ apiClient }: Props) {
       <Alert
         type="info"
         showIcon
-        message="系统级监控配置"
+        title="系统级监控配置"
         description="看门狗会自动重启异常退出的 Profile，告警会在检测到问题时发送通知。"
         className="text-xs"
       />

@@ -106,7 +106,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
       {error && (
         <Alert
           type="error"
-          message={error}
+          title={error}
           showIcon
           closable
           onClose={onClearError}
@@ -293,7 +293,7 @@ export const BaseDrawer: React.FC<BaseDrawerProps> = ({
       {error && (
         <Alert
           type="error"
-          message={error}
+          title={error}
           showIcon
           closable
           onClose={onClearError}

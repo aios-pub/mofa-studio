@@ -185,7 +185,7 @@ function ScannerCard({
       {sortedFindings.length === 0 && audit.isSafe && (
         <Alert
           type="success"
-          message="安全扫描通过"
+          title="安全扫描通过"
           description="未发现安全问题"
           showIcon
         />

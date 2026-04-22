@@ -413,7 +413,7 @@ function ChannelDetail({
       {testResult && (
         <Alert
           type={testResult.success ? 'success' : 'error'}
-          message={testResult.message}
+          title={testResult.message}
           showIcon
           closable
           className="mb-6"

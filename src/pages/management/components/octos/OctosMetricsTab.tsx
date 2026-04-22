@@ -67,7 +67,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
       <Alert
         type="info"
         showIcon
-        message="暂无指标数据"
+        title="暂无指标数据"
         description="Profile 可能尚未运行，或未启用 QoS 指标收集。"
       />
     );

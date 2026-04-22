@@ -319,7 +319,7 @@ export default function KnowledgeBaseListPage() {
             <Input.TextArea placeholder="输入知识库描述（可选）" value={formDesc} onChange={e => setFormDesc(e.target.value)} rows={3} />
           </div>
           {formError && (
-            <Alert type="error" message={formError} showIcon closable onClose={() => setFormError(null)} />
+            <Alert type="error" title={formError} showIcon closable onClose={() => setFormError(null)} />
           )}
         </div>
       </Modal>
@@ -334,7 +334,7 @@ export default function KnowledgeBaseListPage() {
             <Input.TextArea placeholder="输入知识库描述（可选）" value={formDesc} onChange={e => setFormDesc(e.target.value)} rows={3} />
           </div>
           {formError && (
-            <Alert type="error" message={formError} showIcon closable onClose={() => setFormError(null)} />
+            <Alert type="error" title={formError} showIcon closable onClose={() => setFormError(null)} />
           )}
         </div>
       </Modal>

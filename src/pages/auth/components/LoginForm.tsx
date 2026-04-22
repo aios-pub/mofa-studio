@@ -92,7 +92,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
 
       {/* 错误提示 */}
       {error && (
-        <Alert message={error} type="error" showIcon className="mb-4" />
+        <Alert title={error} type="error" showIcon className="mb-4" />
       )}
 
       {/* 表单 */}

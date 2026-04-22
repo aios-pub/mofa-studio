@@ -64,7 +64,7 @@ export default function OctosGatewaySettingsTab({ config, onChange }: Props) {
       <Alert
         type="info"
         showIcon
-        message="网关设置"
+        title="网关设置"
         description="配置 Agent 行为参数：对话记忆、工具调用限制、系统提示词等。"
         className="text-xs"
       />
@@ -146,7 +146,7 @@ export default function OctosGatewaySettingsTab({ config, onChange }: Props) {
                 <Alert
                   type="info"
                   showIcon
-                  message="事件钩子"
+                  title="事件钩子"
                   description="在指定事件发生时执行自定义命令，可用于通知、日志记录等。"
                   className="text-xs"
                 />
@@ -218,7 +218,7 @@ export default function OctosGatewaySettingsTab({ config, onChange }: Props) {
                 <Alert
                   type="info"
                   showIcon
-                  message="沙箱模式"
+                  title="沙箱模式"
                   description="配置代码执行和安全隔离环境。Docker 模式提供最强的隔离性。"
                   className="text-xs"
                 />

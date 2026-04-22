@@ -441,7 +441,7 @@ function DataSettings() {
               Import your data from a previously exported backup file.
             </Paragraph>
             <Alert
-              message="Warning"
+              title="Warning"
               description="Importing data will overwrite existing data. Please make sure to backup your current data first."
               type="warning"
               showIcon

@@ -292,7 +292,7 @@ export function PublishSkillView({
             {error && (
               <Alert
                 type="error"
-                message={error}
+                title={error}
                 showIcon
                 closable
                 onClose={() => setError(null)}
@@ -303,7 +303,7 @@ export function PublishSkillView({
             {parsedMetadata && (
               <Alert
                 type="success"
-                message="SKILL.md 解析成功"
+                title="SKILL.md 解析成功"
                 showIcon
                 icon={<CheckCircleOutlined />}
                 style={{ marginBottom: 16 }}
@@ -350,7 +350,7 @@ export function PublishSkillView({
           <Card title="发布设置" size="small" className="mb-4">
             {namespaces.length === 0 && (
               <Alert
-                message="暂无可用命名空间"
+                title="暂无可用命名空间"
                 description="发布技能需要先创建命名空间。请前往命名空间管理页面创建。"
                 type="warning"
                 showIcon

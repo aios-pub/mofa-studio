@@ -421,7 +421,7 @@ export default function TaskFormModal({
         {submitError && (
           <Alert
             type="error"
-            message={submitError}
+            title={submitError}
             showIcon
             closable
             onClose={() => setSubmitError(null)}

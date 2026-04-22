@@ -276,7 +276,7 @@ export default function ChatContainer({
         ) : (
           <div className="max-w-3xl mx-auto space-y-4">
             {conversation.messages.map((msg) => (
-              <MessageItem key={msg.id} message={msg} />
+              <MessageItem key={msg.id} title={msg} />
             ))}
 
             {/* 加载中 */}

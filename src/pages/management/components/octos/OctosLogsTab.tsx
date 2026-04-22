@@ -231,7 +231,7 @@ export default function OctosLogsTab({ profileId, apiClient }: Props) {
         <Alert
           type="warning"
           showIcon
-          message="日志流未连接"
+          title="日志流未连接"
           description="请确保 Octos 服务正在运行，且 Profile 已启动。"
           className="text-xs"
         />

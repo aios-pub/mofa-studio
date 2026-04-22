@@ -251,7 +251,7 @@ export default function OctosManagementPanel({ agent }: Props) {
       <Alert
         type="error"
         showIcon
-        message="无法连接 Octos 服务"
+        title="无法连接 Octos 服务"
         description={
           <div className="space-y-2 mt-2">
             <p>

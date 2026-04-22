@@ -120,7 +120,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
       <Alert
         type="info"
         showIcon
-        message="从已配置的渠道中选择，无需重新配置凭据"
+        title="从已配置的渠道中选择，无需重新配置凭据"
         className="text-xs"
       />
 
@@ -129,7 +129,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
         <Alert
           type="warning"
           showIcon
-          message="未选择任何渠道"
+          title="未选择任何渠道"
           description={
             <div className="text-xs">
               <p>请至少选择一个渠道以启用消息收发功能。</p>
@@ -253,7 +253,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
         type="info"
         showIcon
         icon={<InfoCircleOutlined />}
-        message="渠道配置说明"
+        title="渠道配置说明"
         description={
           <div className="text-xs mt-2">
             <ul className="space-y-1 list-disc pl-4">

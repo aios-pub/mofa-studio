@@ -14,15 +14,8 @@ import {
   KeyOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
-import { LocalSkillsList, HubSkillsView, PublishSkillView } from './skills';
+import { LocalSkillsList, HubSkillsView, PublishSkillView, MySkillsPage, MyStarsPage, ReviewQueue, AdminGovernancePanel, GovernanceInbox, ApiTokenManagement, NamespaceManager } from './skills';
 import { SkillDetail } from './SkillDetail';
-import { ReviewQueue } from './skills/components/ReviewQueue';
-import { AdminGovernancePanel } from './skills/components/AdminGovernancePanel';
-import { MySkillsPage } from './skills/components/MySkillsPage';
-import { MyStarsPage } from './skills/components/MyStarsPage';
-import { GovernanceInbox } from './skills/components/GovernanceInbox';
-import { ApiTokenManagement } from './skills/components/ApiTokenManagement';
-import { NamespaceManager } from './skills/components/NamespaceManager';
 import type { Skill } from '@/services';
 import { skillApi } from '@/services';
 

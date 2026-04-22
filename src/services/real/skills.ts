@@ -53,8 +53,8 @@ interface BackendSkill {
   timeout?: number;
   enabled: boolean;
   tenant_id?: string;
-  create_time: string;
-  update_time: string;
+  create_time: string | Date;
+  update_time: string | Date;
   hub_skill_id?: number;
   installed_version?: string;
   source?: string;

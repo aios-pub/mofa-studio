@@ -22,7 +22,7 @@ import {
   StarOutlined,
   CloudDownloadOutlined,
 } from '@ant-design/icons';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate } from 'react-router-dom';
 import { skillHubV2Api } from '@/services';
 import type { HubSkill } from '@/types/skill';
 
@@ -152,7 +152,7 @@ export function MyStarsPage() {
               type="text"
               size="small"
               icon={<EyeOutlined />}
-              onClick={() => navigate({ to: `/skills/hub/${record.namespace_slug}/${record.slug}` })}
+              onClick={() => navigate(`/skills/hub/${record.namespace_slug}/${record.slug}`)}
             />
           </Tooltip>
           <Tooltip title="下载">
@@ -234,7 +234,7 @@ export function MyStarsPage() {
             description={
               <div className="text-center">
                 <p className="mb-4">还没有收藏任何技能</p>
-                <Button type="primary" onClick={() => navigate({ to: '/skills/hub' })}>
+                <Button type="primary" onClick={() => navigate('/skills/hub')}>
                   去探索技能
                 </Button>
               </div>

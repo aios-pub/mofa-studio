@@ -3,13 +3,18 @@
  * 用于 snake_case (后端) ↔ camelCase (前端) 之间的转换
  */
 
-/** 安全解析后端返回的日期字符串 */
-export function parseDate(value: string | number | null | undefined): Date | undefined {
+/** 安全解析后端返回的日期字符串或 Date 对象 */
+export function parseDate(value: string | number | Date | null | undefined): Date | undefined {
   if (!value) return undefined;
+  // 如果已经是 Date 对象，直接返回
+  if (value instanceof Date) return isNaN(value.getTime()) ? undefined : value;
   if (typeof value === 'number') return new Date(value);
-  // chrono::NaiveDateTime 可能输出 "YYYY-MM-DDTHH:MM:SS" 或 "YYYY-MM-DD HH:MM:SS"
-  const d = new Date(value.includes(' ') ? value.replace(' ', 'T') : value);
-  return isNaN(d.getTime()) ? undefined : d;
+  if (typeof value === 'string') {
+    // chrono::NaiveDateTime 可能输出 "YYYY-MM-DDTHH:MM:SS" 或 "YYYY-MM-DD HH:MM:SS"
+    const d = new Date(value.includes(' ') ? value.replace(' ', 'T') : value);
+    return isNaN(d.getTime()) ? undefined : d;
+  }
+  return undefined;
 }
 
 /** camelCase → snake_case */

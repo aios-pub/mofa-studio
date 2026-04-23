@@ -5,7 +5,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Dropdown, Badge, Button, Tabs, List, Avatar, Empty, Spin, Tag } from 'antd';
+import { Dropdown, Badge, Button, Tabs, Avatar, Empty, Spin, Tag } from 'antd';
 import {
   BellOutlined,
   CheckOutlined,
@@ -169,12 +169,12 @@ export default function NotificationDropdown() {
             className="py-12"
           />
         ) : (
-          <List
-            dataSource={filteredNotifications}
-            renderItem={(item) => {
+          <div className="flex flex-col">
+            {filteredNotifications.map((item) => {
               const typeConfig = notificationTypeConfig[item.type];
               return (
-                <List.Item
+                <div
+                  key={item.id}
                   className={`
                     px-4 py-3 cursor-pointer transition-colors
                     hover:bg-[var(--color-action-hover)]
@@ -239,10 +239,10 @@ export default function NotificationDropdown() {
                       />
                     </div>
                   </div>
-                </List.Item>
+                </div>
               );
-            }}
-          />
+            })}
+          </div>
         )}
       </div>
 

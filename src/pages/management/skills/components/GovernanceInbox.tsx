@@ -7,13 +7,13 @@ import { useEffect, useState } from 'react';
 import {
   Card,
   Tabs,
-  List,
   Tag,
   Badge,
   Button,
   Space,
   Typography,
   Empty,
+  Spin,
 } from 'antd';
 import {
   CheckCircleOutlined,
@@ -230,49 +230,45 @@ export function GovernanceInbox() {
           ]}
         />
 
-        <List
-          loading={reviewLoading || promotionsLoading || reportsLoading}
-          dataSource={filteredItems}
-          renderItem={(item) => (
-            <List.Item
-              key={item.id}
-              className="cursor-pointer hover:bg-gray-50 rounded px-2 py-3"
-              onClick={() => handleItemClick(item)}
-            >
-              <List.Item.Meta
-                avatar={getTypeIcon(item.type)}
-                title={
-                  <Space>
-                    <span>{item.title}</span>
+        <Spin spinning={reviewLoading || promotionsLoading || reportsLoading}>
+          <div className="flex flex-col gap-2">
+            {filteredItems.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center gap-3 p-3 rounded cursor-pointer hover:bg-gray-50"
+                onClick={() => handleItemClick(item)}
+              >
+                <div className="flex-shrink-0">
+                  {getTypeIcon(item.type)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-medium">{item.title}</span>
                     {getStatusBadge(item.type, item.status)}
-                  </Space>
-                }
-                description={
-                  <Space orientation="vertical" size={0}>
-                    {item.subtitle && (
-                      <Text type="secondary" className="text-sm">
-                        {item.subtitle}
-                      </Text>
-                    )}
-                    <Text type="secondary" className="text-xs">
-                      {new Date(item.timestamp).toLocaleString('zh-CN')}
+                  </div>
+                  {item.subtitle && (
+                    <Text type="secondary" className="text-sm block">
+                      {item.subtitle}
                     </Text>
-                  </Space>
-                }
-              />
-              <Button type="link" size="small" icon={<EyeOutlined />}>
-                查看
-              </Button>
-            </List.Item>
-          )}
-        />
+                  )}
+                  <Text type="secondary" className="text-xs block">
+                    {new Date(item.timestamp).toLocaleString('zh-CN')}
+                  </Text>
+                </div>
+                <Button type="link" size="small" icon={<EyeOutlined />}>
+                  查看
+                </Button>
+              </div>
+            ))}
+          </div>
 
-        {filteredItems.length === 0 && !reviewLoading && !promotionsLoading && !reportsLoading && (
-          <Empty
-            description="暂无待处理事项"
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-          />
-        )}
+          {filteredItems.length === 0 && !reviewLoading && !promotionsLoading && !reportsLoading && (
+            <Empty
+              description="暂无待处理事项"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
+          )}
+        </Spin>
       </Card>
     </div>
   );

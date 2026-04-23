@@ -5,7 +5,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  List,
   Button,
   Modal,
   Tabs,
@@ -220,50 +219,44 @@ function InstalledSkillsView({
   }
 
   return (
-    <List
-      dataSource={skills}
-      renderItem={(skill) => (
-        <List.Item
-          actions={[
-            <Popconfirm
-              key="remove"
-              title="确认卸载此 Skill？"
-              onConfirm={() => onRemove(skill.name)}
-            >
-              <Button
-                type="text"
-                danger
-                size="small"
-                icon={<DeleteOutlined />}
-              >
-                卸载
-              </Button>
-            </Popconfirm>,
-          ]}
+    <div className="flex flex-col gap-2">
+      {skills.map((skill) => (
+        <div
+          key={skill.name}
+          className="flex items-center justify-between p-3 border border-[var(--color-border)] rounded hover:bg-[var(--color-action-hover)] transition-colors"
         >
-          <List.Item.Meta
-            title={
-              <Space>
-                <Text strong>{skill.name}</Text>
-                {skill.version && <Tag color="blue">{skill.version}</Tag>}
-              </Space>
-            }
-            description={
-              <Space orientation="vertical" size={0}>
-                {skill.source_repo && (
-                  <Text type="secondary" className="text-xs">
-                    来源: {skill.source_repo}
-                  </Text>
-                )}
+          <div className="flex-1">
+            <Space>
+              <Text strong>{skill.name}</Text>
+              {skill.version && <Tag color="blue">{skill.version}</Tag>}
+            </Space>
+            <Space orientation="vertical" size={0}>
+              {skill.source_repo && (
                 <Text type="secondary" className="text-xs">
-                  工具数量: {skill.tool_count}
+                  来源: {skill.source_repo}
                 </Text>
-              </Space>
-            }
-          />
-        </List.Item>
-      )}
-    />
+              )}
+              <Text type="secondary" className="text-xs">
+                工具数量: {skill.tool_count}
+              </Text>
+            </Space>
+          </div>
+          <Popconfirm
+            title="确认卸载此 Skill？"
+            onConfirm={() => onRemove(skill.name)}
+          >
+            <Button
+              type="text"
+              danger
+              size="small"
+              icon={<DeleteOutlined />}
+            >
+              卸载
+            </Button>
+          </Popconfirm>
+        </div>
+      ))}
+    </div>
   );
 }
 

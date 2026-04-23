@@ -5,7 +5,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  List,
   Button,
   Modal,
   Form,
@@ -125,7 +124,7 @@ export default function OctosSubAccountsTab({ profileId, apiClient }: Props) {
 
       {loading ? (
         <div className="flex justify-center py-8">
-          <Spin tip="加载中..." />
+          <Spin description="加载中..." />
         </div>
       ) : subAccounts.length === 0 ? (
         <Empty
@@ -134,64 +133,61 @@ export default function OctosSubAccountsTab({ profileId, apiClient }: Props) {
           styles={{ image: { height: 60 } }}
         />
       ) : (
-        <List
-          grid={{ gutter: 16, column: 2 }}
-          dataSource={subAccounts}
-          renderItem={(sub) => (
-            <List.Item>
-              <Card
-                size="small"
-                title={
-                  <Space>
-                    <Text strong>{sub.name}</Text>
-                    <Tag color={sub.status.running ? "success" : "default"}>
-                      {sub.status.running ? "运行中" : "已停止"}
-                    </Tag>
-                  </Space>
-                }
-                extra={
-                  <Space>
-                    <Button
-                      size="small"
-                      type="text"
-                      icon={
-                        sub.status.running ? (
-                          <PauseCircleOutlined />
-                        ) : (
-                          <PlayCircleOutlined />
-                        )
-                      }
-                      onClick={() =>
-                        handleStartStop(sub.id, sub.status.running ? "stop" : "start")
-                      }
-                    />
-                  </Space>
-                }
-              >
-                <Space orientation="vertical" size={4} className="w-full">
-                  {sub.public_subdomain && (
-                    <div>
-                      <Text type="secondary" className="text-xs">
-                        子域名:
-                      </Text>{" "}
-                      <Text code className="text-xs">
-                        {sub.public_subdomain}
-                      </Text>
-                    </div>
-                  )}
+        <div className="grid grid-cols-2 gap-4">
+          {subAccounts.map((sub) => (
+            <Card
+              key={sub.id}
+              size="small"
+              title={
+                <Space>
+                  <Text strong>{sub.name}</Text>
+                  <Tag color={sub.status.running ? "success" : "default"}>
+                    {sub.status.running ? "运行中" : "已停止"}
+                  </Tag>
+                </Space>
+              }
+              extra={
+                <Space>
+                  <Button
+                    size="small"
+                    type="text"
+                    icon={
+                      sub.status.running ? (
+                        <PauseCircleOutlined />
+                      ) : (
+                        <PlayCircleOutlined />
+                      )
+                    }
+                    onClick={() =>
+                      handleStartStop(sub.id, sub.status.running ? "stop" : "start")
+                    }
+                  />
+                </Space>
+              }
+            >
+              <Space orientation="vertical" size={4} className="w-full">
+                {sub.public_subdomain && (
                   <div>
                     <Text type="secondary" className="text-xs">
-                      Profile ID:
+                      子域名:
                     </Text>{" "}
                     <Text code className="text-xs">
-                      {sub.id}
+                      {sub.public_subdomain}
                     </Text>
                   </div>
-                </Space>
-              </Card>
-            </List.Item>
-          )}
-        />
+                )}
+                <div>
+                  <Text type="secondary" className="text-xs">
+                    Profile ID:
+                  </Text>{" "}
+                  <Text code className="text-xs">
+                    {sub.id}
+                  </Text>
+                </div>
+              </Space>
+            </Card>
+          ))}
+        </div>
       )}
 
       {/* 创建子账户弹窗 */}

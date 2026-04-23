@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Modal, Input, List, Tag, Space } from "antd";
+import { Modal, Input, Tag, Space } from "antd";
 import {
   SearchOutlined,
   HistoryOutlined,
@@ -323,21 +323,23 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
               <HistoryOutlined />
               <span>最近搜索</span>
             </div>
-            <List
-              dataSource={recentItems}
-              renderItem={(item: SearchItem) => (
-                <List.Item
+            <div className="flex flex-col">
+              {recentItems.map((item: SearchItem) => (
+                <div
+                  key={item.id}
                   className="px-4 py-2 cursor-pointer hover:bg-[var(--color-action-hover)] transition-colors"
                   onClick={() => handleSelect(item)}
                 >
-                  <List.Item.Meta
-                    avatar={<span className="text-lg">{item.icon}</span>}
-                    title={item.title}
-                    description={item.category}
-                  />
-                </List.Item>
-              )}
-            />
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">{item.icon}</span>
+                    <div className="flex-1">
+                      <div className="font-medium">{item.title}</div>
+                      <div className="text-xs text-[var(--color-text-tertiary)]">{item.category}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </>
         ) : (
           Object.entries(groupedItems).map(([category, items]) => (
@@ -345,20 +347,18 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
               <div className="px-4 py-2 text-xs text-[var(--color-text-tertiary)] bg-[var(--color-bg-secondary)]">
                 {category}
               </div>
-              <List
-                dataSource={items}
-                renderItem={(item: SearchItem) => (
-                  <List.Item
+              <div className="flex flex-col">
+                {items.map((item: SearchItem) => (
+                  <div
+                    key={item.id}
                     className="px-4 py-2 cursor-pointer hover:bg-[var(--color-action-hover)] transition-colors"
                     onClick={() => handleSelect(item)}
                   >
-                    <List.Item.Meta
-                      avatar={
-                        <span className="text-lg text-[var(--color-text-secondary)]">
-                          {item.icon}
-                        </span>
-                      }
-                      title={
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg text-[var(--color-text-secondary)]">
+                        {item.icon}
+                      </span>
+                      <div className="flex-1">
                         <Space>
                           <span>{item.title}</span>
                           {item.keywords?.slice(0, 2).map((kw) => (
@@ -367,11 +367,11 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
                             </Tag>
                           ))}
                         </Space>
-                      }
-                    />
-                  </List.Item>
-                )}
-              />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           ))
         )}

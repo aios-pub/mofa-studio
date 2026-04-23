@@ -1985,6 +1985,7 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
   const agentType = agent.agent_category as ClawType;
   const config = clawTypeConfig[agentType];
   const clawParams = getClaw(agent);
+  const mappings = (clawParams.mappings as ClawChannelMapping[]) || [];
 
   const handleTest = async () => {
     try {

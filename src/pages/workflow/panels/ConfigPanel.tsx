@@ -222,7 +222,7 @@ function ConditionConfig({ config: _config }: { config: NodeConfig }) {
           {condConfig?.config?.branches?.map((branch) => (
             <div
               key={branch.id}
-              className="p-2 bg-[var(--color-bg-tertiary)] rounded"
+              className="p-2 bg-(--color-bg-tertiary) rounded"
             >
               <div className="text-sm font-medium">{branch.label}</div>
               <div className="text-xs text-[var(--color-text-tertiary)] font-mono">
@@ -361,10 +361,7 @@ function StartConfig({ config }: { config: NodeConfig }) {
         </label>
         <div className="space-y-2">
           {startConfig.config.inputs?.map((input, idx) => (
-            <div
-              key={idx}
-              className="p-2 bg-[var(--color-bg-tertiary)] rounded"
-            >
+            <div key={idx} className="p-2 bg-(--color-bg-tertiary) rounded">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{input.name}</span>
                 <span className="text-xs text-[var(--color-text-tertiary)]">
@@ -401,10 +398,7 @@ function EndConfig({ config }: { config: NodeConfig }) {
         </label>
         <div className="space-y-2">
           {endConfig.config.outputs?.map((output, idx) => (
-            <div
-              key={idx}
-              className="p-2 bg-[var(--color-bg-tertiary)] rounded"
-            >
+            <div key={idx} className="p-2 bg-(--color-bg-tertiary) rounded">
               <div className="text-sm font-medium">{output.name}</div>
               <div className="text-xs text-[var(--color-text-tertiary)] font-mono">
                 ← {output.source}

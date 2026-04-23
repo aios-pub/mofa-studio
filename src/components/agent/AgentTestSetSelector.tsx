@@ -194,7 +194,7 @@ export default function AgentTestSetSelector({
                           <button
                             onClick={() => runTest(testSet.id)}
                             disabled={isRunning || testSet.status === "running"}
-                            className="flex items-center gap-1 px-2 py-1 text-xs bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-base)] border border-(--color-border) rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-1 px-2 py-1 text-xs bg-(--color-bg-tertiary) hover:bg-[var(--color-bg-base)] border border-(--color-border) rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {isRunning || testSet.status === "running" ? (
                               <>

@@ -470,7 +470,7 @@ export default function PromptListPage() {
                 className={`group p-3 rounded-lg cursor-pointer transition-colors ${
                   selectedPrompt?.id === prompt.id
                     ? "bg-[var(--color-primary)]/10 border border-(--color-primary)/30"
-                    : "hover:bg-[var(--color-bg-tertiary)]"
+                    : "hover:bg-(--color-bg-tertiary)"
                 }`}
               >
                 <div className="flex items-start gap-2">

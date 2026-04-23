@@ -691,7 +691,7 @@ function TestSetDetail({
                             <span className="text-xs text-[var(--color-text-tertiary)]">
                               输入
                             </span>
-                            <p className="mt-1 text-sm text-[var(--color-text-primary)] bg-[var(--color-bg-tertiary)] p-2 rounded font-mono">
+                            <p className="mt-1 text-sm text-[var(--color-text-primary)] bg-(--color-bg-tertiary) p-2 rounded font-mono">
                               {testCase.input || "(空)"}
                             </p>
                           </div>
@@ -699,7 +699,7 @@ function TestSetDetail({
                             <span className="text-xs text-[var(--color-text-tertiary)]">
                               期望输出
                             </span>
-                            <p className="mt-1 text-sm text-[var(--color-text-primary)] bg-[var(--color-bg-tertiary)] p-2 rounded">
+                            <p className="mt-1 text-sm text-[var(--color-text-primary)] bg-(--color-bg-tertiary) p-2 rounded">
                               {testCase.expectedOutput || "(无)"}
                             </p>
                           </div>

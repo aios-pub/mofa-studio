@@ -184,7 +184,7 @@ export default function ExecutionsTab() {
               className={`px-2.5 py-1 text-xs rounded-full transition-colors ${
                 statusFilter === f.key
                   ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)] font-medium"
-                  : `bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] ${f.color || ""}`
+                  : `bg-(--color-bg-tertiary) text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] ${f.color || ""}`
               }`}
             >
               {f.label} ({f.count})

@@ -247,7 +247,7 @@ export function SkillDetail({
         {activeTab === "params" && (
           <div className="p-6 h-full overflow-y-auto">
             <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
-              <div className="p-3 border-b border-(--color-border) bg-[var(--color-bg-tertiary)]">
+              <div className="p-3 border-b border-(--color-border) bg-(--color-bg-tertiary)">
                 <span className="text-sm font-medium text-[var(--color-text-primary)]">
                   参数定义
                 </span>
@@ -319,7 +319,7 @@ export function SkillDetail({
 
             {/* JSON Schema 展示 */}
             <div className="mt-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
-              <div className="p-3 border-b border-(--color-border) bg-[var(--color-bg-tertiary)]">
+              <div className="p-3 border-b border-(--color-border) bg-(--color-bg-tertiary)">
                 <span className="text-sm font-medium text-[var(--color-text-primary)]">
                   JSON Schema
                 </span>
@@ -358,7 +358,7 @@ export function SkillDetail({
             <div className="space-y-4">
               {/* 参数输入 */}
               <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
-                <div className="p-3 border-b border-(--color-border) bg-[var(--color-bg-tertiary)]">
+                <div className="p-3 border-b border-(--color-border) bg-(--color-bg-tertiary)">
                   <span className="text-sm font-medium text-[var(--color-text-primary)]">
                     测试参数
                   </span>
@@ -454,7 +454,7 @@ export function SkillDetail({
         {activeTab === "logs" && (
           <div className="p-6 h-full overflow-y-auto">
             <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) h-full flex flex-col">
-              <div className="p-3 border-b border-(--color-border) bg-[var(--color-bg-tertiary)] flex items-center justify-between">
+              <div className="p-3 border-b border-(--color-border) bg-(--color-bg-tertiary) flex items-center justify-between">
                 <span className="text-sm font-medium text-[var(--color-text-primary)]">
                   执行日志
                 </span>

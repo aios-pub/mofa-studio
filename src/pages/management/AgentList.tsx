@@ -550,7 +550,7 @@ const AvatarPicker = ({
         className={`w-9 h-9 flex items-center justify-center rounded-lg text-xl transition-all ${
           value === emoji
             ? "bg-[var(--color-primary)]/20 border-2 border-(--color-primary) scale-110"
-            : "bg-[var(--color-bg-tertiary)] border border-(--color-border) hover:border-(--color-primary)/50"
+            : "bg-(--color-bg-tertiary) border border-(--color-border) hover:border-(--color-primary)/50"
         }`}
       >
         {emoji}
@@ -1849,7 +1849,7 @@ export default function AgentListPage() {
                   className={`group p-3 rounded-lg cursor-pointer transition-colors ${
                     selectedAgent?.id === agent.id
                       ? "bg-[var(--color-primary)]/10 border border-(--color-primary)/30"
-                      : "hover:bg-[var(--color-bg-tertiary)]"
+                      : "hover:bg-(--color-bg-tertiary)"
                   }`}
                 >
                   <div className="flex items-start gap-3">

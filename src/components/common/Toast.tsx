@@ -162,9 +162,9 @@ export function ToastProvider({
           description: "text-xs text-[var(--color-text-secondary)]",
           actionButton: "bg-[var(--color-primary)] text-white",
           cancelButton:
-            "bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]",
+            "bg-(--color-bg-tertiary) text-[var(--color-text-secondary)]",
           closeButton:
-            "!bg-[var(--color-bg-tertiary)] !border-(--color-border) !text-[var(--color-text-secondary)] hover:!bg-[var(--color-bg-base)]",
+            "!bg-(--color-bg-tertiary) !border-(--color-border) !text-[var(--color-text-secondary)] hover:!bg-[var(--color-bg-base)]",
         },
       }}
     />

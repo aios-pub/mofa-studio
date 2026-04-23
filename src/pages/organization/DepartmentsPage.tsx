@@ -129,11 +129,11 @@ export default function DepartmentsPage() {
                 className={`group p-3 rounded-lg cursor-pointer transition-colors ${
                   selectedDepartment?.id === dept.id
                     ? "bg-[var(--color-primary)]/10 border border-(--color-primary)/30"
-                    : "hover:bg-[var(--color-bg-tertiary)]"
+                    : "hover:bg-(--color-bg-tertiary)"
                 }`}
               >
                 <div className="flex items-start gap-2">
-                  <div className="p-2 bg-[var(--color-bg-tertiary)] rounded-lg">
+                  <div className="p-2 bg-(--color-bg-tertiary) rounded-lg">
                     <HomeOutlined className="text-[var(--color-text-tertiary)]" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -355,7 +355,7 @@ function DepartmentModal({
           </h3>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-[var(--color-bg-tertiary)] rounded"
+            className="p-1 hover:bg-(--color-bg-tertiary) rounded"
           >
             <CloseCircleOutlined className="text-[var(--color-text-tertiary)]" />
           </button>
@@ -409,7 +409,7 @@ function DepartmentModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-[var(--color-bg-tertiary)]"
+              className="px-4 py-2 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-(--color-bg-tertiary)"
             >
               取消
             </button>

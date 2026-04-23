@@ -330,7 +330,7 @@ export default function RoleManagementPage() {
           </Form.Item>
 
           <Form.Item name="menus" label="菜单权限" help="选择角色可访问的菜单">
-            <div className="border border-(--color-border) rounded-lg p-3 max-h-64 overflow-auto bg-[var(--color-bg-tertiary)]">
+            <div className="border border-(--color-border) rounded-lg p-3 max-h-64 overflow-auto bg-(--color-bg-tertiary)">
               {menuTree.length > 0 ? (
                 <Tree
                   checkable

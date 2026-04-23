@@ -340,7 +340,7 @@ export default function ChatContainer({
             {/* 加载中 */}
             {isLoading && (
               <div className="flex gap-3">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-bg-tertiary)] flex items-center justify-center">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-(--color-bg-tertiary) flex items-center justify-center">
                   <LoadingOutlined
                     className="text-[var(--color-text-primary)]"
                     spin
@@ -366,7 +366,7 @@ export default function ChatContainer({
             {attachments.map((att) => (
               <div
                 key={att.id}
-                className="flex items-center gap-1 px-2 py-1 bg-[var(--color-bg-tertiary)] rounded text-sm"
+                className="flex items-center gap-1 px-2 py-1 bg-(--color-bg-tertiary) rounded text-sm"
               >
                 <PaperClipOutlined className="text-xs" />
                 <span className="text-[var(--color-text-secondary)]">
@@ -401,7 +401,7 @@ export default function ChatContainer({
             onChange={handleFileChange}
           >
             <button
-              className="px-3 py-2 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
+              className="px-3 py-2 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-(--color-bg-tertiary) transition-colors"
               title="添加附件"
             >
               <PaperClipOutlined />
@@ -483,7 +483,7 @@ function MessageItem({ message }: { message: Message }) {
       {/* 头像 */}
       <div
         className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-          isUser ? "bg-[var(--color-primary)]" : "bg-[var(--color-bg-tertiary)]"
+          isUser ? "bg-[var(--color-primary)]" : "bg-(--color-bg-tertiary)"
         }`}
       >
         {isUser ? (
@@ -508,7 +508,7 @@ function MessageItem({ message }: { message: Message }) {
               思考过程
             </button>
             {showThinking && (
-              <div className="mt-1 p-3 bg-[var(--color-bg-tertiary)] rounded-lg text-sm text-[var(--color-text-secondary)] italic">
+              <div className="mt-1 p-3 bg-(--color-bg-tertiary) rounded-lg text-sm text-[var(--color-text-secondary)] italic">
                 {message.thinking.content}
               </div>
             )}
@@ -521,7 +521,7 @@ function MessageItem({ message }: { message: Message }) {
             {message.attachments.map((att) => (
               <div
                 key={att.id}
-                className="inline-flex items-center gap-1 px-2 py-1 bg-[var(--color-bg-tertiary)] rounded text-xs"
+                className="inline-flex items-center gap-1 px-2 py-1 bg-(--color-bg-tertiary) rounded text-xs"
               >
                 <PaperClipOutlined />
                 <span>{att.name}</span>
@@ -554,7 +554,7 @@ function MessageItem({ message }: { message: Message }) {
             {message.toolCalls.map((tool) => (
               <div
                 key={tool.id}
-                className="inline-flex items-center gap-2 px-2 py-1 bg-[var(--color-bg-tertiary)] rounded text-xs"
+                className="inline-flex items-center gap-2 px-2 py-1 bg-(--color-bg-tertiary) rounded text-xs"
               >
                 <span className="text-[var(--color-text-secondary)]">
                   {tool.name}
@@ -591,10 +591,10 @@ function MessageItem({ message }: { message: Message }) {
           )}
           {!isUser && (
             <div className="flex items-center gap-1">
-              <button className="p-0.5 hover:bg-[var(--color-bg-tertiary)] rounded">
+              <button className="p-0.5 hover:bg-(--color-bg-tertiary) rounded">
                 <CopyOutlined className="text-xs" />
               </button>
-              <button className="p-0.5 hover:bg-[var(--color-bg-tertiary)] rounded">
+              <button className="p-0.5 hover:bg-(--color-bg-tertiary) rounded">
                 <ReloadOutlined className="text-xs" />
               </button>
             </div>

@@ -45,7 +45,7 @@ const statusConfig: Record<
   },
   default: {
     color: "default",
-    bgClass: "bg-[var(--color-bg-tertiary)]",
+    bgClass: "bg-(--color-bg-tertiary)",
     textClass: "text-[var(--color-text-secondary)]",
   },
   processing: {

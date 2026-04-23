@@ -117,7 +117,7 @@ export default function SearchPanel({ knowledgeBaseId }: SearchPanelProps) {
           {results.map((item) => (
             <div
               key={item.id}
-              className="p-4 bg-[var(--color-bg-tertiary)] rounded-lg border border-(--color-border)"
+              className="p-4 bg-(--color-bg-tertiary) rounded-lg border border-(--color-border)"
             >
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-2">

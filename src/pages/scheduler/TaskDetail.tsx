@@ -134,7 +134,7 @@ export default function TaskDetail({
           <h3 className="p-3 text-sm font-medium text-[var(--color-text-primary)] border-b border-(--color-border)">
             参数 (Arguments)
           </h3>
-          <pre className="p-3 overflow-auto text-xs text-[var(--color-text-primary)] font-mono bg-[var(--color-bg-tertiary)] m-0">
+          <pre className="p-3 overflow-auto text-xs text-[var(--color-text-primary)] font-mono bg-(--color-bg-tertiary) m-0">
             <code>{JSON.stringify(task.config || {}, null, 2)}</code>
           </pre>
         </div>
@@ -244,7 +244,7 @@ export default function TaskDetail({
               taskExecutions.map((exec) => (
                 <div
                   key={exec.id}
-                  className="flex items-center gap-3 px-3 py-2 hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                  className="flex items-center gap-3 px-3 py-2 hover:bg-(--color-bg-tertiary) transition-colors"
                 >
                   {getStatusIcon(exec.status)}
                   <div className="flex-1 min-w-0">

@@ -115,7 +115,7 @@ export default function PromptVersionHistory({
               className={`p-1.5 rounded transition-colors ${
                 compareMode
                   ? "bg-[var(--color-primary)] text-white"
-                  : "text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)]"
+                  : "text-[var(--color-text-tertiary)] hover:bg-(--color-bg-tertiary)"
               }`}
               title="版本对比"
             >
@@ -149,7 +149,7 @@ export default function PromptVersionHistory({
                 compareFrom?.id === version.id ||
                 compareTo?.id === version.id
                   ? "bg-[var(--color-primary)]/10 border border-(--color-primary)/30"
-                  : "hover:bg-[var(--color-bg-tertiary)]"
+                  : "hover:bg-(--color-bg-tertiary)"
               }`}
             >
               <div className="flex items-center justify-between">
@@ -234,7 +234,7 @@ export default function PromptVersionHistory({
                 </div>
 
                 <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
-                  <div className="p-3 border-b border-(--color-border) bg-[var(--color-bg-tertiary)]">
+                  <div className="p-3 border-b border-(--color-border) bg-(--color-bg-tertiary)">
                     <span className="text-sm font-medium text-[var(--color-text-primary)]">
                       变更摘要
                     </span>
@@ -262,7 +262,7 @@ export default function PromptVersionHistory({
                 </div>
 
                 <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
-                  <div className="p-3 border-b border-(--color-border) bg-[var(--color-bg-tertiary)]">
+                  <div className="p-3 border-b border-(--color-border) bg-(--color-bg-tertiary)">
                     <span className="text-sm font-medium text-[var(--color-text-primary)]">
                       详细差异
                     </span>
@@ -348,7 +348,7 @@ export default function PromptVersionHistory({
                       </button>
                       <button
                         onClick={() => setRollbackConfirm(null)}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-[var(--color-bg-tertiary)]"
+                        className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-(--color-bg-tertiary)"
                       >
                         <CloseOutlined />
                         取消
@@ -357,7 +357,7 @@ export default function PromptVersionHistory({
                   ) : (
                     <button
                       onClick={() => setRollbackConfirm(selectedVersion.id)}
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-[var(--color-bg-tertiary)]"
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-(--color-bg-tertiary)"
                     >
                       <ReloadOutlined />
                       回滚到此版本
@@ -398,7 +398,7 @@ export default function PromptVersionHistory({
               )}
 
               <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
-                <div className="p-3 border-b border-(--color-border) bg-[var(--color-bg-tertiary)]">
+                <div className="p-3 border-b border-(--color-border) bg-(--color-bg-tertiary)">
                   <span className="text-sm font-medium text-[var(--color-text-primary)]">
                     提示词内容
                   </span>
@@ -410,7 +410,7 @@ export default function PromptVersionHistory({
 
               {selectedVersion.variables.length > 0 && (
                 <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
-                  <div className="p-3 border-b border-(--color-border) bg-[var(--color-bg-tertiary)]">
+                  <div className="p-3 border-b border-(--color-border) bg-(--color-bg-tertiary)">
                     <span className="text-sm font-medium text-[var(--color-text-primary)]">
                       变量 ({selectedVersion.variables.length})
                     </span>

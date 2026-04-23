@@ -57,7 +57,7 @@ export default function SearchResultItemComponent({
   };
 
   return (
-    <div className="p-4 bg-[var(--color-bg-tertiary)] rounded-lg border border-(--color-border) hover:border-(--color-primary)/50 transition-colors">
+    <div className="p-4 bg-(--color-bg-tertiary) rounded-lg border border-(--color-border) hover:border-(--color-primary)/50 transition-colors">
       {/* 头部 */}
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">

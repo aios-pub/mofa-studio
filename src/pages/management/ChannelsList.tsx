@@ -268,7 +268,7 @@ export default function ChannelsListPage() {
                 className={`group p-3 rounded-lg cursor-pointer transition-colors ${
                   selectedChannel?.id === channel.id
                     ? "bg-[var(--color-primary)]/10 border border-(--color-primary)/30"
-                    : "hover:bg-[var(--color-bg-tertiary)]"
+                    : "hover:bg-(--color-bg-tertiary)"
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -543,7 +543,7 @@ function StatCard({
   };
 
   return (
-    <div className="bg-[var(--color-bg-tertiary)] rounded-lg p-4">
+    <div className="bg-(--color-bg-tertiary) rounded-lg p-4">
       <div className="text-sm text-[var(--color-text-tertiary)]">{title}</div>
       <div
         className={`text-xl font-semibold mt-1 ${status ? statusColors[status] : "text-[var(--color-text-primary)]"}`}
@@ -653,7 +653,7 @@ function ChannelStatsView({ channel }: { channel: Channel }) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-[var(--color-bg-tertiary)] rounded-lg p-4">
+        <div className="bg-(--color-bg-tertiary) rounded-lg p-4">
           <div className="text-sm text-[var(--color-text-tertiary)]">
             今日消息
           </div>
@@ -663,7 +663,7 @@ function ChannelStatsView({ channel }: { channel: Channel }) {
             ).toLocaleString()}
           </div>
         </div>
-        <div className="bg-[var(--color-bg-tertiary)] rounded-lg p-4">
+        <div className="bg-(--color-bg-tertiary) rounded-lg p-4">
           <div className="text-sm text-[var(--color-text-tertiary)]">
             本周消息
           </div>
@@ -673,7 +673,7 @@ function ChannelStatsView({ channel }: { channel: Channel }) {
             ).toLocaleString()}
           </div>
         </div>
-        <div className="bg-[var(--color-bg-tertiary)] rounded-lg p-4">
+        <div className="bg-(--color-bg-tertiary) rounded-lg p-4">
           <div className="text-sm text-[var(--color-text-tertiary)]">
             本月消息
           </div>
@@ -827,7 +827,7 @@ function ChannelAgentsView({
             {linkedAgents.map((agent) => (
               <div
                 key={agent.id}
-                className="flex items-center justify-between p-3 bg-[var(--color-bg-tertiary)] rounded-lg"
+                className="flex items-center justify-between p-3 bg-(--color-bg-tertiary) rounded-lg"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-xl">{agent.avatar}</span>
@@ -864,7 +864,7 @@ function ChannelAgentsView({
             {availableAgents.map((agent) => (
               <div
                 key={agent.id}
-                className="flex items-center justify-between p-3 bg-[var(--color-bg-tertiary)] rounded-lg"
+                className="flex items-center justify-between p-3 bg-(--color-bg-tertiary) rounded-lg"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-xl">{agent.avatar}</span>

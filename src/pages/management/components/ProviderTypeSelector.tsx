@@ -63,7 +63,7 @@ export const ProviderTypeSelector: React.FC<ProviderTypeSelectorProps> = ({
               className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
                 activeCategory === category
                   ? "bg-[var(--color-primary)] text-white"
-                  : "bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]"
+                  : "bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-(--color-bg-tertiary)"
               }`}
             >
               {info.name}
@@ -135,7 +135,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
           className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-xl ${
             selected
               ? "bg-[var(--color-primary)]/20"
-              : "bg-[var(--color-bg-tertiary)]"
+              : "bg-(--color-bg-tertiary)"
           }`}
         >
           {config.icon}

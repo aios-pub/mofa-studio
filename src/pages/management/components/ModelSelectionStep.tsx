@@ -162,7 +162,7 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
                   checked
                     ? "border border-(--color-primary) bg-[var(--color-primary)]/5"
-                    : "border border-transparent hover:bg-[var(--color-bg-tertiary)]"
+                    : "border border-transparent hover:bg-(--color-bg-tertiary)"
                 }`}
               >
                 <Checkbox
@@ -182,7 +182,7 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
                     </Tag>
                   )}
                 </div>
-                <code className="text-xs px-1.5 py-0.5 bg-[var(--color-bg-tertiary)] rounded text-[var(--color-text-tertiary)] max-w-[200px] truncate">
+                <code className="text-xs px-1.5 py-0.5 bg-(--color-bg-tertiary) rounded text-[var(--color-text-tertiary)] max-w-[200px] truncate">
                   {model.id}
                 </code>
               </div>

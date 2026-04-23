@@ -125,7 +125,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
           description={
             <div className="text-xs">
               <p>请至少选择一个渠道以启用消息收发功能。</p>
-              <p className="mt-1 text-[var(--color-text-tertiary)]">
+              <p className="mt-1 text-(--color-text-tertiary)">
                 Octos 将使用所选渠道的凭据（如 Token、Secret）进行消息通信。
               </p>
             </div>
@@ -144,17 +144,15 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={
               <div className="text-center">
-                <p className="text-[var(--color-text-tertiary)]">
-                  暂无可用渠道
-                </p>
-                <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
+                <p className="text-(--color-text-tertiary)">暂无可用渠道</p>
+                <p className="text-xs text-(--color-text-tertiary) mt-1">
                   请先在渠道管理页面添加渠道
                 </p>
-                <div className="mt-3 p-3 bg-[var(--color-bg-tertiary)] rounded text-left">
+                <div className="mt-3 p-3 bg-(--color-bg-tertiary) rounded text-left">
                   <p className="text-xs font-medium mb-1">
                     Octos 支持的渠道类型：
                   </p>
-                  <p className="text-xs text-[var(--color-text-tertiary)] break-all font-mono">
+                  <p className="text-xs text-(--color-text-tertiary) break-all font-mono">
                     {OCTOS_SUPPORTED_CHANNEL_TYPES.join(", ")}
                   </p>
                 </div>
@@ -267,9 +265,9 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
               <li>渠道的具体配置（如 Token、Secret）在渠道管理页面维护</li>
               <li>Octos 会自动将所选渠道的凭据转换为后端所需的格式</li>
             </ul>
-            <div className="mt-2 p-2 bg-[var(--color-bg-tertiary)] rounded">
+            <div className="mt-2 p-2 bg-(--color-bg-tertiary) rounded">
               <p className="font-medium mb-1">后端配置格式示例：</p>
-              <pre className="text-xs text-[var(--color-text-tertiary)] overflow-x-auto">
+              <pre className="text-xs text-(--color-text-tertiary) overflow-x-auto">
                 {`{
   "channels": [
     {

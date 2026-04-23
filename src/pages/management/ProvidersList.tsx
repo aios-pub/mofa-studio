@@ -304,7 +304,7 @@ export default function ProvidersListPage() {
                   className={`group p-3 rounded-lg cursor-pointer transition-colors ${
                     selectedProvider?.id === provider.id
                       ? "bg-[var(--color-primary)]/10 border border-(--color-primary)/30"
-                      : "hover:bg-[var(--color-bg-tertiary)]"
+                      : "hover:bg-(--color-bg-tertiary)"
                   }`}
                 >
                   <div className="flex items-start gap-2">
@@ -378,7 +378,7 @@ export default function ProvidersListPage() {
                     {(provider.models ?? []).map((model) => (
                       <div
                         key={model.id}
-                        className="flex items-center justify-between p-2 bg-[var(--color-bg-tertiary)] rounded-lg text-sm"
+                        className="flex items-center justify-between p-2 bg-(--color-bg-tertiary) rounded-lg text-sm"
                       >
                         <div className="flex items-center gap-2">
                           <span className="text-[var(--color-text-primary)]">

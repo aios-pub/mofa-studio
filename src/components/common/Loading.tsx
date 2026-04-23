@@ -3,10 +3,10 @@
  * 提供多种加载指示器样式
  */
 
-import { LoadingOutlined } from '@ant-design/icons';
-import { cn } from '../../utils';
+import { LoadingOutlined } from "@ant-design/icons";
+import { cn } from "../../utils";
 
-type LoadingSize = 'small' | 'default' | 'large';
+type LoadingSize = "small" | "default" | "large";
 
 interface LoadingProps {
   /** 加载提示文字 */
@@ -26,16 +26,16 @@ interface LoadingProps {
 }
 
 const sizeMap: Record<LoadingSize, string> = {
-  small: 'text-lg',
-  default: 'text-2xl',
-  large: 'text-4xl',
+  small: "text-lg",
+  default: "text-2xl",
+  large: "text-4xl",
 };
 
 /**
  * 基础加载指示器
  */
 export function LoadingSpinner({
-  size = 'default',
+  size = "default",
   className,
 }: {
   size?: LoadingSize;
@@ -43,7 +43,7 @@ export function LoadingSpinner({
 }) {
   return (
     <LoadingOutlined
-      className={cn(sizeMap[size], 'text-[var(--color-primary)]', className)}
+      className={cn(sizeMap[size], "text-[var(--color-primary)]", className)}
       spin
     />
   );
@@ -53,8 +53,8 @@ export function LoadingSpinner({
  * 加载状态组件
  */
 export default function Loading({
-  tip = '加载中...',
-  size = 'default',
+  tip = "加载中...",
+  size = "default",
   fullscreen = false,
   simple = false,
   className,
@@ -68,14 +68,17 @@ export default function Loading({
   const content = (
     <div
       className={cn(
-        'flex flex-col items-center justify-center gap-3',
-        fullscreen && 'fixed inset-0 z-50 bg-[var(--color-bg-base)]/80 backdrop-blur-sm',
-        className
+        "flex flex-col items-center justify-center gap-3",
+        fullscreen &&
+          "fixed inset-0 z-50 bg-[var(--color-bg-base)]/80 backdrop-blur-sm",
+        className,
       )}
     >
       <LoadingSpinner size={size} />
       {!simple && (
-        <span className="text-sm text-[var(--color-text-secondary)]">{tip}</span>
+        <span className="text-sm text-[var(--color-text-secondary)]">
+          {tip}
+        </span>
       )}
     </div>
   );
@@ -99,7 +102,7 @@ export default function Loading({
 /**
  * 页面加载指示器
  */
-export function PageLoading({ tip = '页面加载中...' }: { tip?: string }) {
+export function PageLoading({ tip = "页面加载中..." }: { tip?: string }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
       <LoadingSpinner size="large" />
@@ -119,9 +122,11 @@ export function InlineLoading({
   className?: string;
 }) {
   return (
-    <div className={cn('inline-flex items-center gap-2', className)}>
+    <div className={cn("inline-flex items-center gap-2", className)}>
       <LoadingSpinner size="small" />
-      {tip && <span className="text-sm text-[var(--color-text-tertiary)]">{tip}</span>}
+      {tip && (
+        <span className="text-sm text-[var(--color-text-tertiary)]">{tip}</span>
+      )}
     </div>
   );
 }
@@ -130,12 +135,7 @@ export function InlineLoading({
  * 按钮加载状态
  */
 export function ButtonLoading({ className }: { className?: string }) {
-  return (
-    <LoadingOutlined
-      className={cn('text-current', className)}
-      spin
-    />
-  );
+  return <LoadingOutlined className={cn("text-current", className)} spin />;
 }
 
 /**
@@ -148,8 +148,8 @@ export function Skeleton({
   return (
     <div
       className={cn(
-        'animate-pulse rounded-md bg-[var(--color-bg-tertiary)]',
-        className
+        "animate-pulse rounded-md bg-(--color-bg-tertiary)",
+        className,
       )}
       {...props}
     />
@@ -167,14 +167,11 @@ export function SkeletonText({
   className?: string;
 }) {
   return (
-    <div className={cn('space-y-2', className)}>
+    <div className={cn("space-y-2", className)}>
       {Array.from({ length: lines }).map((_, i) => (
         <Skeleton
           key={i}
-          className={cn(
-            'h-4',
-            i === lines - 1 ? 'w-2/3' : 'w-full'
-          )}
+          className={cn("h-4", i === lines - 1 ? "w-2/3" : "w-full")}
         />
       ))}
     </div>
@@ -193,7 +190,7 @@ export function SkeletonAvatar({
 }) {
   return (
     <Skeleton
-      className={cn('rounded-full', className)}
+      className={cn("rounded-full", className)}
       style={{ width: size, height: size }}
     />
   );
@@ -204,7 +201,7 @@ export function SkeletonAvatar({
  */
 export function SkeletonCard({ className }: { className?: string }) {
   return (
-    <div className={cn('p-4 space-y-3', className)}>
+    <div className={cn("p-4 space-y-3", className)}>
       <div className="flex items-center gap-3">
         <SkeletonAvatar size={40} />
         <div className="flex-1 space-y-2">

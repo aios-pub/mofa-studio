@@ -130,7 +130,7 @@ export default function ProfilePage() {
                     className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors ${
                       activeTab === tab.key
                         ? "bg-[var(--color-primary)] text-white"
-                        : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]"
+                        : "text-[var(--color-text-secondary)] hover:bg-(--color-bg-tertiary)"
                     }`}
                   >
                     <Icon />
@@ -250,7 +250,7 @@ export default function ProfilePage() {
                     {t("profile.security", "安全设置")}
                   </h2>
 
-                  <div className="p-4 rounded-lg bg-[var(--color-bg-tertiary)] flex items-center gap-3">
+                  <div className="p-4 rounded-lg bg-(--color-bg-tertiary) flex items-center gap-3">
                     <SafetyOutlined className="text-green-500" />
                     <span className="text-sm text-[var(--color-text-secondary)]">
                       {t(
@@ -362,7 +362,7 @@ export default function ProfilePage() {
                         }
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-[var(--color-bg-tertiary)] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--color-primary)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
+                      <div className="w-11 h-6 bg-(--color-bg-tertiary) peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--color-primary)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
                     </label>
                   </div>
 
@@ -391,7 +391,7 @@ export default function ProfilePage() {
                         }
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-[var(--color-bg-tertiary)] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--color-primary)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
+                      <div className="w-11 h-6 bg-(--color-bg-tertiary) peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--color-primary)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
                     </label>
                   </div>
 
@@ -420,7 +420,7 @@ export default function ProfilePage() {
                         }
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-[var(--color-bg-tertiary)] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--color-primary)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
+                      <div className="w-11 h-6 bg-(--color-bg-tertiary) peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--color-primary)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
                     </label>
                   </div>
                 </div>

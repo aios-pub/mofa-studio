@@ -106,7 +106,7 @@ export default function WorkersTab() {
             </span>
           </div>
           <div className="text-xs text-[var(--color-text-tertiary)]">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[var(--color-bg-tertiary)]">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-(--color-bg-tertiary)">
               <ApiOutlined />
               CronStream (apalis-cron)
             </span>

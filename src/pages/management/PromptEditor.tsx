@@ -391,7 +391,7 @@ export default function PromptEditor({
           </button>
           <button
             onClick={() => setActiveTab("preview")}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-[var(--color-bg-tertiary)]"
+            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-(--color-bg-tertiary)"
           >
             <EyeOutlined />
             预览
@@ -419,7 +419,7 @@ export default function PromptEditor({
                 <button
                   key={template.id}
                   onClick={() => applyTemplate(template)}
-                  className="w-full text-left p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                  className="w-full text-left p-2 rounded-lg hover:bg-(--color-bg-tertiary) transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <BulbOutlined className="text-[var(--color-primary)]" />
@@ -442,7 +442,7 @@ export default function PromptEditor({
                 <button
                   key={sv.name}
                   onClick={() => insertVariable(sv.name)}
-                  className="w-full text-left p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                  className="w-full text-left p-2 rounded-lg hover:bg-(--color-bg-tertiary) transition-colors"
                 >
                   <code className="text-xs text-[var(--color-primary)]">{`{{${sv.name}}}`}</code>
                   <p className="text-xs text-[var(--color-text-tertiary)]">
@@ -583,7 +583,7 @@ export default function PromptEditor({
                                 updateVariable(index, { name: e.target.value })
                               }
                               placeholder="变量名"
-                              className="px-2 py-1 text-sm bg-[var(--color-bg-tertiary)] border border-(--color-border) rounded"
+                              className="px-2 py-1 text-sm bg-(--color-bg-tertiary) border border-(--color-border) rounded"
                             />
                             <select
                               value={v.type}
@@ -593,7 +593,7 @@ export default function PromptEditor({
                                     .value as PromptVariable["type"],
                                 })
                               }
-                              className="px-2 py-1 text-sm bg-[var(--color-bg-tertiary)] border border-(--color-border) rounded"
+                              className="px-2 py-1 text-sm bg-(--color-bg-tertiary) border border-(--color-border) rounded"
                             >
                               {variableTypes.map((t) => (
                                 <option key={t.value} value={t.value}>
@@ -610,7 +610,7 @@ export default function PromptEditor({
                                 })
                               }
                               placeholder="默认值"
-                              className="px-2 py-1 text-sm bg-[var(--color-bg-tertiary)] border border-(--color-border) rounded"
+                              className="px-2 py-1 text-sm bg-(--color-bg-tertiary) border border-(--color-border) rounded"
                             />
                             <label className="flex items-center gap-1">
                               <input
@@ -639,7 +639,7 @@ export default function PromptEditor({
                                   })
                                 }
                                 placeholder="枚举值，用逗号分隔"
-                                className="w-full px-2 py-1 text-sm bg-[var(--color-bg-tertiary)] border border-(--color-border) rounded"
+                                className="w-full px-2 py-1 text-sm bg-(--color-bg-tertiary) border border-(--color-border) rounded"
                               />
                             </div>
                           )}
@@ -678,7 +678,7 @@ export default function PromptEditor({
                                     [v.name]: e.target.value,
                                   })
                                 }
-                                className="w-full px-2 py-1 text-sm bg-[var(--color-bg-tertiary)] border border-(--color-border) rounded"
+                                className="w-full px-2 py-1 text-sm bg-(--color-bg-tertiary) border border-(--color-border) rounded"
                               >
                                 {(v.options || []).map((opt) => (
                                   <option key={opt} value={opt}>
@@ -705,7 +705,7 @@ export default function PromptEditor({
                                   })
                                 }
                                 placeholder={v.defaultValue}
-                                className="w-full px-2 py-1 text-sm bg-[var(--color-bg-tertiary)] border border-(--color-border) rounded"
+                                className="w-full px-2 py-1 text-sm bg-(--color-bg-tertiary) border border-(--color-border) rounded"
                               />
                             )}
                           </div>

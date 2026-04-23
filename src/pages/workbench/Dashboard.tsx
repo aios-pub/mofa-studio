@@ -837,7 +837,7 @@ export default function Dashboard() {
               {agentStatuses.slice(0, 5).map((agent) => (
                 <div
                   key={agent.agent_id}
-                  className="flex items-center justify-between p-3 bg-[var(--color-bg-secondary)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                  className="flex items-center justify-between p-3 bg-[var(--color-bg-secondary)] rounded-lg hover:bg-(--color-bg-tertiary) transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div

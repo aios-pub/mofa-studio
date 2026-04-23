@@ -89,7 +89,7 @@ export default function NodePanel({ onAddNode }: NodePanelProps) {
                         e.dataTransfer.effectAllowed = "move";
                       }}
                       onClick={() => onAddNode(type)}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)] cursor-pointer transition-colors group"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-(--color-bg-tertiary) cursor-pointer transition-colors group"
                     >
                       <div
                         className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"

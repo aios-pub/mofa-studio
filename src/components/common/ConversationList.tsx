@@ -148,7 +148,7 @@ export default function ConversationList({
             placeholder="搜索会话..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-[var(--color-bg-tertiary)] border border-(--color-border) rounded-lg text-sm focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
+            className="w-full pl-9 pr-3 py-2 bg-(--color-bg-tertiary) border border-(--color-border) rounded-lg text-sm focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
           />
         </div>
       </div>
@@ -193,7 +193,7 @@ export default function ConversationList({
                         className={`group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
                           selectedId === conversation.id
                             ? "bg-[var(--color-primary)]/10 border border-(--color-primary)/30"
-                            : "hover:bg-[var(--color-bg-tertiary)]"
+                            : "hover:bg-(--color-bg-tertiary)"
                         }`}
                       >
                         <MessageOutlined className="flex-shrink-0 text-[var(--color-text-tertiary)]" />
@@ -258,7 +258,7 @@ export default function ConversationList({
               }
               setContextMenu(null);
             }}
-            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]"
+            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-(--color-bg-tertiary)"
           >
             <EditOutlined />
             重命名

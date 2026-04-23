@@ -40,13 +40,13 @@ export default function LoginPage() {
         <div className="flex items-center justify-end gap-2 p-4">
           {/* 语言切换 */}
           <div className="relative group">
-            <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors">
+            <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-(--color-bg-tertiary) transition-colors">
               <GlobalOutlined />
             </button>
             <div className="absolute right-0 top-full mt-1 py-1 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
               <button
                 onClick={() => setLanguage("zh-CN")}
-                className={`w-full px-4 py-2 text-left text-sm hover:bg-[var(--color-bg-tertiary)] ${
+                className={`w-full px-4 py-2 text-left text-sm hover:bg-(--color-bg-tertiary) ${
                   language === "zh-CN"
                     ? "text-[var(--color-primary)]"
                     : "text-[var(--color-text-primary)]"
@@ -56,7 +56,7 @@ export default function LoginPage() {
               </button>
               <button
                 onClick={() => setLanguage("en-US")}
-                className={`w-full px-4 py-2 text-left text-sm hover:bg-[var(--color-bg-tertiary)] ${
+                className={`w-full px-4 py-2 text-left text-sm hover:bg-(--color-bg-tertiary) ${
                   language === "en-US"
                     ? "text-[var(--color-primary)]"
                     : "text-[var(--color-text-primary)]"
@@ -69,7 +69,7 @@ export default function LoginPage() {
 
           {/* 主题切换 */}
           <div className="relative group">
-            <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors">
+            <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-(--color-bg-tertiary) transition-colors">
               {theme === "light" ? (
                 <SunOutlined />
               ) : theme === "dark" ? (
@@ -81,7 +81,7 @@ export default function LoginPage() {
             <div className="absolute right-0 top-full mt-1 py-1 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
               <button
                 onClick={() => setTheme("light")}
-                className={`w-full px-4 py-2 text-left text-sm hover:bg-[var(--color-bg-tertiary)] flex items-center gap-2 ${
+                className={`w-full px-4 py-2 text-left text-sm hover:bg-(--color-bg-tertiary) flex items-center gap-2 ${
                   theme === "light"
                     ? "text-[var(--color-primary)]"
                     : "text-[var(--color-text-primary)]"
@@ -92,7 +92,7 @@ export default function LoginPage() {
               </button>
               <button
                 onClick={() => setTheme("dark")}
-                className={`w-full px-4 py-2 text-left text-sm hover:bg-[var(--color-bg-tertiary)] flex items-center gap-2 ${
+                className={`w-full px-4 py-2 text-left text-sm hover:bg-(--color-bg-tertiary) flex items-center gap-2 ${
                   theme === "dark"
                     ? "text-[var(--color-primary)]"
                     : "text-[var(--color-text-primary)]"
@@ -103,7 +103,7 @@ export default function LoginPage() {
               </button>
               <button
                 onClick={() => setTheme("system")}
-                className={`w-full px-4 py-2 text-left text-sm hover:bg-[var(--color-bg-tertiary)] flex items-center gap-2 ${
+                className={`w-full px-4 py-2 text-left text-sm hover:bg-(--color-bg-tertiary) flex items-center gap-2 ${
                   theme === "system"
                     ? "text-[var(--color-primary)]"
                     : "text-[var(--color-text-primary)]"

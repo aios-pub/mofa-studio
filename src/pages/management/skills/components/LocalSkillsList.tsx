@@ -292,7 +292,7 @@ export function LocalSkillsList({
                         className={`group flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all ${
                           selectedSkill?.id === skill.id
                             ? "bg-[var(--color-primary)]/10 border border-(--color-primary)/30"
-                            : "hover:bg-[var(--color-bg-tertiary)] border border-transparent"
+                            : "hover:bg-(--color-bg-tertiary) border border-transparent"
                         }`}
                       >
                         <div

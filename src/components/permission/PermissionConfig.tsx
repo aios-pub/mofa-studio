@@ -175,7 +175,7 @@ export default function PermissionConfig({
   return (
     <div className="space-y-6">
       {/* 头部 - 权限模板 */}
-      <div className="p-4 bg-[var(--color-bg-tertiary)] rounded-lg">
+      <div className="p-4 bg-(--color-bg-tertiary) rounded-lg">
         <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">
           快速应用权限模板
         </h3>
@@ -320,7 +320,7 @@ export default function PermissionConfig({
                   dataScope: e.target.value as typeof config.dataScope,
                 })
               }
-              className="w-full px-3 py-2 bg-[var(--color-bg-tertiary)] border border-(--color-border) rounded-lg text-sm text-[var(--color-text-primary)]"
+              className="w-full px-3 py-2 bg-(--color-bg-tertiary) border border-(--color-border) rounded-lg text-sm text-[var(--color-text-primary)]"
             >
               <option value="self">仅自己的数据</option>
               <option value="department">部门数据</option>
@@ -354,7 +354,7 @@ export default function PermissionConfig({
                   historyRetentionDays: Number(e.target.value),
                 })
               }
-              className="w-full px-3 py-2 bg-[var(--color-bg-tertiary)] border border-(--color-border) rounded-lg text-sm text-[var(--color-text-primary)]"
+              className="w-full px-3 py-2 bg-(--color-bg-tertiary) border border-(--color-border) rounded-lg text-sm text-[var(--color-text-primary)]"
             >
               <option value={7}>7 天</option>
               <option value={14}>14 天</option>

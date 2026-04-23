@@ -417,7 +417,7 @@ export default function TasksTab({
             className:
               selectedTask?.id === record.id
                 ? "bg-[var(--color-primary)]/5 cursor-pointer"
-                : "cursor-pointer hover:bg-[var(--color-bg-tertiary)]",
+                : "cursor-pointer hover:bg-(--color-bg-tertiary)",
           })}
           scroll={{ y: "calc(100vh - 360px)" }}
         />

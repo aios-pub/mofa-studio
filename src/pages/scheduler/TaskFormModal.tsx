@@ -533,7 +533,7 @@ export default function TaskFormModal({
                       <span className="text-sm text-[var(--color-text-secondary)]">
                         当前表达式：
                       </span>
-                      <code className="text-sm font-mono bg-[var(--color-bg-tertiary)] px-2 py-0.5 rounded">
+                      <code className="text-sm font-mono bg-(--color-bg-tertiary) px-2 py-0.5 rounded">
                         {formData.cron_expression}
                       </code>
                     </div>
@@ -568,7 +568,7 @@ export default function TaskFormModal({
                       <span className="text-sm text-[var(--color-text-secondary)]">
                         当前表达式：
                       </span>
-                      <code className="text-sm font-mono bg-[var(--color-bg-tertiary)] px-2 py-0.5 rounded">
+                      <code className="text-sm font-mono bg-(--color-bg-tertiary) px-2 py-0.5 rounded">
                         {formData.cron_expression}
                       </code>
                     </div>

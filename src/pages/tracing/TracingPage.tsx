@@ -218,7 +218,7 @@ export default function TracingPage() {
         return (
           <div key={span.span_id}>
             <div
-              className={`flex items-center gap-2 py-2 px-3 hover:bg-[var(--color-bg-tertiary)] cursor-pointer ${
+              className={`flex items-center gap-2 py-2 px-3 hover:bg-(--color-bg-tertiary) cursor-pointer ${
                 depth > 0 ? "ml-6" : ""
               }`}
               onClick={() => hasChildren && toggleSpan(span.span_id)}

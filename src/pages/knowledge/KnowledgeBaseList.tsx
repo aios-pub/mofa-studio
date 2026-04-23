@@ -258,7 +258,7 @@ export default function KnowledgeBaseListPage() {
                   "group p-3 rounded-lg cursor-pointer transition-colors " +
                   (selectedKB?.id === kb.id
                     ? "bg-[var(--color-primary)]/10 border border-(--color-primary)/30"
-                    : "hover:bg-[var(--color-bg-tertiary)]")
+                    : "hover:bg-(--color-bg-tertiary)")
                 }
               >
                 <div className="flex items-start gap-3">
@@ -330,7 +330,7 @@ export default function KnowledgeBaseListPage() {
               ].map((s, i) => (
                 <div
                   key={i}
-                  className="bg-[var(--color-bg-tertiary)] rounded-lg p-4"
+                  className="bg-(--color-bg-tertiary) rounded-lg p-4"
                 >
                   <div className="text-sm text-[var(--color-text-tertiary)]">
                     {s.t}
@@ -410,7 +410,7 @@ export default function KnowledgeBaseListPage() {
                       {documents.map((doc) => (
                         <div
                           key={doc.id}
-                          className="flex items-center justify-between p-3 bg-[var(--color-bg-tertiary)] rounded-lg"
+                          className="flex items-center justify-between p-3 bg-(--color-bg-tertiary) rounded-lg"
                         >
                           <div className="flex items-center gap-3">
                             <FileTextOutlined className="text-xl text-[var(--color-text-tertiary)]" />

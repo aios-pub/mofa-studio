@@ -216,7 +216,7 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
               <button
                 type="button"
                 onClick={() => setShowApiKey(!showApiKey)}
-                className="px-3 border border-(--color-border) rounded-lg hover:bg-[var(--color-bg-tertiary)]"
+                className="px-3 border border-(--color-border) rounded-lg hover:bg-(--color-bg-tertiary)"
               >
                 {showApiKey ? <EyeInvisibleOutlined /> : <EyeOutlined />}
               </button>

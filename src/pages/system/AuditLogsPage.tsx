@@ -3,8 +3,8 @@
  * 使用 Ant Design 组件重构
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Card,
   Table,
@@ -20,7 +20,7 @@ import {
   Dropdown,
   Typography,
   Tooltip,
-} from 'antd';
+} from "antd";
 import {
   SearchOutlined,
   ReloadOutlined,
@@ -30,40 +30,40 @@ import {
   CloseCircleOutlined,
   FileTextOutlined,
   FundOutlined,
-} from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
-import dayjs from 'dayjs';
-import { PageHeader } from '@/components/common';
-import type { AuditLog, AuditAction } from '@/services';
-import { auditLogApi } from '@/services';
+} from "@ant-design/icons";
+import type { ColumnsType } from "antd/es/table";
+import dayjs from "dayjs";
+import { PageHeader } from "@/components/common";
+import type { AuditLog, AuditAction } from "@/services";
+import { auditLogApi } from "@/services";
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
 
 const actionLabels: Record<AuditAction, string> = {
-  login: '登录',
-  logout: '退出',
-  create: '创建',
-  update: '更新',
-  delete: '删除',
-  view: '查看',
-  export: '导出',
-  import: '导入',
-  execute: '执行',
-  config_change: '配置变更',
+  login: "登录",
+  logout: "退出",
+  create: "创建",
+  update: "更新",
+  delete: "删除",
+  view: "查看",
+  export: "导出",
+  import: "导入",
+  execute: "执行",
+  config_change: "配置变更",
 };
 
 const actionColors: Record<AuditAction, string> = {
-  login: 'green',
-  logout: 'default',
-  create: 'blue',
-  update: 'orange',
-  delete: 'red',
-  view: 'purple',
-  export: 'cyan',
-  import: 'geekblue',
-  execute: 'gold',
-  config_change: 'pink',
+  login: "green",
+  logout: "default",
+  create: "blue",
+  update: "orange",
+  delete: "red",
+  view: "purple",
+  export: "cyan",
+  import: "geekblue",
+  execute: "gold",
+  config_change: "pink",
 };
 
 export default function AuditLogsPage() {
@@ -79,11 +79,13 @@ export default function AuditLogsPage() {
   } | null>(null);
 
   // 筛选状态
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterAction, setFilterAction] = useState<string>('');
-  const [filterResource, setFilterResource] = useState<string>('');
-  const [filterStatus, setFilterStatus] = useState<string>('');
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterAction, setFilterAction] = useState<string>("");
+  const [filterResource, setFilterResource] = useState<string>("");
+  const [filterStatus, setFilterStatus] = useState<string>("");
+  const [dateRange, setDateRange] = useState<
+    [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
+  >(null);
 
   // 选项数据
   const [resourceTypes, setResourceTypes] = useState<string[]>([]);
@@ -105,14 +107,14 @@ export default function AuditLogsPage() {
         auditLogApi.getLogs({
           action: (filterAction as AuditAction) || undefined,
           resource: filterResource || undefined,
-          status: (filterStatus as 'success' | 'failure') || undefined,
-          startDate: dateRange?.[0]?.format('YYYY-MM-DD') || undefined,
-          endDate: dateRange?.[1]?.format('YYYY-MM-DD') || undefined,
+          status: (filterStatus as "success" | "failure") || undefined,
+          startDate: dateRange?.[0]?.format("YYYY-MM-DD") || undefined,
+          endDate: dateRange?.[1]?.format("YYYY-MM-DD") || undefined,
           search: searchQuery || undefined,
         }),
         auditLogApi.getStats({
-          startDate: dateRange?.[0]?.format('YYYY-MM-DD') || undefined,
-          endDate: dateRange?.[1]?.format('YYYY-MM-DD') || undefined,
+          startDate: dateRange?.[0]?.format("YYYY-MM-DD") || undefined,
+          endDate: dateRange?.[1]?.format("YYYY-MM-DD") || undefined,
         }),
       ]);
       setLogs(logsData);
@@ -122,7 +124,7 @@ export default function AuditLogsPage() {
         failure: statsData.failure,
       });
     } catch (error) {
-      console.error('Failed to load audit logs:', error);
+      console.error("Failed to load audit logs:", error);
     } finally {
       setLoading(false);
     }
@@ -136,32 +138,32 @@ export default function AuditLogsPage() {
     loadLogs();
   }, [loadLogs]);
 
-  const handleExport = async (format: 'csv' | 'json') => {
+  const handleExport = async (format: "csv" | "json") => {
     const data = await auditLogApi.exportLogs(format, {
       action: (filterAction as AuditAction) || undefined,
       resource: filterResource || undefined,
-      status: (filterStatus as 'success' | 'failure') || undefined,
-      startDate: dateRange?.[0]?.format('YYYY-MM-DD') || undefined,
-      endDate: dateRange?.[1]?.format('YYYY-MM-DD') || undefined,
+      status: (filterStatus as "success" | "failure") || undefined,
+      startDate: dateRange?.[0]?.format("YYYY-MM-DD") || undefined,
+      endDate: dateRange?.[1]?.format("YYYY-MM-DD") || undefined,
       search: searchQuery || undefined,
     });
 
     const blob = new Blob([data], {
-      type: format === 'json' ? 'application/json' : 'text/csv',
+      type: format === "json" ? "application/json" : "text/csv",
     });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `audit-logs-${new Date().toISOString().split('T')[0]}.${format}`;
+    a.download = `audit-logs-${new Date().toISOString().split("T")[0]}.${format}`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   const handleResetFilters = () => {
-    setSearchQuery('');
-    setFilterAction('');
-    setFilterResource('');
-    setFilterStatus('');
+    setSearchQuery("");
+    setFilterAction("");
+    setFilterResource("");
+    setFilterStatus("");
     setDateRange(null);
   };
 
@@ -171,31 +173,32 @@ export default function AuditLogsPage() {
   };
 
   const formatDateTime = (date: Date) => {
-    return dayjs(date).format('YYYY-MM-DD HH:mm:ss');
+    return dayjs(date).format("YYYY-MM-DD HH:mm:ss");
   };
 
   // 表格列配置
   const columns: ColumnsType<AuditLog> = [
     {
-      title: t('auditLog.timestamp', '时间'),
-      dataIndex: 'timestamp',
-      key: 'timestamp',
+      title: t("auditLog.timestamp", "时间"),
+      dataIndex: "timestamp",
+      key: "timestamp",
       width: 180,
-      sorter: (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      sorter: (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
       render: (date: Date) => (
         <Text type="secondary">{formatDateTime(date)}</Text>
       ),
     },
     {
-      title: t('auditLog.user', '用户'),
-      dataIndex: 'userName',
-      key: 'userName',
+      title: t("auditLog.user", "用户"),
+      dataIndex: "userName",
+      key: "userName",
       width: 140,
       render: (name: string) => (
         <Space>
           <div className="w-6 h-6 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
             <span className="text-xs font-medium text-[var(--color-primary)]">
-              {name?.charAt(0) || '?'}
+              {name?.charAt(0) || "?"}
             </span>
           </div>
           <span>{name}</span>
@@ -203,17 +206,17 @@ export default function AuditLogsPage() {
       ),
     },
     {
-      title: t('auditLog.action', '操作'),
-      dataIndex: 'action',
-      key: 'action',
+      title: t("auditLog.action", "操作"),
+      dataIndex: "action",
+      key: "action",
       width: 100,
       render: (action: AuditAction) => (
         <Tag color={actionColors[action]}>{actionLabels[action]}</Tag>
       ),
     },
     {
-      title: t('auditLog.resource', '资源'),
-      key: 'resource',
+      title: t("auditLog.resource", "资源"),
+      key: "resource",
       render: (_, record) => (
         <div>
           <Text>{record.resource}</Text>
@@ -226,18 +229,18 @@ export default function AuditLogsPage() {
       ),
     },
     {
-      title: t('auditLog.status', '状态'),
-      dataIndex: 'status',
-      key: 'status',
+      title: t("auditLog.status", "状态"),
+      dataIndex: "status",
+      key: "status",
       width: 100,
       render: (status: string) =>
-        status === 'success' ? (
+        status === "success" ? (
           <Tag icon={<CheckCircleOutlined />} color="success">
-            {t('common.success', '成功')}
+            {t("common.success", "成功")}
           </Tag>
         ) : (
           <Tag icon={<CloseCircleOutlined />} color="error">
-            {t('common.error', '失败')}
+            {t("common.error", "失败")}
           </Tag>
         ),
     },
@@ -252,7 +255,9 @@ export default function AuditLogsPage() {
             <FundOutlined className="text-xl text-blue-500" />
           </div>
           <div>
-            <p className="text-xs text-[var(--color-text-tertiary)]">总记录数</p>
+            <p className="text-xs text-[var(--color-text-tertiary)]">
+              总记录数
+            </p>
             <p className="text-lg font-semibold">{stats.total}</p>
           </div>
         </div>
@@ -263,8 +268,12 @@ export default function AuditLogsPage() {
             <CheckCircleOutlined className="text-xl text-green-500" />
           </div>
           <div>
-            <p className="text-xs text-[var(--color-text-tertiary)]">成功操作</p>
-            <p className="text-lg font-semibold text-green-500">{stats.success}</p>
+            <p className="text-xs text-[var(--color-text-tertiary)]">
+              成功操作
+            </p>
+            <p className="text-lg font-semibold text-green-500">
+              {stats.success}
+            </p>
           </div>
         </div>
       </Card>
@@ -274,8 +283,12 @@ export default function AuditLogsPage() {
             <CloseCircleOutlined className="text-xl text-red-500" />
           </div>
           <div>
-            <p className="text-xs text-[var(--color-text-tertiary)]">失败操作</p>
-            <p className="text-lg font-semibold text-red-500">{stats.failure}</p>
+            <p className="text-xs text-[var(--color-text-tertiary)]">
+              失败操作
+            </p>
+            <p className="text-lg font-semibold text-red-500">
+              {stats.failure}
+            </p>
           </div>
         </div>
       </Card>
@@ -285,28 +298,28 @@ export default function AuditLogsPage() {
   // 导出下拉菜单
   const exportMenuItems = [
     {
-      key: 'csv',
-      label: '导出 CSV',
-      onClick: () => handleExport('csv'),
+      key: "csv",
+      label: "导出 CSV",
+      onClick: () => handleExport("csv"),
     },
     {
-      key: 'json',
-      label: '导出 JSON',
-      onClick: () => handleExport('json'),
+      key: "json",
+      label: "导出 JSON",
+      onClick: () => handleExport("json"),
     },
   ];
 
   return (
     <div className="space-y-4">
       <PageHeader
-        title={t('auditLog.title', '审计日志')}
-        description={t('auditLog.subtitle', '查看系统操作记录和审计追踪')}
+        title={t("auditLog.title", "审计日志")}
+        description={t("auditLog.subtitle", "查看系统操作记录和审计追踪")}
         icon={<FileTextOutlined className="text-xl" />}
         actions={
           <Space>
             <Dropdown menu={{ items: exportMenuItems }} placement="bottomRight">
               <Button icon={<DownloadOutlined />}>
-                {t('common.export', '导出')}
+                {t("common.export", "导出")}
               </Button>
             </Dropdown>
             <Button
@@ -315,7 +328,7 @@ export default function AuditLogsPage() {
               onClick={loadLogs}
               loading={loading}
             >
-              {t('common.refresh', '刷新')}
+              {t("common.refresh", "刷新")}
             </Button>
           </Space>
         }
@@ -328,7 +341,10 @@ export default function AuditLogsPage() {
       <Card size="small">
         <Space wrap>
           <Input
-            placeholder={t('auditLog.searchPlaceholder', '搜索用户、资源、详情...')}
+            placeholder={t(
+              "auditLog.searchPlaceholder",
+              "搜索用户、资源、详情...",
+            )}
             prefix={<SearchOutlined />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -336,7 +352,7 @@ export default function AuditLogsPage() {
             allowClear
           />
           <Select
-            placeholder={t('auditLog.filterByAction', '选择操作')}
+            placeholder={t("auditLog.filterByAction", "选择操作")}
             value={filterAction || undefined}
             onChange={setFilterAction}
             allowClear
@@ -347,7 +363,7 @@ export default function AuditLogsPage() {
             }))}
           />
           <Select
-            placeholder={t('auditLog.filterByResource', '选择资源')}
+            placeholder={t("auditLog.filterByResource", "选择资源")}
             value={filterResource || undefined}
             onChange={setFilterResource}
             allowClear
@@ -358,14 +374,14 @@ export default function AuditLogsPage() {
             }))}
           />
           <Select
-            placeholder={t('auditLog.status', '选择状态')}
+            placeholder={t("auditLog.status", "选择状态")}
             value={filterStatus || undefined}
             onChange={setFilterStatus}
             allowClear
             style={{ width: 120 }}
             options={[
-              { label: t('common.success', '成功'), value: 'success' },
-              { label: t('common.error', '失败'), value: 'failure' },
+              { label: t("common.success", "成功"), value: "success" },
+              { label: t("common.error", "失败"), value: "failure" },
             ]}
           />
           <RangePicker
@@ -373,7 +389,7 @@ export default function AuditLogsPage() {
             onChange={(dates) => setDateRange(dates)}
           />
           <Button icon={<FilterOutlined />} onClick={handleResetFilters}>
-            {t('common.reset', '重置')}
+            {t("common.reset", "重置")}
           </Button>
         </Space>
       </Card>
@@ -387,24 +403,25 @@ export default function AuditLogsPage() {
           loading={loading}
           onRow={(record) => ({
             onClick: () => handleRowClick(record),
-            className: 'cursor-pointer hover:bg-[var(--color-bg-secondary)]',
+            className: "cursor-pointer hover:bg-[var(--color-bg-secondary)]",
           })}
           pagination={{
             pageSize: 20,
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (total) => t('pagination.total', `共 ${total} 条`, { total }),
-            pageSizeOptions: ['10', '20', '50', '100'],
+            showTotal: (total) =>
+              t("pagination.total", `共 ${total} 条`, { total }),
+            pageSizeOptions: ["10", "20", "50", "100"],
           }}
           locale={{
-            emptyText: t('auditLog.noLogs', '暂无审计日志'),
+            emptyText: t("auditLog.noLogs", "暂无审计日志"),
           }}
         />
       </Card>
 
       {/* 日志详情抽屉 */}
       <Drawer
-        title={t('auditLog.details', '日志详情')}
+        title={t("auditLog.details", "日志详情")}
         placement="right"
         size={{ width: 500 }}
         onClose={() => setDrawerOpen(false)}
@@ -427,7 +444,7 @@ export default function AuditLogsPage() {
                   </Tag>
                 </Descriptions.Item>
                 <Descriptions.Item label="状态">
-                  {selectedLog.status === 'success' ? (
+                  {selectedLog.status === "success" ? (
                     <Badge status="success" text="成功" />
                   ) : (
                     <Badge status="error" text="失败" />
@@ -449,7 +466,7 @@ export default function AuditLogsPage() {
                 )}
                 {selectedLog.resourceId && (
                   <Descriptions.Item label="资源ID">
-                    <code className="text-xs px-2 py-0.5 bg-[var(--color-bg-tertiary)] rounded">
+                    <code className="text-xs px-2 py-0.5 bg-(--color-bg-tertiary) rounded">
                       {selectedLog.resourceId}
                     </code>
                   </Descriptions.Item>
@@ -466,7 +483,7 @@ export default function AuditLogsPage() {
             <Card size="small" title="客户端信息">
               <Descriptions column={1} size="small">
                 <Descriptions.Item label="IP 地址">
-                  <code className="text-xs px-2 py-0.5 bg-[var(--color-bg-tertiary)] rounded">
+                  <code className="text-xs px-2 py-0.5 bg-(--color-bg-tertiary) rounded">
                     {selectedLog.ipAddress}
                   </code>
                 </Descriptions.Item>

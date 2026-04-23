@@ -116,7 +116,7 @@ export default function MonitoringPage() {
           <button
             onClick={loadData}
             disabled={loading}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-[var(--color-bg-tertiary)] disabled:opacity-50"
+            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-(--color-bg-tertiary) disabled:opacity-50"
           >
             <SyncOutlined spin={loading} />
             刷新
@@ -304,7 +304,7 @@ function AgentsTab({ statuses }: { statuses: AgentStatus[] }) {
           </div>
 
           {agent.current_conversation && (
-            <div className="mb-3 p-2 bg-[var(--color-bg-tertiary)] rounded text-xs">
+            <div className="mb-3 p-2 bg-(--color-bg-tertiary) rounded text-xs">
               <span className="text-[var(--color-text-tertiary)]">
                 当前对话:{" "}
               </span>
@@ -399,7 +399,7 @@ function ActivityTab({ events }: { events: ActivityEvent[] }) {
           key={event.id}
           className="flex items-start gap-3 p-3 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)"
         >
-          <div className="p-2 bg-[var(--color-bg-tertiary)] rounded-lg">
+          <div className="p-2 bg-(--color-bg-tertiary) rounded-lg">
             {getEventIcon(event.type)}
           </div>
           <div className="flex-1 min-w-0">
@@ -424,7 +424,7 @@ function ActivityTab({ events }: { events: ActivityEvent[] }) {
                 {Object.entries(event.metadata).map(([key, value]) => (
                   <span
                     key={key}
-                    className="text-xs px-2 py-0.5 bg-[var(--color-bg-tertiary)] rounded text-[var(--color-text-tertiary)]"
+                    className="text-xs px-2 py-0.5 bg-(--color-bg-tertiary) rounded text-[var(--color-text-tertiary)]"
                   >
                     {key}: {String(value)}
                   </span>
@@ -503,7 +503,7 @@ function AlertsTab({
             {!alert.acknowledged && (
               <button
                 onClick={() => onAcknowledge(alert.id)}
-                className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-tertiary)] border border-(--color-border) rounded-lg hover:bg-[var(--color-bg-base)]"
+                className="flex items-center gap-1 px-3 py-1.5 text-sm bg-(--color-bg-tertiary) border border-(--color-border) rounded-lg hover:bg-[var(--color-bg-base)]"
               >
                 <BellFilled />
                 确认
@@ -545,7 +545,7 @@ function MetricCard({
   return (
     <div className="flex items-center gap-3">
       <div
-        className={`p-2 bg-[var(--color-bg-tertiary)] rounded-lg ${colorClasses[color]}`}
+        className={`p-2 bg-(--color-bg-tertiary) rounded-lg ${colorClasses[color]}`}
       >
         <Icon />
       </div>

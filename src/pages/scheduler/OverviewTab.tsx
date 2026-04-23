@@ -170,7 +170,7 @@ function TypeCard({
             {config.label}
           </h3>
         </div>
-        <span className="text-xs px-1.5 py-0.5 rounded bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)]">
+        <span className="text-xs px-1.5 py-0.5 rounded bg-(--color-bg-tertiary) text-[var(--color-text-tertiary)]">
           {tasks.length} 任务
         </span>
       </div>

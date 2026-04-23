@@ -390,22 +390,22 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
       {/* 底部提示 */}
       <div className="px-4 py-2 border-t border-(--color-border) flex items-center justify-between text-xs text-[var(--color-text-tertiary)]">
         <Space>
-          <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-bg-tertiary)]">
+          <kbd className="px-1.5 py-0.5 rounded bg-(--color-bg-tertiary)">
             ↑
           </kbd>
-          <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-bg-tertiary)]">
+          <kbd className="px-1.5 py-0.5 rounded bg-(--color-bg-tertiary)">
             ↓
           </kbd>
           <span>导航</span>
         </Space>
         <Space>
-          <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-bg-tertiary)]">
+          <kbd className="px-1.5 py-0.5 rounded bg-(--color-bg-tertiary)">
             Enter
           </kbd>
           <span>选择</span>
         </Space>
         <Space>
-          <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-bg-tertiary)]">
+          <kbd className="px-1.5 py-0.5 rounded bg-(--color-bg-tertiary)">
             Esc
           </kbd>
           <span>关闭</span>

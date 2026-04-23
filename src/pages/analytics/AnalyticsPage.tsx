@@ -216,7 +216,7 @@ export default function AnalyticsPage() {
           <button
             onClick={loadStats}
             disabled={loading}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-[var(--color-bg-tertiary)] disabled:opacity-50"
+            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-(--color-bg-tertiary) disabled:opacity-50"
           >
             <SyncOutlined spin={loading} />
             刷新
@@ -230,13 +230,13 @@ export default function AnalyticsPage() {
             <div className="absolute right-0 mt-1 w-32 py-1 bg-[var(--color-bg-base)] border border-(--color-border) rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
               <button
                 onClick={() => handleExport("csv")}
-                className="w-full px-3 py-1.5 text-sm text-left hover:bg-[var(--color-bg-tertiary)]"
+                className="w-full px-3 py-1.5 text-sm text-left hover:bg-(--color-bg-tertiary)"
               >
                 导出 CSV
               </button>
               <button
                 onClick={() => handleExport("json")}
-                className="w-full px-3 py-1.5 text-sm text-left hover:bg-[var(--color-bg-tertiary)]"
+                className="w-full px-3 py-1.5 text-sm text-left hover:bg-(--color-bg-tertiary)"
               >
                 导出 JSON
               </button>
@@ -500,7 +500,7 @@ function AgentsTab({
                           ? "bg-gray-400/10 text-gray-400"
                           : index === 2
                             ? "bg-orange-500/10 text-orange-500"
-                            : "bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)]"
+                            : "bg-(--color-bg-tertiary) text-[var(--color-text-tertiary)]"
                     }`}
                   >
                     {index + 1}
@@ -518,7 +518,7 @@ function AgentsTab({
                   </span>
                 </div>
               </div>
-              <div className="h-2 bg-[var(--color-bg-tertiary)] rounded-full overflow-hidden">
+              <div className="h-2 bg-(--color-bg-tertiary) rounded-full overflow-hidden">
                 <div
                   className="h-full bg-[var(--color-primary)] rounded-full"
                   style={{
@@ -577,10 +577,7 @@ function UsersTab({
         </h3>
         <div className="grid grid-cols-4 gap-4">
           {Object.entries(departmentStats).map(([dept, data]) => (
-            <div
-              key={dept}
-              className="p-3 bg-[var(--color-bg-tertiary)] rounded-lg"
-            >
+            <div key={dept} className="p-3 bg-(--color-bg-tertiary) rounded-lg">
               <p className="text-sm font-medium text-[var(--color-text-primary)]">
                 {dept}
               </p>
@@ -657,7 +654,7 @@ function UsersTab({
                     <span className="text-[var(--color-text-primary)]">
                       {formatNumber(user.conversations)}
                     </span>
-                    <div className="w-16 h-1.5 bg-[var(--color-bg-tertiary)] rounded-full overflow-hidden">
+                    <div className="w-16 h-1.5 bg-(--color-bg-tertiary) rounded-full overflow-hidden">
                       <div
                         className="h-full bg-[var(--color-primary)] rounded-full"
                         style={{

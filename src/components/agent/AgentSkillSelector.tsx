@@ -208,7 +208,7 @@ export default function AgentSkillSelector({
                             e.stopPropagation();
                             setExpandedSkill(isExpanded ? null : skill.id);
                           }}
-                          className="p-1 hover:bg-[var(--color-bg-tertiary)] rounded"
+                          className="p-1 hover:bg-(--color-bg-tertiary) rounded"
                         >
                           {isExpanded ? (
                             <UpOutlined className="text-[var(--color-text-tertiary)]" />
@@ -238,7 +238,7 @@ export default function AgentSkillSelector({
                                         key={param.name}
                                         className="flex items-center gap-2 text-xs"
                                       >
-                                        <code className="px-1.5 py-0.5 bg-[var(--color-bg-tertiary)] rounded text-[var(--color-primary)]">
+                                        <code className="px-1.5 py-0.5 bg-(--color-bg-tertiary) rounded text-[var(--color-primary)]">
                                           {param.name}
                                         </code>
                                         <span className="text-[var(--color-text-tertiary)]">
@@ -275,7 +275,7 @@ export default function AgentSkillSelector({
                                 testSkill(skill.id);
                               }}
                               disabled={isTesting || !skill.enabled}
-                              className="flex items-center gap-1 px-3 py-1.5 text-xs bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-base)] border border-(--color-border) rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="flex items-center gap-1 px-3 py-1.5 text-xs bg-(--color-bg-tertiary) hover:bg-[var(--color-bg-base)] border border-(--color-border) rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {isTesting ? (
                                 <LoadingOutlined className="animate-spin" />

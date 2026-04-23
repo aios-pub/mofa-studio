@@ -272,7 +272,7 @@ export async function toFrontendFormat(
           frontendConfig.llm = {
             primary: {
               family_id: matchedProvider.type,
-              model_id: matchedModel.id,
+              model_id: matchedModel.name,
               route: {
                 route_id: matchedProvider.id,
                 base_url: matchedProvider.baseUrl,
@@ -314,7 +314,7 @@ export async function toFrontendFormat(
 
           fallbacks.push({
             family_id: matchedProvider.type,
-            model_id: matchedModel?.id,
+            model_id: matchedModel?.name,
             route: {
               route_id: matchedProvider.id,
               base_url: matchedProvider.baseUrl,

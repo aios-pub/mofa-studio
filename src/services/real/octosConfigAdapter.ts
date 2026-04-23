@@ -73,8 +73,8 @@ function channelToOctosFormat(channel: any): OctosChannelCredentials {
   // 根据渠道类型映射配置到 Octos 期望的格式
   switch (channel.type) {
     case "feishu":
-      octosChannel.app_id_env = channel.config.app_id;
-      octosChannel.app_secret_env = channel.config.app_secret;
+      octosChannel.app_id_env = "FEISHU_APP_ID";
+      octosChannel.app_secret_env = "FEISHU_APP_SECRET";
       if (channel.config.encrypt_key) {
         octosChannel.encrypt_key_env = channel.config.encrypt_key;
       }

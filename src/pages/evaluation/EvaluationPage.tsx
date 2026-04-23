@@ -3,8 +3,8 @@
  * 使用 Ant Design 组件重构
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Card,
   Table,
@@ -22,7 +22,7 @@ import {
   InputNumber,
   Input,
   message,
-} from 'antd';
+} from "antd";
 import {
   StarOutlined,
   RobotOutlined,
@@ -34,12 +34,16 @@ import {
   ReloadOutlined,
   PlusOutlined,
   DeleteOutlined,
-} from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
-import type { EvaluationMetric, EvaluationRecord, AgentEvaluationSummary } from '../../types/evaluation';
-import { evaluationApi } from '@/services';
-import type { Evaluation } from '@/services/real/evaluation';
-import { formatDate } from '@/utils';
+} from "@ant-design/icons";
+import type { ColumnsType } from "antd/es/table";
+import type {
+  EvaluationMetric,
+  EvaluationRecord,
+  AgentEvaluationSummary,
+} from "../../types/evaluation";
+import { evaluationApi } from "@/services";
+import type { Evaluation } from "@/services/real/evaluation";
+import { formatDate } from "@/utils";
 
 const { Title, Text } = Typography;
 
@@ -49,7 +53,7 @@ export default function EvaluationPage() {
   const [summaries, setSummaries] = useState<AgentEvaluationSummary[]>([]);
   const [evaluations, setEvaluations] = useState<EvaluationRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedAgent, setSelectedAgent] = useState<string>('');
+  const [selectedAgent, setSelectedAgent] = useState<string>("");
   const [agents, setAgents] = useState<Array<{ id: string; name: string }>>([]);
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -60,33 +64,51 @@ export default function EvaluationPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [metricsData, summariesData, evalsData, agentsData] = await Promise.all([
-        evaluationApi.getEvaluationMetrics(),
-        evaluationApi.getAllAgentSummaries(),
-        evaluationApi.getAgentEvaluations({ agentId: selectedAgent || undefined }),
-        evaluationApi.getAgents(),
-      ]);
+      const [metricsData, summariesData, evalsData, agentsData] =
+        await Promise.all([
+          evaluationApi.getEvaluationMetrics(),
+          evaluationApi.getAllAgentSummaries(),
+          evaluationApi.getAgentEvaluations({
+            agentId: selectedAgent || undefined,
+          }),
+          evaluationApi.getAgents(),
+        ]);
       setMetrics(metricsData);
       setSummaries(summariesData);
       // Adapt Evaluation[] → EvaluationRecord[]
-      const records: EvaluationRecord[] = (evalsData as Evaluation[]).map((e) => ({
-        id: e.id,
-        agentId: e.agentId,
-        conversationId: e.conversationId || '',
-        metrics: e.metrics && typeof e.metrics === 'object' && !Array.isArray(e.metrics)
-          ? Object.entries(e.metrics).map(([metricId, value]) => ({ metricId, value: value as number }))
-          : Array.isArray(e.metrics) ? e.metrics : [],
-        overallScore: e.overallScore ?? 0,
-        evaluatedAt: (e.createTime instanceof Date ? e.createTime.toISOString() : e.createTime) ?? '',
-        evaluator: (e.evaluator === 'human' ? 'human' : 'auto') as 'auto' | 'human',
-        evaluatorId: e.evaluatorId,
-        evaluatorName: e.evaluator,
-        feedback: e.feedback,
-      }));
+      const records: EvaluationRecord[] = (evalsData as Evaluation[]).map(
+        (e) => ({
+          id: e.id,
+          agentId: e.agentId,
+          conversationId: e.conversationId || "",
+          metrics:
+            e.metrics &&
+            typeof e.metrics === "object" &&
+            !Array.isArray(e.metrics)
+              ? Object.entries(e.metrics).map(([metricId, value]) => ({
+                  metricId,
+                  value: value as number,
+                }))
+              : Array.isArray(e.metrics)
+                ? e.metrics
+                : [],
+          overallScore: e.overallScore ?? 0,
+          evaluatedAt:
+            (e.createTime instanceof Date
+              ? e.createTime.toISOString()
+              : e.createTime) ?? "",
+          evaluator: (e.evaluator === "human" ? "human" : "auto") as
+            | "auto"
+            | "human",
+          evaluatorId: e.evaluatorId,
+          evaluatorName: e.evaluator,
+          feedback: e.feedback,
+        }),
+      );
       setEvaluations(records);
       setAgents(agentsData);
     } catch (error) {
-      console.error('Failed to load evaluation data:', error);
+      console.error("Failed to load evaluation data:", error);
     } finally {
       setLoading(false);
     }
@@ -104,16 +126,16 @@ export default function EvaluationPage() {
       await evaluationApi.create({
         agentId: values.agentId,
         overallScore: values.overallScore,
-        feedback: values.feedback || '',
+        feedback: values.feedback || "",
         metrics: {},
       });
       setShowCreateModal(false);
       createForm.resetFields();
-      message.success(t('common.createSuccess', '创建成功'));
+      message.success(t("common.createSuccess", "创建成功"));
       loadData();
     } catch (error: any) {
       if (error?.errorFields) return;
-      message.error(error?.message || t('common.createFailed', '创建失败'));
+      message.error(error?.message || t("common.createFailed", "创建失败"));
     } finally {
       setCreateLoading(false);
     }
@@ -122,25 +144,25 @@ export default function EvaluationPage() {
   // 删除评估
   const handleDeleteEvaluation = (record: EvaluationRecord) => {
     Modal.confirm({
-      title: t('evaluation.confirmDelete', '确认删除'),
-      content: t('evaluation.deleteContent', '确定要删除该评估记录吗？'),
-      okText: t('common.delete', '删除'),
+      title: t("evaluation.confirmDelete", "确认删除"),
+      content: t("evaluation.deleteContent", "确定要删除该评估记录吗？"),
+      okText: t("common.delete", "删除"),
       okButtonProps: { danger: true },
-      cancelText: t('common.cancel', '取消'),
+      cancelText: t("common.cancel", "取消"),
       onOk: async () => {
         await evaluationApi.delete(record.id);
-        setEvaluations(prev => prev.filter((e) => e.id !== record.id));
-        message.success(t('common.deleteSuccess', '已删除'));
+        setEvaluations((prev) => prev.filter((e) => e.id !== record.id));
+        message.success(t("common.deleteSuccess", "已删除"));
       },
     });
   };
 
   // 获取趋势图标
-  const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
+  const getTrendIcon = (trend: "up" | "down" | "stable") => {
     switch (trend) {
-      case 'up':
+      case "up":
         return <RiseOutlined className="text-green-500" />;
-      case 'down':
+      case "down":
         return <FallOutlined className="text-red-500" />;
       default:
         return <MinusOutlined className="text-gray-400" />;
@@ -149,32 +171,32 @@ export default function EvaluationPage() {
 
   // 获取评分颜色
   const getScoreColor = (score: number) => {
-    if (score >= 8) return '#22c55e';
-    if (score >= 6) return '#f59e0b';
-    return '#ef4444';
+    if (score >= 8) return "#22c55e";
+    if (score >= 6) return "#f59e0b";
+    return "#ef4444";
   };
 
   // 表格列配置
   const columns: ColumnsType<EvaluationRecord> = [
     {
-      title: t('evaluation.agent', 'Agent'),
-      dataIndex: 'agentId',
-      key: 'agentId',
+      title: t("evaluation.agent", "Agent"),
+      dataIndex: "agentId",
+      key: "agentId",
       width: 200,
       render: (agentId: string) => {
         const agent = agents.find((a) => a.id === agentId);
         return (
           <Space>
             <RobotOutlined className="text-[var(--color-primary)]" />
-            <Text strong>{agent?.name || 'Unknown'}</Text>
+            <Text strong>{agent?.name || "Unknown"}</Text>
           </Space>
         );
       },
     },
     {
-      title: t('evaluation.overallScore', '综合评分'),
-      dataIndex: 'overallScore',
-      key: 'overallScore',
+      title: t("evaluation.overallScore", "综合评分"),
+      dataIndex: "overallScore",
+      key: "overallScore",
       width: 150,
       sorter: (a, b) => a.overallScore - b.overallScore,
       render: (score: number) => (
@@ -187,14 +209,16 @@ export default function EvaluationPage() {
       ),
     },
     {
-      title: t('evaluation.evaluator', '评估者'),
-      dataIndex: 'evaluator',
-      key: 'evaluator',
+      title: t("evaluation.evaluator", "评估者"),
+      dataIndex: "evaluator",
+      key: "evaluator",
       width: 150,
       render: (evaluator: string, record: EvaluationRecord) => (
         <Space orientation="vertical" size={0}>
-          <Tag color={evaluator === 'auto' ? 'blue' : 'purple'}>
-            {evaluator === 'auto' ? t('evaluation.auto', '自动') : t('evaluation.manual', '人工')}
+          <Tag color={evaluator === "auto" ? "blue" : "purple"}>
+            {evaluator === "auto"
+              ? t("evaluation.auto", "自动")
+              : t("evaluation.manual", "人工")}
           </Tag>
           {record.evaluatorName && (
             <Text type="secondary" className="text-xs">
@@ -205,33 +229,33 @@ export default function EvaluationPage() {
       ),
     },
     {
-      title: t('evaluation.evaluatedAt', '评估时间'),
-      dataIndex: 'evaluatedAt',
-      key: 'evaluatedAt',
+      title: t("evaluation.evaluatedAt", "评估时间"),
+      dataIndex: "evaluatedAt",
+      key: "evaluatedAt",
       width: 180,
-      sorter: (a, b) => new Date(a.evaluatedAt).getTime() - new Date(b.evaluatedAt).getTime(),
+      sorter: (a, b) =>
+        new Date(a.evaluatedAt).getTime() - new Date(b.evaluatedAt).getTime(),
       render: (date: string) => (
         <Text type="secondary">{formatDate(date)}</Text>
       ),
     },
     {
-      title: t('evaluation.feedback', '反馈'),
-      dataIndex: 'feedback',
-      key: 'feedback',
+      title: t("evaluation.feedback", "反馈"),
+      dataIndex: "feedback",
+      key: "feedback",
       ellipsis: true,
-      render: (feedback?: string) => (
+      render: (feedback?: string) =>
         feedback ? (
           <Tooltip title={feedback}>
             <Text className="max-w-[200px] truncate">{feedback}</Text>
           </Tooltip>
         ) : (
           <Text type="secondary">-</Text>
-        )
-      ),
+        ),
     },
     {
-      title: t('common.actions', '操作'),
-      key: 'actions',
+      title: t("common.actions", "操作"),
+      key: "actions",
       width: 80,
       render: (_: unknown, record: EvaluationRecord) => (
         <Button
@@ -261,11 +285,20 @@ export default function EvaluationPage() {
                     title={metric?.name || score.metricId}
                     value={score.value}
                     precision={1}
-                    styles={{ content: { color: getScoreColor(score.value), fontSize: '24px' } }}
+                    styles={{
+                      content: {
+                        color: getScoreColor(score.value),
+                        fontSize: "24px",
+                      },
+                    }}
                     prefix={<StarOutlined />}
                   />
                   {score.reason && (
-                    <Text type="secondary" className="text-xs mt-2 block truncate" title={score.reason}>
+                    <Text
+                      type="secondary"
+                      className="text-xs mt-2 block truncate"
+                      title={score.reason}
+                    >
                       {score.reason}
                     </Text>
                   )}
@@ -287,10 +320,10 @@ export default function EvaluationPage() {
             <TrophyOutlined className="text-2xl text-[var(--color-primary)]" />
             <div>
               <Title level={4} className="!mb-0">
-                {t('evaluation.title', 'Agent 评估')}
+                {t("evaluation.title", "Agent 评估")}
               </Title>
               <Text type="secondary">
-                {t('evaluation.subtitle', '评估和追踪 Agent 性能表现')}
+                {t("evaluation.subtitle", "评估和追踪 Agent 性能表现")}
               </Text>
             </div>
           </Space>
@@ -299,14 +332,14 @@ export default function EvaluationPage() {
               icon={<PlusOutlined />}
               onClick={() => setShowCreateModal(true)}
             >
-              {t('evaluation.createEvaluation', '新建评估')}
+              {t("evaluation.createEvaluation", "新建评估")}
             </Button>
             <Button
               icon={<ReloadOutlined spin={loading} />}
               onClick={loadData}
               loading={loading}
             >
-              {t('common.refresh', '刷新')}
+              {t("common.refresh", "刷新")}
             </Button>
           </Space>
         </div>
@@ -320,10 +353,14 @@ export default function EvaluationPage() {
               hoverable
               className={`cursor-pointer transition-all ${
                 selectedAgent === summary.agentId
-                  ? 'ring-2 ring-[var(--color-primary)] border-[var(--color-primary)]'
-                  : ''
+                  ? "ring-2 ring-[var(--color-primary)] border-(--color-primary)"
+                  : ""
               }`}
-              onClick={() => setSelectedAgent(selectedAgent === summary.agentId ? '' : summary.agentId)}
+              onClick={() =>
+                setSelectedAgent(
+                  selectedAgent === summary.agentId ? "" : summary.agentId,
+                )
+              }
             >
               <div className="flex items-center justify-between mb-2">
                 <Text strong className="truncate">
@@ -338,13 +375,14 @@ export default function EvaluationPage() {
                 styles={{
                   content: {
                     color: getScoreColor(summary.avgScore),
-                    fontSize: '28px',
+                    fontSize: "28px",
                   },
                 }}
                 prefix={<StarOutlined />}
               />
               <Text type="secondary" className="text-xs mt-2">
-                {summary.totalEvaluations} {t('evaluation.evaluations', '次评估')}
+                {summary.totalEvaluations}{" "}
+                {t("evaluation.evaluations", "次评估")}
               </Text>
             </Card>
           </Col>
@@ -360,13 +398,13 @@ export default function EvaluationPage() {
             onChange={setSelectedAgent}
             style={{ width: 200 }}
             options={[
-              { label: t('evaluation.allAgents', '全部 Agent'), value: '' },
+              { label: t("evaluation.allAgents", "全部 Agent"), value: "" },
               ...agents.map((agent) => ({
                 label: agent.name,
                 value: agent.id,
               })),
             ]}
-            placeholder={t('evaluation.selectAgent', '选择 Agent')}
+            placeholder={t("evaluation.selectAgent", "选择 Agent")}
           />
         </Space>
       </Card>
@@ -382,42 +420,67 @@ export default function EvaluationPage() {
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (total) => t('evaluation.total', `共 ${total} 条记录`, { total }),
+            showTotal: (total) =>
+              t("evaluation.total", `共 ${total} 条记录`, { total }),
           }}
           expandable={{
             expandedRowKeys,
-            onExpandedRowsChange: (keys) => setExpandedRowKeys(keys as string[]),
+            onExpandedRowsChange: (keys) =>
+              setExpandedRowKeys(keys as string[]),
             expandedRowRender,
           }}
           locale={{
-            emptyText: t('evaluation.noEvaluations', '暂无评估记录'),
+            emptyText: t("evaluation.noEvaluations", "暂无评估记录"),
           }}
         />
       </Card>
 
       {/* 创建评估 Modal */}
       <Modal
-        title={t('evaluation.createEvaluation', '新建评估')}
+        title={t("evaluation.createEvaluation", "新建评估")}
         open={showCreateModal}
-        onCancel={() => { setShowCreateModal(false); createForm.resetFields(); }}
+        onCancel={() => {
+          setShowCreateModal(false);
+          createForm.resetFields();
+        }}
         onOk={handleCreateEvaluation}
         confirmLoading={createLoading}
-        okText={t('common.create', '创建')}
+        okText={t("common.create", "创建")}
         width={500}
         destroyOnHidden
       >
         <Form form={createForm} layout="vertical" className="pt-2">
-          <Form.Item name="agentId" label={t('evaluation.agent', 'Agent')} rules={[{ required: true, message: '请选择 Agent' }]}>
+          <Form.Item
+            name="agentId"
+            label={t("evaluation.agent", "Agent")}
+            rules={[{ required: true, message: "请选择 Agent" }]}
+          >
             <Select
-              placeholder={t('evaluation.selectAgent', '选择 Agent')}
+              placeholder={t("evaluation.selectAgent", "选择 Agent")}
               options={agents.map((a) => ({ label: a.name, value: a.id }))}
             />
           </Form.Item>
-          <Form.Item name="overallScore" label={t('evaluation.overallScore', '综合评分')} rules={[{ required: true, message: '请输入评分' }]}>
-            <InputNumber min={0} max={10} step={0.1} style={{ width: '100%' }} placeholder="0 - 10" />
+          <Form.Item
+            name="overallScore"
+            label={t("evaluation.overallScore", "综合评分")}
+            rules={[{ required: true, message: "请输入评分" }]}
+          >
+            <InputNumber
+              min={0}
+              max={10}
+              step={0.1}
+              style={{ width: "100%" }}
+              placeholder="0 - 10"
+            />
           </Form.Item>
-          <Form.Item name="feedback" label={t('evaluation.feedback', '反馈')}>
-            <Input.TextArea rows={3} placeholder={t('evaluation.feedbackPlaceholder', '输入评估反馈（可选）')} />
+          <Form.Item name="feedback" label={t("evaluation.feedback", "反馈")}>
+            <Input.TextArea
+              rows={3}
+              placeholder={t(
+                "evaluation.feedbackPlaceholder",
+                "输入评估反馈（可选）",
+              )}
+            />
           </Form.Item>
         </Form>
       </Modal>

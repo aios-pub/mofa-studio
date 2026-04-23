@@ -260,7 +260,7 @@ export default function ProvidersListPage() {
   return (
     <div className="flex h-full">
       {/* 左侧列表 */}
-      <div className="w-80 border-r border-[var(--color-border)] flex flex-col bg-[var(--color-bg-secondary)]">
+      <div className="w-80 border-r border-(--color-border) flex flex-col bg-[var(--color-bg-secondary)]">
         {/* 头部 */}
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
@@ -303,7 +303,7 @@ export default function ProvidersListPage() {
                   onClick={() => setSelectedProvider(provider)}
                   className={`group p-3 rounded-lg cursor-pointer transition-colors ${
                     selectedProvider?.id === provider.id
-                      ? "bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30"
+                      ? "bg-[var(--color-primary)]/10 border border-(--color-primary)/30"
                       : "hover:bg-[var(--color-bg-tertiary)]"
                   }`}
                 >
@@ -636,7 +636,7 @@ function ProviderDetail({
       </div>
 
       {/* 标签栏 */}
-      <div className="flex gap-1 px-6 border-b border-[var(--color-border)]">
+      <div className="flex gap-1 px-6 border-b border-(--color-border)">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -645,7 +645,7 @@ function ProviderDetail({
               onClick={() => setActiveTab(tab.key as typeof activeTab)}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab.key
-                  ? "text-[var(--color-primary)] border-[var(--color-primary)]"
+                  ? "text-[var(--color-primary)] border-(--color-primary)"
                   : "text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]"
               }`}
             >
@@ -705,7 +705,7 @@ function ProviderDetail({
                 .map((model) => (
                   <div
                     key={model.id}
-                    className="flex items-center justify-between p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]"
+                    className="flex items-center justify-between p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)"
                   >
                     <div className="flex items-center gap-3">
                       <div
@@ -797,7 +797,7 @@ function ProviderDetail({
         {activeTab === "usage" && (
           <div className="p-6 h-full overflow-y-auto">
             <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
+              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
                 <div className="flex items-center gap-2 text-[var(--color-text-tertiary)] mb-2">
                   <ThunderboltOutlined />
                   <span className="text-sm">总调用次数</span>
@@ -806,7 +806,7 @@ function ProviderDetail({
                   {provider.usage.totalCalls.toLocaleString()}
                 </p>
               </div>
-              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
+              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
                 <div className="flex items-center gap-2 text-[var(--color-text-tertiary)] mb-2">
                   <ClockCircleOutlined />
                   <span className="text-sm">总 Tokens</span>
@@ -815,7 +815,7 @@ function ProviderDetail({
                   {(provider.usage.totalTokens / 1000).toFixed(1)}K
                 </p>
               </div>
-              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
+              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
                 <div className="flex items-center gap-2 text-[var(--color-text-tertiary)] mb-2">
                   <DollarOutlined />
                   <span className="text-sm">预估费用</span>
@@ -826,7 +826,7 @@ function ProviderDetail({
               </div>
             </div>
 
-            <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
+            <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
               <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-4">
                 使用历史
               </h4>
@@ -836,7 +836,7 @@ function ProviderDetail({
               </div>
             </div>
 
-            <div className="mt-4 p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
+            <div className="mt-4 p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-[var(--color-text-secondary)]">
                   最后使用时间
@@ -853,7 +853,7 @@ function ProviderDetail({
           <div className="p-6 h-full overflow-y-auto">
             <div className="space-y-4">
               {/* API Key */}
-              <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
+              <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-medium text-[var(--color-text-primary)]">
                     API 密钥
@@ -911,7 +911,7 @@ function ProviderDetail({
 
               {/* Base URL */}
               {provider.baseUrl && (
-                <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
+                <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
                   <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">
                     Base URL
                   </h4>
@@ -924,7 +924,7 @@ function ProviderDetail({
               )}
 
               {/* Provider 类型 */}
-              <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
+              <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
                 <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">
                   Provider 类型
                 </h4>
@@ -937,7 +937,7 @@ function ProviderDetail({
               </div>
 
               {/* 创建/更新时间 */}
-              <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
+              <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
                 <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">
                   时间信息
                 </h4>

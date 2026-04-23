@@ -420,8 +420,8 @@ function CustomParamsEditor({
   };
 
   return (
-    <div className="border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-base)]">
-      <div className="flex items-center justify-between px-3 py-1.5 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)] rounded-t-lg">
+    <div className="border border-(--color-border) rounded-lg bg-[var(--color-bg-base)]">
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-(--color-border) bg-[var(--color-bg-secondary)] rounded-t-lg">
         <span className="text-xs text-[var(--color-text-secondary)]">
           自定义参数
         </span>
@@ -549,8 +549,8 @@ const AvatarPicker = ({
         onClick={() => onChange?.(emoji)}
         className={`w-9 h-9 flex items-center justify-center rounded-lg text-xl transition-all ${
           value === emoji
-            ? "bg-[var(--color-primary)]/20 border-2 border-[var(--color-primary)] scale-110"
-            : "bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] hover:border-[var(--color-primary)]/50"
+            ? "bg-[var(--color-primary)]/20 border-2 border-(--color-primary) scale-110"
+            : "bg-[var(--color-bg-tertiary)] border border-(--color-border) hover:border-(--color-primary)/50"
         }`}
       >
         {emoji}
@@ -657,7 +657,9 @@ function AgentFormModal({
   // 当 availableModels 更新后，确保编辑模式下的 modelId 正确回显
   useEffect(() => {
     if (open && agent && availableModels.length > 0 && agent.model_id) {
-      const modelExists = availableModels.some((m: any) => m.id === agent.model_id);
+      const modelExists = availableModels.some(
+        (m: any) => m.id === agent.model_id,
+      );
       if (modelExists) {
         form.setFieldValue("modelId", agent.model_id);
       }
@@ -695,7 +697,10 @@ function AgentFormModal({
         agent_name: values.name,
         agent_code: values.agentCode,
         avatar: values.avatar,
-        provider: { id: values.providerId, provider_name: provider?.name || "" },
+        provider: {
+          id: values.providerId,
+          provider_name: provider?.name || "",
+        },
         model_id: values.modelId,
         model_name: model?.name || values.modelId,
         temperature: values.temperature,
@@ -983,7 +988,10 @@ function AgentBasicInfo({
         agent_name: values.name,
         agent_code: values.agentCode,
         avatar: values.avatar,
-        provider: { id: values.providerId, provider_name: provider?.name || "" },
+        provider: {
+          id: values.providerId,
+          provider_name: provider?.name || "",
+        },
         model_id: values.modelId,
         model_name: model?.name || values.modelId,
         temperature: values.temperature,
@@ -1026,7 +1034,10 @@ function AgentBasicInfo({
   };
 
   const getProviderName = (id: string) =>
-    providers.find((p) => p.id === id)?.name || agent.provider?.provider_name || id || "";
+    providers.find((p) => p.id === id)?.name ||
+    agent.provider?.provider_name ||
+    id ||
+    "";
   const getModelName = (providerId: string, modelId: string) => {
     const provider = providers.find((p) => p.id === providerId);
     return (
@@ -1534,7 +1545,7 @@ function AgentDetail({
         }))}
       />
 
-      <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
+      <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
         {activeTab === "basic" && (
           <AgentBasicInfo agent={agent} onUpdate={onUpdate} />
         )}
@@ -1761,7 +1772,7 @@ export default function AgentListPage() {
   return (
     <div className="flex h-full">
       {/* 左侧列表 */}
-      <div className="w-80 border-r border-[var(--color-border)] flex flex-col bg-[var(--color-bg-secondary)]">
+      <div className="w-80 border-r border-(--color-border) flex flex-col bg-[var(--color-bg-secondary)]">
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
@@ -1837,7 +1848,7 @@ export default function AgentListPage() {
                   onClick={() => setSelectedAgent(agent)}
                   className={`group p-3 rounded-lg cursor-pointer transition-colors ${
                     selectedAgent?.id === agent.id
-                      ? "bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30"
+                      ? "bg-[var(--color-primary)]/10 border border-(--color-primary)/30"
                       : "hover:bg-[var(--color-bg-tertiary)]"
                   }`}
                 >
@@ -2088,7 +2099,7 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
         }))}
       />
 
-      <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
+      <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
         {activeTab === "basic" && (
           <>
             <div className="grid grid-cols-2 gap-4">
@@ -2108,7 +2119,10 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
                 <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
                   类型
                 </label>
-                <Input value={config?.label || agent.agent_category || ""} readOnly />
+                <Input
+                  value={config?.label || agent.agent_category || ""}
+                  readOnly
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
@@ -2273,7 +2287,7 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
                 return (
                   <div
                     key={m.id}
-                    className="p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)]"
+                    className="p-3 rounded-lg border border-(--color-border) bg-[var(--color-bg-base)]"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
@@ -2441,7 +2455,10 @@ function ClawCreateModal({
         agent_code: `CLAW-${clawType.toUpperCase()}-${shortId}`,
         agent_category: clawType,
         system_prompt: `Claw proxy agent: ${values.instanceName}`,
-        provider: { id: values.providerId, provider_name: provider?.name || "" },
+        provider: {
+          id: values.providerId,
+          provider_name: provider?.name || "",
+        },
         model_id: values.modelId,
         model_name: model?.name || values.modelId,
         enabled: values.enabled ?? true,
@@ -2493,8 +2510,8 @@ function ClawCreateModal({
               key={type}
               className={`p-3 rounded-lg border-2 cursor-pointer transition-all w-28 text-center ${
                 selectedType === type
-                  ? "border-[var(--color-primary)] bg-[var(--color-primary-bg)]"
-                  : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                  ? "border-(--color-primary) bg-(--color-primary-bg)"
+                  : "border-(--color-border) hover:border-(--color-primary)"
               }`}
               onClick={() => {
                 setSelectedType(type);
@@ -2656,7 +2673,10 @@ function ClawEditModal({
         agent_code: values.agentCode,
         system_prompt: values.systemPrompt || `你是${agentType}`,
         agent_category: agentType,
-        provider: { id: values.providerId, provider_name: provider?.name || "" },
+        provider: {
+          id: values.providerId,
+          provider_name: provider?.name || "",
+        },
         model_id: values.modelId,
         model_name: model?.name || values.modelId,
         enabled: values.enabled,

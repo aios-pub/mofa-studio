@@ -2,8 +2,19 @@
  * 渠道列表页面
  */
 
-import { useState, useEffect } from 'react';
-import { Input, Button, Dropdown, message, Modal, Tag, Switch, Spin, Empty, Alert } from 'antd';
+import { useState, useEffect } from "react";
+import {
+  Input,
+  Button,
+  Dropdown,
+  message,
+  Modal,
+  Tag,
+  Switch,
+  Spin,
+  Empty,
+  Alert,
+} from "antd";
 import {
   PlusOutlined,
   SearchOutlined,
@@ -16,32 +27,39 @@ import {
   ExclamationCircleOutlined,
   SyncOutlined,
   StopOutlined,
-} from '@ant-design/icons';
-import { channelApi, channelTypeConfig } from '@/services';
-import { agentApi } from '@/services';
-import ChannelConfigForm from './components/ChannelConfigForm';
-import ChannelTypeSelector from './components/ChannelTypeSelector';
-import type { Channel, ChannelStatus, Agent } from '../../types';
+} from "@ant-design/icons";
+import { channelApi, channelTypeConfig } from "@/services";
+import { agentApi } from "@/services";
+import ChannelConfigForm from "./components/ChannelConfigForm";
+import ChannelTypeSelector from "./components/ChannelTypeSelector";
+import type { Channel, ChannelStatus, Agent } from "../../types";
 
 // 状态配置
-const statusConfig: Record<ChannelStatus, { color: string; text: string; icon: React.ReactNode }> = {
-  active: { color: 'green', text: '正常', icon: <CheckCircleOutlined /> },
-  inactive: { color: 'default', text: '未激活', icon: <StopOutlined /> },
-  connecting: { color: 'blue', text: '连接中', icon: <SyncOutlined spin /> },
-  error: { color: 'red', text: '异常', icon: <ExclamationCircleOutlined /> },
-  disabled: { color: 'default', text: '已禁用', icon: <StopOutlined /> },
+const statusConfig: Record<
+  ChannelStatus,
+  { color: string; text: string; icon: React.ReactNode }
+> = {
+  active: { color: "green", text: "正常", icon: <CheckCircleOutlined /> },
+  inactive: { color: "default", text: "未激活", icon: <StopOutlined /> },
+  connecting: { color: "blue", text: "连接中", icon: <SyncOutlined spin /> },
+  error: { color: "red", text: "异常", icon: <ExclamationCircleOutlined /> },
+  disabled: { color: "default", text: "已禁用", icon: <StopOutlined /> },
 };
 
 export default function ChannelsListPage() {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showTypeSelector, setShowTypeSelector] = useState(false);
   const [testLoading, setTestLoading] = useState<string | null>(null);
-  const [testResult, setTestResult] = useState<{ channelId: string; success: boolean; message: string } | null>(null);
+  const [testResult, setTestResult] = useState<{
+    channelId: string;
+    success: boolean;
+    message: string;
+  } | null>(null);
 
   // 加载数据
   useEffect(() => {
@@ -58,8 +76,8 @@ export default function ChannelsListPage() {
       setChannels(channelData);
       setAgents(agentData);
     } catch (error) {
-      console.error('Failed to load data:', error);
-      message.error('加载数据失败');
+      console.error("Failed to load data:", error);
+      message.error("加载数据失败");
     } finally {
       setLoading(false);
     }
@@ -68,10 +86,10 @@ export default function ChannelsListPage() {
   // 删除渠道
   const handleDelete = async (id: string) => {
     Modal.confirm({
-      title: '确认删除',
-      content: '删除后无法恢复，确定要删除此渠道吗？',
-      okText: '删除',
-      cancelText: '取消',
+      title: "确认删除",
+      content: "删除后无法恢复，确定要删除此渠道吗？",
+      okText: "删除",
+      cancelText: "取消",
       okButtonProps: { danger: true },
       onOk: async () => {
         try {
@@ -80,10 +98,10 @@ export default function ChannelsListPage() {
           if (selectedChannel?.id === id) {
             setSelectedChannel(null);
           }
-          message.success('渠道已删除');
+          message.success("渠道已删除");
         } catch (error) {
-          console.error('Failed to delete channel:', error);
-          message.error('删除失败');
+          console.error("Failed to delete channel:", error);
+          message.error("删除失败");
         }
       },
     });
@@ -96,18 +114,22 @@ export default function ChannelsListPage() {
     try {
       const result = await channelApi.testConnection(channel.id);
       if (result.success) {
-        const msg = result.message || '连接测试成功';
+        const msg = result.message || "连接测试成功";
         message.success(msg);
         setTestResult({ channelId: channel.id, success: true, message: msg });
       } else {
-        const msg = result.message || '连接测试失败';
+        const msg = result.message || "连接测试失败";
         message.error(msg);
         setTestResult({ channelId: channel.id, success: false, message: msg });
       }
     } catch (error) {
-      console.error('Failed to test connection:', error);
-      message.error('测试失败');
-      setTestResult({ channelId: channel.id, success: false, message: '测试请求失败，请检查网络或后端服务' });
+      console.error("Failed to test connection:", error);
+      message.error("测试失败");
+      setTestResult({
+        channelId: channel.id,
+        success: false,
+        message: "测试请求失败，请检查网络或后端服务",
+      });
     } finally {
       setTestLoading(null);
     }
@@ -118,38 +140,40 @@ export default function ChannelsListPage() {
     try {
       const updated = await channelApi.toggleStatus(channel.id);
       if (updated) {
-        setChannels(prev => prev.map((c) => (c.id === updated.id ? updated : c)));
+        setChannels((prev) =>
+          prev.map((c) => (c.id === updated.id ? updated : c)),
+        );
         if (selectedChannel?.id === updated.id) {
           setSelectedChannel(updated);
         }
-        message.success(updated.enabled ? '渠道已启用' : '渠道已禁用');
+        message.success(updated.enabled ? "渠道已启用" : "渠道已禁用");
       }
     } catch (error) {
-      console.error('Failed to toggle status:', error);
-      message.error('操作失败');
+      console.error("Failed to toggle status:", error);
+      message.error("操作失败");
     }
   };
 
   // 获取操作菜单
   const getActionMenuItems = (channel: Channel) => [
     {
-      key: 'test',
-      label: '测试连接',
+      key: "test",
+      label: "测试连接",
       icon: <ApiOutlined />,
       onClick: () => handleTestConnection(channel),
     },
     {
-      key: 'edit',
-      label: '编辑',
+      key: "edit",
+      label: "编辑",
       icon: <EditOutlined />,
       onClick: () => setSelectedChannel(channel),
     },
     {
-      type: 'divider' as const,
+      type: "divider" as const,
     },
     {
-      key: 'delete',
-      label: '删除',
+      key: "delete",
+      label: "删除",
       icon: <DeleteOutlined />,
       danger: true,
       onClick: () => handleDelete(channel.id),
@@ -161,21 +185,23 @@ export default function ChannelsListPage() {
     (c) =>
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      channelTypeConfig[c.type].name.toLowerCase().includes(searchQuery.toLowerCase())
+      channelTypeConfig[c.type].name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()),
   );
 
   // 创建新渠道
   const handleCreateChannel = async (data: Partial<Channel>) => {
     try {
       const newChannel = await channelApi.create(data);
-      setChannels(prev => [...prev, newChannel]);
+      setChannels((prev) => [...prev, newChannel]);
       setShowCreateModal(false);
       setShowTypeSelector(false);
       setSelectedChannel(newChannel);
-      message.success('渠道创建成功');
+      message.success("渠道创建成功");
     } catch (error) {
-      console.error('Failed to create channel:', error);
-      message.error('创建失败');
+      console.error("Failed to create channel:", error);
+      message.error("创建失败");
     }
   };
 
@@ -184,24 +210,28 @@ export default function ChannelsListPage() {
     try {
       const updated = await channelApi.update(id, data);
       if (updated) {
-        setChannels(prev => prev.map((c) => (c.id === updated.id ? updated : c)));
+        setChannels((prev) =>
+          prev.map((c) => (c.id === updated.id ? updated : c)),
+        );
         setSelectedChannel(updated);
-        message.success('渠道更新成功');
+        message.success("渠道更新成功");
       }
     } catch (error) {
-      console.error('Failed to update channel:', error);
-      message.error('更新失败');
+      console.error("Failed to update channel:", error);
+      message.error("更新失败");
     }
   };
 
   return (
     <div className="flex h-full">
       {/* 左侧列表 */}
-      <div className="w-80 border-r border-[var(--color-border)] flex flex-col bg-[var(--color-bg-secondary)]">
+      <div className="w-80 border-r border-(--color-border) flex flex-col bg-[var(--color-bg-secondary)]">
         {/* 头部 */}
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">渠道管理</h2>
+            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+              渠道管理
+            </h2>
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -237,12 +267,14 @@ export default function ChannelsListPage() {
                 onClick={() => setSelectedChannel(channel)}
                 className={`group p-3 rounded-lg cursor-pointer transition-colors ${
                   selectedChannel?.id === channel.id
-                    ? 'bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30'
-                    : 'hover:bg-[var(--color-bg-tertiary)]'
+                    ? "bg-[var(--color-primary)]/10 border border-(--color-primary)/30"
+                    : "hover:bg-[var(--color-bg-tertiary)]"
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <div className="text-2xl">{channelTypeConfig[channel.type].icon}</div>
+                  <div className="text-2xl">
+                    {channelTypeConfig[channel.type].icon}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-[var(--color-text-primary)] truncate">
@@ -261,7 +293,7 @@ export default function ChannelsListPage() {
                   </div>
                   <Dropdown
                     menu={{ items: getActionMenuItems(channel) }}
-                    trigger={['click']}
+                    trigger={["click"]}
                     placement="bottomRight"
                   >
                     <Button
@@ -286,7 +318,9 @@ export default function ChannelsListPage() {
             channel={selectedChannel}
             agents={agents}
             testLoading={testLoading === selectedChannel.id}
-            testResult={testResult?.channelId === selectedChannel.id ? testResult : null}
+            testResult={
+              testResult?.channelId === selectedChannel.id ? testResult : null
+            }
             onTest={() => handleTestConnection(selectedChannel)}
             onToggleStatus={() => handleToggleStatus(selectedChannel)}
             onUpdate={(data) => handleUpdateChannel(selectedChannel.id, data)}
@@ -296,8 +330,12 @@ export default function ChannelsListPage() {
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <LinkOutlined className="text-5xl text-[var(--color-text-tertiary)] mb-4" />
-              <h3 className="text-lg font-medium text-[var(--color-text-primary)]">选择一个渠道</h3>
-              <p className="text-[var(--color-text-secondary)]">从左侧列表中选择查看详情</p>
+              <h3 className="text-lg font-medium text-[var(--color-text-primary)]">
+                选择一个渠道
+              </h3>
+              <p className="text-[var(--color-text-secondary)]">
+                从左侧列表中选择查看详情
+              </p>
             </div>
           </div>
         )}
@@ -351,13 +389,15 @@ function ChannelDetail({
   onUpdate: (data: Partial<Channel>) => void;
   onRefresh: () => void;
 }) {
-  const [activeTab, setActiveTab] = useState<'config' | 'stats' | 'agents'>('config');
+  const [activeTab, setActiveTab] = useState<"config" | "stats" | "agents">(
+    "config",
+  );
   const [editing, setEditing] = useState(false);
 
   const tabs = [
-    { key: 'config', label: '配置', icon: EditOutlined },
-    { key: 'stats', label: '统计', icon: ApiOutlined },
-    { key: 'agents', label: 'Agents', icon: LinkOutlined },
+    { key: "config", label: "配置", icon: EditOutlined },
+    { key: "stats", label: "统计", icon: ApiOutlined },
+    { key: "agents", label: "Agents", icon: LinkOutlined },
   ];
 
   return (
@@ -371,7 +411,8 @@ function ChannelDetail({
               {channel.name}
             </h2>
             <Tag color={statusConfig[channel.status].color}>
-              {statusConfig[channel.status].icon} {statusConfig[channel.status].text}
+              {statusConfig[channel.status].icon}{" "}
+              {statusConfig[channel.status].text}
             </Tag>
           </div>
           <p className="text-[var(--color-text-secondary)] mt-1">
@@ -401,10 +442,7 @@ function ChannelDetail({
         >
           测试连接
         </Button>
-        <Button
-          icon={<EditOutlined />}
-          onClick={() => setEditing(true)}
-        >
+        <Button icon={<EditOutlined />} onClick={() => setEditing(true)}>
           编辑配置
         </Button>
       </div>
@@ -412,7 +450,7 @@ function ChannelDetail({
       {/* 测试结果 */}
       {testResult && (
         <Alert
-          type={testResult.success ? 'success' : 'error'}
+          type={testResult.success ? "success" : "error"}
           title={testResult.message}
           showIcon
           closable
@@ -429,7 +467,13 @@ function ChannelDetail({
         <StatCard
           title="成功率"
           value={`${(channel.stats?.successRate ?? 0).toFixed(1)}%`}
-          status={(channel.stats?.successRate ?? 0) >= 95 ? 'success' : (channel.stats?.successRate ?? 0) >= 80 ? 'warning' : 'error'}
+          status={
+            (channel.stats?.successRate ?? 0) >= 95
+              ? "success"
+              : (channel.stats?.successRate ?? 0) >= 80
+                ? "warning"
+                : "error"
+          }
         />
         <StatCard
           title="失败消息"
@@ -442,15 +486,15 @@ function ChannelDetail({
       </div>
 
       {/* 标签栏 */}
-      <div className="flex gap-1 mb-6 border-b border-[var(--color-border)]">
+      <div className="flex gap-1 mb-6 border-b border-(--color-border)">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key as typeof activeTab)}
             className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === tab.key
-                ? 'text-[var(--color-primary)] border-[var(--color-primary)]'
-                : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
+                ? "text-[var(--color-primary)] border-(--color-primary)"
+                : "text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]"
             }`}
           >
             <tab.icon className="w-4 h-4" />
@@ -460,13 +504,22 @@ function ChannelDetail({
       </div>
 
       {/* 内容区 */}
-      <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
-        {activeTab === 'config' && (
-          <ChannelConfigView channel={channel} editing={editing} onUpdate={onUpdate} onClose={() => setEditing(false)} />
+      <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
+        {activeTab === "config" && (
+          <ChannelConfigView
+            channel={channel}
+            editing={editing}
+            onUpdate={onUpdate}
+            onClose={() => setEditing(false)}
+          />
         )}
-        {activeTab === 'stats' && <ChannelStatsView channel={channel} />}
-        {activeTab === 'agents' && (
-          <ChannelAgentsView channel={channel} agents={agents} onRefresh={onRefresh} />
+        {activeTab === "stats" && <ChannelStatsView channel={channel} />}
+        {activeTab === "agents" && (
+          <ChannelAgentsView
+            channel={channel}
+            agents={agents}
+            onRefresh={onRefresh}
+          />
         )}
       </div>
     </div>
@@ -481,18 +534,20 @@ function StatCard({
 }: {
   title: string;
   value: string;
-  status?: 'success' | 'warning' | 'error';
+  status?: "success" | "warning" | "error";
 }) {
   const statusColors = {
-    success: 'text-green-500',
-    warning: 'text-orange-500',
-    error: 'text-red-500',
+    success: "text-green-500",
+    warning: "text-orange-500",
+    error: "text-red-500",
   };
 
   return (
     <div className="bg-[var(--color-bg-tertiary)] rounded-lg p-4">
       <div className="text-sm text-[var(--color-text-tertiary)]">{title}</div>
-      <div className={`text-xl font-semibold mt-1 ${status ? statusColors[status] : 'text-[var(--color-text-primary)]'}`}>
+      <div
+        className={`text-xl font-semibold mt-1 ${status ? statusColors[status] : "text-[var(--color-text-primary)]"}`}
+      >
         {value}
       </div>
     </div>
@@ -522,7 +577,26 @@ function ChannelConfigView({
   }
 
   const configEntries = Object.entries(channel.config).filter(
-    ([key]) => !['app_secret', 'secret', 'password', 'token', 'signing_secret', 'bot_token', 'api_key', 'access_key_secret', 'smtp_password', 'client_secret', 'access_token', 'channel_secret', 'channel_access_token', 'bot_password', 'encoding_aes_key', 'encrypt_key', 'verification_token'].includes(key)
+    ([key]) =>
+      ![
+        "app_secret",
+        "secret",
+        "password",
+        "token",
+        "signing_secret",
+        "bot_token",
+        "api_key",
+        "access_key_secret",
+        "smtp_password",
+        "client_secret",
+        "access_token",
+        "channel_secret",
+        "channel_access_token",
+        "bot_password",
+        "encoding_aes_key",
+        "encrypt_key",
+        "verification_token",
+      ].includes(key),
   );
 
   return (
@@ -548,15 +622,21 @@ function ChannelConfigView({
         <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
           描述
         </label>
-        <div className="text-[var(--color-text-primary)]">{channel.description || '暂无描述'}</div>
+        <div className="text-[var(--color-text-primary)]">
+          {channel.description || "暂无描述"}
+        </div>
       </div>
 
-      <div className="border-t border-[var(--color-border)] pt-4">
-        <h4 className="text-sm font-medium text-[var(--color-text-secondary)] mb-3">配置信息</h4>
+      <div className="border-t border-(--color-border) pt-4">
+        <h4 className="text-sm font-medium text-[var(--color-text-secondary)] mb-3">
+          配置信息
+        </h4>
         <div className="grid grid-cols-2 gap-4">
           {configEntries.map(([key, value]) => (
             <div key={key}>
-              <label className="block text-sm text-[var(--color-text-tertiary)] mb-1">{key}</label>
+              <label className="block text-sm text-[var(--color-text-tertiary)] mb-1">
+                {key}
+              </label>
               <div className="text-[var(--color-text-primary)] font-mono text-sm">
                 {String(value)}
               </div>
@@ -574,53 +654,75 @@ function ChannelStatsView({ channel }: { channel: Channel }) {
     <div className="space-y-6">
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-[var(--color-bg-tertiary)] rounded-lg p-4">
-          <div className="text-sm text-[var(--color-text-tertiary)]">今日消息</div>
+          <div className="text-sm text-[var(--color-text-tertiary)]">
+            今日消息
+          </div>
           <div className="text-2xl font-semibold text-[var(--color-text-primary)] mt-1">
-            {Math.floor((channel.stats?.totalMessages ?? 0) * 0.05).toLocaleString()}
+            {Math.floor(
+              (channel.stats?.totalMessages ?? 0) * 0.05,
+            ).toLocaleString()}
           </div>
         </div>
         <div className="bg-[var(--color-bg-tertiary)] rounded-lg p-4">
-          <div className="text-sm text-[var(--color-text-tertiary)]">本周消息</div>
+          <div className="text-sm text-[var(--color-text-tertiary)]">
+            本周消息
+          </div>
           <div className="text-2xl font-semibold text-[var(--color-text-primary)] mt-1">
-            {Math.floor((channel.stats?.totalMessages ?? 0) * 0.2).toLocaleString()}
+            {Math.floor(
+              (channel.stats?.totalMessages ?? 0) * 0.2,
+            ).toLocaleString()}
           </div>
         </div>
         <div className="bg-[var(--color-bg-tertiary)] rounded-lg p-4">
-          <div className="text-sm text-[var(--color-text-tertiary)]">本月消息</div>
+          <div className="text-sm text-[var(--color-text-tertiary)]">
+            本月消息
+          </div>
           <div className="text-2xl font-semibold text-[var(--color-text-primary)] mt-1">
-            {Math.floor((channel.stats?.totalMessages ?? 0) * 0.8).toLocaleString()}
+            {Math.floor(
+              (channel.stats?.totalMessages ?? 0) * 0.8,
+            ).toLocaleString()}
           </div>
         </div>
       </div>
 
       <div>
-        <h4 className="text-sm font-medium text-[var(--color-text-secondary)] mb-3">时间信息</h4>
+        <h4 className="text-sm font-medium text-[var(--color-text-secondary)] mb-3">
+          时间信息
+        </h4>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <div className="text-sm text-[var(--color-text-tertiary)]">创建时间</div>
+            <div className="text-sm text-[var(--color-text-tertiary)]">
+              创建时间
+            </div>
             <div className="text-[var(--color-text-primary)] mt-1">
-              {channel.createdAt.toLocaleDateString('zh-CN')}
+              {channel.createdAt.toLocaleDateString("zh-CN")}
             </div>
           </div>
           <div>
-            <div className="text-sm text-[var(--color-text-tertiary)]">更新时间</div>
+            <div className="text-sm text-[var(--color-text-tertiary)]">
+              更新时间
+            </div>
             <div className="text-[var(--color-text-primary)] mt-1">
-              {channel.updatedAt.toLocaleDateString('zh-CN')}
+              {channel.updatedAt.toLocaleDateString("zh-CN")}
             </div>
           </div>
           {channel.lastSyncAt && (
             <div>
-              <div className="text-sm text-[var(--color-text-tertiary)]">最后同步</div>
+              <div className="text-sm text-[var(--color-text-tertiary)]">
+                最后同步
+              </div>
               <div className="text-[var(--color-text-primary)] mt-1">
-                {channel.lastSyncAt.toLocaleString('zh-CN')}
+                {channel.lastSyncAt.toLocaleString("zh-CN")}
               </div>
             </div>
           )}
           {channel.stats?.lastMessageAt && (
             <div>
-              <div className="text-sm text-[var(--color-text-tertiary)]">最后消息</div>
+              <div className="text-sm text-[var(--color-text-tertiary)]">
+                最后消息
+              </div>
               <div className="text-[var(--color-text-primary)] mt-1">
-                {channel.stats?.lastMessageAt?.toLocaleString('zh-CN')}
+                {channel.stats?.lastMessageAt?.toLocaleString("zh-CN")}
               </div>
             </div>
           )}
@@ -640,7 +742,9 @@ function ChannelAgentsView({
   agents: Agent[];
   onRefresh: () => void;
 }) {
-  const [channelAgents, setChannelAgents] = useState<{ agentId: string; enabled: boolean }[]>([]);
+  const [channelAgents, setChannelAgents] = useState<
+    { agentId: string; enabled: boolean }[]
+  >([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -651,9 +755,14 @@ function ChannelAgentsView({
     try {
       setLoading(true);
       const data = await channelApi.getChannelAgents(channel.id);
-      setChannelAgents(data.map((ac: { agentId: string; enabled: boolean }) => ({ agentId: ac.agentId, enabled: ac.enabled })));
+      setChannelAgents(
+        data.map((ac: { agentId: string; enabled: boolean }) => ({
+          agentId: ac.agentId,
+          enabled: ac.enabled,
+        })),
+      );
     } catch (error) {
-      console.error('Failed to load channel agents:', error);
+      console.error("Failed to load channel agents:", error);
     } finally {
       setLoading(false);
     }
@@ -666,12 +775,12 @@ function ChannelAgentsView({
         channelId: channel.id,
         priority: 10,
       });
-      message.success('Agent 已添加到渠道');
+      message.success("Agent 已添加到渠道");
       loadChannelAgents();
       onRefresh();
     } catch (error) {
-      console.error('Failed to add agent:', error);
-      message.error('添加失败');
+      console.error("Failed to add agent:", error);
+      message.error("添加失败");
     }
   };
 
@@ -679,19 +788,19 @@ function ChannelAgentsView({
     try {
       await channelApi.removeAgentFromChannel(agentId, channel.id);
       setChannelAgents(channelAgents.filter((ca) => ca.agentId !== agentId));
-      message.success('Agent 已从渠道移除');
+      message.success("Agent 已从渠道移除");
       onRefresh();
     } catch (error) {
-      console.error('Failed to remove agent:', error);
-      message.error('移除失败');
+      console.error("Failed to remove agent:", error);
+      message.error("移除失败");
     }
   };
 
   const linkedAgents = agents.filter((a) =>
-    channelAgents.some((ca) => ca.agentId === a.id)
+    channelAgents.some((ca) => ca.agentId === a.id),
   );
   const availableAgents = agents.filter(
-    (a) => !channelAgents.some((ca) => ca.agentId === a.id)
+    (a) => !channelAgents.some((ca) => ca.agentId === a.id),
   );
 
   if (loading) {
@@ -710,7 +819,9 @@ function ChannelAgentsView({
           已关联 Agents ({linkedAgents.length})
         </h4>
         {linkedAgents.length === 0 ? (
-          <div className="text-[var(--color-text-tertiary)] text-sm">暂无关联的 Agent</div>
+          <div className="text-[var(--color-text-tertiary)] text-sm">
+            暂无关联的 Agent
+          </div>
         ) : (
           <div className="space-y-2">
             {linkedAgents.map((agent) => (

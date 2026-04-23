@@ -2,10 +2,10 @@
  * 通知下拉面板组件
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Dropdown, Badge, Button, Tabs, Avatar, Empty, Spin, Tag } from 'antd';
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Dropdown, Badge, Button, Tabs, Avatar, Empty, Spin, Tag } from "antd";
 import {
   BellOutlined,
   CheckOutlined,
@@ -15,23 +15,20 @@ import {
   MessageOutlined,
   AlertOutlined,
   ToolOutlined,
-} from '@ant-design/icons';
-import type { NotificationItem, NotificationType } from '@/types/notification';
-import {
-  notificationApi,
-  getUnreadCount,
-} from '@/services';
-import { formatRelativeTime } from '@/utils';
+} from "@ant-design/icons";
+import type { NotificationItem, NotificationType } from "@/types/notification";
+import { notificationApi, getUnreadCount } from "@/services";
+import { formatRelativeTime } from "@/utils";
 
 // 通知类型图标和颜色
 const notificationTypeConfig: Record<
   NotificationType,
   { icon: React.ReactNode; color: string }
 > = {
-  system: { icon: <ToolOutlined />, color: 'blue' },
-  message: { icon: <MessageOutlined />, color: 'green' },
-  alert: { icon: <AlertOutlined />, color: 'orange' },
-  task: { icon: <CheckOutlined />, color: 'purple' },
+  system: { icon: <ToolOutlined />, color: "blue" },
+  message: { icon: <MessageOutlined />, color: "green" },
+  alert: { icon: <AlertOutlined />, color: "orange" },
+  task: { icon: <CheckOutlined />, color: "purple" },
 };
 
 export default function NotificationDropdown() {
@@ -40,7 +37,7 @@ export default function NotificationDropdown() {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
+  const [activeTab, setActiveTab] = useState<"all" | "unread">("all");
 
   // 加载通知
   const loadNotifications = useCallback(async () => {
@@ -49,7 +46,7 @@ export default function NotificationDropdown() {
       const data = await notificationApi.fetchNotifications();
       setNotifications(data);
     } catch (error) {
-      console.error('Failed to load notifications:', error);
+      console.error("Failed to load notifications:", error);
     } finally {
       setLoading(false);
     }
@@ -65,7 +62,7 @@ export default function NotificationDropdown() {
 
   // 过滤后的通知
   const filteredNotifications =
-    activeTab === 'unread'
+    activeTab === "unread"
       ? notifications.filter((n) => !n.read)
       : notifications;
 
@@ -73,7 +70,7 @@ export default function NotificationDropdown() {
   const handleMarkAsRead = async (id: string) => {
     await notificationApi.markNotificationAsRead(id);
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
     );
   };
 
@@ -103,11 +100,11 @@ export default function NotificationDropdown() {
 
   // 下拉菜单内容
   const dropdownContent = (
-    <div className="w-[380px] max-h-[500px] bg-[var(--color-bg-paper)] border border-[var(--color-border)] rounded-lg shadow-lg overflow-hidden">
+    <div className="w-[380px] max-h-[500px] bg-[var(--color-bg-paper)] border border-(--color-border) rounded-lg shadow-lg overflow-hidden">
       {/* 头部 */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)]">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-(--color-border)">
         <span className="font-medium text-[var(--color-text-primary)]">
-          {t('notifications.title', '通知')}
+          {t("notifications.title", "通知")}
         </span>
         <div className="flex items-center gap-2">
           {unreadCount > 0 && (
@@ -118,7 +115,7 @@ export default function NotificationDropdown() {
               onClick={handleMarkAllAsRead}
               className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
             >
-              {t('notifications.markAllRead', '全部已读')}
+              {t("notifications.markAllRead", "全部已读")}
             </Button>
           )}
           <Button
@@ -126,7 +123,7 @@ export default function NotificationDropdown() {
             size="small"
             icon={<SettingOutlined />}
             onClick={() => {
-              navigate('/system/settings');
+              navigate("/system/settings");
               setOpen(false);
             }}
             className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
@@ -137,19 +134,19 @@ export default function NotificationDropdown() {
       {/* 标签页 */}
       <Tabs
         activeKey={activeTab}
-        onChange={(key) => setActiveTab(key as 'all' | 'unread')}
+        onChange={(key) => setActiveTab(key as "all" | "unread")}
         size="small"
         className="px-4 pt-2"
         items={[
           {
-            key: 'all',
-            label: t('notifications.all', '全部'),
+            key: "all",
+            label: t("notifications.all", "全部"),
           },
           {
-            key: 'unread',
+            key: "unread",
             label: (
               <Badge count={unreadCount} size="small" offset={[8, 0]}>
-                {t('notifications.unread', '未读')}
+                {t("notifications.unread", "未读")}
               </Badge>
             ),
           },
@@ -165,7 +162,7 @@ export default function NotificationDropdown() {
         ) : filteredNotifications.length === 0 ? (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={t('notifications.empty', '暂无通知')}
+            description={t("notifications.empty", "暂无通知")}
             className="py-12"
           />
         ) : (
@@ -178,7 +175,7 @@ export default function NotificationDropdown() {
                   className={`
                     px-4 py-3 cursor-pointer transition-colors
                     hover:bg-[var(--color-action-hover)]
-                    ${!item.read ? 'bg-[var(--color-primary)]/5' : ''}
+                    ${!item.read ? "bg-[var(--color-primary)]/5" : ""}
                   `}
                   onClick={() => handleClickNotification(item)}
                 >
@@ -191,7 +188,9 @@ export default function NotificationDropdown() {
                         <Avatar
                           size={40}
                           className="flex items-center justify-center"
-                          style={{ backgroundColor: `var(--color-${typeConfig.color})` }}
+                          style={{
+                            backgroundColor: `var(--color-${typeConfig.color})`,
+                          }}
                         >
                           {typeConfig.icon}
                         </Avatar>
@@ -204,16 +203,19 @@ export default function NotificationDropdown() {
                         <span
                           className={`text-sm font-medium truncate ${
                             !item.read
-                              ? 'text-[var(--color-text-primary)]'
-                              : 'text-[var(--color-text-secondary)]'
+                              ? "text-[var(--color-text-primary)]"
+                              : "text-[var(--color-text-secondary)]"
                           }`}
                         >
                           {item.title}
                         </span>
-                        {item.priority === 'urgent' && (
-                          <Tag color="red" className="text-xs px-1 py-0 leading-4">
-                            {t('notifications.urgent', '紧急')}
-                        </Tag>
+                        {item.priority === "urgent" && (
+                          <Tag
+                            color="red"
+                            className="text-xs px-1 py-0 leading-4"
+                          >
+                            {t("notifications.urgent", "紧急")}
+                          </Tag>
                         )}
                       </div>
                       <p className="text-xs text-[var(--color-text-tertiary)] line-clamp-2 mb-1">
@@ -248,16 +250,16 @@ export default function NotificationDropdown() {
 
       {/* 底部 */}
       {notifications.length > 0 && (
-        <div className="flex items-center justify-center py-3 border-t border-[var(--color-border)]">
+        <div className="flex items-center justify-center py-3 border-t border-(--color-border)">
           <Button
             type="link"
             size="small"
             onClick={() => {
-              navigate('/notifications');
+              navigate("/notifications");
               setOpen(false);
             }}
           >
-            {t('notifications.viewAll', '查看全部通知')}
+            {t("notifications.viewAll", "查看全部通知")}
           </Button>
         </div>
       )}
@@ -269,7 +271,7 @@ export default function NotificationDropdown() {
       open={open}
       onOpenChange={setOpen}
       popupRender={() => dropdownContent}
-      trigger={['click']}
+      trigger={["click"]}
       placement="bottomRight"
       arrow={false}
     >

@@ -2,8 +2,8 @@
  * 部门管理页面
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { Input, Button } from 'antd';
+import { useState, useEffect, useCallback } from "react";
+import { Input, Button } from "antd";
 import {
   PlusOutlined,
   SearchOutlined,
@@ -12,19 +12,22 @@ import {
   HomeOutlined,
   UserOutlined,
   CloseCircleOutlined,
-} from '@ant-design/icons';
-import type { Department, User as UserType } from '@/services';
-import { organizationApi } from '@/services';
-import { formatDate } from '@/utils';
+} from "@ant-design/icons";
+import type { Department, User as UserType } from "@/services";
+import { organizationApi } from "@/services";
+import { formatDate } from "@/utils";
 
 export default function DepartmentsPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedDepartment, setSelectedDepartment] =
+    useState<Department | null>(null);
   const [departmentMembers, setDepartmentMembers] = useState<UserType[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
+  const [editingDepartment, setEditingDepartment] = useState<Department | null>(
+    null,
+  );
 
   const loadDepartments = useCallback(async () => {
     setLoading(true);
@@ -32,7 +35,7 @@ export default function DepartmentsPage() {
       const data = await organizationApi.getDepartments();
       setDepartments(data);
     } catch (error) {
-      console.error('Failed to load departments:', error);
+      console.error("Failed to load departments:", error);
     } finally {
       setLoading(false);
     }
@@ -45,7 +48,9 @@ export default function DepartmentsPage() {
   // 加载部门成员
   useEffect(() => {
     if (selectedDepartment) {
-      organizationApi.getDepartmentMembers(selectedDepartment.id).then(setDepartmentMembers);
+      organizationApi
+        .getDepartmentMembers(selectedDepartment.id)
+        .then(setDepartmentMembers);
     }
   }, [selectedDepartment]);
 
@@ -60,7 +65,7 @@ export default function DepartmentsPage() {
   });
 
   const handleDeleteDepartment = async (id: string) => {
-    if (!confirm('确定要删除这个部门吗？')) return;
+    if (!confirm("确定要删除这个部门吗？")) return;
     await organizationApi.deleteDepartment(id);
     if (selectedDepartment?.id === id) {
       setSelectedDepartment(null);
@@ -74,11 +79,13 @@ export default function DepartmentsPage() {
   return (
     <div className="flex h-full">
       {/* 左侧列表 */}
-      <div className="w-80 border-r border-[var(--color-border)] flex flex-col bg-[var(--color-bg-secondary)]">
+      <div className="w-80 border-r border-(--color-border) flex flex-col bg-[var(--color-bg-secondary)]">
         {/* 头部 */}
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">部门管理</h2>
+            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+              部门管理
+            </h2>
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -106,7 +113,9 @@ export default function DepartmentsPage() {
         {/* 列表 */}
         <div className="flex-1 overflow-y-auto p-2">
           {loading ? (
-            <div className="text-center py-8 text-[var(--color-text-tertiary)]">加载中...</div>
+            <div className="text-center py-8 text-[var(--color-text-tertiary)]">
+              加载中...
+            </div>
           ) : filteredDepartments.length === 0 ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">
               <HomeOutlined className="text-3xl mx-auto mb-2 opacity-50" />
@@ -119,8 +128,8 @@ export default function DepartmentsPage() {
                 onClick={() => setSelectedDepartment(dept)}
                 className={`group p-3 rounded-lg cursor-pointer transition-colors ${
                   selectedDepartment?.id === dept.id
-                    ? 'bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30'
-                    : 'hover:bg-[var(--color-bg-tertiary)]'
+                    ? "bg-[var(--color-primary)]/10 border border-(--color-primary)/30"
+                    : "hover:bg-[var(--color-bg-tertiary)]"
                 }`}
               >
                 <div className="flex items-start gap-2">
@@ -129,7 +138,9 @@ export default function DepartmentsPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-[var(--color-text-primary)]">{dept.name}</span>
+                      <span className="font-medium text-[var(--color-text-primary)]">
+                        {dept.name}
+                      </span>
                       <span className="text-xs text-[var(--color-text-tertiary)]">
                         {dept.memberCount} 人
                       </span>
@@ -161,7 +172,9 @@ export default function DepartmentsPage() {
                 <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
                   {selectedDepartment.name}
                 </h2>
-                <p className="text-[var(--color-text-secondary)]">{selectedDepartment.description}</p>
+                <p className="text-[var(--color-text-secondary)]">
+                  {selectedDepartment.description}
+                </p>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -182,20 +195,26 @@ export default function DepartmentsPage() {
 
             {/* 部门信息 */}
             <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-                <span className="text-xs text-[var(--color-text-tertiary)]">成员数量</span>
+              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
+                <span className="text-xs text-[var(--color-text-tertiary)]">
+                  成员数量
+                </span>
                 <p className="text-xl font-semibold text-[var(--color-text-primary)] mt-1">
                   {selectedDepartment.memberCount}
                 </p>
               </div>
-              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-                <span className="text-xs text-[var(--color-text-tertiary)]">负责人</span>
+              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
+                <span className="text-xs text-[var(--color-text-tertiary)]">
+                  负责人
+                </span>
                 <p className="text-xl font-semibold text-[var(--color-text-primary)] mt-1">
-                  {selectedDepartment.manager || '-'}
+                  {selectedDepartment.manager || "-"}
                 </p>
               </div>
-              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-                <span className="text-xs text-[var(--color-text-tertiary)]">创建时间</span>
+              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
+                <span className="text-xs text-[var(--color-text-tertiary)]">
+                  创建时间
+                </span>
                 <p className="text-xl font-semibold text-[var(--color-text-primary)] mt-1">
                   {formatDate(selectedDepartment.createdAt)}
                 </p>
@@ -203,9 +222,11 @@ export default function DepartmentsPage() {
             </div>
 
             {/* 成员列表 */}
-            <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-              <div className="p-3 border-b border-[var(--color-border)] flex items-center justify-between">
-                <h3 className="text-sm font-medium text-[var(--color-text-primary)]">部门成员</h3>
+            <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
+              <div className="p-3 border-b border-(--color-border) flex items-center justify-between">
+                <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
+                  部门成员
+                </h3>
                 <span className="text-xs text-[var(--color-text-tertiary)]">
                   {departmentMembers.length} 人
                 </span>
@@ -218,26 +239,37 @@ export default function DepartmentsPage() {
                   </div>
                 ) : (
                   departmentMembers.map((member) => (
-                    <div key={member.id} className="p-3 flex items-center gap-3">
+                    <div
+                      key={member.id}
+                      className="p-3 flex items-center gap-3"
+                    >
                       <div className="w-8 h-8 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
                         <span className="text-sm font-medium text-[var(--color-primary)]">
                           {member.name.charAt(0)}
                         </span>
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium text-[var(--color-text-primary)]">{member.name}</p>
-                        <p className="text-xs text-[var(--color-text-tertiary)]">{member.email}</p>
+                        <p className="font-medium text-[var(--color-text-primary)]">
+                          {member.name}
+                        </p>
+                        <p className="text-xs text-[var(--color-text-tertiary)]">
+                          {member.email}
+                        </p>
                       </div>
                       <span
                         className={`text-xs px-2 py-0.5 rounded ${
-                          member.role === 'admin'
-                            ? 'bg-purple-500/10 text-purple-500'
-                            : member.role === 'manager'
-                              ? 'bg-blue-500/10 text-blue-500'
-                              : 'bg-gray-500/10 text-gray-500'
+                          member.role === "admin"
+                            ? "bg-purple-500/10 text-purple-500"
+                            : member.role === "manager"
+                              ? "bg-blue-500/10 text-blue-500"
+                              : "bg-gray-500/10 text-gray-500"
                         }`}
                       >
-                        {member.role === 'admin' ? '管理员' : member.role === 'manager' ? '经理' : '成员'}
+                        {member.role === "admin"
+                          ? "管理员"
+                          : member.role === "manager"
+                            ? "经理"
+                            : "成员"}
                       </span>
                     </div>
                   ))
@@ -249,8 +281,12 @@ export default function DepartmentsPage() {
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <HomeOutlined className="text-5xl text-[var(--color-text-tertiary)] mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-[var(--color-text-primary)]">选择一个部门</h3>
-              <p className="text-[var(--color-text-secondary)]">从左侧列表中选择查看详情</p>
+              <h3 className="text-lg font-medium text-[var(--color-text-primary)]">
+                选择一个部门
+              </h3>
+              <p className="text-[var(--color-text-secondary)]">
+                从左侧列表中选择查看详情
+              </p>
             </div>
           </div>
         )}
@@ -266,7 +302,10 @@ export default function DepartmentsPage() {
           }}
           onSave={async (data) => {
             if (editingDepartment) {
-              await organizationApi.updateDepartment(editingDepartment.id, data);
+              await organizationApi.updateDepartment(
+                editingDepartment.id,
+                data,
+              );
             } else {
               await organizationApi.createDepartment(data);
             }
@@ -291,9 +330,9 @@ function DepartmentModal({
   onSave: (data: Partial<Department>) => Promise<void>;
 }) {
   const [formData, setFormData] = useState({
-    name: department?.name || '',
-    description: department?.description || '',
-    manager: department?.manager || '',
+    name: department?.name || "",
+    description: department?.description || "",
+    manager: department?.manager || "",
   });
   const [saving, setSaving] = useState(false);
 
@@ -309,45 +348,60 @@ function DepartmentModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md bg-[var(--color-bg-base)] rounded-lg shadow-xl border border-[var(--color-border)]">
-        <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
+      <div className="w-full max-w-md bg-[var(--color-bg-base)] rounded-lg shadow-xl border border-(--color-border)">
+        <div className="flex items-center justify-between p-4 border-b border-(--color-border)">
           <h3 className="text-lg font-medium text-[var(--color-text-primary)]">
-            {department ? '编辑部门' : '添加部门'}
+            {department ? "编辑部门" : "添加部门"}
           </h3>
-          <button onClick={onClose} className="p-1 hover:bg-[var(--color-bg-tertiary)] rounded">
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-[var(--color-bg-tertiary)] rounded"
+          >
             <CloseCircleOutlined className="text-[var(--color-text-tertiary)]" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div>
-            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">部门名称</label>
+            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">
+              部门名称
+            </label>
             <input
               type="text"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">部门描述</label>
+            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">
+              部门描述
+            </label>
             <textarea
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               rows={3}
-              className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)] resize-none"
+              className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)] resize-none"
             />
           </div>
 
           <div>
-            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">负责人</label>
+            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">
+              负责人
+            </label>
             <input
               type="text"
               value={formData.manager}
-              onChange={(e) => setFormData({ ...formData, manager: e.target.value })}
-              className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
+              onChange={(e) =>
+                setFormData({ ...formData, manager: e.target.value })
+              }
+              className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
             />
           </div>
 
@@ -355,7 +409,7 @@ function DepartmentModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)]"
+              className="px-4 py-2 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-[var(--color-bg-tertiary)]"
             >
               取消
             </button>
@@ -364,7 +418,7 @@ function DepartmentModal({
               disabled={saving}
               className="px-4 py-2 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
             >
-              {saving ? '保存中...' : '保存'}
+              {saving ? "保存中..." : "保存"}
             </button>
           </div>
         </form>

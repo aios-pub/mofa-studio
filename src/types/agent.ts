@@ -3,7 +3,13 @@
  */
 
 /** Agent 状态 */
-export type AgentStatus = 'idle' | 'thinking' | 'tool' | 'waiting' | 'error' | 'offline';
+export type AgentStatus =
+  | "idle"
+  | "thinking"
+  | "tool"
+  | "waiting"
+  | "error"
+  | "offline";
 
 /** 思考模式配置（对应后端 jsonb 字段） */
 export interface ThinkingConfig {
@@ -61,30 +67,6 @@ export interface Agent {
   created_at?: Date;
   /** 更新时间 */
   updated_at?: Date;
-
-  // 别名，兼容旧代码
-  /** @deprecated 使用 agent_name */
-  name?: string;
-  /** @deprecated 使用 agent_code */
-  agentCode?: string;
-  /** @deprecated 使用 agent_category */
-  agentType?: string;
-  /** @deprecated 使用 model_id */
-  modelId?: string;
-  /** @deprecated 使用 model_name */
-  modelName?: string;
-  /** @deprecated 使用 provider?.id */
-  providerId?: string;
-  /** @deprecated 使用 provider?.provider_name */
-  providerName?: string;
-  /** @deprecated 使用 custom_params */
-  customParams?: Record<string, unknown>;
-  /** @deprecated 使用 input_parameters */
-  inputParameters?: AgentInputParameter[];
-  /** @deprecated 使用 created_at */
-  createdAt?: Date;
-  /** @deprecated 使用 updated_at */
-  updatedAt?: Date;
 }
 
 /** Agent RBAC 权限配置 */
@@ -105,7 +87,7 @@ export interface AgentPermission {
   // 提示词访问权限
   accessiblePrompts: string[];
   // 数据权限
-  dataScope: 'self' | 'department' | 'organization';
+  dataScope: "self" | "department" | "organization";
   allowSensitiveData: boolean;
   historyRetentionDays: number;
 }
@@ -115,7 +97,7 @@ export interface AgentPrompt {
   id: string;
   agentId: string;
   promptId: string;
-  type: 'system' | 'user';
+  type: "system" | "user";
   order: number;
   enabled: boolean;
 }
@@ -138,7 +120,13 @@ export interface AgentTestSet {
 }
 
 /** Agent 输入参数类型 */
-export type AgentParameterType = 'text' | 'number' | 'boolean' | 'file' | 'select' | 'date';
+export type AgentParameterType =
+  | "text"
+  | "number"
+  | "boolean"
+  | "file"
+  | "select"
+  | "date";
 
 /** Agent 输入参数定义 */
 export interface AgentInputParameter {

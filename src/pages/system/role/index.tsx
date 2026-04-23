@@ -2,8 +2,8 @@
  * 角色管理页面
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Button,
   Table,
@@ -17,19 +17,19 @@ import {
   Tree,
   message,
   Popconfirm,
-} from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import type { DataNode } from 'antd/es/tree';
+} from "antd";
+import type { ColumnsType } from "antd/es/table";
+import type { DataNode } from "antd/es/tree";
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
   TeamOutlined,
-} from '@ant-design/icons';
-import { PageHeader, EmptyState } from '../../../components/common';
-import type { SystemRole, RoleFormData, MenuItem } from '../../../types/system';
-import { BasicStatus } from '../../../types/system';
-import { roleApi, menuApi } from '@/services';
+} from "@ant-design/icons";
+import { PageHeader, EmptyState } from "../../../components/common";
+import type { SystemRole, RoleFormData, MenuItem } from "../../../types/system";
+import { BasicStatus } from "../../../types/system";
+import { roleApi, menuApi } from "@/services";
 
 const { TextArea } = Input;
 
@@ -49,7 +49,7 @@ export default function RoleManagementPage() {
       const data = await roleApi.getAll();
       setRoles(data);
     } catch (error) {
-      console.error('Failed to load roles:', error);
+      console.error("Failed to load roles:", error);
     } finally {
       setLoading(false);
     }
@@ -59,15 +59,17 @@ export default function RoleManagementPage() {
     try {
       const menus = await menuApi.getAll();
       const convertToTreeData = (items: MenuItem[]): DataNode[] => {
-        return items.map(item => ({
+        return items.map((item) => ({
           key: item.id,
           title: item.label,
-          children: item.children ? convertToTreeData(item.children) : undefined,
+          children: item.children
+            ? convertToTreeData(item.children)
+            : undefined,
         }));
       };
       setMenuTree(convertToTreeData(menus));
     } catch (error) {
-      console.error('Failed to load menu tree:', error);
+      console.error("Failed to load menu tree:", error);
     }
   }, []);
 
@@ -107,17 +109,17 @@ export default function RoleManagementPage() {
   const handleDelete = async (id: string) => {
     try {
       await roleApi.delete(id);
-      message.success('删除成功');
+      message.success("删除成功");
       loadRoles();
     } catch (error) {
-      message.error('删除失败');
+      message.error("删除失败");
     }
   };
 
   const handleMenuCheck = (checkedKeys: any) => {
     const keys = Array.isArray(checkedKeys) ? checkedKeys : checkedKeys.checked;
     setCheckedMenuKeys(keys as string[]);
-    form.setFieldValue('menus', keys);
+    form.setFieldValue("menus", keys);
   };
 
   const handleSubmit = async () => {
@@ -125,68 +127,68 @@ export default function RoleManagementPage() {
       const values = await form.validateFields();
       if (editingRole) {
         await roleApi.update(editingRole.id, values);
-        message.success('更新成功');
+        message.success("更新成功");
       } else {
         await roleApi.create(values);
-        message.success('创建成功');
+        message.success("创建成功");
       }
       setModalVisible(false);
       loadRoles();
     } catch (error) {
-      message.error('操作失败');
+      message.error("操作失败");
     }
   };
 
   const columns: ColumnsType<SystemRole> = [
     {
-      title: t('role.name', '角色名称'),
-      dataIndex: 'name',
-      key: 'name',
+      title: t("role.name", "角色名称"),
+      dataIndex: "name",
+      key: "name",
       width: 150,
     },
     {
-      title: t('role.code', '角色编码'),
-      dataIndex: 'code',
-      key: 'code',
+      title: t("role.code", "角色编码"),
+      dataIndex: "code",
+      key: "code",
       width: 150,
     },
     {
-      title: t('role.description', '描述'),
-      dataIndex: 'description',
-      key: 'description',
+      title: t("role.description", "描述"),
+      dataIndex: "description",
+      key: "description",
       ellipsis: true,
     },
     {
-      title: t('role.order', '排序'),
-      dataIndex: 'order',
-      key: 'order',
+      title: t("role.order", "排序"),
+      dataIndex: "order",
+      key: "order",
       width: 80,
-      align: 'center',
+      align: "center",
     },
     {
-      title: t('role.status', '状态'),
-      dataIndex: 'status',
-      key: 'status',
+      title: t("role.status", "状态"),
+      dataIndex: "status",
+      key: "status",
       width: 100,
-      align: 'center',
+      align: "center",
       render: (status: BasicStatus) => (
-        <Tag color={status === BasicStatus.ENABLE ? 'success' : 'error'}>
-          {status === BasicStatus.ENABLE ? '启用' : '禁用'}
+        <Tag color={status === BasicStatus.ENABLE ? "success" : "error"}>
+          {status === BasicStatus.ENABLE ? "启用" : "禁用"}
         </Tag>
       ),
     },
     {
-      title: t('role.createdAt', '创建时间'),
-      dataIndex: 'createdAt',
-      key: 'createdAt',
+      title: t("role.createdAt", "创建时间"),
+      dataIndex: "createdAt",
+      key: "createdAt",
       width: 180,
-      render: (date: Date) => new Date(date).toLocaleString('zh-CN'),
+      render: (date: Date) => new Date(date).toLocaleString("zh-CN"),
     },
     {
-      title: t('common.actions', '操作'),
-      key: 'action',
+      title: t("common.actions", "操作"),
+      key: "action",
       width: 150,
-      align: 'center',
+      align: "center",
       render: (_, record) => (
         <Space size="small">
           <Button
@@ -204,12 +206,7 @@ export default function RoleManagementPage() {
             okText="确定"
             cancelText="取消"
           >
-            <Button
-              type="link"
-              size="small"
-              danger
-              icon={<DeleteOutlined />}
-            >
+            <Button type="link" size="small" danger icon={<DeleteOutlined />}>
               删除
             </Button>
           </Popconfirm>
@@ -220,38 +217,34 @@ export default function RoleManagementPage() {
 
   // 预设权限选项
   const permissionOptions = [
-    { value: 'all', label: '全部权限' },
-    { value: 'manage_users', label: '用户管理' },
-    { value: 'manage_roles', label: '角色管理' },
-    { value: 'manage_menus', label: '菜单管理' },
-    { value: 'manage_agents', label: 'Agent管理' },
-    { value: 'manage_prompts', label: '提示词管理' },
-    { value: 'manage_skills', label: '技能管理' },
-    { value: 'manage_testsets', label: '测试集管理' },
-    { value: 'manage_settings', label: '系统设置' },
-    { value: 'use_agents', label: '使用Agent' },
-    { value: 'view_conversations', label: '查看对话' },
-    { value: 'view_agents', label: '查看Agent' },
+    { value: "all", label: "全部权限" },
+    { value: "manage_users", label: "用户管理" },
+    { value: "manage_roles", label: "角色管理" },
+    { value: "manage_menus", label: "菜单管理" },
+    { value: "manage_agents", label: "Agent管理" },
+    { value: "manage_prompts", label: "提示词管理" },
+    { value: "manage_skills", label: "技能管理" },
+    { value: "manage_testsets", label: "测试集管理" },
+    { value: "manage_settings", label: "系统设置" },
+    { value: "use_agents", label: "使用Agent" },
+    { value: "view_conversations", label: "查看对话" },
+    { value: "view_agents", label: "查看Agent" },
   ];
 
   return (
     <div className="space-y-4">
       <PageHeader
-        title={t('role.management', '角色管理')}
-        description={t('role.description', '管理系统角色和权限分配')}
+        title={t("role.management", "角色管理")}
+        description={t("role.description", "管理系统角色和权限分配")}
         icon={<TeamOutlined className="text-xl" />}
         actions={
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleCreate}
-          >
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
             新建角色
           </Button>
         }
       />
 
-      <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
+      <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="text-[var(--color-text-tertiary)]">加载中...</div>
@@ -279,7 +272,7 @@ export default function RoleManagementPage() {
 
       {/* 角色编辑弹窗 */}
       <Modal
-        title={editingRole ? '编辑角色' : '新建角色'}
+        title={editingRole ? "编辑角色" : "新建角色"}
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         onOk={handleSubmit}
@@ -291,7 +284,7 @@ export default function RoleManagementPage() {
             <Form.Item
               name="name"
               label="角色名称"
-              rules={[{ required: true, message: '请输入角色名称' }]}
+              rules={[{ required: true, message: "请输入角色名称" }]}
             >
               <Input placeholder="例如：系统管理员" />
             </Form.Item>
@@ -300,48 +293,34 @@ export default function RoleManagementPage() {
               name="code"
               label="角色编码"
               rules={[
-                { required: true, message: '请输入角色编码' },
-                { pattern: /^[a-z_]+$/, message: '只能包含小写字母和下划线' },
+                { required: true, message: "请输入角色编码" },
+                { pattern: /^[a-z_]+$/, message: "只能包含小写字母和下划线" },
               ]}
             >
               <Input placeholder="例如：admin" disabled={!!editingRole} />
             </Form.Item>
           </div>
 
-          <Form.Item
-            name="description"
-            label="角色描述"
-          >
+          <Form.Item name="description" label="角色描述">
             <TextArea rows={2} placeholder="描述角色的职责和权限范围" />
           </Form.Item>
 
           <div className="grid grid-cols-2 gap-4">
-            <Form.Item
-              name="order"
-              label="排序"
-              initialValue={0}
-            >
+            <Form.Item name="order" label="排序" initialValue={0}>
               <InputNumber min={0} className="w-full" />
             </Form.Item>
 
-            <Form.Item
-              name="status"
-              label="状态"
-              rules={[{ required: true }]}
-            >
+            <Form.Item name="status" label="状态" rules={[{ required: true }]}>
               <Select
                 options={[
-                  { value: BasicStatus.ENABLE, label: '启用' },
-                  { value: BasicStatus.DISABLE, label: '禁用' },
+                  { value: BasicStatus.ENABLE, label: "启用" },
+                  { value: BasicStatus.DISABLE, label: "禁用" },
                 ]}
               />
             </Form.Item>
           </div>
 
-          <Form.Item
-            name="permissions"
-            label="功能权限"
-          >
+          <Form.Item name="permissions" label="功能权限">
             <Select
               mode="multiple"
               placeholder="选择功能权限"
@@ -350,12 +329,8 @@ export default function RoleManagementPage() {
             />
           </Form.Item>
 
-          <Form.Item
-            name="menus"
-            label="菜单权限"
-            help="选择角色可访问的菜单"
-          >
-            <div className="border border-[var(--color-border)] rounded-lg p-3 max-h-64 overflow-auto bg-[var(--color-bg-tertiary)]">
+          <Form.Item name="menus" label="菜单权限" help="选择角色可访问的菜单">
+            <div className="border border-(--color-border) rounded-lg p-3 max-h-64 overflow-auto bg-[var(--color-bg-tertiary)]">
               {menuTree.length > 0 ? (
                 <Tree
                   checkable

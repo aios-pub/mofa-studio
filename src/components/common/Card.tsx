@@ -18,8 +18,8 @@ export interface CardProps extends Omit<
 
 const variantStyles: Record<CardVariant, string> = {
   default:
-    "bg-[var(--color-bg-paper)] border border-[var(--color-border)] shadow-[var(--shadow-xs)]",
-  variant: "bg-[var(--color-bg-paper)] border border-[var(--color-border)]",
+    "bg-[var(--color-bg-paper)] border border-(--color-border) shadow-[var(--shadow-xs)]",
+  variant: "bg-[var(--color-bg-paper)] border border-(--color-border)",
   elevated: "bg-[var(--color-bg-paper)] shadow-[var(--shadow-md)]",
   ghost: "bg-transparent",
 };
@@ -56,9 +56,7 @@ export const CardHeader: React.FC<{
   className?: string;
   children: React.ReactNode;
 }> = ({ className = "", children }) => (
-  <div
-    className={`px-4 py-3 border-b border-[var(--color-border)] ${className}`}
-  >
+  <div className={`px-4 py-3 border-b border-(--color-border) ${className}`}>
     {children}
   </div>
 );
@@ -94,9 +92,7 @@ export const CardFooter: React.FC<{
   className?: string;
   children: React.ReactNode;
 }> = ({ className = "", children }) => (
-  <div
-    className={`px-4 py-3 border-t border-[var(--color-border)] ${className}`}
-  >
+  <div className={`px-4 py-3 border-t border-(--color-border) ${className}`}>
     {children}
   </div>
 );

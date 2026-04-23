@@ -4,10 +4,16 @@
  * 支持模糊搜索、全选/取消全选、添加自定义模型
  */
 
-import React, { useState, useMemo } from 'react';
-import { Input, Checkbox, Tag, Button, Modal, message } from 'antd';
-import { SearchOutlined, ThunderboltOutlined, PlusOutlined, SyncOutlined, LoadingOutlined } from '@ant-design/icons';
-import { fuzzyMatch } from '../../../utils/fuzzySearch';
+import React, { useState, useMemo } from "react";
+import { Input, Checkbox, Tag, Button, Modal, message } from "antd";
+import {
+  SearchOutlined,
+  ThunderboltOutlined,
+  PlusOutlined,
+  SyncOutlined,
+  LoadingOutlined,
+} from "@ant-design/icons";
+import { fuzzyMatch } from "../../../utils/fuzzySearch";
 
 export interface SelectableModel {
   id: string;
@@ -33,15 +39,15 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
   onAddCustomModel,
   onRefreshModels,
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [showAddCustom, setShowAddCustom] = useState(false);
-  const [customModelId, setCustomModelId] = useState('');
+  const [customModelId, setCustomModelId] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
   const filteredModels = useMemo(
     () =>
-      availableModels.filter((m) =>
-        fuzzyMatch(searchQuery, m.name) || fuzzyMatch(searchQuery, m.id),
+      availableModels.filter(
+        (m) => fuzzyMatch(searchQuery, m.name) || fuzzyMatch(searchQuery, m.id),
       ),
     [availableModels, searchQuery],
   );
@@ -53,12 +59,12 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
   const handleAddCustom = () => {
     const id = customModelId.trim();
     if (!id) return;
-    if (availableModels.some(m => m.id === id)) {
-      message.warning('该模型 ID 已存在');
+    if (availableModels.some((m) => m.id === id)) {
+      message.warning("该模型 ID 已存在");
       return;
     }
     onAddCustomModel?.({ id, name: id, isCustom: true });
-    setCustomModelId('');
+    setCustomModelId("");
     setShowAddCustom(false);
   };
 
@@ -68,7 +74,7 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
     try {
       await onRefreshModels();
     } catch {
-      message.error('获取模型列表失败');
+      message.error("获取模型列表失败");
     } finally {
       setRefreshing(false);
     }
@@ -80,7 +86,9 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
       <div className="flex items-center gap-3 mb-3">
         <Input
           placeholder="搜索模型名称或 ID..."
-          prefix={<SearchOutlined className="text-[var(--color-text-tertiary)]" />}
+          prefix={
+            <SearchOutlined className="text-[var(--color-text-tertiary)]" />
+          }
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           allowClear
@@ -88,7 +96,13 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
         />
         {onRefreshModels && (
           <Button
-            icon={refreshing ? <LoadingOutlined /> : <SyncOutlined spin={refreshing} />}
+            icon={
+              refreshing ? (
+                <LoadingOutlined />
+              ) : (
+                <SyncOutlined spin={refreshing} />
+              )
+            }
             onClick={handleRefresh}
             disabled={refreshing}
             size="small"
@@ -102,7 +116,7 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
       </div>
 
       {/* 全选控制 */}
-      <div className="flex items-center gap-2 mb-2 pb-2 border-b border-[var(--color-border)]">
+      <div className="flex items-center gap-2 mb-2 pb-2 border-b border-(--color-border)">
         <Checkbox
           checked={allFilteredSelected}
           indeterminate={
@@ -112,7 +126,7 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
           onChange={(e) => onToggleAll(e.target.checked)}
         >
           <span className="text-sm text-[var(--color-text-secondary)]">
-            {allFilteredSelected ? '取消全选' : '全选当前'}
+            {allFilteredSelected ? "取消全选" : "全选当前"}
           </span>
         </Checkbox>
         <Tag color="blue" className="text-xs m-0">
@@ -136,7 +150,7 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
         {filteredModels.length === 0 ? (
           <div className="text-center py-8 text-[var(--color-text-tertiary)]">
             <ThunderboltOutlined className="text-2xl mb-2 opacity-50" />
-            <p>{searchQuery ? '未找到匹配的模型' : '暂无可用模型'}</p>
+            <p>{searchQuery ? "未找到匹配的模型" : "暂无可用模型"}</p>
           </div>
         ) : (
           filteredModels.map((model) => {
@@ -147,8 +161,8 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
                 onClick={() => onToggle(model.id)}
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
                   checked
-                    ? 'border border-[var(--color-primary)] bg-[var(--color-primary)]/5'
-                    : 'border border-transparent hover:bg-[var(--color-bg-tertiary)]'
+                    ? "border border-(--color-primary) bg-[var(--color-primary)]/5"
+                    : "border border-transparent hover:bg-[var(--color-bg-tertiary)]"
                 }`}
               >
                 <Checkbox
@@ -163,7 +177,9 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
                     {model.name}
                   </span>
                   {model.isCustom && (
-                    <Tag color="orange" className="text-xs m-0 ml-2">自定义</Tag>
+                    <Tag color="orange" className="text-xs m-0 ml-2">
+                      自定义
+                    </Tag>
                   )}
                 </div>
                 <code className="text-xs px-1.5 py-0.5 bg-[var(--color-bg-tertiary)] rounded text-[var(--color-text-tertiary)] max-w-[200px] truncate">
@@ -181,7 +197,7 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
         open={showAddCustom}
         onCancel={() => {
           setShowAddCustom(false);
-          setCustomModelId('');
+          setCustomModelId("");
         }}
         onOk={handleAddCustom}
         okText="添加"

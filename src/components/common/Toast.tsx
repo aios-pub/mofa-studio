@@ -3,17 +3,23 @@
  * 基于 sonner 实现
  */
 
-import { Toaster, toast as sonnerToast } from 'sonner';
-import type { ExternalToast } from 'sonner';
+import { Toaster, toast as sonnerToast } from "sonner";
+import type { ExternalToast } from "sonner";
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   InfoCircleOutlined,
   WarningOutlined,
   LoadingOutlined,
-} from '@ant-design/icons';
+} from "@ant-design/icons";
 
-type ToastPosition = 'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right' | 'bottom-center';
+type ToastPosition =
+  | "top-left"
+  | "top-right"
+  | "top-center"
+  | "bottom-left"
+  | "bottom-right"
+  | "bottom-center";
 
 /**
  * Toast 通知系统
@@ -86,7 +92,7 @@ export const toast = {
       success: string | ((data: T) => string);
       error: string | ((error: Error) => string);
     },
-    options?: ExternalToast
+    options?: ExternalToast,
   ) => {
     return sonnerToast.promise(promise, {
       ...messages,
@@ -97,7 +103,10 @@ export const toast = {
   /**
    * 自定义通知
    */
-  custom: (jsx: (id: string | number) => React.ReactElement, options?: ExternalToast) => {
+  custom: (
+    jsx: (id: string | number) => React.ReactElement,
+    options?: ExternalToast,
+  ) => {
     return sonnerToast.custom(jsx, options);
   },
 
@@ -121,7 +130,7 @@ export const toast = {
  * 需要在应用根组件中使用
  */
 export function ToastProvider({
-  position = 'top-right',
+  position = "top-right",
   richColors = true,
   closeButton = true,
   duration = 3000,
@@ -142,18 +151,20 @@ export function ToastProvider({
       expand={expand}
       toastOptions={{
         style: {
-          backgroundColor: 'var(--color-bg-secondary)',
-          color: 'var(--color-text-primary)',
-          border: '1px solid var(--color-border)',
-          borderRadius: '8px',
+          backgroundColor: "var(--color-bg-secondary)",
+          color: "var(--color-text-primary)",
+          border: "1px solid var(--color-border)",
+          borderRadius: "8px",
         },
         classNames: {
-          toast: 'group',
-          title: 'text-sm font-medium',
-          description: 'text-xs text-[var(--color-text-secondary)]',
-          actionButton: 'bg-[var(--color-primary)] text-white',
-          cancelButton: 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]',
-          closeButton: '!bg-[var(--color-bg-tertiary)] !border-[var(--color-border)] !text-[var(--color-text-secondary)] hover:!bg-[var(--color-bg-base)]',
+          toast: "group",
+          title: "text-sm font-medium",
+          description: "text-xs text-[var(--color-text-secondary)]",
+          actionButton: "bg-[var(--color-primary)] text-white",
+          cancelButton:
+            "bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]",
+          closeButton:
+            "!bg-[var(--color-bg-tertiary)] !border-(--color-border) !text-[var(--color-text-secondary)] hover:!bg-[var(--color-bg-base)]",
         },
       }}
     />

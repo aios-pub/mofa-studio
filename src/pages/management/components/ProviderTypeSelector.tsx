@@ -21,11 +21,7 @@ interface ProviderTypeSelectorProps {
   onSelect: (config: ProviderConfig) => void;
 }
 
-const categories: ProviderCategory[] = [
-  "cloud",
-  "opensource",
-  "custom",
-];
+const categories: ProviderCategory[] = ["cloud", "opensource", "custom"];
 
 export const ProviderTypeSelector: React.FC<ProviderTypeSelectorProps> = ({
   selectedType,
@@ -130,8 +126,8 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
       onClick={onClick}
       className={`p-3 rounded-lg border cursor-pointer transition-all ${
         selected
-          ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
-          : "border-[var(--color-border)] bg-[var(--color-bg-secondary)] hover:border-[var(--color-primary)]/50"
+          ? "border-(--color-primary) bg-[var(--color-primary)]/5"
+          : "border-(--color-border) bg-[var(--color-bg-secondary)] hover:border-(--color-primary)/50"
       }`}
     >
       <div className="flex items-start gap-3">
@@ -158,7 +154,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
           </p>
           <div className="flex items-center gap-1 mt-1.5">
             <span className="text-xs text-[var(--color-text-tertiary)]">
-              {config.api.authType === 'none' ? '无需密钥' : 'API Key 认证'}
+              {config.api.authType === "none" ? "无需密钥" : "API Key 认证"}
             </span>
           </div>
         </div>

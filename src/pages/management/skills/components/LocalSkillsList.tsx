@@ -195,7 +195,7 @@ export function LocalSkillsList({
   return (
     <div className="flex flex-col h-full">
       {/* 头部 */}
-      <div className="p-4 space-y-3 border-b border-[var(--color-border)]">
+      <div className="p-4 space-y-3 border-b border-(--color-border)">
         <div className="flex items-center justify-between">
           <Title level={5} style={{ margin: 0 }}>
             本地 Skills
@@ -291,7 +291,7 @@ export function LocalSkillsList({
                         onClick={() => onSelectSkill(skill)}
                         className={`group flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all ${
                           selectedSkill?.id === skill.id
-                            ? "bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30"
+                            ? "bg-[var(--color-primary)]/10 border border-(--color-primary)/30"
                             : "hover:bg-[var(--color-bg-tertiary)] border border-transparent"
                         }`}
                       >

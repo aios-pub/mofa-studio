@@ -54,9 +54,9 @@ export default function NodePanel({ onAddNode }: NodePanelProps) {
     .filter((category) => category.types.length > 0);
 
   return (
-    <div className="w-64 border-r border-[var(--color-border)] bg-[var(--color-bg-secondary)] flex flex-col">
+    <div className="w-64 border-r border-(--color-border) bg-[var(--color-bg-secondary)] flex flex-col">
       {/* 搜索 */}
-      <div className="p-3 border-b border-[var(--color-border)]">
+      <div className="p-3 border-b border-(--color-border)">
         <Input
           placeholder="搜索节点..."
           prefix={<SearchOutlined />}

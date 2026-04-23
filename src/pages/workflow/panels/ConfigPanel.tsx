@@ -2,16 +2,16 @@
  * 配置面板 - 右侧节点配置面板
  */
 
-import { useState } from 'react';
-import { Button, Input, Select, InputNumber } from 'antd';
-import { DeleteOutlined, CloseOutlined } from '@ant-design/icons';
-import type { Node } from '@xyflow/react';
-import type { NodeConfig, NodeType } from '../../../types/workflow';
-import { nodeTypeConfig } from '@/services';
+import { useState } from "react";
+import { Button, Input, Select, InputNumber } from "antd";
+import { DeleteOutlined, CloseOutlined } from "@ant-design/icons";
+import type { Node } from "@xyflow/react";
+import type { NodeConfig, NodeType } from "../../../types/workflow";
+import { nodeTypeConfig } from "@/services";
 
-import { agentApi } from '@/services';
-import { useEffect } from 'react';
-import type { Agent } from '../../../types';
+import { agentApi } from "@/services";
+import { useEffect } from "react";
+import type { Agent } from "../../../types";
 
 interface ConfigPanelProps {
   node: Node;
@@ -20,8 +20,15 @@ interface ConfigPanelProps {
   onDelete: () => void;
 }
 
-export default function ConfigPanel({ node, onClose, onUpdate, onDelete }: ConfigPanelProps) {
-  const [config, setConfig] = useState<NodeConfig>(node.data.config as NodeConfig);
+export default function ConfigPanel({
+  node,
+  onClose,
+  onUpdate,
+  onDelete,
+}: ConfigPanelProps) {
+  const [config, setConfig] = useState<NodeConfig>(
+    node.data.config as NodeConfig,
+  );
   const [agents, setAgents] = useState<Agent[]>([]);
 
   // 加载相关数据
@@ -36,7 +43,10 @@ export default function ConfigPanel({ node, onClose, onUpdate, onDelete }: Confi
   const typeInfo = nodeTypeConfig[node.type as NodeType];
 
   const handleUpdateLabel = (label: string) => {
-    const newConfig = { ...config, config: { ...config.config, label } } as NodeConfig;
+    const newConfig = {
+      ...config,
+      config: { ...config.config, label },
+    } as NodeConfig;
     setConfig(newConfig);
   };
 
@@ -50,16 +60,21 @@ export default function ConfigPanel({ node, onClose, onUpdate, onDelete }: Confi
   };
 
   return (
-    <div className="w-80 border-l border-[var(--color-border)] bg-[var(--color-bg-secondary)] flex flex-col">
+    <div className="w-80 border-l border-(--color-border) bg-[var(--color-bg-secondary)] flex flex-col">
       {/* 头部 */}
-      <div className="p-4 border-b border-[var(--color-border)] flex items-center justify-between">
+      <div className="p-4 border-b border-(--color-border) flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-xl">{typeInfo?.icon}</span>
           <span className="font-medium text-[var(--color-text-primary)]">
-            {typeInfo?.name || '节点配置'}
+            {typeInfo?.name || "节点配置"}
           </span>
         </div>
-        <Button type="text" size="small" icon={<CloseOutlined />} onClick={onClose} />
+        <Button
+          type="text"
+          size="small"
+          icon={<CloseOutlined />}
+          onClick={onClose}
+        />
       </div>
 
       {/* 内容 */}
@@ -78,45 +93,27 @@ export default function ConfigPanel({ node, onClose, onUpdate, onDelete }: Confi
           </div>
 
           {/* 根据节点类型渲染不同配置 */}
-          {config.type === 'agent' && (
+          {config.type === "agent" && (
             <AgentConfig
               config={config}
               agents={agents}
               onChange={handleConfigChange}
             />
           )}
-          {config.type === 'condition' && (
-            <ConditionConfig
-              config={config}
-            />
+          {config.type === "condition" && <ConditionConfig config={config} />}
+          {config.type === "http_request" && (
+            <HttpRequestConfig config={config} onChange={handleConfigChange} />
           )}
-          {config.type === 'http_request' && (
-            <HttpRequestConfig
-              config={config}
-              onChange={handleConfigChange}
-            />
+          {config.type === "delay" && (
+            <DelayConfig config={config} onChange={handleConfigChange} />
           )}
-          {config.type === 'delay' && (
-            <DelayConfig
-              config={config}
-              onChange={handleConfigChange}
-            />
-          )}
-          {config.type === 'start' && (
-            <StartConfig
-              config={config}
-            />
-          )}
-          {config.type === 'end' && (
-            <EndConfig
-              config={config}
-            />
-          )}
+          {config.type === "start" && <StartConfig config={config} />}
+          {config.type === "end" && <EndConfig config={config} />}
         </div>
       </div>
 
       {/* 底部 */}
-      <div className="p-4 border-t border-[var(--color-border)]">
+      <div className="p-4 border-t border-(--color-border)">
         <Button danger block icon={<DeleteOutlined />} onClick={onDelete}>
           删除节点
         </Button>
@@ -126,8 +123,25 @@ export default function ConfigPanel({ node, onClose, onUpdate, onDelete }: Confi
 }
 
 // Agent 配置
-function AgentConfig({ config, agents, onChange }: { config: NodeConfig; agents: Agent[]; onChange: (c: NodeConfig) => void }) {
-  const agentConfig = config as { type: 'agent'; config: { agentId?: string; agentName?: string; timeout?: number; retryCount?: number; label?: string } };
+function AgentConfig({
+  config,
+  agents,
+  onChange,
+}: {
+  config: NodeConfig;
+  agents: Agent[];
+  onChange: (c: NodeConfig) => void;
+}) {
+  const agentConfig = config as {
+    type: "agent";
+    config: {
+      agentId?: string;
+      agentName?: string;
+      timeout?: number;
+      retryCount?: number;
+      label?: string;
+    };
+  };
   return (
     <div className="space-y-4">
       <div>
@@ -140,7 +154,11 @@ function AgentConfig({ config, agents, onChange }: { config: NodeConfig; agents:
             const agent = agents.find((a) => a.id === agentId);
             onChange({
               ...config,
-              config: { ...agentConfig.config, agentId, agentName: agent?.name },
+              config: {
+                ...agentConfig.config,
+                agentId,
+                agentName: agent?.name,
+              },
             } as NodeConfig);
           }}
           options={agents.map((a) => ({ value: a.id, label: a.name }))}
@@ -154,7 +172,10 @@ function AgentConfig({ config, agents, onChange }: { config: NodeConfig; agents:
         <InputNumber
           value={agentConfig.config.timeout || 60000}
           onChange={(timeout) =>
-            onChange({ ...config, config: { ...agentConfig.config, timeout } } as NodeConfig)
+            onChange({
+              ...config,
+              config: { ...agentConfig.config, timeout },
+            } as NodeConfig)
           }
           min={1000}
           max={600000}
@@ -168,7 +189,10 @@ function AgentConfig({ config, agents, onChange }: { config: NodeConfig; agents:
         <InputNumber
           value={agentConfig.config.retryCount || 0}
           onChange={(retryCount) =>
-            onChange({ ...config, config: { ...agentConfig.config, retryCount } } as NodeConfig)
+            onChange({
+              ...config,
+              config: { ...agentConfig.config, retryCount },
+            } as NodeConfig)
           }
           min={0}
           max={5}
@@ -181,7 +205,13 @@ function AgentConfig({ config, agents, onChange }: { config: NodeConfig; agents:
 
 // 条件配置
 function ConditionConfig({ config: _config }: { config: NodeConfig }) {
-  const condConfig = _config as { type: 'condition'; config: { branches?: { id: string; label: string; expression: string }[]; label?: string } };
+  const condConfig = _config as {
+    type: "condition";
+    config: {
+      branches?: { id: string; label: string; expression: string }[];
+      label?: string;
+    };
+  };
   return (
     <div className="space-y-4">
       <div>
@@ -190,7 +220,10 @@ function ConditionConfig({ config: _config }: { config: NodeConfig }) {
         </label>
         <div className="space-y-2">
           {condConfig?.config?.branches?.map((branch) => (
-            <div key={branch.id} className="p-2 bg-[var(--color-bg-tertiary)] rounded">
+            <div
+              key={branch.id}
+              className="p-2 bg-[var(--color-bg-tertiary)] rounded"
+            >
               <div className="text-sm font-medium">{branch.label}</div>
               <div className="text-xs text-[var(--color-text-tertiary)] font-mono">
                 {branch.expression}
@@ -207,8 +240,17 @@ function ConditionConfig({ config: _config }: { config: NodeConfig }) {
 }
 
 // HTTP 请求配置
-function HttpRequestConfig({ config, onChange }: { config: NodeConfig; onChange: (c: NodeConfig) => void }) {
-  const httpConfig = config as { type: 'http_request'; config: { url?: string; method?: string; timeout?: number; label?: string } };
+function HttpRequestConfig({
+  config,
+  onChange,
+}: {
+  config: NodeConfig;
+  onChange: (c: NodeConfig) => void;
+}) {
+  const httpConfig = config as {
+    type: "http_request";
+    config: { url?: string; method?: string; timeout?: number; label?: string };
+  };
   return (
     <div className="space-y-4">
       <div>
@@ -216,9 +258,12 @@ function HttpRequestConfig({ config, onChange }: { config: NodeConfig; onChange:
           URL
         </label>
         <Input
-          value={httpConfig.config.url || ''}
+          value={httpConfig.config.url || ""}
           onChange={(e) =>
-            onChange({ ...config, config: { ...httpConfig.config, url: e.target.value } } as NodeConfig)
+            onChange({
+              ...config,
+              config: { ...httpConfig.config, url: e.target.value },
+            } as NodeConfig)
           }
           placeholder="https://api.example.com"
         />
@@ -228,15 +273,18 @@ function HttpRequestConfig({ config, onChange }: { config: NodeConfig; onChange:
           Method
         </label>
         <Select
-          value={httpConfig.config.method || 'GET'}
+          value={httpConfig.config.method || "GET"}
           onChange={(method) =>
-            onChange({ ...config, config: { ...httpConfig.config, method } } as NodeConfig)
+            onChange({
+              ...config,
+              config: { ...httpConfig.config, method },
+            } as NodeConfig)
           }
           options={[
-            { value: 'GET', label: 'GET' },
-            { value: 'POST', label: 'POST' },
-            { value: 'PUT', label: 'PUT' },
-            { value: 'DELETE', label: 'DELETE' },
+            { value: "GET", label: "GET" },
+            { value: "POST", label: "POST" },
+            { value: "PUT", label: "PUT" },
+            { value: "DELETE", label: "DELETE" },
           ]}
         />
       </div>
@@ -247,7 +295,10 @@ function HttpRequestConfig({ config, onChange }: { config: NodeConfig; onChange:
         <InputNumber
           value={httpConfig.config.timeout || 30000}
           onChange={(timeout) =>
-            onChange({ ...config, config: { ...httpConfig.config, timeout } } as NodeConfig)
+            onChange({
+              ...config,
+              config: { ...httpConfig.config, timeout },
+            } as NodeConfig)
           }
           min={1000}
           max={300000}
@@ -259,8 +310,17 @@ function HttpRequestConfig({ config, onChange }: { config: NodeConfig; onChange:
 }
 
 // 延迟配置
-function DelayConfig({ config, onChange }: { config: NodeConfig; onChange: (c: NodeConfig) => void }) {
-  const delayConfig = config as { type: 'delay'; config: { duration?: number; label?: string } };
+function DelayConfig({
+  config,
+  onChange,
+}: {
+  config: NodeConfig;
+  onChange: (c: NodeConfig) => void;
+}) {
+  const delayConfig = config as {
+    type: "delay";
+    config: { duration?: number; label?: string };
+  };
   return (
     <div className="space-y-4">
       <div>
@@ -270,7 +330,10 @@ function DelayConfig({ config, onChange }: { config: NodeConfig; onChange: (c: N
         <InputNumber
           value={delayConfig.config.duration || 1000}
           onChange={(duration) =>
-            onChange({ ...config, config: { ...delayConfig.config, duration } } as NodeConfig)
+            onChange({
+              ...config,
+              config: { ...delayConfig.config, duration },
+            } as NodeConfig)
           }
           min={100}
           max={60000}
@@ -283,7 +346,13 @@ function DelayConfig({ config, onChange }: { config: NodeConfig; onChange: (c: N
 
 // 开始节点配置
 function StartConfig({ config }: { config: NodeConfig }) {
-  const startConfig = config as { type: 'start'; config: { inputs?: { name: string; type: string; description?: string }[]; label?: string } };
+  const startConfig = config as {
+    type: "start";
+    config: {
+      inputs?: { name: string; type: string; description?: string }[];
+      label?: string;
+    };
+  };
   return (
     <div className="space-y-4">
       <div>
@@ -292,10 +361,15 @@ function StartConfig({ config }: { config: NodeConfig }) {
         </label>
         <div className="space-y-2">
           {startConfig.config.inputs?.map((input, idx) => (
-            <div key={idx} className="p-2 bg-[var(--color-bg-tertiary)] rounded">
+            <div
+              key={idx}
+              className="p-2 bg-[var(--color-bg-tertiary)] rounded"
+            >
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{input.name}</span>
-                <span className="text-xs text-[var(--color-text-tertiary)]">{input.type}</span>
+                <span className="text-xs text-[var(--color-text-tertiary)]">
+                  {input.type}
+                </span>
               </div>
               {input.description && (
                 <div className="text-xs text-[var(--color-text-tertiary)] mt-1">
@@ -315,7 +389,10 @@ function StartConfig({ config }: { config: NodeConfig }) {
 
 // 结束节点配置
 function EndConfig({ config }: { config: NodeConfig }) {
-  const endConfig = config as { type: 'end'; config: { outputs?: { name: string; source: string }[]; label?: string } };
+  const endConfig = config as {
+    type: "end";
+    config: { outputs?: { name: string; source: string }[]; label?: string };
+  };
   return (
     <div className="space-y-4">
       <div>
@@ -324,7 +401,10 @@ function EndConfig({ config }: { config: NodeConfig }) {
         </label>
         <div className="space-y-2">
           {endConfig.config.outputs?.map((output, idx) => (
-            <div key={idx} className="p-2 bg-[var(--color-bg-tertiary)] rounded">
+            <div
+              key={idx}
+              className="p-2 bg-[var(--color-bg-tertiary)] rounded"
+            >
               <div className="text-sm font-medium">{output.name}</div>
               <div className="text-xs text-[var(--color-text-tertiary)] font-mono">
                 ← {output.source}

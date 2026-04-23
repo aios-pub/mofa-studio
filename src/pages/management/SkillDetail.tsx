@@ -246,8 +246,8 @@ export function SkillDetail({
       <div className="flex-1 overflow-hidden">
         {activeTab === "params" && (
           <div className="p-6 h-full overflow-y-auto">
-            <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] overflow-hidden">
-              <div className="p-3 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]">
+            <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
+              <div className="p-3 border-b border-(--color-border) bg-[var(--color-bg-tertiary)]">
                 <span className="text-sm font-medium text-[var(--color-text-primary)]">
                   参数定义
                 </span>
@@ -260,7 +260,7 @@ export function SkillDetail({
               ) : (
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-[var(--color-border)]">
+                    <tr className="border-b border-(--color-border)">
                       <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
                         参数名
                       </th>
@@ -285,7 +285,7 @@ export function SkillDetail({
                     ).map((param) => (
                       <tr
                         key={param.name}
-                        className="border-b border-[var(--color-border)]/50"
+                        className="border-b border-(--color-border)/50"
                       >
                         <td className="py-2 px-4">
                           <code className="text-[var(--color-primary)]">
@@ -318,8 +318,8 @@ export function SkillDetail({
             </div>
 
             {/* JSON Schema 展示 */}
-            <div className="mt-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] overflow-hidden">
-              <div className="p-3 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]">
+            <div className="mt-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
+              <div className="p-3 border-b border-(--color-border) bg-[var(--color-bg-tertiary)]">
                 <span className="text-sm font-medium text-[var(--color-text-primary)]">
                   JSON Schema
                 </span>
@@ -357,8 +357,8 @@ export function SkillDetail({
           <div className="p-6 h-full overflow-y-auto">
             <div className="space-y-4">
               {/* 参数输入 */}
-              <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] overflow-hidden">
-                <div className="p-3 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]">
+              <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
+                <div className="p-3 border-b border-(--color-border) bg-[var(--color-bg-tertiary)]">
                   <span className="text-sm font-medium text-[var(--color-text-primary)]">
                     测试参数
                   </span>
@@ -453,8 +453,8 @@ export function SkillDetail({
 
         {activeTab === "logs" && (
           <div className="p-6 h-full overflow-y-auto">
-            <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] h-full flex flex-col">
-              <div className="p-3 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)] flex items-center justify-between">
+            <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) h-full flex flex-col">
+              <div className="p-3 border-b border-(--color-border) bg-[var(--color-bg-tertiary)] flex items-center justify-between">
                 <span className="text-sm font-medium text-[var(--color-text-primary)]">
                   执行日志
                 </span>

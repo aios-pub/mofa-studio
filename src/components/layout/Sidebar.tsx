@@ -315,7 +315,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           type="text"
           size="small"
           onClick={toggleSidebar}
-          className="!absolute !right-0 translate-x-1/2 !w-7 !h-7 !rounded-full !border !border-[var(--color-border)] !bg-[var(--color-bg-base)] hover:!bg-[var(--color-bg-secondary)] z-10 flex items-center justify-center"
+          className="!absolute !right-0 translate-x-1/2 !w-7 !h-7 !rounded-full !border !border-(--color-border) !bg-[var(--color-bg-base)] hover:!bg-[var(--color-bg-secondary)] z-10 flex items-center justify-center"
           icon={
             isMini ? (
               <RightOutlined className="text-xs" />

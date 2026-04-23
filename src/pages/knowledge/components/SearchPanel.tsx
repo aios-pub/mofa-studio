@@ -2,18 +2,21 @@
  * 知识搜索面板组件
  */
 
-import { useState } from 'react';
-import { Input, Button, Tag, Empty, Spin, Slider } from 'antd';
-import { SearchOutlined, FileTextOutlined } from '@ant-design/icons';
-import { knowledgeApi } from '@/services';
-import type { SearchResponse, SearchResultItem } from '../../../types/knowledge';
+import { useState } from "react";
+import { Input, Button, Tag, Empty, Spin, Slider } from "antd";
+import { SearchOutlined, FileTextOutlined } from "@ant-design/icons";
+import { knowledgeApi } from "@/services";
+import type {
+  SearchResponse,
+  SearchResultItem,
+} from "../../../types/knowledge";
 
 interface SearchPanelProps {
   knowledgeBaseId: string;
 }
 
 export default function SearchPanel({ knowledgeBaseId }: SearchPanelProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResultItem[]>([]);
   const [searchTime, setSearchTime] = useState<number>(0);
@@ -34,28 +37,28 @@ export default function SearchPanel({ knowledgeBaseId }: SearchPanelProps) {
       setResults(response.results);
       setSearchTime(response.took);
     } catch (error) {
-      console.error('Search failed:', error);
+      console.error("Search failed:", error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSearch();
     }
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 0.85) return 'green';
-    if (score >= 0.7) return 'blue';
-    if (score >= 0.5) return 'orange';
-    return 'red';
+    if (score >= 0.85) return "green";
+    if (score >= 0.7) return "blue";
+    if (score >= 0.5) return "orange";
+    return "red";
   };
 
   const highlightContent = (content: string, query: string) => {
     if (!query.trim()) return content;
-    const regex = new RegExp(`(${query.trim()})`, 'gi');
+    const regex = new RegExp(`(${query.trim()})`, "gi");
     return content.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
   };
 
@@ -72,14 +75,21 @@ export default function SearchPanel({ knowledgeBaseId }: SearchPanelProps) {
           size="large"
           allowClear
         />
-        <Button type="primary" size="large" onClick={handleSearch} loading={loading}>
+        <Button
+          type="primary"
+          size="large"
+          onClick={handleSearch}
+          loading={loading}
+        >
           搜索
         </Button>
       </div>
 
       {/* 搜索配置 */}
       <div className="flex items-center gap-4">
-        <span className="text-sm text-[var(--color-text-tertiary)]">返回结果数:</span>
+        <span className="text-sm text-[var(--color-text-tertiary)]">
+          返回结果数:
+        </span>
         <Slider
           min={1}
           max={20}
@@ -107,7 +117,7 @@ export default function SearchPanel({ knowledgeBaseId }: SearchPanelProps) {
           {results.map((item) => (
             <div
               key={item.id}
-              className="p-4 bg-[var(--color-bg-tertiary)] rounded-lg border border-[var(--color-border)]"
+              className="p-4 bg-[var(--color-bg-tertiary)] rounded-lg border border-(--color-border)"
             >
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-2">

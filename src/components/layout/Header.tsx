@@ -165,7 +165,7 @@ export default function Header({
         flex items-center justify-between px-4
         h-14
         bg-[var(--color-bg-secondary)]/80 backdrop-blur-xl
-        border-b border-[var(--color-border)]
+        border-b border-(--color-border)
         transition-all duration-200
       "
     >

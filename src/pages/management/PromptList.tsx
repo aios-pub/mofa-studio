@@ -2,7 +2,7 @@
  * 提示词列表页面
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 import {
   Input,
   Button,
@@ -18,7 +18,7 @@ import {
   Tabs,
   Card,
   Empty,
-} from 'antd';
+} from "antd";
 import {
   PlusOutlined,
   SearchOutlined,
@@ -33,26 +33,26 @@ import {
   ExclamationCircleOutlined,
   SaveOutlined,
   MinusCircleOutlined,
-} from '@ant-design/icons';
-import type { Prompt, PromptVariable } from '@/services';
-import { promptApi } from '@/services';
-import PromptVersionHistory from '../../components/prompt/PromptVersionHistory';
-import PromptTestPanel from '../../components/prompt/PromptTestPanel';
+} from "@ant-design/icons";
+import type { Prompt, PromptVariable } from "@/services";
+import { promptApi } from "@/services";
+import PromptVersionHistory from "../../components/prompt/PromptVersionHistory";
+import PromptTestPanel from "../../components/prompt/PromptTestPanel";
 
 // 变量类型选项
 const variableTypeOptions = [
-  { value: 'string', label: '字符串' },
-  { value: 'number', label: '数字' },
-  { value: 'enum', label: '枚举' },
-  { value: 'date', label: '日期' },
+  { value: "string", label: "字符串" },
+  { value: "number", label: "数字" },
+  { value: "enum", label: "枚举" },
+  { value: "date", label: "日期" },
 ];
 
 // 预设模板
 const presetTemplates = [
   {
-    key: 'translation',
-    name: '翻译助手',
-    category: '翻译',
+    key: "translation",
+    name: "翻译助手",
+    category: "翻译",
     content: `你是一个专业的翻译助手。请将用户输入的内容从 {{source_language}} 翻译成 {{target_language}}。
 
 翻译要求：
@@ -61,14 +61,26 @@ const presetTemplates = [
 3. 专业术语保持准确
 4. 必要时提供注释说明`,
     variables: [
-      { name: 'source_language', type: 'enum' as const, defaultValue: '英语', required: true, options: ['中文', '英语', '日语', '韩语', '法语', '德语'] },
-      { name: 'target_language', type: 'enum' as const, defaultValue: '中文', required: true, options: ['中文', '英语', '日语', '韩语', '法语', '德语'] },
+      {
+        name: "source_language",
+        type: "enum" as const,
+        defaultValue: "英语",
+        required: true,
+        options: ["中文", "英语", "日语", "韩语", "法语", "德语"],
+      },
+      {
+        name: "target_language",
+        type: "enum" as const,
+        defaultValue: "中文",
+        required: true,
+        options: ["中文", "英语", "日语", "韩语", "法语", "德语"],
+      },
     ],
   },
   {
-    key: 'code-review',
-    name: '代码审查',
-    category: '开发',
+    key: "code-review",
+    name: "代码审查",
+    category: "开发",
     content: `你是一个专业的代码审查助手。请根据以下规范审查代码：
 
 项目: {{project_name}}
@@ -83,15 +95,31 @@ const presetTemplates = [
 
 请提供具体的改进建议。`,
     variables: [
-      { name: 'project_name', type: 'string' as const, defaultValue: '我的项目', required: true },
-      { name: 'language', type: 'enum' as const, defaultValue: 'JavaScript', required: true, options: ['JavaScript', 'TypeScript', 'Python', 'Java', 'Go', 'Rust'] },
-      { name: 'review_focus', type: 'string' as const, defaultValue: '全部', required: false },
+      {
+        name: "project_name",
+        type: "string" as const,
+        defaultValue: "我的项目",
+        required: true,
+      },
+      {
+        name: "language",
+        type: "enum" as const,
+        defaultValue: "JavaScript",
+        required: true,
+        options: ["JavaScript", "TypeScript", "Python", "Java", "Go", "Rust"],
+      },
+      {
+        name: "review_focus",
+        type: "string" as const,
+        defaultValue: "全部",
+        required: false,
+      },
     ],
   },
   {
-    key: 'assistant',
-    name: '通用助手',
-    category: '通用',
+    key: "assistant",
+    name: "通用助手",
+    category: "通用",
     content: `你是一个友好、专业的 AI 助手，名字叫 {{agent_name}}。
 
 你的职责是：
@@ -106,13 +134,18 @@ const presetTemplates = [
 - 不确定时诚实说明
 - 保护用户隐私`,
     variables: [
-      { name: 'agent_name', type: 'string' as const, defaultValue: '小助手', required: true },
+      {
+        name: "agent_name",
+        type: "string" as const,
+        defaultValue: "小助手",
+        required: true,
+      },
     ],
   },
   {
-    key: 'data-analysis',
-    name: '数据分析',
-    category: '分析',
+    key: "data-analysis",
+    name: "数据分析",
+    category: "分析",
     content: `你是一个数据分析专家，擅长处理和解读各类数据。
 
 可用的分析工具：
@@ -132,17 +165,17 @@ const presetTemplates = [
 
 export default function PromptListPage() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   // 编辑器 Drawer 状态
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
   const [saving, setSaving] = useState(false);
   const [form] = Form.useForm();
-  const [activeTab, setActiveTab] = useState('content');
+  const [activeTab, setActiveTab] = useState("content");
 
   useEffect(() => {
     loadPrompts();
@@ -154,7 +187,7 @@ export default function PromptListPage() {
       const data = await promptApi.getAll();
       setPrompts(data);
     } catch (error) {
-      console.error('Failed to load prompts:', error);
+      console.error("Failed to load prompts:", error);
     } finally {
       setLoading(false);
     }
@@ -174,7 +207,7 @@ export default function PromptListPage() {
   const handleCreate = () => {
     setEditingPrompt(null);
     form.resetFields();
-    setActiveTab('content');
+    setActiveTab("content");
     setEditorOpen(true);
   };
 
@@ -189,12 +222,12 @@ export default function PromptListPage() {
       variables: prompt.variables.map((v) => ({
         name: v.name,
         type: v.type,
-        defaultValue: v.defaultValue || '',
+        defaultValue: v.defaultValue || "",
         required: v.required,
-        options: v.options?.join(', ') || '',
+        options: v.options?.join(", ") || "",
       })),
     });
-    setActiveTab('content');
+    setActiveTab("content");
     setEditorOpen(true);
   };
 
@@ -207,12 +240,12 @@ export default function PromptListPage() {
       variables: template.variables.map((v) => ({
         name: v.name,
         type: v.type,
-        defaultValue: v.defaultValue || '',
+        defaultValue: v.defaultValue || "",
         required: v.required,
-        options: v.options?.join(', ') || '',
+        options: v.options?.join(", ") || "",
       })),
     });
-    setActiveTab('content');
+    setActiveTab("content");
     message.info(`已应用「${template.name}」模板`);
   };
 
@@ -223,42 +256,50 @@ export default function PromptListPage() {
       setSaving(true);
 
       const variables: PromptVariable[] = (values.variables || []).map(
-        (v: { name: string; type: string; defaultValue: string; required: boolean; options: string }) => ({
+        (v: {
+          name: string;
+          type: string;
+          defaultValue: string;
+          required: boolean;
+          options: string;
+        }) => ({
           name: v.name,
-          type: v.type as PromptVariable['type'],
+          type: v.type as PromptVariable["type"],
           defaultValue: v.defaultValue || undefined,
           required: v.required ?? false,
-          ...(v.type === 'enum' && v.options ? { options: v.options.split(',').map((s: string) => s.trim()) } : {}),
+          ...(v.type === "enum" && v.options
+            ? { options: v.options.split(",").map((s: string) => s.trim()) }
+            : {}),
         }),
       );
 
       const promptData = {
         name: values.name,
-        description: values.description || '',
-        category: values.category || '通用',
+        description: values.description || "",
+        category: values.category || "通用",
         content: values.content,
         variables,
       };
 
       if (editingPrompt) {
         const saved = await promptApi.update(editingPrompt.id, promptData);
-        message.success('提示词已更新');
+        message.success("提示词已更新");
         setSelectedPrompt(saved || null);
       } else {
         const saved = await promptApi.create(promptData);
-        message.success('提示词已创建');
+        message.success("提示词已创建");
         setSelectedPrompt(saved);
       }
 
       setEditorOpen(false);
       loadPrompts();
     } catch (error) {
-      if (error && typeof error === 'object' && 'errorFields' in error) {
+      if (error && typeof error === "object" && "errorFields" in error) {
         // antd form validation error, ignore
         return;
       }
-      console.error('Failed to save prompt:', error);
-      message.error(error instanceof Error ? error.message : '保存失败');
+      console.error("Failed to save prompt:", error);
+      message.error(error instanceof Error ? error.message : "保存失败");
     } finally {
       setSaving(false);
     }
@@ -273,12 +314,12 @@ export default function PromptListPage() {
   // 删除（带确认）
   const handleDelete = (prompt: Prompt) => {
     Modal.confirm({
-      title: '确认删除',
+      title: "确认删除",
       icon: <ExclamationCircleOutlined />,
       content: `确定要删除提示词「${prompt.name}」吗？此操作不可恢复。`,
-      okText: '删除',
-      okType: 'danger',
-      cancelText: '取消',
+      okText: "删除",
+      okType: "danger",
+      cancelText: "取消",
       onOk: async () => {
         try {
           await promptApi.delete(prompt.id);
@@ -286,10 +327,10 @@ export default function PromptListPage() {
           if (selectedPrompt?.id === prompt.id) {
             setSelectedPrompt(null);
           }
-          message.success('提示词已删除');
+          message.success("提示词已删除");
         } catch (error) {
-          console.error('Failed to delete prompt:', error);
-          message.error('删除失败');
+          console.error("Failed to delete prompt:", error);
+          message.error("删除失败");
         }
       },
     });
@@ -305,45 +346,46 @@ export default function PromptListPage() {
         variables: prompt.variables,
       });
       setPrompts((prev) => [...prev, newPrompt]);
-      message.success('提示词已复制');
+      message.success("提示词已复制");
     } catch (error) {
-      console.error('Failed to duplicate prompt:', error);
-      message.error('复制失败');
+      console.error("Failed to duplicate prompt:", error);
+      message.error("复制失败");
     }
   };
 
   // 获取所有分类
-  const categories = ['all', ...new Set(prompts.map((p) => p.category))];
+  const categories = ["all", ...new Set(prompts.map((p) => p.category))];
 
   // 过滤提示词
   const filteredPrompts = prompts.filter((p) => {
     const matchesSearch =
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || p.category === selectedCategory;
+    const matchesCategory =
+      selectedCategory === "all" || p.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
   // 获取操作菜单
   const getActionMenuItems = (prompt: Prompt) => [
     {
-      key: 'edit',
-      label: '编辑',
+      key: "edit",
+      label: "编辑",
       icon: <EditOutlined />,
       onClick: () => handleEdit(prompt),
     },
     {
-      key: 'copy',
-      label: '复制',
+      key: "copy",
+      label: "复制",
       icon: <CopyOutlined />,
       onClick: () => handleDuplicate(prompt),
     },
     {
-      type: 'divider' as const,
+      type: "divider" as const,
     },
     {
-      key: 'delete',
-      label: '删除',
+      key: "delete",
+      label: "删除",
       icon: <DeleteOutlined />,
       danger: true,
       onClick: () => handleDelete(prompt),
@@ -352,11 +394,15 @@ export default function PromptListPage() {
 
   // 预览内容（替换变量）
   const getPreviewContent = () => {
-    const content = form.getFieldValue('content') || '';
-    const variables: { name: string; defaultValue?: string }[] = form.getFieldValue('variables') || [];
+    const content = form.getFieldValue("content") || "";
+    const variables: { name: string; defaultValue?: string }[] =
+      form.getFieldValue("variables") || [];
     let preview = content;
     variables.forEach((v) => {
-      preview = preview.replace(new RegExp(`\\{\\{${v.name}\\}\\}`, 'g'), v.defaultValue || `[${v.name}]`);
+      preview = preview.replace(
+        new RegExp(`\\{\\{${v.name}\\}\\}`, "g"),
+        v.defaultValue || `[${v.name}]`,
+      );
     });
     return preview;
   };
@@ -364,12 +410,19 @@ export default function PromptListPage() {
   return (
     <div className="flex h-full">
       {/* 左侧列表 */}
-      <div className="w-80 border-r border-[var(--color-border)] flex flex-col bg-[var(--color-bg-secondary)]">
+      <div className="w-80 border-r border-(--color-border) flex flex-col bg-[var(--color-bg-secondary)]">
         {/* 头部 */}
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">提示词管理</h2>
-            <Button type="primary" icon={<PlusOutlined />} size="small" onClick={handleCreate}>
+            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+              提示词管理
+            </h2>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              size="small"
+              onClick={handleCreate}
+            >
               新建
             </Button>
           </div>
@@ -388,11 +441,11 @@ export default function PromptListPage() {
             {categories.map((cat) => (
               <Tag
                 key={cat}
-                color={selectedCategory === cat ? 'blue' : 'default'}
-                style={{ cursor: 'pointer' }}
+                color={selectedCategory === cat ? "blue" : "default"}
+                style={{ cursor: "pointer" }}
                 onClick={() => setSelectedCategory(cat)}
               >
-                {cat === 'all' ? '全部' : cat}
+                {cat === "all" ? "全部" : cat}
               </Tag>
             ))}
           </div>
@@ -401,7 +454,9 @@ export default function PromptListPage() {
         {/* 列表 */}
         <div className="flex-1 overflow-y-auto p-2">
           {loading ? (
-            <div className="text-center py-8 text-[var(--color-text-tertiary)]">加载中...</div>
+            <div className="text-center py-8 text-[var(--color-text-tertiary)]">
+              加载中...
+            </div>
           ) : filteredPrompts.length === 0 ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">
               <FileTextOutlined className="text-3xl mb-2 opacity-50" />
@@ -414,8 +469,8 @@ export default function PromptListPage() {
                 onClick={() => setSelectedPrompt(prompt)}
                 className={`group p-3 rounded-lg cursor-pointer transition-colors ${
                   selectedPrompt?.id === prompt.id
-                    ? 'bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30'
-                    : 'hover:bg-[var(--color-bg-tertiary)]'
+                    ? "bg-[var(--color-primary)]/10 border border-(--color-primary)/30"
+                    : "hover:bg-[var(--color-bg-tertiary)]"
                 }`}
               >
                 <div className="flex items-start gap-2">
@@ -425,9 +480,13 @@ export default function PromptListPage() {
                       <span className="font-medium text-[var(--color-text-primary)] truncate">
                         {prompt.name}
                       </span>
-                      <span className="text-xs text-[var(--color-text-tertiary)]">v{prompt.version}</span>
+                      <span className="text-xs text-[var(--color-text-tertiary)]">
+                        v{prompt.version}
+                      </span>
                     </div>
-                    <p className="text-sm text-[var(--color-text-tertiary)] truncate">{prompt.description}</p>
+                    <p className="text-sm text-[var(--color-text-tertiary)] truncate">
+                      {prompt.description}
+                    </p>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs px-1.5 py-0.5 bg-[var(--color-bg-base)] rounded text-[var(--color-text-tertiary)]">
                         {prompt.category}
@@ -441,7 +500,7 @@ export default function PromptListPage() {
                   </div>
                   <Dropdown
                     menu={{ items: getActionMenuItems(prompt) }}
-                    trigger={['click']}
+                    trigger={["click"]}
                     placement="bottomRight"
                   >
                     <Button
@@ -472,8 +531,12 @@ export default function PromptListPage() {
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <FileTextOutlined className="text-5xl text-[var(--color-text-tertiary)] mb-4" />
-              <h3 className="text-lg font-medium text-[var(--color-text-primary)]">选择一个提示词</h3>
-              <p className="text-[var(--color-text-secondary)]">从左侧列表中选择查看详情</p>
+              <h3 className="text-lg font-medium text-[var(--color-text-primary)]">
+                选择一个提示词
+              </h3>
+              <p className="text-[var(--color-text-secondary)]">
+                从左侧列表中选择查看详情
+              </p>
             </div>
           </div>
         )}
@@ -481,16 +544,21 @@ export default function PromptListPage() {
 
       {/* 新建/编辑 Drawer */}
       <Drawer
-        title={editingPrompt ? '编辑提示词' : '新建提示词'}
+        title={editingPrompt ? "编辑提示词" : "新建提示词"}
         placement="right"
         size={{ width: 720 }}
         open={editorOpen}
         onClose={handleEditorCancel}
         destroyOnHidden
         footer={
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
             <Button onClick={handleEditorCancel}>取消</Button>
-            <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={handleSave}>
+            <Button
+              type="primary"
+              icon={<SaveOutlined />}
+              loading={saving}
+              onClick={handleSave}
+            >
               保存
             </Button>
           </div>
@@ -499,12 +567,23 @@ export default function PromptListPage() {
         {/* 预设模板（仅新建时显示） */}
         {!editingPrompt && (
           <div style={{ marginBottom: 16 }}>
-            <div style={{ marginBottom: 8, color: 'var(--color-text-tertiary)', fontSize: 12, fontWeight: 500 }}>
+            <div
+              style={{
+                marginBottom: 8,
+                color: "var(--color-text-tertiary)",
+                fontSize: 12,
+                fontWeight: 500,
+              }}
+            >
               快速开始 - 选择模板
             </div>
             <Space wrap>
               {presetTemplates.map((t) => (
-                <Button key={t.key} size="small" onClick={() => applyTemplate(t)}>
+                <Button
+                  key={t.key}
+                  size="small"
+                  onClick={() => applyTemplate(t)}
+                >
                   {t.name}
                 </Button>
               ))}
@@ -512,12 +591,20 @@ export default function PromptListPage() {
           </div>
         )}
 
-        <Form form={form} layout="vertical" initialValues={{ category: '通用', variables: [] }}>
-          <Form.Item label="名称" name="name" rules={[{ required: true, message: '请输入名称' }]}>
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={{ category: "通用", variables: [] }}
+        >
+          <Form.Item
+            label="名称"
+            name="name"
+            rules={[{ required: true, message: "请输入名称" }]}
+          >
             <Input placeholder="提示词名称" />
           </Form.Item>
 
-          <Space style={{ width: '100%' }} size="middle">
+          <Space style={{ width: "100%" }} size="middle">
             <Form.Item label="分类" name="category" style={{ flex: 1 }}>
               <Input placeholder="分类名称" />
             </Form.Item>
@@ -531,33 +618,36 @@ export default function PromptListPage() {
             onChange={setActiveTab}
             items={[
               {
-                key: 'content',
-                label: '内容',
+                key: "content",
+                label: "内容",
                 icon: <FileTextOutlined />,
                 children: (
                   <Form.Item
                     name="content"
-                    rules={[{ required: true, message: '请输入提示词内容' }]}
+                    rules={[{ required: true, message: "请输入提示词内容" }]}
                     style={{ marginBottom: 0 }}
                   >
                     <Input.TextArea
                       placeholder="输入提示词内容，使用 {{变量名}} 插入变量..."
                       autoSize={{ minRows: 14, maxRows: 30 }}
-                      style={{ fontFamily: 'monospace' }}
+                      style={{ fontFamily: "monospace" }}
                     />
                   </Form.Item>
                 ),
               },
               {
-                key: 'variables',
-                label: '变量',
+                key: "variables",
+                label: "变量",
                 icon: <CodeOutlined />,
                 children: (
                   <Form.List name="variables">
                     {(fields, { add, remove }) => (
                       <>
                         {fields.length === 0 ? (
-                          <Empty description="暂无变量" style={{ margin: '24px 0' }} />
+                          <Empty
+                            description="暂无变量"
+                            style={{ margin: "24px 0" }}
+                          />
                         ) : (
                           fields.map(({ key, name, ...restField }) => (
                             <Card
@@ -574,19 +664,23 @@ export default function PromptListPage() {
                                 />
                               }
                             >
-                              <Space style={{ width: '100%' }} size="small" wrap>
+                              <Space
+                                style={{ width: "100%" }}
+                                size="small"
+                                wrap
+                              >
                                 <Form.Item
                                   {...restField}
-                                  name={[name, 'name']}
+                                  name={[name, "name"]}
                                   label="变量名"
-                                  rules={[{ required: true, message: '必填' }]}
+                                  rules={[{ required: true, message: "必填" }]}
                                   style={{ marginBottom: 0, width: 150 }}
                                 >
                                   <Input placeholder="variable_name" />
                                 </Form.Item>
                                 <Form.Item
                                   {...restField}
-                                  name={[name, 'type']}
+                                  name={[name, "type"]}
                                   label="类型"
                                   style={{ marginBottom: 0, width: 110 }}
                                 >
@@ -594,7 +688,7 @@ export default function PromptListPage() {
                                 </Form.Item>
                                 <Form.Item
                                   {...restField}
-                                  name={[name, 'defaultValue']}
+                                  name={[name, "defaultValue"]}
                                   label="默认值"
                                   style={{ marginBottom: 0, width: 120 }}
                                 >
@@ -602,7 +696,7 @@ export default function PromptListPage() {
                                 </Form.Item>
                                 <Form.Item
                                   {...restField}
-                                  name={[name, 'required']}
+                                  name={[name, "required"]}
                                   label="必填"
                                   valuePropName="checked"
                                   style={{ marginBottom: 0 }}
@@ -610,16 +704,20 @@ export default function PromptListPage() {
                                   <Switch size="small" />
                                 </Form.Item>
                               </Space>
-                              <Form.Item noStyle shouldUpdate={(prev, cur) => {
-                                const prevType = prev.variables?.[name]?.type;
-                                const curType = cur.variables?.[name]?.type;
-                                return prevType !== curType;
-                              }}>
+                              <Form.Item
+                                noStyle
+                                shouldUpdate={(prev, cur) => {
+                                  const prevType = prev.variables?.[name]?.type;
+                                  const curType = cur.variables?.[name]?.type;
+                                  return prevType !== curType;
+                                }}
+                              >
                                 {({ getFieldValue }) =>
-                                  getFieldValue(['variables', name, 'type']) === 'enum' ? (
+                                  getFieldValue(["variables", name, "type"]) ===
+                                  "enum" ? (
                                     <Form.Item
                                       {...restField}
-                                      name={[name, 'options']}
+                                      name={[name, "options"]}
                                       label="枚举选项（逗号分隔）"
                                       style={{ marginBottom: 0, marginTop: 8 }}
                                     >
@@ -631,7 +729,12 @@ export default function PromptListPage() {
                             </Card>
                           ))
                         )}
-                        <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                        <Button
+                          type="dashed"
+                          onClick={() => add()}
+                          block
+                          icon={<PlusOutlined />}
+                        >
                           添加变量
                         </Button>
                       </>
@@ -640,8 +743,8 @@ export default function PromptListPage() {
                 ),
               },
               {
-                key: 'preview',
-                label: '预览',
+                key: "preview",
+                label: "预览",
                 icon: <PlayCircleOutlined />,
                 children: (
                   <Form.Item shouldUpdate style={{ marginBottom: 0 }}>
@@ -649,14 +752,15 @@ export default function PromptListPage() {
                       <Card size="small" title="预览结果">
                         <pre
                           style={{
-                            whiteSpace: 'pre-wrap',
-                            fontFamily: 'monospace',
+                            whiteSpace: "pre-wrap",
+                            fontFamily: "monospace",
                             fontSize: 13,
                             margin: 0,
-                            color: 'var(--color-text-primary)',
+                            color: "var(--color-text-primary)",
                           }}
                         >
-                          {getPreviewContent() || '请在「内容」标签页中填写提示词内容'}
+                          {getPreviewContent() ||
+                            "请在「内容」标签页中填写提示词内容"}
                         </pre>
                       </Card>
                     )}
@@ -683,7 +787,9 @@ function PromptDetail({
   onEdit: () => void;
   onDelete: () => void;
 }) {
-  const [activeTab, setActiveTab] = useState<'content' | 'variables' | 'versions' | 'test'>('content');
+  const [activeTab, setActiveTab] = useState<
+    "content" | "variables" | "versions" | "test"
+  >("content");
   const [currentPrompt, setCurrentPrompt] = useState(prompt);
 
   useEffect(() => {
@@ -699,10 +805,10 @@ function PromptDetail({
   };
 
   const tabs = [
-    { key: 'content', label: '内容', icon: FileTextOutlined },
-    { key: 'variables', label: '变量', icon: CodeOutlined },
-    { key: 'versions', label: '版本历史', icon: HistoryOutlined },
-    { key: 'test', label: '测试', icon: PlayCircleOutlined },
+    { key: "content", label: "内容", icon: FileTextOutlined },
+    { key: "variables", label: "变量", icon: CodeOutlined },
+    { key: "versions", label: "版本历史", icon: HistoryOutlined },
+    { key: "test", label: "测试", icon: PlayCircleOutlined },
   ];
 
   return (
@@ -710,8 +816,12 @@ function PromptDetail({
       {/* 头部 */}
       <div className="flex items-start justify-between p-6 pb-4">
         <div>
-          <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">{currentPrompt.name}</h2>
-          <p className="text-[var(--color-text-secondary)]">{currentPrompt.description}</p>
+          <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
+            {currentPrompt.name}
+          </h2>
+          <p className="text-[var(--color-text-secondary)]">
+            {currentPrompt.description}
+          </p>
         </div>
         <Space>
           <Button icon={<DeleteOutlined />} danger onClick={onDelete}>
@@ -726,21 +836,33 @@ function PromptDetail({
       {/* 元信息 */}
       <div className="grid grid-cols-3 gap-4 px-6 pb-4">
         <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg">
-          <span className="text-xs text-[var(--color-text-tertiary)]">分类</span>
-          <p className="text-sm text-[var(--color-text-primary)]">{currentPrompt.category}</p>
+          <span className="text-xs text-[var(--color-text-tertiary)]">
+            分类
+          </span>
+          <p className="text-sm text-[var(--color-text-primary)]">
+            {currentPrompt.category}
+          </p>
         </div>
         <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg">
-          <span className="text-xs text-[var(--color-text-tertiary)]">版本</span>
-          <p className="text-sm text-[var(--color-text-primary)]">v{currentPrompt.version}</p>
+          <span className="text-xs text-[var(--color-text-tertiary)]">
+            版本
+          </span>
+          <p className="text-sm text-[var(--color-text-primary)]">
+            v{currentPrompt.version}
+          </p>
         </div>
         <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg">
-          <span className="text-xs text-[var(--color-text-tertiary)]">变量数</span>
-          <p className="text-sm text-[var(--color-text-primary)]">{currentPrompt.variables.length}</p>
+          <span className="text-xs text-[var(--color-text-tertiary)]">
+            变量数
+          </span>
+          <p className="text-sm text-[var(--color-text-primary)]">
+            {currentPrompt.variables.length}
+          </p>
         </div>
       </div>
 
       {/* 标签栏 */}
-      <div className="flex gap-1 px-6 border-b border-[var(--color-border)]">
+      <div className="flex gap-1 px-6 border-b border-(--color-border)">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -749,8 +871,8 @@ function PromptDetail({
               onClick={() => setActiveTab(tab.key as typeof activeTab)}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab.key
-                  ? 'text-[var(--color-primary)] border-[var(--color-primary)]'
-                  : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
+                  ? "text-[var(--color-primary)] border-(--color-primary)"
+                  : "text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]"
               }`}
             >
               <Icon />
@@ -762,9 +884,9 @@ function PromptDetail({
 
       {/* 内容区 */}
       <div className="flex-1 overflow-hidden">
-        {activeTab === 'content' && (
+        {activeTab === "content" && (
           <div className="p-6 h-full overflow-y-auto">
-            <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
+            <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
               <pre className="text-sm text-[var(--color-text-primary)] whitespace-pre-wrap font-mono">
                 {currentPrompt.content}
               </pre>
@@ -772,34 +894,53 @@ function PromptDetail({
           </div>
         )}
 
-        {activeTab === 'variables' && (
+        {activeTab === "variables" && (
           <div className="p-6 h-full overflow-y-auto">
-            <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
+            <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
               {currentPrompt.variables.length === 0 ? (
-                <p className="text-center text-[var(--color-text-tertiary)] py-4">暂无变量</p>
+                <p className="text-center text-[var(--color-text-tertiary)] py-4">
+                  暂无变量
+                </p>
               ) : (
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-[var(--color-border)]">
-                      <th className="text-left py-2 text-[var(--color-text-tertiary)]">变量名</th>
-                      <th className="text-left py-2 text-[var(--color-text-tertiary)]">类型</th>
-                      <th className="text-left py-2 text-[var(--color-text-tertiary)]">默认值</th>
-                      <th className="text-left py-2 text-[var(--color-text-tertiary)]">必填</th>
+                    <tr className="border-b border-(--color-border)">
+                      <th className="text-left py-2 text-[var(--color-text-tertiary)]">
+                        变量名
+                      </th>
+                      <th className="text-left py-2 text-[var(--color-text-tertiary)]">
+                        类型
+                      </th>
+                      <th className="text-left py-2 text-[var(--color-text-tertiary)]">
+                        默认值
+                      </th>
+                      <th className="text-left py-2 text-[var(--color-text-tertiary)]">
+                        必填
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {currentPrompt.variables.map((variable) => (
-                      <tr key={variable.name} className="border-b border-[var(--color-border)]/50">
+                      <tr
+                        key={variable.name}
+                        className="border-b border-(--color-border)/50"
+                      >
                         <td className="py-2">
                           <code className="text-[var(--color-primary)]">{`{{${variable.name}}}`}</code>
                         </td>
-                        <td className="py-2 text-[var(--color-text-secondary)]">{variable.type}</td>
-                        <td className="py-2 text-[var(--color-text-secondary)]">{variable.defaultValue || '-'}</td>
+                        <td className="py-2 text-[var(--color-text-secondary)]">
+                          {variable.type}
+                        </td>
+                        <td className="py-2 text-[var(--color-text-secondary)]">
+                          {variable.defaultValue || "-"}
+                        </td>
                         <td className="py-2">
                           {variable.required ? (
                             <span className="text-red-500">是</span>
                           ) : (
-                            <span className="text-[var(--color-text-tertiary)]">否</span>
+                            <span className="text-[var(--color-text-tertiary)]">
+                              否
+                            </span>
                           )}
                         </td>
                       </tr>
@@ -811,13 +952,16 @@ function PromptDetail({
           </div>
         )}
 
-        {activeTab === 'versions' && (
+        {activeTab === "versions" && (
           <div className="h-full">
-            <PromptVersionHistory prompt={currentPrompt} onRollback={handleRollback} />
+            <PromptVersionHistory
+              prompt={currentPrompt}
+              onRollback={handleRollback}
+            />
           </div>
         )}
 
-        {activeTab === 'test' && (
+        {activeTab === "test" && (
           <div className="h-full">
             <PromptTestPanel
               prompt={currentPrompt}

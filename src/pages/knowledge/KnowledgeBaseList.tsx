@@ -2,8 +2,18 @@
  * 知识库列表页面
  */
 
-import { useState, useEffect } from 'react';
-import { Input, Button, Dropdown, message, Modal, Tag, Empty, Spin, Alert } from 'antd';
+import { useState, useEffect } from "react";
+import {
+  Input,
+  Button,
+  Dropdown,
+  message,
+  Modal,
+  Tag,
+  Empty,
+  Spin,
+  Alert,
+} from "antd";
 import {
   PlusOutlined,
   SearchOutlined,
@@ -14,29 +24,31 @@ import {
   FileTextOutlined,
   CloudUploadOutlined,
   SettingOutlined,
-} from '@ant-design/icons';
-import { knowledgeApi } from '@/services';
-import SearchPanel from './components/SearchPanel';
-import type { KnowledgeBase, Document } from '../../types/knowledge';
+} from "@ant-design/icons";
+import { knowledgeApi } from "@/services";
+import SearchPanel from "./components/SearchPanel";
+import type { KnowledgeBase, Document } from "../../types/knowledge";
 
 const formatSize = (bytes: number) => {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / 1024 / 1024).toFixed(1) + " MB";
 };
 
 export default function KnowledgeBaseListPage() {
   const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedKB, setSelectedKB] = useState<KnowledgeBase | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editKB, setEditKB] = useState<KnowledgeBase | null>(null);
-  const [formName, setFormName] = useState('');
-  const [formDesc, setFormDesc] = useState('');
+  const [formName, setFormName] = useState("");
+  const [formDesc, setFormDesc] = useState("");
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'documents' | 'search' | 'settings'>('documents');
+  const [activeTab, setActiveTab] = useState<
+    "documents" | "search" | "settings"
+  >("documents");
   const [documents, setDocuments] = useState<Document[]>([]);
   const [documentsLoading, setDocumentsLoading] = useState(false);
 
@@ -53,7 +65,7 @@ export default function KnowledgeBaseListPage() {
       setLoading(true);
       setKnowledgeBases(await knowledgeApi.getAllKnowledgeBases());
     } catch (e) {
-      message.error('加载失败');
+      message.error("加载失败");
     } finally {
       setLoading(false);
     }
@@ -70,67 +82,86 @@ export default function KnowledgeBaseListPage() {
 
   const handleDelete = (kb: KnowledgeBase) => {
     Modal.confirm({
-      title: '确认删除',
-      content: '确定要删除知识库「' + kb.name + '」吗？',
-      okText: '删除',
-      cancelText: '取消',
+      title: "确认删除",
+      content: "确定要删除知识库「" + kb.name + "」吗？",
+      okText: "删除",
+      cancelText: "取消",
       okButtonProps: { danger: true },
       onOk: async () => {
         await knowledgeApi.deleteKnowledgeBase(kb.id);
-        setKnowledgeBases(prev => prev.filter(k => k.id !== kb.id));
+        setKnowledgeBases((prev) => prev.filter((k) => k.id !== kb.id));
         if (selectedKB?.id === kb.id) setSelectedKB(null);
-        message.success('已删除');
-      }
+        message.success("已删除");
+      },
     });
   };
 
   const handleToggleEnabled = async (kb: KnowledgeBase) => {
-    const updated = await knowledgeApi.updateKnowledgeBase(kb.id, { enabled: !kb.enabled });
+    const updated = await knowledgeApi.updateKnowledgeBase(kb.id, {
+      enabled: !kb.enabled,
+    });
     if (updated) {
-      setKnowledgeBases(prev => prev.map(k => k.id === updated.id ? updated : k));
+      setKnowledgeBases((prev) =>
+        prev.map((k) => (k.id === updated.id ? updated : k)),
+      );
       if (selectedKB?.id === updated.id) setSelectedKB(updated);
-      message.success(updated.enabled ? '已启用' : '已禁用');
+      message.success(updated.enabled ? "已启用" : "已禁用");
     }
   };
 
   const handleDeleteDocument = async (id: string) => {
     await knowledgeApi.deleteDocument(id);
-    setDocuments(prev => prev.filter(d => d.id !== id));
-    message.success('已删除');
+    setDocuments((prev) => prev.filter((d) => d.id !== id));
+    message.success("已删除");
   };
 
   const handleCreateKB = async () => {
-    if (!formName.trim()) { message.warning('请输入知识库名称'); return; }
+    if (!formName.trim()) {
+      message.warning("请输入知识库名称");
+      return;
+    }
     setFormSubmitting(true);
     setFormError(null);
     try {
-      const created = await knowledgeApi.createKnowledgeBase({ name: formName, description: formDesc });
-      setKnowledgeBases(prev => [created, ...prev]);
+      const created = await knowledgeApi.createKnowledgeBase({
+        name: formName,
+        description: formDesc,
+      });
+      setKnowledgeBases((prev) => [created, ...prev]);
       setShowCreateModal(false);
-      setFormName('');
-      setFormDesc('');
-      message.success('创建成功');
+      setFormName("");
+      setFormDesc("");
+      message.success("创建成功");
     } catch (e: any) {
-      setFormError(e?.message || '创建失败');
+      setFormError(e?.message || "创建失败");
     } finally {
       setFormSubmitting(false);
     }
   };
 
   const handleEditKB = async () => {
-    if (!editKB || !formName.trim()) { message.warning('请输入知识库名称'); return; }
+    if (!editKB || !formName.trim()) {
+      message.warning("请输入知识库名称");
+      return;
+    }
     setFormSubmitting(true);
     setFormError(null);
     try {
-      const updated = await knowledgeApi.updateKnowledgeBase(editKB.id, { name: formName, description: formDesc });
-      setKnowledgeBases(prev => prev.map(k => k.id === updated.id ? { ...k, ...updated } : k));
-      if (selectedKB?.id === updated.id) setSelectedKB({ ...selectedKB, ...updated });
+      const updated = await knowledgeApi.updateKnowledgeBase(editKB.id, {
+        name: formName,
+        description: formDesc,
+      });
+      setKnowledgeBases((prev) =>
+        prev.map((k) => (k.id === updated.id ? { ...k, ...updated } : k)),
+      );
+      if (selectedKB?.id === updated.id)
+        setSelectedKB({ ...selectedKB, ...updated });
       setEditKB(null);
-      setFormName('');
-      setFormDesc('');
-      message.success('更新成功');
+      setFormName("");
+      setFormDesc("");
+      message.success("更新成功");
     } catch (e: any) {
-      setFormError(e?.message || '更新失败');
+      setFormError(e?.message || "更新失败");
     } finally {
       setFormSubmitting(false);
     }
@@ -138,68 +169,134 @@ export default function KnowledgeBaseListPage() {
 
   const openEditModal = (kb: KnowledgeBase) => {
     setFormName(kb.name);
-    setFormDesc(kb.description || '');
+    setFormDesc(kb.description || "");
     setEditKB(kb);
   };
 
   const closeFormModal = () => {
     setShowCreateModal(false);
     setEditKB(null);
-    setFormName('');
-    setFormDesc('');
+    setFormName("");
+    setFormDesc("");
     setFormError(null);
   };
 
   const getMenuItems = (kb: KnowledgeBase) => [
-    { key: 'edit', label: '编辑', icon: <EditOutlined />, onClick: () => openEditModal(kb) },
-    { key: 'toggle', label: kb.enabled ? '禁用' : '启用', onClick: () => handleToggleEnabled(kb) },
-    { type: 'divider' as const },
-    { key: 'delete', label: '删除', icon: <DeleteOutlined />, danger: true, onClick: () => handleDelete(kb) },
+    {
+      key: "edit",
+      label: "编辑",
+      icon: <EditOutlined />,
+      onClick: () => openEditModal(kb),
+    },
+    {
+      key: "toggle",
+      label: kb.enabled ? "禁用" : "启用",
+      onClick: () => handleToggleEnabled(kb),
+    },
+    { type: "divider" as const },
+    {
+      key: "delete",
+      label: "删除",
+      icon: <DeleteOutlined />,
+      danger: true,
+      onClick: () => handleDelete(kb),
+    },
   ];
 
-  const filteredKBs = knowledgeBases.filter(kb =>
-    kb.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    kb.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredKBs = knowledgeBases.filter(
+    (kb) =>
+      kb.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      kb.description?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const statusConfig: Record<string, { color: string; text: string }> = {
-    pending: { color: 'default', text: '待处理' },
-    processing: { color: 'blue', text: '处理中' },
-    completed: { color: 'green', text: '已完成' },
-    failed: { color: 'red', text: '失败' },
+    pending: { color: "default", text: "待处理" },
+    processing: { color: "blue", text: "处理中" },
+    completed: { color: "green", text: "已完成" },
+    failed: { color: "red", text: "失败" },
   };
 
   return (
     <div className="flex h-full">
-      <div className="w-80 border-r border-[var(--color-border)] flex flex-col bg-[var(--color-bg-secondary)]">
+      <div className="w-80 border-r border-(--color-border) flex flex-col bg-[var(--color-bg-secondary)]">
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">知识库</h2>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => setShowCreateModal(true)} />
+            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+              知识库
+            </h2>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setShowCreateModal(true)}
+            />
           </div>
-          <Input placeholder="搜索知识库..." prefix={<SearchOutlined />} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} allowClear />
+          <Input
+            placeholder="搜索知识库..."
+            prefix={<SearchOutlined />}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            allowClear
+          />
         </div>
         <div className="flex-1 overflow-y-auto p-2">
-          {loading ? <div className="flex justify-center py-8"><Spin /></div> :
-           filteredKBs.length === 0 ? <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无知识库" className="py-8" /> :
-           filteredKBs.map(kb => (
-             <div key={kb.id} onClick={() => setSelectedKB(kb)}
-               className={'group p-3 rounded-lg cursor-pointer transition-colors ' + (selectedKB?.id === kb.id ? 'bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30' : 'hover:bg-[var(--color-bg-tertiary)]')}>
-               <div className="flex items-start gap-3">
-                 <div className="text-2xl">📚</div>
-                 <div className="flex-1 min-w-0">
-                   <div className="flex items-center gap-2">
-                     <span className="font-medium text-[var(--color-text-primary)] truncate">{kb.name}</span>
-                     <Tag color={kb.enabled ? 'green' : 'default'} className="text-xs">{kb.enabled ? '启用' : '禁用'}</Tag>
-                   </div>
-                   <p className="text-sm text-[var(--color-text-tertiary)] truncate mt-1">{kb.stats?.documentCount ?? 0} 文档 · {kb.stats?.chunkCount ?? 0} 分片</p>
-                 </div>
-                 <Dropdown menu={{ items: getMenuItems(kb) }} trigger={['click']} placement="bottomRight">
-                   <Button type="text" size="small" icon={<MoreOutlined />} className="opacity-0 group-hover:opacity-100" onClick={e => e.stopPropagation()} />
-                 </Dropdown>
-               </div>
-             </div>
-           ))}
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <Spin />
+            </div>
+          ) : filteredKBs.length === 0 ? (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="暂无知识库"
+              className="py-8"
+            />
+          ) : (
+            filteredKBs.map((kb) => (
+              <div
+                key={kb.id}
+                onClick={() => setSelectedKB(kb)}
+                className={
+                  "group p-3 rounded-lg cursor-pointer transition-colors " +
+                  (selectedKB?.id === kb.id
+                    ? "bg-[var(--color-primary)]/10 border border-(--color-primary)/30"
+                    : "hover:bg-[var(--color-bg-tertiary)]")
+                }
+              >
+                <div className="flex items-start gap-3">
+                  <div className="text-2xl">📚</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-[var(--color-text-primary)] truncate">
+                        {kb.name}
+                      </span>
+                      <Tag
+                        color={kb.enabled ? "green" : "default"}
+                        className="text-xs"
+                      >
+                        {kb.enabled ? "启用" : "禁用"}
+                      </Tag>
+                    </div>
+                    <p className="text-sm text-[var(--color-text-tertiary)] truncate mt-1">
+                      {kb.stats?.documentCount ?? 0} 文档 ·{" "}
+                      {kb.stats?.chunkCount ?? 0} 分片
+                    </p>
+                  </div>
+                  <Dropdown
+                    menu={{ items: getMenuItems(kb) }}
+                    trigger={["click"]}
+                    placement="bottomRight"
+                  >
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<MoreOutlined />}
+                      className="opacity-0 group-hover:opacity-100"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </Dropdown>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
       <div className="flex-1 overflow-y-auto">
@@ -209,89 +306,191 @@ export default function KnowledgeBaseListPage() {
               <div className="text-4xl">📚</div>
               <div className="flex-1">
                 <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">{selectedKB.name}</h2>
-                  <Tag color={selectedKB.enabled ? 'green' : 'default'}>{selectedKB.enabled ? '启用' : '禁用'}</Tag>
+                  <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
+                    {selectedKB.name}
+                  </h2>
+                  <Tag color={selectedKB.enabled ? "green" : "default"}>
+                    {selectedKB.enabled ? "启用" : "禁用"}
+                  </Tag>
                 </div>
-                <p className="text-[var(--color-text-secondary)] mt-1">{selectedKB.description || '暂无描述'}</p>
+                <p className="text-[var(--color-text-secondary)] mt-1">
+                  {selectedKB.description || "暂无描述"}
+                </p>
               </div>
             </div>
             <div className="grid grid-cols-4 gap-4 mb-6">
-              {[{ t: '文档数', v: selectedKB.stats?.documentCount ?? 0 }, { t: '分片数', v: selectedKB.stats?.chunkCount ?? 0 }, { t: '向量数', v: selectedKB.stats?.vectorCount ?? 0 }, { t: '存储大小', v: formatSize(selectedKB.stats?.totalSize ?? 0) }].map((s, i) => (
-                <div key={i} className="bg-[var(--color-bg-tertiary)] rounded-lg p-4">
-                  <div className="text-sm text-[var(--color-text-tertiary)]">{s.t}</div>
-                  <div className="text-xl font-semibold text-[var(--color-text-primary)] mt-1">{s.v}</div>
+              {[
+                { t: "文档数", v: selectedKB.stats?.documentCount ?? 0 },
+                { t: "分片数", v: selectedKB.stats?.chunkCount ?? 0 },
+                { t: "向量数", v: selectedKB.stats?.vectorCount ?? 0 },
+                {
+                  t: "存储大小",
+                  v: formatSize(selectedKB.stats?.totalSize ?? 0),
+                },
+              ].map((s, i) => (
+                <div
+                  key={i}
+                  className="bg-[var(--color-bg-tertiary)] rounded-lg p-4"
+                >
+                  <div className="text-sm text-[var(--color-text-tertiary)]">
+                    {s.t}
+                  </div>
+                  <div className="text-xl font-semibold text-[var(--color-text-primary)] mt-1">
+                    {s.v}
+                  </div>
                 </div>
               ))}
             </div>
-            <div className="flex gap-1 mb-6 border-b border-[var(--color-border)]">
-              {[{ k: 'documents', l: '文档管理', i: FileTextOutlined }, { k: 'search', l: '知识搜索', i: SearchOutlined }, { k: 'settings', l: '配置', i: SettingOutlined }].map(t => (
-                <button key={t.k} onClick={() => setActiveTab(t.k as typeof activeTab)}
-                  className={'flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ' + (activeTab === t.k ? 'text-[var(--color-primary)] border-[var(--color-primary)]' : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]')}>
-                  <t.i className="w-4 h-4" />{t.l}
+            <div className="flex gap-1 mb-6 border-b border-(--color-border)">
+              {[
+                { k: "documents", l: "文档管理", i: FileTextOutlined },
+                { k: "search", l: "知识搜索", i: SearchOutlined },
+                { k: "settings", l: "配置", i: SettingOutlined },
+              ].map((t) => (
+                <button
+                  key={t.k}
+                  onClick={() => setActiveTab(t.k as typeof activeTab)}
+                  className={
+                    "flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors " +
+                    (activeTab === t.k
+                      ? "text-[var(--color-primary)] border-(--color-primary)"
+                      : "text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]")
+                  }
+                >
+                  <t.i className="w-4 h-4" />
+                  {t.l}
                 </button>
               ))}
             </div>
-            <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
-              {activeTab === 'documents' && (
+            <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
+              {activeTab === "documents" && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-4">
-                    <Button type="primary" icon={<CloudUploadOutlined />} onClick={() => {
-                      if (!selectedKB) return;
-                      const input = document.createElement('input');
-                      input.type = 'file';
-                      input.accept = '.pdf,.txt,.md,.docx';
-                      input.onchange = async (e) => {
-                        const file = (e.target as HTMLInputElement).files?.[0];
-                        if (!file || !selectedKB) return;
-                        try {
-                          await knowledgeApi.uploadDocument(selectedKB.id, file);
-                          message.success(`文档「${file.name}」上传成功`);
-                          loadDocuments(selectedKB.id);
-                          loadKnowledgeBases();
-                        } catch (err: any) {
-                          message.error(err?.message || '上传失败');
-                        }
-                      };
-                      input.click();
-                    }}>上传文档</Button>
-                    <span className="text-sm text-[var(--color-text-tertiary)]">支持 PDF、TXT、MD、DOCX 格式</span>
+                    <Button
+                      type="primary"
+                      icon={<CloudUploadOutlined />}
+                      onClick={() => {
+                        if (!selectedKB) return;
+                        const input = document.createElement("input");
+                        input.type = "file";
+                        input.accept = ".pdf,.txt,.md,.docx";
+                        input.onchange = async (e) => {
+                          const file = (e.target as HTMLInputElement)
+                            .files?.[0];
+                          if (!file || !selectedKB) return;
+                          try {
+                            await knowledgeApi.uploadDocument(
+                              selectedKB.id,
+                              file,
+                            );
+                            message.success(`文档「${file.name}」上传成功`);
+                            loadDocuments(selectedKB.id);
+                            loadKnowledgeBases();
+                          } catch (err: any) {
+                            message.error(err?.message || "上传失败");
+                          }
+                        };
+                        input.click();
+                      }}
+                    >
+                      上传文档
+                    </Button>
+                    <span className="text-sm text-[var(--color-text-tertiary)]">
+                      支持 PDF、TXT、MD、DOCX 格式
+                    </span>
                   </div>
-                  {documentsLoading ? <div className="flex justify-center py-8"><Spin /></div> :
-                   documents.length === 0 ? <Empty description="暂无文档" className="py-8" /> :
-                   <div className="space-y-2">
-                     {documents.map(doc => (
-                       <div key={doc.id} className="flex items-center justify-between p-3 bg-[var(--color-bg-tertiary)] rounded-lg">
-                         <div className="flex items-center gap-3">
-                           <FileTextOutlined className="text-xl text-[var(--color-text-tertiary)]" />
-                           <div>
-                             <div className="font-medium text-[var(--color-text-primary)]">{doc.name}</div>
-                             <div className="text-sm text-[var(--color-text-tertiary)]">{formatSize(doc.size)} · {doc.chunkCount} 分片</div>
-                           </div>
-                         </div>
-                         <div className="flex items-center gap-3">
-                           <Tag color={statusConfig[doc.status]?.color}>{statusConfig[doc.status]?.text}</Tag>
-                           <Button type="text" danger size="small" onClick={() => handleDeleteDocument(doc.id)}>删除</Button>
-                         </div>
-                       </div>
-                     ))}
-                   </div>}
+                  {documentsLoading ? (
+                    <div className="flex justify-center py-8">
+                      <Spin />
+                    </div>
+                  ) : documents.length === 0 ? (
+                    <Empty description="暂无文档" className="py-8" />
+                  ) : (
+                    <div className="space-y-2">
+                      {documents.map((doc) => (
+                        <div
+                          key={doc.id}
+                          className="flex items-center justify-between p-3 bg-[var(--color-bg-tertiary)] rounded-lg"
+                        >
+                          <div className="flex items-center gap-3">
+                            <FileTextOutlined className="text-xl text-[var(--color-text-tertiary)]" />
+                            <div>
+                              <div className="font-medium text-[var(--color-text-primary)]">
+                                {doc.name}
+                              </div>
+                              <div className="text-sm text-[var(--color-text-tertiary)]">
+                                {formatSize(doc.size)} · {doc.chunkCount} 分片
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Tag color={statusConfig[doc.status]?.color}>
+                              {statusConfig[doc.status]?.text}
+                            </Tag>
+                            <Button
+                              type="text"
+                              danger
+                              size="small"
+                              onClick={() => handleDeleteDocument(doc.id)}
+                            >
+                              删除
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
-              {activeTab === 'search' && <SearchPanel knowledgeBaseId={selectedKB.id} />}
-              {activeTab === 'settings' && (
+              {activeTab === "search" && (
+                <SearchPanel knowledgeBaseId={selectedKB.id} />
+              )}
+              {activeTab === "settings" && (
                 <div className="space-y-4">
                   <div>
-                    <h4 className="text-sm font-medium text-[var(--color-text-secondary)] mb-3">分片配置</h4>
+                    <h4 className="text-sm font-medium text-[var(--color-text-secondary)] mb-3">
+                      分片配置
+                    </h4>
                     <div className="grid grid-cols-2 gap-4">
-                      <div><div className="text-sm text-[var(--color-text-tertiary)]">分片大小</div><div className="text-[var(--color-text-primary)] mt-1">{selectedKB.config.chunkingStrategy.chunkSize} 字符</div></div>
-                      <div><div className="text-sm text-[var(--color-text-tertiary)]">重叠大小</div><div className="text-[var(--color-text-primary)] mt-1">{selectedKB.config.chunkingStrategy.chunkOverlap} 字符</div></div>
+                      <div>
+                        <div className="text-sm text-[var(--color-text-tertiary)]">
+                          分片大小
+                        </div>
+                        <div className="text-[var(--color-text-primary)] mt-1">
+                          {selectedKB.config.chunkingStrategy.chunkSize} 字符
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-[var(--color-text-tertiary)]">
+                          重叠大小
+                        </div>
+                        <div className="text-[var(--color-text-primary)] mt-1">
+                          {selectedKB.config.chunkingStrategy.chunkOverlap} 字符
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-[var(--color-text-secondary)] mb-3">检索配置</h4>
+                    <h4 className="text-sm font-medium text-[var(--color-text-secondary)] mb-3">
+                      检索配置
+                    </h4>
                     <div className="grid grid-cols-2 gap-4">
-                      <div><div className="text-sm text-[var(--color-text-tertiary)]">返回数量</div><div className="text-[var(--color-text-primary)] mt-1">{selectedKB.config.retrievalConfig.topK}</div></div>
-                      <div><div className="text-sm text-[var(--color-text-tertiary)]">相似度阈值</div><div className="text-[var(--color-text-primary)] mt-1">{selectedKB.config.retrievalConfig.scoreThreshold}</div></div>
+                      <div>
+                        <div className="text-sm text-[var(--color-text-tertiary)]">
+                          返回数量
+                        </div>
+                        <div className="text-[var(--color-text-primary)] mt-1">
+                          {selectedKB.config.retrievalConfig.topK}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-[var(--color-text-tertiary)]">
+                          相似度阈值
+                        </div>
+                        <div className="text-[var(--color-text-primary)] mt-1">
+                          {selectedKB.config.retrievalConfig.scoreThreshold}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -302,39 +501,91 @@ export default function KnowledgeBaseListPage() {
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <DatabaseOutlined className="text-5xl text-[var(--color-text-tertiary)] mb-4" />
-              <h3 className="text-lg font-medium text-[var(--color-text-primary)]">选择一个知识库</h3>
-              <p className="text-[var(--color-text-secondary)]">从左侧列表中选择查看详情</p>
+              <h3 className="text-lg font-medium text-[var(--color-text-primary)]">
+                选择一个知识库
+              </h3>
+              <p className="text-[var(--color-text-secondary)]">
+                从左侧列表中选择查看详情
+              </p>
             </div>
           </div>
         )}
       </div>
-      <Modal title="创建知识库" open={showCreateModal} onCancel={closeFormModal} onOk={handleCreateKB} confirmLoading={formSubmitting} okText="创建" width={500} destroyOnHidden>
+      <Modal
+        title="创建知识库"
+        open={showCreateModal}
+        onCancel={closeFormModal}
+        onOk={handleCreateKB}
+        confirmLoading={formSubmitting}
+        okText="创建"
+        width={500}
+        destroyOnHidden
+      >
         <div className="space-y-4 py-2">
           <div>
             <label className="block text-sm font-medium mb-1">名称</label>
-            <Input placeholder="输入知识库名称" value={formName} onChange={e => setFormName(e.target.value)} />
+            <Input
+              placeholder="输入知识库名称"
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">描述</label>
-            <Input.TextArea placeholder="输入知识库描述（可选）" value={formDesc} onChange={e => setFormDesc(e.target.value)} rows={3} />
+            <Input.TextArea
+              placeholder="输入知识库描述（可选）"
+              value={formDesc}
+              onChange={(e) => setFormDesc(e.target.value)}
+              rows={3}
+            />
           </div>
           {formError && (
-            <Alert type="error" title={formError} showIcon closable onClose={() => setFormError(null)} />
+            <Alert
+              type="error"
+              title={formError}
+              showIcon
+              closable
+              onClose={() => setFormError(null)}
+            />
           )}
         </div>
       </Modal>
-      <Modal title="编辑知识库" open={!!editKB} onCancel={closeFormModal} onOk={handleEditKB} confirmLoading={formSubmitting} okText="保存" width={500} destroyOnHidden>
+      <Modal
+        title="编辑知识库"
+        open={!!editKB}
+        onCancel={closeFormModal}
+        onOk={handleEditKB}
+        confirmLoading={formSubmitting}
+        okText="保存"
+        width={500}
+        destroyOnHidden
+      >
         <div className="space-y-4 py-2">
           <div>
             <label className="block text-sm font-medium mb-1">名称</label>
-            <Input placeholder="输入知识库名称" value={formName} onChange={e => setFormName(e.target.value)} />
+            <Input
+              placeholder="输入知识库名称"
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">描述</label>
-            <Input.TextArea placeholder="输入知识库描述（可选）" value={formDesc} onChange={e => setFormDesc(e.target.value)} rows={3} />
+            <Input.TextArea
+              placeholder="输入知识库描述（可选）"
+              value={formDesc}
+              onChange={(e) => setFormDesc(e.target.value)}
+              rows={3}
+            />
           </div>
           {formError && (
-            <Alert type="error" title={formError} showIcon closable onClose={() => setFormError(null)} />
+            <Alert
+              type="error"
+              title={formError}
+              showIcon
+              closable
+              onClose={() => setFormError(null)}
+            />
           )}
         </div>
       </Modal>

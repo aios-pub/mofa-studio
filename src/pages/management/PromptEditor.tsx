@@ -2,7 +2,7 @@
  * 提示词编辑器组件
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 import {
   SaveOutlined,
   FunctionOutlined,
@@ -15,9 +15,9 @@ import {
   DeleteOutlined,
   EyeOutlined,
   BulbOutlined,
-} from '@ant-design/icons';
-import type { Prompt, PromptVariable } from '@/services';
-import { promptApi } from '@/services';
+} from "@ant-design/icons";
+import type { Prompt, PromptVariable } from "@/services";
+import { promptApi } from "@/services";
 
 interface PromptEditorProps {
   promptId?: string;
@@ -27,21 +27,25 @@ interface PromptEditorProps {
 
 // 系统变量定义
 const systemVariables = [
-  { name: 'current_date', label: '当前日期', example: '2024-01-15' },
-  { name: 'current_time', label: '当前时间', example: '14:30:00' },
-  { name: 'current_datetime', label: '当前日期时间', example: '2024-01-15 14:30:00' },
-  { name: 'user_name', label: '用户名', example: '张三' },
-  { name: 'user_id', label: '用户ID', example: 'user-123' },
-  { name: 'agent_name', label: 'Agent名称', example: '助手A' },
-  { name: 'agent_id', label: 'Agent ID', example: 'agent-001' },
+  { name: "current_date", label: "当前日期", example: "2024-01-15" },
+  { name: "current_time", label: "当前时间", example: "14:30:00" },
+  {
+    name: "current_datetime",
+    label: "当前日期时间",
+    example: "2024-01-15 14:30:00",
+  },
+  { name: "user_name", label: "用户名", example: "张三" },
+  { name: "user_id", label: "用户ID", example: "user-123" },
+  { name: "agent_name", label: "Agent名称", example: "助手A" },
+  { name: "agent_id", label: "Agent ID", example: "agent-001" },
 ];
 
 // 预设模板
 const presetTemplates = [
   {
-    id: 'translation',
-    name: '翻译助手',
-    category: '翻译',
+    id: "translation",
+    name: "翻译助手",
+    category: "翻译",
     content: `你是一个专业的翻译助手。请将用户输入的内容从 {{source_language}} 翻译成 {{target_language}}。
 
 翻译要求：
@@ -50,14 +54,26 @@ const presetTemplates = [
 3. 专业术语保持准确
 4. 必要时提供注释说明`,
     variables: [
-      { name: 'source_language', type: 'enum' as const, defaultValue: '英语', required: true, options: ['中文', '英语', '日语', '韩语', '法语', '德语'] },
-      { name: 'target_language', type: 'enum' as const, defaultValue: '中文', required: true, options: ['中文', '英语', '日语', '韩语', '法语', '德语'] },
+      {
+        name: "source_language",
+        type: "enum" as const,
+        defaultValue: "英语",
+        required: true,
+        options: ["中文", "英语", "日语", "韩语", "法语", "德语"],
+      },
+      {
+        name: "target_language",
+        type: "enum" as const,
+        defaultValue: "中文",
+        required: true,
+        options: ["中文", "英语", "日语", "韩语", "法语", "德语"],
+      },
     ],
   },
   {
-    id: 'code-review',
-    name: '代码审查',
-    category: '开发',
+    id: "code-review",
+    name: "代码审查",
+    category: "开发",
     content: `你是一个专业的代码审查助手。请根据以下规范审查代码：
 
 项目: {{project_name}}
@@ -72,15 +88,31 @@ const presetTemplates = [
 
 请提供具体的改进建议。`,
     variables: [
-      { name: 'project_name', type: 'string' as const, defaultValue: '我的项目', required: true },
-      { name: 'language', type: 'enum' as const, defaultValue: 'JavaScript', required: true, options: ['JavaScript', 'TypeScript', 'Python', 'Java', 'Go', 'Rust'] },
-      { name: 'review_focus', type: 'string' as const, defaultValue: '全部', required: false },
+      {
+        name: "project_name",
+        type: "string" as const,
+        defaultValue: "我的项目",
+        required: true,
+      },
+      {
+        name: "language",
+        type: "enum" as const,
+        defaultValue: "JavaScript",
+        required: true,
+        options: ["JavaScript", "TypeScript", "Python", "Java", "Go", "Rust"],
+      },
+      {
+        name: "review_focus",
+        type: "string" as const,
+        defaultValue: "全部",
+        required: false,
+      },
     ],
   },
   {
-    id: 'assistant',
-    name: '通用助手',
-    category: '通用',
+    id: "assistant",
+    name: "通用助手",
+    category: "通用",
     content: `你是一个友好、专业的 AI 助手，名字叫 {{agent_name}}。
 
 你的职责是：
@@ -95,13 +127,18 @@ const presetTemplates = [
 - 不确定时诚实说明
 - 保护用户隐私`,
     variables: [
-      { name: 'agent_name', type: 'string' as const, defaultValue: '小助手', required: true },
+      {
+        name: "agent_name",
+        type: "string" as const,
+        defaultValue: "小助手",
+        required: true,
+      },
     ],
   },
   {
-    id: 'data-analysis',
-    name: '数据分析',
-    category: '分析',
+    id: "data-analysis",
+    name: "数据分析",
+    category: "分析",
     content: `你是一个数据分析专家，擅长处理和解读各类数据。
 
 可用的分析工具：
@@ -121,27 +158,35 @@ const presetTemplates = [
 
 // 变量类型映射
 const variableTypes = [
-  { value: 'string', label: '字符串', icon: FontSizeOutlined },
-  { value: 'number', label: '数字', icon: NumberOutlined },
-  { value: 'enum', label: '枚举', icon: UnorderedListOutlined },
-  { value: 'date', label: '日期', icon: CalendarOutlined },
+  { value: "string", label: "字符串", icon: FontSizeOutlined },
+  { value: "number", label: "数字", icon: NumberOutlined },
+  { value: "enum", label: "枚举", icon: UnorderedListOutlined },
+  { value: "date", label: "日期", icon: CalendarOutlined },
 ];
 
-export default function PromptEditor({ promptId, onSave, onCancel }: PromptEditorProps) {
+export default function PromptEditor({
+  promptId,
+  onSave,
+  onCancel,
+}: PromptEditorProps) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'content' | 'variables' | 'preview'>('content');
+  const [activeTab, setActiveTab] = useState<
+    "content" | "variables" | "preview"
+  >("content");
 
   // 表单状态
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('通用');
-  const [content, setContent] = useState('');
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("通用");
+  const [content, setContent] = useState("");
   const [variables, setVariables] = useState<PromptVariable[]>([]);
   const [originalPrompt, setOriginalPrompt] = useState<Prompt | null>(null);
 
   // 预览状态
-  const [previewValues, setPreviewValues] = useState<Record<string, string>>({});
+  const [previewValues, setPreviewValues] = useState<Record<string, string>>(
+    {},
+  );
 
   // 是否有修改
   const hasChanges = originalPrompt
@@ -171,28 +216,30 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
         setOriginalPrompt(prompt);
       }
     } catch (error) {
-      console.error('Failed to load prompt:', error);
+      console.error("Failed to load prompt:", error);
     } finally {
       setLoading(false);
     }
   };
 
   // 应用预设模板
-  const applyTemplate = (template: typeof presetTemplates[0]) => {
+  const applyTemplate = (template: (typeof presetTemplates)[0]) => {
     setName(template.name);
     setCategory(template.category);
     setContent(template.content);
-    setVariables(template.variables.map((v) => ({ ...v, required: v.required ?? false })));
-    setActiveTab('content');
+    setVariables(
+      template.variables.map((v) => ({ ...v, required: v.required ?? false })),
+    );
+    setActiveTab("content");
   };
 
   // 添加变量
   const addVariable = () => {
-    setVariables(prev => {
+    setVariables((prev) => {
       const newVar: PromptVariable = {
         name: `variable_${prev.length + 1}`,
-        type: 'string',
-        defaultValue: '',
+        type: "string",
+        defaultValue: "",
         required: false,
       };
       return [...prev, newVar];
@@ -208,20 +255,26 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
 
   // 删除变量
   const removeVariable = (index: number) => {
-    setVariables(prev => prev.filter((_, i) => i !== index));
+    setVariables((prev) => prev.filter((_, i) => i !== index));
   };
 
   // 插入变量到内容
   const insertVariable = (varName: string) => {
-    const textarea = document.querySelector('textarea[name="content"]') as HTMLTextAreaElement;
+    const textarea = document.querySelector(
+      'textarea[name="content"]',
+    ) as HTMLTextAreaElement;
     if (textarea) {
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
-      const newContent = content.substring(0, start) + `{{${varName}}}` + content.substring(end);
+      const newContent =
+        content.substring(0, start) + `{{${varName}}}` + content.substring(end);
       setContent(newContent);
       setTimeout(() => {
         textarea.focus();
-        textarea.setSelectionRange(start + varName.length + 4, start + varName.length + 4);
+        textarea.setSelectionRange(
+          start + varName.length + 4,
+          start + varName.length + 4,
+        );
       }, 0);
     } else {
       setContent(content + `{{${varName}}}`);
@@ -234,36 +287,42 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
     // 替换自定义变量
     variables.forEach((v) => {
       const value = previewValues[v.name] || v.defaultValue || `[${v.name}]`;
-      preview = preview.replace(new RegExp(`\\{\\{${v.name}\\}\\}`, 'g'), value);
+      preview = preview.replace(
+        new RegExp(`\\{\\{${v.name}\\}\\}`, "g"),
+        value,
+      );
     });
     // 替换系统变量
     const now = new Date();
     systemVariables.forEach((sv) => {
-      let value = '';
+      let value = "";
       switch (sv.name) {
-        case 'current_date':
-          value = now.toLocaleDateString('zh-CN');
+        case "current_date":
+          value = now.toLocaleDateString("zh-CN");
           break;
-        case 'current_time':
-          value = now.toLocaleTimeString('zh-CN');
+        case "current_time":
+          value = now.toLocaleTimeString("zh-CN");
           break;
-        case 'current_datetime':
-          value = now.toLocaleString('zh-CN');
+        case "current_datetime":
+          value = now.toLocaleString("zh-CN");
           break;
-        case 'user_name':
-          value = '当前用户';
+        case "user_name":
+          value = "当前用户";
           break;
-        case 'user_id':
-          value = 'user-current';
+        case "user_id":
+          value = "user-current";
           break;
-        case 'agent_name':
-          value = 'AI助手';
+        case "agent_name":
+          value = "AI助手";
           break;
-        case 'agent_id':
-          value = 'agent-current';
+        case "agent_id":
+          value = "agent-current";
           break;
       }
-      preview = preview.replace(new RegExp(`\\{\\{${sv.name}\\}\\}`, 'g'), value);
+      preview = preview.replace(
+        new RegExp(`\\{\\{${sv.name}\\}\\}`, "g"),
+        value,
+      );
     });
     return preview;
   }, [content, variables, previewValues]);
@@ -271,7 +330,7 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
   // 保存
   const handleSave = async () => {
     if (!name.trim() || !content.trim()) {
-      alert('请填写名称和内容');
+      alert("请填写名称和内容");
       return;
     }
 
@@ -295,7 +354,7 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
       setOriginalPrompt(savedPrompt);
       onSave?.(savedPrompt);
     } catch (error) {
-      console.error('Failed to save prompt:', error);
+      console.error("Failed to save prompt:", error);
     } finally {
       setSaving(false);
     }
@@ -312,10 +371,10 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
   return (
     <div className="flex flex-col h-full bg-[var(--color-bg-base)]">
       {/* 头部 */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border)]">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-(--color-border)">
         <div className="flex items-center gap-4">
           <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-            {originalPrompt ? '编辑提示词' : '新建提示词'}
+            {originalPrompt ? "编辑提示词" : "新建提示词"}
           </h2>
           {hasChanges && (
             <span className="text-xs text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 px-2 py-0.5 rounded">
@@ -331,8 +390,8 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
             取消
           </button>
           <button
-            onClick={() => setActiveTab('preview')}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)]"
+            onClick={() => setActiveTab("preview")}
+            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-[var(--color-bg-tertiary)]"
           >
             <EyeOutlined />
             预览
@@ -343,7 +402,7 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
             className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <SaveOutlined />
-            {saving ? '保存中...' : '保存'}
+            {saving ? "保存中..." : "保存"}
           </button>
         </div>
       </div>
@@ -351,7 +410,7 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
       <div className="flex-1 overflow-hidden">
         <div className="flex h-full">
           {/* 左侧：预设模板 */}
-          <div className="w-56 border-r border-[var(--color-border)] p-3 overflow-y-auto bg-[var(--color-bg-secondary)]">
+          <div className="w-56 border-r border-(--color-border) p-3 overflow-y-auto bg-[var(--color-bg-secondary)]">
             <h3 className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
               预设模板
             </h3>
@@ -364,9 +423,13 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
                 >
                   <div className="flex items-center gap-2">
                     <BulbOutlined className="text-[var(--color-primary)]" />
-                    <span className="text-sm text-[var(--color-text-primary)]">{template.name}</span>
+                    <span className="text-sm text-[var(--color-text-primary)]">
+                      {template.name}
+                    </span>
                   </div>
-                  <span className="text-xs text-[var(--color-text-tertiary)]">{template.category}</span>
+                  <span className="text-xs text-[var(--color-text-tertiary)]">
+                    {template.category}
+                  </span>
                 </button>
               ))}
             </div>
@@ -382,7 +445,9 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
                   className="w-full text-left p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
                 >
                   <code className="text-xs text-[var(--color-primary)]">{`{{${sv.name}}}`}</code>
-                  <p className="text-xs text-[var(--color-text-tertiary)]">{sv.label}</p>
+                  <p className="text-xs text-[var(--color-text-tertiary)]">
+                    {sv.label}
+                  </p>
                 </button>
               ))}
             </div>
@@ -391,7 +456,7 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
           {/* 中间：编辑区 */}
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* 基本信息表单 */}
-            <div className="p-4 border-b border-[var(--color-border)] space-y-3">
+            <div className="p-4 border-b border-(--color-border) space-y-3">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
@@ -402,7 +467,7 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="提示词名称"
-                    className="w-full px-3 py-2 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
+                    className="w-full px-3 py-2 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg text-sm focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
                   />
                 </div>
                 <div>
@@ -414,7 +479,7 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     placeholder="分类名称"
-                    className="w-full px-3 py-2 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
+                    className="w-full px-3 py-2 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg text-sm focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
                   />
                 </div>
               </div>
@@ -427,25 +492,25 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="简短描述提示词的用途"
-                  className="w-full px-3 py-2 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)]"
+                  className="w-full px-3 py-2 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg text-sm focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
                 />
               </div>
             </div>
 
             {/* 标签栏 */}
-            <div className="flex border-b border-[var(--color-border)]">
+            <div className="flex border-b border-(--color-border)">
               {[
-                { key: 'content', label: '内容', icon: FileTextOutlined },
-                { key: 'variables', label: '变量', icon: FunctionOutlined },
-                { key: 'preview', label: '预览', icon: EyeOutlined },
+                { key: "content", label: "内容", icon: FileTextOutlined },
+                { key: "variables", label: "变量", icon: FunctionOutlined },
+                { key: "preview", label: "预览", icon: EyeOutlined },
               ].map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key as typeof activeTab)}
                   className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                     activeTab === tab.key
-                      ? 'text-[var(--color-primary)] border-[var(--color-primary)]'
-                      : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
+                      ? "text-[var(--color-primary)] border-(--color-primary)"
+                      : "text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]"
                   }`}
                 >
                   <tab.icon className="w-4 h-4" />
@@ -456,17 +521,17 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
 
             {/* 内容区 */}
             <div className="flex-1 overflow-y-auto p-4">
-              {activeTab === 'content' && (
+              {activeTab === "content" && (
                 <textarea
                   name="content"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="输入提示词内容，使用 {{变量名}} 插入变量..."
-                  className="w-full h-full p-4 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)] font-mono resize-none"
+                  className="w-full h-full p-4 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg text-sm focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)] font-mono resize-none"
                 />
               )}
 
-              {activeTab === 'variables' && (
+              {activeTab === "variables" && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
@@ -492,7 +557,7 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
                       {variables.map((v, index) => (
                         <div
                           key={index}
-                          className="p-3 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg"
+                          className="p-3 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg"
                         >
                           <div className="flex items-center gap-2 mb-2">
                             <code className="text-sm text-[var(--color-primary)]">{`{{${v.name}}}`}</code>
@@ -514,14 +579,21 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
                             <input
                               type="text"
                               value={v.name}
-                              onChange={(e) => updateVariable(index, { name: e.target.value })}
+                              onChange={(e) =>
+                                updateVariable(index, { name: e.target.value })
+                              }
                               placeholder="变量名"
-                              className="px-2 py-1 text-sm bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded"
+                              className="px-2 py-1 text-sm bg-[var(--color-bg-tertiary)] border border-(--color-border) rounded"
                             />
                             <select
                               value={v.type}
-                              onChange={(e) => updateVariable(index, { type: e.target.value as PromptVariable['type'] })}
-                              className="px-2 py-1 text-sm bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded"
+                              onChange={(e) =>
+                                updateVariable(index, {
+                                  type: e.target
+                                    .value as PromptVariable["type"],
+                                })
+                              }
+                              className="px-2 py-1 text-sm bg-[var(--color-bg-tertiary)] border border-(--color-border) rounded"
                             >
                               {variableTypes.map((t) => (
                                 <option key={t.value} value={t.value}>
@@ -531,33 +603,43 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
                             </select>
                             <input
                               type="text"
-                              value={v.defaultValue || ''}
-                              onChange={(e) => updateVariable(index, { defaultValue: e.target.value })}
+                              value={v.defaultValue || ""}
+                              onChange={(e) =>
+                                updateVariable(index, {
+                                  defaultValue: e.target.value,
+                                })
+                              }
                               placeholder="默认值"
-                              className="px-2 py-1 text-sm bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded"
+                              className="px-2 py-1 text-sm bg-[var(--color-bg-tertiary)] border border-(--color-border) rounded"
                             />
                             <label className="flex items-center gap-1">
                               <input
                                 type="checkbox"
                                 checked={v.required}
-                                onChange={(e) => updateVariable(index, { required: e.target.checked })}
+                                onChange={(e) =>
+                                  updateVariable(index, {
+                                    required: e.target.checked,
+                                  })
+                                }
                                 className="rounded"
                               />
                               <span className="text-sm">必填</span>
                             </label>
                           </div>
-                          {v.type === 'enum' && (
+                          {v.type === "enum" && (
                             <div className="mt-2">
                               <input
                                 type="text"
-                                value={(v.options || []).join(', ')}
+                                value={(v.options || []).join(", ")}
                                 onChange={(e) =>
                                   updateVariable(index, {
-                                    options: e.target.value.split(',').map((s) => s.trim()),
+                                    options: e.target.value
+                                      .split(",")
+                                      .map((s) => s.trim()),
                                   })
                                 }
                                 placeholder="枚举值，用逗号分隔"
-                                className="w-full px-2 py-1 text-sm bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded"
+                                className="w-full px-2 py-1 text-sm bg-[var(--color-bg-tertiary)] border border-(--color-border) rounded"
                               />
                             </div>
                           )}
@@ -568,11 +650,11 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
                 </div>
               )}
 
-              {activeTab === 'preview' && (
+              {activeTab === "preview" && (
                 <div className="space-y-4">
                   {/* 变量输入 */}
                   {variables.length > 0 && (
-                    <div className="p-4 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg">
+                    <div className="p-4 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg">
                       <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">
                         填写变量值
                       </h4>
@@ -581,15 +663,22 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
                           <div key={v.name}>
                             <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">
                               {v.name}
-                              {v.required && <span className="text-red-500">*</span>}
+                              {v.required && (
+                                <span className="text-red-500">*</span>
+                              )}
                             </label>
-                            {v.type === 'enum' ? (
+                            {v.type === "enum" ? (
                               <select
-                                value={previewValues[v.name] || v.defaultValue || ''}
-                                onChange={(e) =>
-                                  setPreviewValues({ ...previewValues, [v.name]: e.target.value })
+                                value={
+                                  previewValues[v.name] || v.defaultValue || ""
                                 }
-                                className="w-full px-2 py-1 text-sm bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded"
+                                onChange={(e) =>
+                                  setPreviewValues({
+                                    ...previewValues,
+                                    [v.name]: e.target.value,
+                                  })
+                                }
+                                className="w-full px-2 py-1 text-sm bg-[var(--color-bg-tertiary)] border border-(--color-border) rounded"
                               >
                                 {(v.options || []).map((opt) => (
                                   <option key={opt} value={opt}>
@@ -599,13 +688,24 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
                               </select>
                             ) : (
                               <input
-                                type={v.type === 'number' ? 'number' : v.type === 'date' ? 'date' : 'text'}
-                                value={previewValues[v.name] || v.defaultValue || ''}
+                                type={
+                                  v.type === "number"
+                                    ? "number"
+                                    : v.type === "date"
+                                      ? "date"
+                                      : "text"
+                                }
+                                value={
+                                  previewValues[v.name] || v.defaultValue || ""
+                                }
                                 onChange={(e) =>
-                                  setPreviewValues({ ...previewValues, [v.name]: e.target.value })
+                                  setPreviewValues({
+                                    ...previewValues,
+                                    [v.name]: e.target.value,
+                                  })
                                 }
                                 placeholder={v.defaultValue}
-                                className="w-full px-2 py-1 text-sm bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded"
+                                className="w-full px-2 py-1 text-sm bg-[var(--color-bg-tertiary)] border border-(--color-border) rounded"
                               />
                             )}
                           </div>
@@ -615,7 +715,7 @@ export default function PromptEditor({ promptId, onSave, onCancel }: PromptEdito
                   )}
 
                   {/* 预览结果 */}
-                  <div className="p-4 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg">
+                  <div className="p-4 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg">
                     <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">
                       预览结果
                     </h4>

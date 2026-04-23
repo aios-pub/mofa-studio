@@ -2,7 +2,7 @@
  * 提示词版本历史组件
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   HistoryOutlined,
   ReloadOutlined,
@@ -13,20 +13,25 @@ import {
   MessageOutlined,
   CheckOutlined,
   CloseOutlined,
-} from '@ant-design/icons';
-import type { Prompt, PromptVersion, VersionDiff } from '@/services';
-import { promptApi } from '@/services';
-import { formatDate } from '@/utils';
+} from "@ant-design/icons";
+import type { Prompt, PromptVersion, VersionDiff } from "@/services";
+import { promptApi } from "@/services";
+import { formatDate } from "@/utils";
 
 interface PromptVersionHistoryProps {
   prompt: Prompt;
   onRollback: () => void;
 }
 
-export default function PromptVersionHistory({ prompt, onRollback }: PromptVersionHistoryProps) {
+export default function PromptVersionHistory({
+  prompt,
+  onRollback,
+}: PromptVersionHistoryProps) {
   const [versions, setVersions] = useState<PromptVersion[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedVersion, setSelectedVersion] = useState<PromptVersion | null>(null);
+  const [selectedVersion, setSelectedVersion] = useState<PromptVersion | null>(
+    null,
+  );
   const [compareMode, setCompareMode] = useState(false);
   const [compareFrom, setCompareFrom] = useState<PromptVersion | null>(null);
   const [compareTo, setCompareTo] = useState<PromptVersion | null>(null);
@@ -43,7 +48,7 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
       const data = await promptApi.getVersions(prompt.id);
       setVersions(data);
     } catch (error) {
-      console.error('Failed to load versions:', error);
+      console.error("Failed to load versions:", error);
     } finally {
       setLoading(false);
     }
@@ -53,10 +58,13 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
     if (!compareFrom || !compareTo) return;
 
     try {
-      const result = await promptApi.compareVersions(compareFrom.id, compareTo.id);
+      const result = await promptApi.compareVersions(
+        compareFrom.id,
+        compareTo.id,
+      );
       setDiff(result);
     } catch (error) {
-      console.error('Failed to compare versions:', error);
+      console.error("Failed to compare versions:", error);
     }
   };
 
@@ -67,7 +75,7 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
       onRollback();
       loadVersions();
     } catch (error) {
-      console.error('Failed to rollback:', error);
+      console.error("Failed to rollback:", error);
     }
   };
 
@@ -91,10 +99,12 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
   return (
     <div className="flex h-full">
       {/* 版本列表 */}
-      <div className="w-64 border-r border-[var(--color-border)] overflow-y-auto">
-        <div className="p-3 border-b border-[var(--color-border)]">
+      <div className="w-64 border-r border-(--color-border) overflow-y-auto">
+        <div className="p-3 border-b border-(--color-border)">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium text-[var(--color-text-primary)]">版本列表</h4>
+            <h4 className="text-sm font-medium text-[var(--color-text-primary)]">
+              版本列表
+            </h4>
             <button
               onClick={() => {
                 setCompareMode(!compareMode);
@@ -104,8 +114,8 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
               }}
               className={`p-1.5 rounded transition-colors ${
                 compareMode
-                  ? 'bg-[var(--color-primary)] text-white'
-                  : 'text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)]'
+                  ? "bg-[var(--color-primary)] text-white"
+                  : "text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)]"
               }`}
               title="版本对比"
             >
@@ -135,18 +145,24 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
                 }
               }}
               className={`p-2 rounded-lg cursor-pointer transition-colors ${
-                selectedVersion?.id === version.id || compareFrom?.id === version.id || compareTo?.id === version.id
-                  ? 'bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30'
-                  : 'hover:bg-[var(--color-bg-tertiary)]'
+                selectedVersion?.id === version.id ||
+                compareFrom?.id === version.id ||
+                compareTo?.id === version.id
+                  ? "bg-[var(--color-primary)]/10 border border-(--color-primary)/30"
+                  : "hover:bg-[var(--color-bg-tertiary)]"
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {compareFrom?.id === version.id && (
-                    <span className="text-xs bg-blue-500 text-white px-1 rounded">A</span>
+                    <span className="text-xs bg-blue-500 text-white px-1 rounded">
+                      A
+                    </span>
                   )}
                   {compareTo?.id === version.id && (
-                    <span className="text-xs bg-green-500 text-white px-1 rounded">B</span>
+                    <span className="text-xs bg-green-500 text-white px-1 rounded">
+                      B
+                    </span>
                   )}
                   <span className="text-sm font-medium text-[var(--color-text-primary)]">
                     v{version.version}
@@ -181,7 +197,9 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
         {compareMode ? (
           <div className="p-4">
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-sm font-medium text-[var(--color-text-primary)]">版本对比</h4>
+              <h4 className="text-sm font-medium text-[var(--color-text-primary)]">
+                版本对比
+              </h4>
               <button
                 onClick={handleCompare}
                 disabled={!compareFrom || !compareTo}
@@ -215,8 +233,8 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
                   </div>
                 </div>
 
-                <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] overflow-hidden">
-                  <div className="p-3 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]">
+                <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
+                  <div className="p-3 border-b border-(--color-border) bg-[var(--color-bg-tertiary)]">
                     <span className="text-sm font-medium text-[var(--color-text-primary)]">
                       变更摘要
                     </span>
@@ -243,8 +261,8 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
                   </div>
                 </div>
 
-                <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] overflow-hidden">
-                  <div className="p-3 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]">
+                <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
+                  <div className="p-3 border-b border-(--color-border) bg-[var(--color-bg-tertiary)]">
                     <span className="text-sm font-medium text-[var(--color-text-primary)]">
                       详细差异
                     </span>
@@ -304,7 +322,9 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
               </div>
             ) : (
               <div className="text-center py-8 text-[var(--color-text-tertiary)]">
-                <p>已选择版本 v{compareFrom.version} 和 v{compareTo.version}</p>
+                <p>
+                  已选择版本 v{compareFrom.version} 和 v{compareTo.version}
+                </p>
                 <p className="text-xs mt-1">点击"开始对比"查看差异</p>
               </div>
             )}
@@ -328,7 +348,7 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
                       </button>
                       <button
                         onClick={() => setRollbackConfirm(null)}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)]"
+                        className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-[var(--color-bg-tertiary)]"
                       >
                         <CloseOutlined />
                         取消
@@ -337,7 +357,7 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
                   ) : (
                     <button
                       onClick={() => setRollbackConfirm(selectedVersion.id)}
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)]"
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-[var(--color-bg-tertiary)]"
                     >
                       <ReloadOutlined />
                       回滚到此版本
@@ -377,8 +397,8 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
                 </div>
               )}
 
-              <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] overflow-hidden">
-                <div className="p-3 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]">
+              <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
+                <div className="p-3 border-b border-(--color-border) bg-[var(--color-bg-tertiary)]">
                   <span className="text-sm font-medium text-[var(--color-text-primary)]">
                     提示词内容
                   </span>
@@ -389,8 +409,8 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
               </div>
 
               {selectedVersion.variables.length > 0 && (
-                <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] overflow-hidden">
-                  <div className="p-3 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]">
+                <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
+                  <div className="p-3 border-b border-(--color-border) bg-[var(--color-bg-tertiary)]">
                     <span className="text-sm font-medium text-[var(--color-text-primary)]">
                       变量 ({selectedVersion.variables.length})
                     </span>
@@ -398,7 +418,7 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
                   <div className="p-3">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-[var(--color-border)]">
+                        <tr className="border-b border-(--color-border)">
                           <th className="text-left py-2 text-[var(--color-text-tertiary)]">
                             变量名
                           </th>
@@ -414,7 +434,7 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
                         {selectedVersion.variables.map((variable) => (
                           <tr
                             key={variable.name}
-                            className="border-b border-[var(--color-border)]/50"
+                            className="border-b border-(--color-border)/50"
                           >
                             <td className="py-2">
                               <code className="text-[var(--color-primary)]">{`{{${variable.name}}}`}</code>
@@ -423,7 +443,7 @@ export default function PromptVersionHistory({ prompt, onRollback }: PromptVersi
                               {variable.type}
                             </td>
                             <td className="py-2 text-[var(--color-text-secondary)]">
-                              {variable.defaultValue || '-'}
+                              {variable.defaultValue || "-"}
                             </td>
                           </tr>
                         ))}

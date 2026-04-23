@@ -659,7 +659,7 @@ export default function Dashboard() {
               </div>
 
               {/* 底部统计摘要 */}
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-[var(--color-border)]">
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-(--color-border)">
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-2">
                     <div
@@ -797,7 +797,7 @@ export default function Dashboard() {
                 <Link key={action.path} to={action.path} className="group">
                   <Card
                     hoverable
-                    className="h-full transition-all group-hover:border-[var(--color-primary)]"
+                    className="h-full transition-all group-hover:border-(--color-primary)"
                     styles={{ body: { padding: "16px" } }}
                   >
                     <div className="flex items-start gap-3">

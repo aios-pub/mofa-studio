@@ -64,7 +64,7 @@ interface Props {
 
 function getClaw(agent: Agent): Record<string, unknown> {
   return (
-    ((agent.customParams as Record<string, unknown>)?.claw as Record<
+    ((agent.custom_params as Record<string, unknown>)?.claw as Record<
       string,
       unknown
     >) || {}
@@ -83,9 +83,7 @@ export default function OctosManagementPanel({ agent }: Props) {
   const [activeTab, setActiveTab] = useState("profiles");
   const [purgeReport, setPurgeReport] = useState<any>(null);
   const [purgeModalOpen, setPurgeModalOpen] = useState(false);
-  const [profileAgentCodes, setProfileAgentCodes] = useState<
-    Record<string, string>
-  >({});
+  const [profileAgentCodes] = useState<Record<string, string>>({});
 
   const { message } = App.useApp();
   const { email: userEmail } = useUserInfo();
@@ -368,8 +366,8 @@ export default function OctosManagementPanel({ agent }: Props) {
               key={p.id}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
                 selectedProfileId === p.id
-                  ? "border-[var(--color-primary)] bg-[var(--color-primary-bg)]"
-                  : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                  ? "border-(--color-primary) bg-(--color-primary-bg)"
+                  : "border-(--color-border) hover:border-(--color-primary)"
               }`}
               onClick={() => setSelectedProfileId(p.id)}
             >
@@ -556,7 +554,7 @@ export default function OctosManagementPanel({ agent }: Props) {
           />
 
           {/* Save Bar */}
-          <div className="flex items-center justify-between pt-4 border-t border-[var(--color-border)]">
+          <div className="flex items-center justify-between pt-4 border-t border-(--color-border)">
             <Space>
               <Button
                 icon={<ReloadOutlined />}

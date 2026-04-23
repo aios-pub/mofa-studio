@@ -91,9 +91,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
       </div>
 
       {/* 错误提示 */}
-      {error && (
-        <Alert title={error} type="error" showIcon className="mb-4" />
-      )}
+      {error && <Alert title={error} type="error" showIcon className="mb-4" />}
 
       {/* 表单 */}
       <Form
@@ -222,7 +220,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
       </div>
 
       {/* 测试账户提示 */}
-      <div className="mt-6 p-3 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]">
+      <div className="mt-6 p-3 rounded-lg bg-[var(--color-bg-secondary)] border border-(--color-border)">
         <p className="text-xs font-medium text-[var(--color-text-secondary)] mb-2">
           {t("auth.testAccounts", "测试账户：")}
         </p>

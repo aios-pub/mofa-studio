@@ -216,9 +216,9 @@ export default function TestSetsListPage() {
   return (
     <div className="flex h-full">
       {/* 左侧树形列表 */}
-      <div className="w-80 border-r border-[var(--color-border)] flex flex-col bg-[var(--color-bg-secondary)]">
+      <div className="w-80 border-r border-(--color-border) flex flex-col bg-[var(--color-bg-secondary)]">
         {/* 头部 */}
-        <div className="p-4 flex items-center justify-between border-b border-[var(--color-border)]">
+        <div className="p-4 flex items-center justify-between border-b border-(--color-border)">
           <Title level={5} style={{ margin: 0 }}>
             测试集管理
           </Title>
@@ -371,10 +371,13 @@ function TestSetDetail({
   }, [loadCases, loadReports]);
 
   useEffect(() => {
-    agentApi.getAll().then((list) => {
-      setAgents(list.map((a: any) => ({ id: a.id, name: a.name })));
-      if (list.length > 0) setSelectedAgentId(list[0].id);
-    }).catch(() => {});
+    agentApi
+      .getAll()
+      .then((list) => {
+        setAgents(list.map((a: any) => ({ id: a.id, name: a.name })));
+        if (list.length > 0) setSelectedAgentId(list[0].id);
+      })
+      .catch(() => {});
   }, []);
 
   // ==================== Test Run ====================
@@ -634,7 +637,7 @@ function TestSetDetail({
                   return (
                     <div
                       key={testCase.id}
-                      className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] overflow-hidden"
+                      className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden"
                     >
                       <div className="p-4">
                         <div className="flex items-start justify-between">
@@ -741,7 +744,7 @@ function TestSetDetail({
             ) : latestReport ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-4 gap-4">
-                  <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
+                  <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
                     <div className="flex items-center gap-2">
                       <FileTextOutlined className="text-[var(--color-text-tertiary)]" />
                       <span className="text-sm text-[var(--color-text-secondary)]">
@@ -752,7 +755,7 @@ function TestSetDetail({
                       {latestReport.totalCases}
                     </p>
                   </div>
-                  <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
+                  <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
                     <div className="flex items-center gap-2">
                       <CheckCircleOutlined className="text-green-500" />
                       <span className="text-sm text-[var(--color-text-secondary)]">
@@ -763,7 +766,7 @@ function TestSetDetail({
                       {latestReport.passedCases}
                     </p>
                   </div>
-                  <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
+                  <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
                     <div className="flex items-center gap-2">
                       <CloseCircleOutlined className="text-red-500" />
                       <span className="text-sm text-[var(--color-text-secondary)]">
@@ -774,7 +777,7 @@ function TestSetDetail({
                       {latestReport.failedCases}
                     </p>
                   </div>
-                  <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
+                  <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
                     <div className="flex items-center gap-2">
                       <BarChartOutlined className="text-[var(--color-text-tertiary)]" />
                       <span className="text-sm text-[var(--color-text-secondary)]">
@@ -797,7 +800,7 @@ function TestSetDetail({
 
                 {latestReport.totalDuration !== undefined &&
                   latestReport.totalDuration > 0 && (
-                    <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
+                    <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
                       <div className="flex items-center gap-2">
                         <ClockCircleOutlined className="text-[var(--color-text-tertiary)]" />
                         <span className="text-sm text-[var(--color-text-secondary)]">
@@ -811,8 +814,8 @@ function TestSetDetail({
                   )}
 
                 {/* 用例执行结果 */}
-                <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-                  <div className="p-3 border-b border-[var(--color-border)]">
+                <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
+                  <div className="p-3 border-b border-(--color-border)">
                     <span className="text-sm font-medium text-[var(--color-text-primary)]">
                       执行结果
                     </span>
@@ -872,7 +875,7 @@ function TestSetDetail({
                 {reports.map((report) => (
                   <div
                     key={report.id}
-                    className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4"
+                    className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4"
                   >
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">

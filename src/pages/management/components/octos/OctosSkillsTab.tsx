@@ -41,19 +41,56 @@ interface Props {
 }
 
 // 系统 Skill 到 Octos Skill 仓库的映射
-const SKILL_TO_OCTOS_REPO: Record<string, { repo: string; branch?: string; name: string }> = {
-  web_search: { repo: "github.com/octos/skills", branch: "main", name: "web-search" },
-  web_fetch: { repo: "github.com/octos/skills", branch: "main", name: "web-fetch" },
-  memory_search: { repo: "github.com/octos/skills", branch: "main", name: "memory" },
-  file_reader: { repo: "github.com/octos/skills", branch: "main", name: "file-ops" },
-  file_writer: { repo: "github.com/octos/skills", branch: "main", name: "file-ops" },
-  code_exec: { repo: "github.com/octos/skills", branch: "main", name: "code-exec" },
-  data_query: { repo: "github.com/octos/skills", branch: "main", name: "database" },
-  api_call: { repo: "github.com/octos/skills", branch: "main", name: "http-client" },
+const SKILL_TO_OCTOS_REPO: Record<
+  string,
+  { repo: string; branch?: string; name: string }
+> = {
+  web_search: {
+    repo: "github.com/octos/skills",
+    branch: "main",
+    name: "web-search",
+  },
+  web_fetch: {
+    repo: "github.com/octos/skills",
+    branch: "main",
+    name: "web-fetch",
+  },
+  memory_search: {
+    repo: "github.com/octos/skills",
+    branch: "main",
+    name: "memory",
+  },
+  file_reader: {
+    repo: "github.com/octos/skills",
+    branch: "main",
+    name: "file-ops",
+  },
+  file_writer: {
+    repo: "github.com/octos/skills",
+    branch: "main",
+    name: "file-ops",
+  },
+  code_exec: {
+    repo: "github.com/octos/skills",
+    branch: "main",
+    name: "code-exec",
+  },
+  data_query: {
+    repo: "github.com/octos/skills",
+    branch: "main",
+    name: "database",
+  },
+  api_call: {
+    repo: "github.com/octos/skills",
+    branch: "main",
+    name: "http-client",
+  },
 };
 
 export default function OctosSkillsTab({ profileId, apiClient }: Props) {
-  const [activeTab, setActiveTab] = useState<"installed" | "recommend">("installed");
+  const [activeTab, setActiveTab] = useState<"installed" | "recommend">(
+    "installed",
+  );
   const [loading, setLoading] = useState(true);
   const [installedSkills, setInstalledSkills] = useState<OctosSkillEntry[]>([]);
   const [systemSkills, setSystemSkills] = useState<Skill[]>([]);
@@ -223,7 +260,7 @@ function InstalledSkillsView({
       {skills.map((skill) => (
         <div
           key={skill.name}
-          className="flex items-center justify-between p-3 border border-[var(--color-border)] rounded hover:bg-[var(--color-action-hover)] transition-colors"
+          className="flex items-center justify-between p-3 border border-(--color-border) rounded hover:bg-[var(--color-action-hover)] transition-colors"
         >
           <div className="flex-1">
             <Space>
@@ -245,12 +282,7 @@ function InstalledSkillsView({
             title="确认卸载此 Skill？"
             onConfirm={() => onRemove(skill.name)}
           >
-            <Button
-              type="text"
-              danger
-              size="small"
-              icon={<DeleteOutlined />}
-            >
+            <Button type="text" danger size="small" icon={<DeleteOutlined />}>
               卸载
             </Button>
           </Popconfirm>
@@ -279,11 +311,11 @@ function RecommendSkillsView({
     installedSkills
       .map((s) => {
         const entry = Object.entries(SKILL_TO_OCTOS_REPO).find(
-          ([, v]) => v.name === s.name
+          ([, v]) => v.name === s.name,
         );
         return entry?.[0];
       })
-      .filter(Boolean)
+      .filter(Boolean),
   );
 
   if (systemSkills.length === 0) {
@@ -326,7 +358,9 @@ function RecommendSkillsView({
         {systemSkills.map((skill) => {
           const repoInfo = SKILL_TO_OCTOS_REPO[skill.id];
           const isInstalled = installedNames.has(skill.id);
-          const isRecommended = recommendedSkills.some((s) => s.id === skill.id);
+          const isRecommended = recommendedSkills.some(
+            (s) => s.id === skill.id,
+          );
 
           if (!repoInfo) {
             return null; // 没有对应仓库的 Skill 不显示
@@ -340,8 +374,8 @@ function RecommendSkillsView({
                 isInstalled
                   ? "border-green-500 bg-green-50"
                   : isRecommended
-                    ? "border-[var(--color-primary)] bg-[var(--color-primary-bg)]"
-                    : "border-[var(--color-border)] bg-[var(--color-bg-secondary)]"
+                    ? "border-(--color-primary) bg-(--color-primary-bg)"
+                    : "border-(--color-border) bg-[var(--color-bg-secondary)]"
               }`}
             >
               <Space orientation="vertical" size={8} className="w-full">

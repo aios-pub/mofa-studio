@@ -77,7 +77,7 @@ export default function SettingsPage() {
   return (
     <div className="h-full flex">
       {/* 左侧导航 */}
-      <div className="w-64 border-r border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
+      <div className="w-64 border-r border-(--color-border) bg-[var(--color-bg-secondary)]">
         <div className="p-4">
           <Title level={5} style={{ marginBottom: 16 }}>
             {t("settings.title")}

@@ -2,8 +2,8 @@
  * Agent 关联测试集选择器
  */
 
-import { useState, useEffect } from 'react';
-import { Input } from 'antd';
+import { useState, useEffect } from "react";
+import { Input } from "antd";
 import {
   SearchOutlined,
   CloseOutlined,
@@ -11,9 +11,9 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   LoadingOutlined,
-} from '@ant-design/icons';
-import { testSetApi } from '@/services';
-import type { TestSet } from '../../types/testset';
+} from "@ant-design/icons";
+import { testSetApi } from "@/services";
+import type { TestSet } from "../../types/testset";
 
 interface AgentTestSetSelectorProps {
   agentId: string;
@@ -28,7 +28,7 @@ export default function AgentTestSetSelector({
   onChange,
 }: AgentTestSetSelectorProps) {
   const [testSets, setTestSets] = useState<TestSet[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [runningTestSetId, setRunningTestSetId] = useState<string | null>(null);
 
@@ -42,7 +42,7 @@ export default function AgentTestSetSelector({
       const data = await testSetApi.getAll();
       setTestSets(data);
     } catch (error) {
-      console.error('Failed to load test sets:', error);
+      console.error("Failed to load test sets:", error);
     } finally {
       setLoading(false);
     }
@@ -62,7 +62,7 @@ export default function AgentTestSetSelector({
       await testSetApi.runTestSet(agentId, testSetId);
       await loadTestSets();
     } catch (error) {
-      console.error('Failed to run test:', error);
+      console.error("Failed to run test:", error);
     } finally {
       setRunningTestSetId(null);
     }
@@ -71,14 +71,14 @@ export default function AgentTestSetSelector({
   const filteredTestSets = testSets.filter(
     (t) =>
       t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (t.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (t.category || '').toLowerCase().includes(searchQuery.toLowerCase()),
+      (t.description || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (t.category || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   // 按分类分组
   const groupedTestSets = filteredTestSets.reduce(
     (acc, testSet) => {
-      const cat = testSet.category || '未分类';
+      const cat = testSet.category || "未分类";
       if (!acc[cat]) {
         acc[cat] = [];
       }
@@ -89,17 +89,21 @@ export default function AgentTestSetSelector({
   );
 
   // 已选择的测试集
-  const selectedTestSetObjects = testSets.filter((t) => selectedTestSets.includes(t.id));
+  const selectedTestSetObjects = testSets.filter((t) =>
+    selectedTestSets.includes(t.id),
+  );
 
   // 状态图标
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'running':
+      case "running":
         return <LoadingOutlined className="text-blue-500 animate-spin" />;
-      case 'completed':
+      case "completed":
         return <CheckCircleOutlined className="text-green-500" />;
       default:
-        return <ClockCircleOutlined className="text-[var(--color-text-tertiary)]" />;
+        return (
+          <ClockCircleOutlined className="text-[var(--color-text-tertiary)]" />
+        );
     }
   };
 
@@ -115,10 +119,12 @@ export default function AgentTestSetSelector({
             {selectedTestSetObjects.map((testSet) => (
               <div
                 key={testSet.id}
-                className="flex items-center gap-1 px-2 py-1 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30 rounded-lg"
+                className="flex items-center gap-1 px-2 py-1 bg-[var(--color-primary)]/10 border border-(--color-primary)/30 rounded-lg"
               >
                 {getStatusIcon(testSet.status)}
-                <span className="text-sm text-[var(--color-primary)]">{testSet.name}</span>
+                <span className="text-sm text-[var(--color-primary)]">
+                  {testSet.name}
+                </span>
                 <button
                   onClick={() => toggleTestSet(testSet.id)}
                   className="p-0.5 hover:bg-[var(--color-primary)]/20 rounded"
@@ -142,70 +148,74 @@ export default function AgentTestSetSelector({
 
       {/* 测试集列表 */}
       {loading ? (
-        <div className="text-center py-4 text-[var(--color-text-tertiary)]">加载中...</div>
+        <div className="text-center py-4 text-[var(--color-text-tertiary)]">
+          加载中...
+        </div>
       ) : (
         <div className="space-y-4 max-h-96 overflow-y-auto">
-          {Object.entries(groupedTestSets).map(([category, categoryTestSets]) => (
-            <div key={category}>
-              <h4 className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
-                {category}
-              </h4>
-              <div className="space-y-2">
-                {categoryTestSets.map((testSet) => {
-                  const isSelected = selectedTestSets.includes(testSet.id);
-                  const isRunning = runningTestSetId === testSet.id;
+          {Object.entries(groupedTestSets).map(
+            ([category, categoryTestSets]) => (
+              <div key={category}>
+                <h4 className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
+                  {category}
+                </h4>
+                <div className="space-y-2">
+                  {categoryTestSets.map((testSet) => {
+                    const isSelected = selectedTestSets.includes(testSet.id);
+                    const isRunning = runningTestSetId === testSet.id;
 
-                  return (
-                    <div
-                      key={testSet.id}
-                      className={`border rounded-lg p-3 transition-colors ${
-                        isSelected
-                          ? 'bg-[var(--color-primary)]/5 border-[var(--color-primary)]/30'
-                          : 'bg-[var(--color-bg-secondary)] border-[var(--color-border)] hover:border-[var(--color-border-hover)]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => toggleTestSet(testSet.id)}
-                          className="rounded border-[var(--color-border)]"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            {getStatusIcon(testSet.status)}
-                            <span className="text-sm font-medium text-[var(--color-text-primary)]">
-                              {testSet.name}
-                            </span>
+                    return (
+                      <div
+                        key={testSet.id}
+                        className={`border rounded-lg p-3 transition-colors ${
+                          isSelected
+                            ? "bg-[var(--color-primary)]/5 border-(--color-primary)/30"
+                            : "bg-[var(--color-bg-secondary)] border-(--color-border) hover:border-[var(--color-border-hover)]"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleTestSet(testSet.id)}
+                            className="rounded border-(--color-border)"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              {getStatusIcon(testSet.status)}
+                              <span className="text-sm font-medium text-[var(--color-text-primary)]">
+                                {testSet.name}
+                              </span>
+                            </div>
+                            <p className="text-xs text-[var(--color-text-tertiary)] truncate">
+                              {testSet.description}
+                            </p>
                           </div>
-                          <p className="text-xs text-[var(--color-text-tertiary)] truncate">
-                            {testSet.description}
-                          </p>
+                          <button
+                            onClick={() => runTest(testSet.id)}
+                            disabled={isRunning || testSet.status === "running"}
+                            className="flex items-center gap-1 px-2 py-1 text-xs bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-base)] border border-(--color-border) rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isRunning || testSet.status === "running" ? (
+                              <>
+                                <LoadingOutlined className="text-xs" spin />
+                                运行中
+                              </>
+                            ) : (
+                              <>
+                                <PlayCircleOutlined className="text-xs" />
+                                运行
+                              </>
+                            )}
+                          </button>
                         </div>
-                        <button
-                          onClick={() => runTest(testSet.id)}
-                          disabled={isRunning || testSet.status === 'running'}
-                          className="flex items-center gap-1 px-2 py-1 text-xs bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-base)] border border-[var(--color-border)] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {isRunning || testSet.status === 'running' ? (
-                            <>
-                              <LoadingOutlined className="text-xs" spin />
-                              运行中
-                            </>
-                          ) : (
-                            <>
-                              <PlayCircleOutlined className="text-xs" />
-                              运行
-                            </>
-                          )}
-                        </button>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ),
+          )}
         </div>
       )}
     </div>

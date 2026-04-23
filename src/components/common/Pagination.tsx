@@ -2,8 +2,8 @@
  * 分页组件 - 基于 Antd Pagination
  */
 
-import { Pagination as AntdPagination } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { Pagination as AntdPagination } from "antd";
+import { useTranslation } from "react-i18next";
 
 export interface PaginationProps {
   current: number;
@@ -32,7 +32,7 @@ export default function Pagination({
   if (total === 0) return null;
 
   return (
-    <div className="flex items-center justify-end py-3 px-4 bg-[var(--color-bg-secondary)] border-t border-[var(--color-border)]">
+    <div className="flex items-center justify-end py-3 px-4 bg-[var(--color-bg-secondary)] border-t border-(--color-border)">
       <AntdPagination
         current={current}
         pageSize={pageSize}
@@ -40,7 +40,12 @@ export default function Pagination({
         onChange={onChange}
         showSizeChanger={showSizeChanger}
         showQuickJumper={showQuickJumper}
-        showTotal={showTotal ? (total) => t('pagination.total', { total, defaultValue: `共 ${total} 条` }) : undefined}
+        showTotal={
+          showTotal
+            ? (total) =>
+                t("pagination.total", { total, defaultValue: `共 ${total} 条` })
+            : undefined
+        }
         pageSizeOptions={pageSizeOptions}
         size="small"
       />

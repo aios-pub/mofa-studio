@@ -413,7 +413,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
 
           {/* 测试连接 */}
           {getPrimaryProviderId(config) && (
-            <div className="flex items-start gap-4 pt-2 border-t border-[var(--color-border)]">
+            <div className="flex items-start gap-4 pt-2 border-t border-(--color-border)">
               <Space orientation="vertical" size={4} className="flex-1">
                 <Button
                   size="small"

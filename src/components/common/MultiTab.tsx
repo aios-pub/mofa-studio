@@ -315,7 +315,7 @@ export const MultiTabView: React.FC<MultiTabViewProps> = ({
   // 渲染标签
   const renderTab: TabsProps["renderTabBar"] = () => (
     <div
-      className={`flex items-center gap-1 px-4 py-2 bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)] ${className}`}
+      className={`flex items-center gap-1 px-4 py-2 bg-[var(--color-bg-secondary)] border-b border-(--color-border) ${className}`}
     >
       <div className="flex-1 overflow-x-auto scrollbar-hide">
         <div className="flex items-center gap-1">

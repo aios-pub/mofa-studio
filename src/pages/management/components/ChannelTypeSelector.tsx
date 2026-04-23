@@ -2,9 +2,9 @@
  * 渠道类型选择器组件
  */
 
-import { Modal } from 'antd';
-import { channelTypeConfig } from '@/services';
-import type { ChannelType } from '../../../types';
+import { Modal } from "antd";
+import { channelTypeConfig } from "@/services";
+import type { ChannelType } from "../../../types";
 
 interface ChannelTypeSelectorProps {
   open: boolean;
@@ -17,7 +17,10 @@ export default function ChannelTypeSelector({
   onClose,
   onSelect,
 }: ChannelTypeSelectorProps) {
-  const channelTypes = Object.entries(channelTypeConfig) as [ChannelType, typeof channelTypeConfig[ChannelType]][];
+  const channelTypes = Object.entries(channelTypeConfig) as [
+    ChannelType,
+    (typeof channelTypeConfig)[ChannelType],
+  ][];
 
   return (
     <Modal
@@ -32,7 +35,7 @@ export default function ChannelTypeSelector({
           <div
             key={type}
             onClick={() => onSelect(type)}
-            className="flex flex-col items-center p-4 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 cursor-pointer transition-all"
+            className="flex flex-col items-center p-4 rounded-lg border border-(--color-border) hover:border-(--color-primary) hover:bg-[var(--color-primary)]/5 cursor-pointer transition-all"
           >
             <span className="text-3xl mb-2">{config.icon}</span>
             <span className="font-medium text-[var(--color-text-primary)]">

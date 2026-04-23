@@ -3,11 +3,11 @@
  * 用于页面、卡片等加载中的展示
  */
 
-import React from 'react';
-import { Spin } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import React from "react";
+import { Spin } from "antd";
+import { LoadingOutlined } from "@ant-design/icons";
 
-export type LoadingSize = 'small' | 'default' | 'large';
+export type LoadingSize = "small" | "default" | "large";
 
 export interface LoadingStateProps {
   size?: LoadingSize;
@@ -23,19 +23,23 @@ const sizeMap: Record<LoadingSize, number> = {
 };
 
 export const LoadingState: React.FC<LoadingStateProps> = ({
-  size = 'default',
+  size = "default",
   tip,
   fullscreen = false,
-  className = '',
+  className = "",
 }) => {
   const content = (
-    <div className={`flex flex-col items-center justify-center gap-3 ${className}`}>
+    <div
+      className={`flex flex-col items-center justify-center gap-3 ${className}`}
+    >
       <Spin
         indicator={<LoadingOutlined style={{ fontSize: sizeMap[size] }} spin />}
         size={size}
       />
       {tip && (
-        <span className="text-sm text-[var(--color-text-secondary)]">{tip}</span>
+        <span className="text-sm text-[var(--color-text-secondary)]">
+          {tip}
+        </span>
       )}
     </div>
   );
@@ -59,7 +63,7 @@ export interface SkeletonProps {
 
 export const Skeleton: React.FC<SkeletonProps> = ({
   rows = 3,
-  className = '',
+  className = "",
 }) => {
   return (
     <div className={`space-y-3 ${className}`}>
@@ -68,7 +72,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
           key={i}
           className={`
             h-4 rounded skeleton
-            ${i === 0 ? 'w-3/4' : i === rows - 1 ? 'w-1/2' : 'w-full'}
+            ${i === 0 ? "w-3/4" : i === rows - 1 ? "w-1/2" : "w-full"}
           `}
         />
       ))}
@@ -77,8 +81,12 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 };
 
 // 卡片骨架屏
-export const CardSkeleton: React.FC<{ className?: string }> = ({ className = '' }) => (
-  <div className={`bg-[var(--color-bg-paper)] rounded-lg border border-[var(--color-border)] p-4 ${className}`}>
+export const CardSkeleton: React.FC<{ className?: string }> = ({
+  className = "",
+}) => (
+  <div
+    className={`bg-[var(--color-bg-paper)] rounded-lg border border-(--color-border) p-4 ${className}`}
+  >
     <div className="h-4 w-1/3 rounded skeleton mb-4" />
     <Skeleton rows={3} />
   </div>
@@ -87,7 +95,7 @@ export const CardSkeleton: React.FC<{ className?: string }> = ({ className = '' 
 // 表格骨架屏
 export const TableSkeleton: React.FC<{ rows?: number; className?: string }> = ({
   rows = 5,
-  className = '',
+  className = "",
 }) => (
   <div className={`space-y-2 ${className}`}>
     {/* Header */}
@@ -99,7 +107,7 @@ export const TableSkeleton: React.FC<{ rows?: number; className?: string }> = ({
     </div>
     {/* Rows */}
     {Array.from({ length: rows }).map((_, i) => (
-      <div key={i} className="flex gap-4 p-3 border-b border-[var(--color-border)]">
+      <div key={i} className="flex gap-4 p-3 border-b border-(--color-border)">
         <div className="h-4 w-1/4 rounded skeleton" />
         <div className="h-4 w-1/4 rounded skeleton" />
         <div className="h-4 w-1/4 rounded skeleton" />

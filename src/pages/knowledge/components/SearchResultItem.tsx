@@ -2,10 +2,14 @@
  * 搜索结果项组件
  */
 
-import { FileTextOutlined, CopyOutlined, CheckOutlined } from '@ant-design/icons';
-import { Tag, Button, message } from 'antd';
-import { useState } from 'react';
-import type { SearchResultItem } from '../../../types/knowledge';
+import {
+  FileTextOutlined,
+  CopyOutlined,
+  CheckOutlined,
+} from "@ant-design/icons";
+import { Tag, Button, message } from "antd";
+import { useState } from "react";
+import type { SearchResultItem } from "../../../types/knowledge";
 
 interface SearchResultItemProps {
   item: SearchResultItem;
@@ -13,7 +17,11 @@ interface SearchResultItemProps {
   onCopy?: (item: SearchResultItem) => void;
 }
 
-export default function SearchResultItemComponent({ item, query, onCopy }: SearchResultItemProps) {
+export default function SearchResultItemComponent({
+  item,
+  query,
+  onCopy,
+}: SearchResultItemProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -25,28 +33,31 @@ export default function SearchResultItemComponent({ item, query, onCopy }: Searc
     try {
       await navigator.clipboard.writeText(item.content);
       setCopied(true);
-      message.success('已复制到剪贴板');
+      message.success("已复制到剪贴板");
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      message.error('复制失败');
+      message.error("复制失败");
     }
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 0.85) return 'green';
-    if (score >= 0.7) return 'blue';
-    if (score >= 0.5) return 'orange';
-    return 'red';
+    if (score >= 0.85) return "green";
+    if (score >= 0.7) return "blue";
+    if (score >= 0.5) return "orange";
+    return "red";
   };
 
   const highlightContent = (content: string, searchQuery?: string) => {
     if (!searchQuery?.trim()) return content;
-    const regex = new RegExp(`(${searchQuery.trim()})`, 'gi');
-    return content.replace(regex, '<mark class="bg-yellow-200 px-0.5 rounded">$1</mark>');
+    const regex = new RegExp(`(${searchQuery.trim()})`, "gi");
+    return content.replace(
+      regex,
+      '<mark class="bg-yellow-200 px-0.5 rounded">$1</mark>',
+    );
   };
 
   return (
-    <div className="p-4 bg-[var(--color-bg-tertiary)] rounded-lg border border-[var(--color-border)] hover:border-[var(--color-primary)]/50 transition-colors">
+    <div className="p-4 bg-[var(--color-bg-tertiary)] rounded-lg border border-(--color-border) hover:border-(--color-primary)/50 transition-colors">
       {/* 头部 */}
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">
@@ -62,7 +73,13 @@ export default function SearchResultItemComponent({ item, query, onCopy }: Searc
           <Button
             type="text"
             size="small"
-            icon={copied ? <CheckOutlined className="text-green-500" /> : <CopyOutlined />}
+            icon={
+              copied ? (
+                <CheckOutlined className="text-green-500" />
+              ) : (
+                <CopyOutlined />
+              )
+            }
             onClick={handleCopy}
           />
         </div>
@@ -78,18 +95,14 @@ export default function SearchResultItemComponent({ item, query, onCopy }: Searc
 
       {/* 元数据 */}
       {item.metadata && (
-        <div className="mt-3 pt-3 border-t border-[var(--color-border)] flex flex-wrap gap-2 text-xs text-[var(--color-text-tertiary)]">
-          {item.metadata.source && (
-            <span>来源: {item.metadata.source}</span>
-          )}
-          {item.metadata.author && (
-            <span>· 作者: {item.metadata.author}</span>
-          )}
-          {item.metadata.title && (
-            <span>· 标题: {item.metadata.title}</span>
-          )}
+        <div className="mt-3 pt-3 border-t border-(--color-border) flex flex-wrap gap-2 text-xs text-[var(--color-text-tertiary)]">
+          {item.metadata.source && <span>来源: {item.metadata.source}</span>}
+          {item.metadata.author && <span>· 作者: {item.metadata.author}</span>}
+          {item.metadata.title && <span>· 标题: {item.metadata.title}</span>}
           {item.metadata.created && (
-            <span>· 创建于: {new Date(item.metadata.created).toLocaleDateString()}</span>
+            <span>
+              · 创建于: {new Date(item.metadata.created).toLocaleDateString()}
+            </span>
           )}
         </div>
       )}

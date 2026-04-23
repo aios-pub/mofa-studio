@@ -109,7 +109,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-(--color-border) bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-(--color-primary) transition-all"
               placeholder={t("auth.usernamePlaceholder", "请输入用户名")}
               required
             />
@@ -127,7 +127,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-(--color-border) bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-(--color-primary) transition-all"
               placeholder={t("auth.emailPlaceholder", "请输入邮箱")}
               required
             />
@@ -145,7 +145,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full pl-10 pr-12 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all"
+              className="w-full pl-10 pr-12 py-2.5 rounded-lg border border-(--color-border) bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-(--color-primary) transition-all"
               placeholder={t("auth.passwordPlaceholder", "请输入密码")}
               required
               minLength={6}
@@ -171,7 +171,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
               type={showPassword ? "text" : "password"}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-(--color-border) bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-(--color-primary) transition-all"
               placeholder={t(
                 "auth.confirmPasswordPlaceholder",
                 "请再次输入密码",

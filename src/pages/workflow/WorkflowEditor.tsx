@@ -2,8 +2,8 @@
  * 工作流编辑器页面
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   ReactFlow,
   Node,
@@ -18,9 +18,9 @@ import {
   MiniMap,
   BackgroundVariant,
   Panel,
-} from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
-import { Button, message, Tooltip, Dropdown } from 'antd';
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+import { Button, message, Tooltip, Dropdown } from "antd";
 import {
   SaveOutlined,
   PlayCircleOutlined,
@@ -34,24 +34,24 @@ import {
   SettingOutlined,
   HistoryOutlined,
   MoreOutlined,
-} from '@ant-design/icons';
-import { workflowApi, nodeTypeConfig } from '@/services';
-import NodePanel from './panels/NodePanel';
-import ConfigPanel from './panels/ConfigPanel';
-import { useWorkflowStore } from '../../stores/useWorkflowStore';
-import type { Workflow, NodeType, NodeConfig } from '../../types/workflow';
+} from "@ant-design/icons";
+import { workflowApi, nodeTypeConfig } from "@/services";
+import NodePanel from "./panels/NodePanel";
+import ConfigPanel from "./panels/ConfigPanel";
+import { useWorkflowStore } from "../../stores/useWorkflowStore";
+import type { Workflow, NodeType, NodeConfig } from "../../types/workflow";
 
 // 自定义节点组件
-import StartNode from './nodes/StartNode';
-import EndNode from './nodes/EndNode';
-import AgentNode from './nodes/AgentNode';
-import ConditionNode from './nodes/ConditionNode';
-import LoopNode from './nodes/LoopNode';
-import ParallelNode from './nodes/ParallelNode';
-import HttpRequestNode from './nodes/HttpRequestNode';
-import TransformNode from './nodes/TransformNode';
-import VariableNode from './nodes/VariableNode';
-import DelayNode from './nodes/DelayNode';
+import StartNode from "./nodes/StartNode";
+import EndNode from "./nodes/EndNode";
+import AgentNode from "./nodes/AgentNode";
+import ConditionNode from "./nodes/ConditionNode";
+import LoopNode from "./nodes/LoopNode";
+import ParallelNode from "./nodes/ParallelNode";
+import HttpRequestNode from "./nodes/HttpRequestNode";
+import TransformNode from "./nodes/TransformNode";
+import VariableNode from "./nodes/VariableNode";
+import DelayNode from "./nodes/DelayNode";
 
 // 节点类型映射
 const nodeTypes = {
@@ -101,31 +101,50 @@ export default function WorkflowEditorPage() {
       if (data) {
         setWorkflow(data);
         // 转换节点格式
-        const rfNodes = data.nodes.map((n: { id: string; type: string; position: { x: number; y: number }; config: Record<string, unknown> }) => ({
-          id: n.id,
-          type: n.type,
-          position: n.position,
-          data: { config: n.config, label: (n.config.config as { label?: string })?.label || '' },
-        }));
+        const rfNodes = data.nodes.map(
+          (n: {
+            id: string;
+            type: string;
+            position: { x: number; y: number };
+            config: Record<string, unknown>;
+          }) => ({
+            id: n.id,
+            type: n.type,
+            position: n.position,
+            data: {
+              config: n.config,
+              label: (n.config.config as { label?: string })?.label || "",
+            },
+          }),
+        );
         // 转换边格式
-        const rfEdges = data.edges.map((e: { id: string; sourceNodeId: string; targetNodeId: string; sourcePortId?: string; targetPortId?: string; label?: string }) => ({
-          id: e.id,
-          source: e.sourceNodeId,
-          target: e.targetNodeId,
-          sourceHandle: e.sourcePortId ?? undefined,
-          targetHandle: e.targetPortId ?? undefined,
-          label: e.label,
-          animated: true,
-        }));
+        const rfEdges = data.edges.map(
+          (e: {
+            id: string;
+            sourceNodeId: string;
+            targetNodeId: string;
+            sourcePortId?: string;
+            targetPortId?: string;
+            label?: string;
+          }) => ({
+            id: e.id,
+            source: e.sourceNodeId,
+            target: e.targetNodeId,
+            sourceHandle: e.sourcePortId ?? undefined,
+            targetHandle: e.targetPortId ?? undefined,
+            label: e.label,
+            animated: true,
+          }),
+        );
         setNodes(rfNodes);
         setEdges(rfEdges);
       } else {
-        message.error('工作流不存在');
-        navigate('/workflow');
+        message.error("工作流不存在");
+        navigate("/workflow");
       }
     } catch (error) {
-      console.error('Failed to load workflow:', error);
-      message.error('加载失败');
+      console.error("Failed to load workflow:", error);
+      message.error("加载失败");
     } finally {
       setLoading(false);
     }
@@ -149,16 +168,16 @@ export default function WorkflowEditorPage() {
         targetNodeId: e.target,
         sourcePortId: e.sourceHandle ?? undefined,
         targetPortId: e.targetHandle ?? undefined,
-        label: typeof e.label === 'string' ? e.label : undefined,
+        label: typeof e.label === "string" ? e.label : undefined,
       }));
       await workflowApi.update(workflow.id, {
         nodes: wfNodes,
         edges: wfEdges,
       });
-      message.success('保存成功');
+      message.success("保存成功");
     } catch (error) {
-      console.error('Failed to save workflow:', error);
-      message.error('保存失败');
+      console.error("Failed to save workflow:", error);
+      message.error("保存失败");
     } finally {
       setSaving(false);
     }
@@ -170,27 +189,27 @@ export default function WorkflowEditorPage() {
     try {
       await handleSave();
       await workflowApi.publish(workflow.id);
-      message.success('发布成功');
+      message.success("发布成功");
       loadWorkflow(workflow.id);
     } catch (error) {
-      console.error('Failed to publish workflow:', error);
-      message.error('发布失败');
+      console.error("Failed to publish workflow:", error);
+      message.error("发布失败");
     }
   };
 
   // 执行工作流
   const handleExecute = async () => {
-    if (!workflow || workflow.status !== 'published') {
-      message.warning('请先发布工作流');
+    if (!workflow || workflow.status !== "published") {
+      message.warning("请先发布工作流");
       return;
     }
     try {
       const execution = await workflowApi.execute(workflow.id);
-      message.success('工作流已开始执行');
+      message.success("工作流已开始执行");
       navigate(`/workflow/execution/${execution.id}`);
     } catch (error) {
-      console.error('Failed to execute workflow:', error);
-      message.error('执行失败');
+      console.error("Failed to execute workflow:", error);
+      message.error("执行失败");
     }
   };
 
@@ -199,7 +218,7 @@ export default function WorkflowEditorPage() {
     (changes: NodeChange[]) => {
       setNodes(applyNodeChanges(changes, nodes));
     },
-    [nodes, setNodes]
+    [nodes, setNodes],
   );
 
   // 边变化处理
@@ -207,7 +226,7 @@ export default function WorkflowEditorPage() {
     (changes: EdgeChange[]) => {
       setEdges(applyEdgeChanges(changes, edges));
     },
-    [edges, setEdges]
+    [edges, setEdges],
   );
 
   // 连接处理
@@ -215,7 +234,7 @@ export default function WorkflowEditorPage() {
     (connection: Connection) => {
       setEdges(addEdge({ ...connection, animated: true }, edges));
     },
-    [edges, setEdges]
+    [edges, setEdges],
   );
 
   // 节点点击处理
@@ -223,7 +242,7 @@ export default function WorkflowEditorPage() {
     (_: React.MouseEvent, node: Node) => {
       setSelectedNodeId(node.id);
     },
-    [setSelectedNodeId]
+    [setSelectedNodeId],
   );
 
   // 画布点击处理
@@ -237,7 +256,10 @@ export default function WorkflowEditorPage() {
       const newNode = {
         id: `node-${Date.now()}`,
         type,
-        position: { x: 200 + Math.random() * 100, y: 200 + Math.random() * 100 },
+        position: {
+          x: 200 + Math.random() * 100,
+          y: 200 + Math.random() * 100,
+        },
         data: {
           config: { type, config: { label: nodeTypeConfig[type].name } },
           label: nodeTypeConfig[type].name,
@@ -245,13 +267,13 @@ export default function WorkflowEditorPage() {
       };
       setNodes([...nodes, newNode]);
     },
-    [nodes, setNodes]
+    [nodes, setNodes],
   );
 
   // 选中的节点
   const selectedNode = useMemo(
     () => nodes.find((n) => n.id === selectedNodeId),
-    [nodes, selectedNodeId]
+    [nodes, selectedNodeId],
   );
 
   // 更新节点配置
@@ -259,11 +281,11 @@ export default function WorkflowEditorPage() {
     (nodeId: string, config: any) => {
       setNodes(
         nodes.map((n) =>
-          n.id === nodeId ? { ...n, data: { ...n.data, config } } : n
-        )
+          n.id === nodeId ? { ...n, data: { ...n.data, config } } : n,
+        ),
       );
     },
-    [nodes, setNodes]
+    [nodes, setNodes],
   );
 
   // 删除节点
@@ -275,7 +297,7 @@ export default function WorkflowEditorPage() {
         setSelectedNodeId(null);
       }
     },
-    [nodes, edges, selectedNodeId, setNodes, setEdges, setSelectedNodeId]
+    [nodes, edges, selectedNodeId, setNodes, setEdges, setSelectedNodeId],
   );
 
   if (loading) {
@@ -292,12 +314,12 @@ export default function WorkflowEditorPage() {
   return (
     <div className="h-full flex flex-col">
       {/* 顶部工具栏 */}
-      <div className="h-14 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)] flex items-center justify-between px-4">
+      <div className="h-14 border-b border-(--color-border) bg-[var(--color-bg-secondary)] flex items-center justify-between px-4">
         <div className="flex items-center gap-4">
           <Button
             type="text"
             icon={<ArrowLeftOutlined />}
-            onClick={() => navigate('/workflow')}
+            onClick={() => navigate("/workflow")}
           />
           <div>
             <h1 className="text-lg font-medium text-[var(--color-text-primary)]">
@@ -308,24 +330,36 @@ export default function WorkflowEditorPage() {
 
         <div className="flex items-center gap-2">
           <Tooltip title="撤销">
-            <Button icon={<UndoOutlined />} disabled={!canUndo} onClick={undo} />
+            <Button
+              icon={<UndoOutlined />}
+              disabled={!canUndo}
+              onClick={undo}
+            />
           </Tooltip>
           <Tooltip title="重做">
-            <Button icon={<RedoOutlined />} disabled={!canRedo} onClick={redo} />
+            <Button
+              icon={<RedoOutlined />}
+              disabled={!canRedo}
+              onClick={redo}
+            />
           </Tooltip>
           <div className="w-px h-6 bg-[var(--color-border)] mx-2" />
           <Button icon={<SaveOutlined />} loading={saving} onClick={handleSave}>
             保存
           </Button>
-          {workflow?.status === 'draft' && (
-            <Button type="primary" icon={<ShareAltOutlined />} onClick={handlePublish}>
+          {workflow?.status === "draft" && (
+            <Button
+              type="primary"
+              icon={<ShareAltOutlined />}
+              onClick={handlePublish}
+            >
               发布
             </Button>
           )}
           <Button
             type="primary"
             icon={<PlayCircleOutlined />}
-            disabled={workflow?.status !== 'published'}
+            disabled={workflow?.status !== "published"}
             onClick={handleExecute}
           >
             执行
@@ -333,8 +367,12 @@ export default function WorkflowEditorPage() {
           <Dropdown
             menu={{
               items: [
-                { key: 'versions', label: '版本历史', icon: <HistoryOutlined /> },
-                { key: 'settings', label: '设置', icon: <SettingOutlined /> },
+                {
+                  key: "versions",
+                  label: "版本历史",
+                  icon: <HistoryOutlined />,
+                },
+                { key: "settings", label: "设置", icon: <SettingOutlined /> },
               ],
             }}
           >
@@ -387,7 +425,9 @@ export default function WorkflowEditorPage() {
           <ConfigPanel
             node={selectedNode}
             onClose={() => setSelectedNodeId(null)}
-            onUpdate={(config) => handleUpdateNodeConfig(selectedNode.id, config)}
+            onUpdate={(config) =>
+              handleUpdateNodeConfig(selectedNode.id, config)
+            }
             onDelete={() => handleDeleteNode(selectedNode.id)}
           />
         )}

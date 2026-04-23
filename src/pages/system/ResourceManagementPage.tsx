@@ -3,8 +3,8 @@
  * 使用 Ant Design 组件重构
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Card,
   Table,
@@ -28,7 +28,7 @@ import {
   Alert,
   DatePicker,
   Switch,
-} from 'antd';
+} from "antd";
 import {
   SearchOutlined,
   ReloadOutlined,
@@ -48,39 +48,46 @@ import {
   MessageOutlined,
   RiseOutlined,
   DollarCircleOutlined,
-} from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
-import { PageHeader } from '@/components/common';
+} from "@ant-design/icons";
+import type { ColumnsType } from "antd/es/table";
+import { PageHeader } from "@/components/common";
 import type {
   ApiKey,
   ApiKeyStatus,
   ResourceQuota,
   ResourceUsageStats,
   QuotaLimits,
-} from '@/services';
-import { resourceApi, providerApi } from '@/services';
-import type { Provider } from '@/services/real/providers';
-import { formatDate } from '@/utils';
+} from "@/services";
+import { resourceApi, providerApi } from "@/services";
+import type { Provider } from "@/services/real/providers";
+import { formatDate } from "@/utils";
 
 const { Text } = Typography;
 
 // 将完整密钥转换为打码显示
 const maskApiKey = (fullKey?: string): string => {
-  if (!fullKey) return 'sk-***';
+  if (!fullKey) return "sk-***";
   if (fullKey.length <= 8) return `${fullKey}...`;
   return `${fullKey.slice(0, 8)}...${fullKey.slice(-4)}`;
 };
 
-const statusConfig: Record<ApiKeyStatus, { color: string; label: string; icon: React.ReactNode }> = {
-  active: { color: 'success', label: '有效', icon: <CheckCircleOutlined /> },
-  expired: { color: 'warning', label: '已过期', icon: <ExclamationCircleOutlined /> },
-  revoked: { color: 'error', label: '已撤销', icon: <CloseCircleOutlined /> },
+const statusConfig: Record<
+  ApiKeyStatus,
+  { color: string; label: string; icon: React.ReactNode }
+> = {
+  active: { color: "success", label: "有效", icon: <CheckCircleOutlined /> },
+  expired: {
+    color: "warning",
+    label: "已过期",
+    icon: <ExclamationCircleOutlined />,
+  },
+  revoked: { color: "error", label: "已撤销", icon: <CloseCircleOutlined /> },
 };
 
 export default function ResourceManagementPage() {
   const { t } = useTranslation();
   const { message } = App.useApp();
-  const [activeTab, setActiveTab] = useState('api-keys');
+  const [activeTab, setActiveTab] = useState("api-keys");
   const [loading, setLoading] = useState(true);
 
   // Providers state
@@ -88,12 +95,14 @@ export default function ResourceManagementPage() {
 
   // API Keys state
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [keySearchQuery, setKeySearchQuery] = useState('');
-  const [keyFilterProvider, setKeyFilterProvider] = useState<string>('');
-  const [keyFilterStatus, setKeyFilterStatus] = useState<ApiKeyStatus | ''>('');
+  const [keySearchQuery, setKeySearchQuery] = useState("");
+  const [keyFilterProvider, setKeyFilterProvider] = useState<string>("");
+  const [keyFilterStatus, setKeyFilterStatus] = useState<ApiKeyStatus | "">("");
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [newlyCreatedKey, setNewlyCreatedKey] = useState<string | null>(null);
-  const [editingKeyProvider, setEditingKeyProvider] = useState<ApiKey | null>(null);
+  const [editingKeyProvider, setEditingKeyProvider] = useState<ApiKey | null>(
+    null,
+  );
 
   // Quotas state
   const [quotas, setQuotas] = useState<ResourceQuota[]>([]);
@@ -108,7 +117,7 @@ export default function ResourceManagementPage() {
       const list = await providerApi.getAll();
       setProviders(list);
     } catch (error) {
-      console.error('Failed to load providers:', error);
+      console.error("Failed to load providers:", error);
     }
   }, []);
 
@@ -122,7 +131,7 @@ export default function ResourceManagementPage() {
       });
       setApiKeys(keys);
     } catch (error) {
-      console.error('Failed to load api keys:', error);
+      console.error("Failed to load api keys:", error);
     } finally {
       setLoading(false);
     }
@@ -134,7 +143,7 @@ export default function ResourceManagementPage() {
       const quotaList = await resourceApi.getQuotas();
       setQuotas(quotaList);
     } catch (error) {
-      console.error('Failed to load quotas:', error);
+      console.error("Failed to load quotas:", error);
     } finally {
       setLoading(false);
     }
@@ -146,17 +155,20 @@ export default function ResourceManagementPage() {
       const stats = await resourceApi.getUsageStats();
       setUsageStats(stats);
     } catch (error) {
-      console.error('Failed to load usage stats:', error);
+      console.error("Failed to load usage stats:", error);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const loadDataByTab = useCallback((tab: string) => {
-    if (tab === 'api-keys') loadApiKeys();
-    else if (tab === 'quotas') loadQuotas();
-    else if (tab === 'usage') loadUsageStats();
-  }, [loadApiKeys, loadQuotas, loadUsageStats]);
+  const loadDataByTab = useCallback(
+    (tab: string) => {
+      if (tab === "api-keys") loadApiKeys();
+      else if (tab === "quotas") loadQuotas();
+      else if (tab === "usage") loadUsageStats();
+    },
+    [loadApiKeys, loadQuotas, loadUsageStats],
+  );
 
   const handleTabChange = (key: string) => {
     setActiveTab(key);
@@ -172,22 +184,22 @@ export default function ResourceManagementPage() {
   const handleDeleteKey = async (id: string) => {
     try {
       await resourceApi.deleteApiKey(id);
-      message.success('密钥已删除');
+      message.success("密钥已删除");
       loadApiKeys();
     } catch (error) {
-      console.error('Failed to delete key:', error);
-      message.error('删除失败');
+      console.error("Failed to delete key:", error);
+      message.error("删除失败");
     }
   };
 
   const handleRevokeKey = async (id: string) => {
     try {
       await resourceApi.revokeApiKey(id);
-      message.success('密钥已撤销');
+      message.success("密钥已撤销");
       loadApiKeys();
     } catch (error) {
-      console.error('Failed to revoke key:', error);
-      message.error('撤销失败');
+      console.error("Failed to revoke key:", error);
+      message.error("撤销失败");
     }
   };
 
@@ -195,19 +207,19 @@ export default function ResourceManagementPage() {
     try {
       const result = await resourceApi.validateApiKey(id);
       if (result.valid) {
-        message.success('密钥有效');
+        message.success("密钥有效");
       } else {
         message.warning(result.message);
       }
     } catch (error) {
-      console.error('Failed to validate key:', error);
-      message.error('验证失败');
+      console.error("Failed to validate key:", error);
+      message.error("验证失败");
     }
   };
 
   const handleCopyKey = (key: string) => {
     navigator.clipboard.writeText(key);
-    message.success('已复制到剪贴板');
+    message.success("已复制到剪贴板");
   };
 
   const handleEditProvider = (key: ApiKey) => {
@@ -217,35 +229,38 @@ export default function ResourceManagementPage() {
   const handleUpdateProvider = async (id: string, providerId: string) => {
     try {
       await resourceApi.updateApiKey(id, { provider_id: providerId });
-      message.success('Provider 已更新');
+      message.success("Provider 已更新");
       setEditingKeyProvider(null);
       loadApiKeys();
     } catch (error) {
-      console.error('Failed to update provider:', error);
-      message.error('更新失败');
+      console.error("Failed to update provider:", error);
+      message.error("更新失败");
     }
   };
 
-  const handleUpdateQuota = async (id: string, limits: Partial<QuotaLimits>) => {
+  const handleUpdateQuota = async (
+    id: string,
+    limits: Partial<QuotaLimits>,
+  ) => {
     try {
       await resourceApi.updateQuota(id, { limits });
       setEditingQuota(null);
-      message.success('配额已更新');
+      message.success("配额已更新");
       loadQuotas();
     } catch (error) {
-      console.error('Failed to update quota:', error);
-      message.error('更新失败');
+      console.error("Failed to update quota:", error);
+      message.error("更新失败");
     }
   };
 
   const handleDeleteQuota = async (id: string) => {
     try {
       await resourceApi.deleteQuota(id);
-      message.success('配额已删除');
+      message.success("配额已删除");
       loadQuotas();
     } catch (error) {
-      console.error('Failed to delete quota:', error);
-      message.error('删除失败');
+      console.error("Failed to delete quota:", error);
+      message.error("删除失败");
     }
   };
 
@@ -259,11 +274,11 @@ export default function ResourceManagementPage() {
     try {
       await resourceApi.createQuota(data);
       setCreateQuotaModalOpen(false);
-      message.success('配额已创建');
+      message.success("配额已创建");
       loadQuotas();
     } catch (error) {
-      console.error('Failed to create quota:', error);
-      message.error('创建失败');
+      console.error("Failed to create quota:", error);
+      message.error("创建失败");
     }
   };
 
@@ -275,24 +290,27 @@ export default function ResourceManagementPage() {
 
   const formatCurrency = (amount: number) => `¥${amount.toFixed(2)}`;
 
-  const getProviderLabel = (providerId: string, providerName: string | null) => {
+  const getProviderLabel = (
+    providerId: string,
+    providerName: string | null,
+  ) => {
     if (providerName) return providerName;
     const found = providers.find((p) => p.id === providerId);
     return found?.name || providerId;
   };
 
   const getUsageColor = (percentage: number) => {
-    if (percentage >= 90) return '#ef4444';
-    if (percentage >= 70) return '#f59e0b';
-    return '#22c55e';
+    if (percentage >= 90) return "#ef4444";
+    if (percentage >= 70) return "#f59e0b";
+    return "#22c55e";
   };
 
   // API Keys 表格列
   const apiKeyColumns: ColumnsType<ApiKey> = [
     {
-      title: t('resource.keyName', '名称'),
-      dataIndex: 'name',
-      key: 'name',
+      title: t("resource.keyName", "名称"),
+      dataIndex: "name",
+      key: "name",
       render: (name: string, record: ApiKey) => (
         <div>
           <Text strong>{name}</Text>
@@ -307,15 +325,18 @@ export default function ResourceManagementPage() {
       ),
     },
     {
-      title: t('resource.provider', 'Provider'),
-      key: 'provider',
+      title: t("resource.provider", "Provider"),
+      key: "provider",
       width: 180,
       render: (_, record) => {
-        const providerLabel = getProviderLabel(record.provider_id, record.provider_name);
+        const providerLabel = getProviderLabel(
+          record.provider_id,
+          record.provider_name,
+        );
         const isMissing = !record.provider_name;
         return (
           <div className="flex items-center gap-2">
-            <span className={isMissing ? 'text-orange-500' : ''}>
+            <span className={isMissing ? "text-orange-500" : ""}>
               {providerLabel}
             </span>
             {isMissing && (
@@ -324,7 +345,9 @@ export default function ResourceManagementPage() {
                   type="link"
                   size="small"
                   className="!p-0 !h-auto"
-                  icon={<ExclamationCircleOutlined className="text-orange-500" />}
+                  icon={
+                    <ExclamationCircleOutlined className="text-orange-500" />
+                  }
                   onClick={() => handleEditProvider(record)}
                 />
               </Tooltip>
@@ -334,8 +357,8 @@ export default function ResourceManagementPage() {
       },
     },
     {
-      title: 'API 密钥',
-      key: 'fullKey',
+      title: "API 密钥",
+      key: "fullKey",
       width: 280,
       render: (_, record) => {
         // 显示打码的密钥
@@ -360,33 +383,36 @@ export default function ResourceManagementPage() {
       },
     },
     {
-      title: t('resource.keyStatus.status', '状态'),
-      dataIndex: 'status',
-      key: 'status',
+      title: t("resource.keyStatus.status", "状态"),
+      dataIndex: "status",
+      key: "status",
       width: 100,
       render: (status: ApiKeyStatus) => (
-        <Tag color={statusConfig[status].color} icon={statusConfig[status].icon}>
+        <Tag
+          color={statusConfig[status].color}
+          icon={statusConfig[status].icon}
+        >
           {statusConfig[status].label}
         </Tag>
       ),
     },
     {
-      title: t('resource.usageCount', '使用次数'),
-      dataIndex: 'usageCount',
-      key: 'usageCount',
+      title: t("resource.usageCount", "使用次数"),
+      dataIndex: "usageCount",
+      key: "usageCount",
       width: 100,
       render: (count: number) => formatNumber(count),
     },
     {
-      title: t('resource.lastUsed', '最后使用'),
-      dataIndex: 'lastUsedAt',
-      key: 'lastUsedAt',
+      title: t("resource.lastUsed", "最后使用"),
+      dataIndex: "lastUsedAt",
+      key: "lastUsedAt",
       width: 120,
       render: (date: Date) => <Text type="secondary">{formatDate(date)}</Text>,
     },
     {
-      title: t('common.actions', '操作'),
-      key: 'actions',
+      title: t("common.actions", "操作"),
+      key: "actions",
       width: 120,
       render: (_, record) => (
         <Space>
@@ -398,7 +424,7 @@ export default function ResourceManagementPage() {
               onClick={() => handleValidateKey(record.id)}
             />
           </Tooltip>
-          {record.status === 'active' && (
+          {record.status === "active" && (
             <Popconfirm
               title="确定要撤销此密钥吗？"
               onConfirm={() => handleRevokeKey(record.id)}
@@ -422,7 +448,12 @@ export default function ResourceManagementPage() {
             cancelText="取消"
           >
             <Tooltip title="删除密钥">
-              <Button type="text" size="small" danger icon={<DeleteOutlined />} />
+              <Button
+                type="text"
+                size="small"
+                danger
+                icon={<DeleteOutlined />}
+              />
             </Tooltip>
           </Popconfirm>
         </Space>
@@ -433,7 +464,7 @@ export default function ResourceManagementPage() {
   // Tabs 内容
   const tabItems = [
     {
-      key: 'api-keys',
+      key: "api-keys",
       label: (
         <span>
           <KeyOutlined />
@@ -473,7 +504,7 @@ export default function ResourceManagementPage() {
           <Card size="small">
             <Space wrap>
               <Input
-                placeholder={t('common.search', '搜索密钥...')}
+                placeholder={t("common.search", "搜索密钥...")}
                 prefix={<SearchOutlined />}
                 value={keySearchQuery}
                 onChange={(e) => setKeySearchQuery(e.target.value)}
@@ -494,17 +525,19 @@ export default function ResourceManagementPage() {
                 onChange={setKeyFilterStatus}
                 allowClear
                 style={{ width: 120 }}
-                options={Object.entries(statusConfig).map(([value, { label }]) => ({
-                  label,
-                  value,
-                }))}
+                options={Object.entries(statusConfig).map(
+                  ([value, { label }]) => ({
+                    label,
+                    value,
+                  }),
+                )}
               />
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
                 onClick={() => setCreateModalOpen(true)}
               >
-                {t('resource.createApiKey', '添加密钥')}
+                {t("resource.createApiKey", "添加密钥")}
               </Button>
             </Space>
           </Card>
@@ -520,8 +553,9 @@ export default function ResourceManagementPage() {
                 pageSize: 10,
                 showSizeChanger: true,
                 showQuickJumper: true,
-                showTotal: (total) => t('pagination.total', `共 ${total} 条`, { total }),
-                pageSizeOptions: ['10', '20', '50', '100'],
+                showTotal: (total) =>
+                  t("pagination.total", `共 ${total} 条`, { total }),
+                pageSizeOptions: ["10", "20", "50", "100"],
               }}
               locale={{
                 emptyText: (
@@ -537,7 +571,7 @@ export default function ResourceManagementPage() {
       ),
     },
     {
-      key: 'quotas',
+      key: "quotas",
       label: (
         <span>
           <SafetyOutlined />
@@ -558,9 +592,12 @@ export default function ResourceManagementPage() {
 
           <Row gutter={[16, 16]}>
             {quotas.map((quota) => {
-              const tokenPercentage = (quota.usage.tokens / quota.limits.maxTokens) * 100 || 0;
-              const requestPercentage = (quota.usage.requests / quota.limits.maxRequests) * 100 || 0;
-              const costPercentage = (quota.usage.cost / quota.limits.maxCost) * 100 || 0;
+              const tokenPercentage =
+                (quota.usage.tokens / quota.limits.maxTokens) * 100 || 0;
+              const requestPercentage =
+                (quota.usage.requests / quota.limits.maxRequests) * 100 || 0;
+              const costPercentage =
+                (quota.usage.cost / quota.limits.maxCost) * 100 || 0;
 
               return (
                 <Col key={quota.id} xs={24} lg={12}>
@@ -584,25 +621,35 @@ export default function ResourceManagementPage() {
                           cancelText="取消"
                         >
                           <Tooltip title="删除配额">
-                            <Button type="text" size="small" danger icon={<DeleteOutlined />} />
+                            <Button
+                              type="text"
+                              size="small"
+                              danger
+                              icon={<DeleteOutlined />}
+                            />
                           </Tooltip>
                         </Popconfirm>
                       </Space>
                     }
                   >
                     <p className="text-xs text-[var(--color-text-tertiary)] mb-4">
-                      {quota.targetType === 'global'
-                        ? '全局配额'
-                        : `${quota.targetType === 'user' ? '用户' : quota.targetType === 'department' ? '部门' : 'Agent'}: ${quota.targetName}`}
+                      {quota.targetType === "global"
+                        ? "全局配额"
+                        : `${quota.targetType === "user" ? "用户" : quota.targetType === "department" ? "部门" : "Agent"}: ${quota.targetName}`}
                     </p>
 
-                    <Space orientation="vertical" className="w-full" size="middle">
+                    <Space
+                      orientation="vertical"
+                      className="w-full"
+                      size="middle"
+                    >
                       {/* Tokens */}
                       <div>
                         <div className="flex justify-between text-xs mb-1">
                           <span>Tokens</span>
                           <span>
-                            {formatNumber(quota.usage.tokens)} / {formatNumber(quota.limits.maxTokens)}
+                            {formatNumber(quota.usage.tokens)} /{" "}
+                            {formatNumber(quota.limits.maxTokens)}
                           </span>
                         </div>
                         <Progress
@@ -618,7 +665,8 @@ export default function ResourceManagementPage() {
                         <div className="flex justify-between text-xs mb-1">
                           <span>请求数</span>
                           <span>
-                            {formatNumber(quota.usage.requests)} / {formatNumber(quota.limits.maxRequests)}
+                            {formatNumber(quota.usage.requests)} /{" "}
+                            {formatNumber(quota.limits.maxRequests)}
                           </span>
                         </div>
                         <Progress
@@ -634,7 +682,8 @@ export default function ResourceManagementPage() {
                         <div className="flex justify-between text-xs mb-1">
                           <span>费用</span>
                           <span>
-                            {formatCurrency(quota.usage.cost)} / {formatCurrency(quota.limits.maxCost)}
+                            {formatCurrency(quota.usage.cost)} /{" "}
+                            {formatCurrency(quota.limits.maxCost)}
                           </span>
                         </div>
                         <Progress
@@ -646,9 +695,14 @@ export default function ResourceManagementPage() {
                       </div>
                     </Space>
 
-                    <div className="flex justify-between text-xs text-[var(--color-text-tertiary)] mt-4 pt-3 border-t border-[var(--color-border)]">
+                    <div className="flex justify-between text-xs text-[var(--color-text-tertiary)] mt-4 pt-3 border-t border-(--color-border)">
                       <span>
-                        周期: {quota.period === 'daily' ? '每日' : quota.period === 'weekly' ? '每周' : '每月'}
+                        周期:{" "}
+                        {quota.period === "daily"
+                          ? "每日"
+                          : quota.period === "weekly"
+                            ? "每周"
+                            : "每月"}
                       </span>
                       <span>重置: {formatDate(quota.resetAt)}</span>
                     </div>
@@ -661,7 +715,7 @@ export default function ResourceManagementPage() {
       ),
     },
     {
-      key: 'usage',
+      key: "usage",
       label: (
         <span>
           <BarChartOutlined />
@@ -719,50 +773,60 @@ export default function ResourceManagementPage() {
             <Col xs={24} lg={12}>
               <Card title="Token 消耗分布">
                 <Space orientation="vertical" className="w-full">
-                  {Object.entries(usageStats.tokensByProvider ?? {}).map(([providerId, tokens]) => {
-                    const percentage = (tokens / usageStats.totalTokens) * 100 || 0;
-                    return (
-                      <div key={providerId}>
-                        <div className="flex justify-between text-xs mb-1">
-                          <span>{getProviderLabel(providerId, providerId)}</span>
-                          <span>
-                            {formatNumber(tokens)} ({percentage.toFixed(1)}%)
-                          </span>
+                  {Object.entries(usageStats.tokensByProvider ?? {}).map(
+                    ([providerId, tokens]) => {
+                      const percentage =
+                        (tokens / usageStats.totalTokens) * 100 || 0;
+                      return (
+                        <div key={providerId}>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span>
+                              {getProviderLabel(providerId, providerId)}
+                            </span>
+                            <span>
+                              {formatNumber(tokens)} ({percentage.toFixed(1)}%)
+                            </span>
+                          </div>
+                          <Progress
+                            percent={Math.min(percentage, 100)}
+                            strokeColor="var(--color-primary)"
+                            showInfo={false}
+                            size="small"
+                          />
                         </div>
-                        <Progress
-                          percent={Math.min(percentage, 100)}
-                          strokeColor="var(--color-primary)"
-                          showInfo={false}
-                          size="small"
-                        />
-                      </div>
-                    );
-                  })}
+                      );
+                    },
+                  )}
                 </Space>
               </Card>
             </Col>
             <Col xs={24} lg={12}>
               <Card title="费用分布">
                 <Space orientation="vertical" className="w-full">
-                  {Object.entries(usageStats.costByProvider ?? {}).map(([providerId, cost]) => {
-                    const percentage = (cost / usageStats.totalCost) * 100 || 0;
-                    return (
-                      <div key={providerId}>
-                        <div className="flex justify-between text-xs mb-1">
-                          <span>{getProviderLabel(providerId, providerId)}</span>
-                          <span>
-                            {formatCurrency(cost)} ({percentage.toFixed(1)}%)
-                          </span>
+                  {Object.entries(usageStats.costByProvider ?? {}).map(
+                    ([providerId, cost]) => {
+                      const percentage =
+                        (cost / usageStats.totalCost) * 100 || 0;
+                      return (
+                        <div key={providerId}>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span>
+                              {getProviderLabel(providerId, providerId)}
+                            </span>
+                            <span>
+                              {formatCurrency(cost)} ({percentage.toFixed(1)}%)
+                            </span>
+                          </div>
+                          <Progress
+                            percent={Math.min(percentage, 100)}
+                            strokeColor="#22c55e"
+                            showInfo={false}
+                            size="small"
+                          />
                         </div>
-                        <Progress
-                          percent={Math.min(percentage, 100)}
-                          strokeColor="#22c55e"
-                          showInfo={false}
-                          size="small"
-                        />
-                      </div>
-                    );
-                  })}
+                      );
+                    },
+                  )}
                 </Space>
               </Card>
             </Col>
@@ -772,10 +836,16 @@ export default function ResourceManagementPage() {
           <Card title="近 30 天使用趋势">
             <div className="h-48 flex items-end gap-1">
               {(usageStats.dailyUsage ?? []).map((day, index) => {
-                const maxTokens = Math.max(...(usageStats.dailyUsage ?? []).map((d) => d.tokens));
-                const height = maxTokens > 0 ? (day.tokens / maxTokens) * 100 : 0;
+                const maxTokens = Math.max(
+                  ...(usageStats.dailyUsage ?? []).map((d) => d.tokens),
+                );
+                const height =
+                  maxTokens > 0 ? (day.tokens / maxTokens) * 100 : 0;
                 return (
-                  <Tooltip key={index} title={`${day.date}: ${formatNumber(day.tokens)} tokens`}>
+                  <Tooltip
+                    key={index}
+                    title={`${day.date}: ${formatNumber(day.tokens)} tokens`}
+                  >
                     <div className="flex-1 flex flex-col items-center">
                       <div
                         className="w-full bg-[var(--color-primary)] rounded-t opacity-80 hover:opacity-100 transition-opacity cursor-pointer"
@@ -800,7 +870,7 @@ export default function ResourceManagementPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title={t('resource.title', '资源管理')}
+        title={t("resource.title", "资源管理")}
         description="管理 API 密钥、资源配额和使用统计"
         icon={<SafetyOutlined className="text-xl" />}
         actions={
@@ -809,13 +879,17 @@ export default function ResourceManagementPage() {
             onClick={() => loadDataByTab(activeTab)}
             loading={loading}
           >
-            {t('common.refresh', '刷新')}
+            {t("common.refresh", "刷新")}
           </Button>
         }
       />
 
       <Card>
-        <Tabs activeKey={activeTab} onChange={handleTabChange} items={tabItems} />
+        <Tabs
+          activeKey={activeTab}
+          onChange={handleTabChange}
+          items={tabItems}
+        />
       </Card>
 
       {/* 创建密钥弹窗 */}
@@ -830,7 +904,7 @@ export default function ResourceManagementPage() {
             keyPrefix: data.key,
             description: data.description,
             expiresAt: data.expiresAt,
-            createdBy: '当前用户',
+            createdBy: "当前用户",
           });
           setCreateModalOpen(false);
           setNewlyCreatedKey(result.fullKey);
@@ -902,17 +976,18 @@ function CreateKeyModal({
         name: values.name,
         provider_id: values.provider_id,
         key: values.key,
-        keyPrefix: values.key ? undefined : '', // 如果用户输入了密钥，不需要生成前缀
+        keyPrefix: values.key ? undefined : "", // 如果用户输入了密钥，不需要生成前缀
         description: values.description,
-        expiresAt: hasExpiry && values.expiresAt ? values.expiresAt.toDate() : undefined,
-        createdBy: '当前用户',
+        expiresAt:
+          hasExpiry && values.expiresAt ? values.expiresAt.toDate() : undefined,
+        createdBy: "当前用户",
       });
       form.resetFields();
       setHasExpiry(false);
     } catch (err: any) {
       if (err?.errorFields) return;
-      console.error('Failed to save:', err);
-      setError(err instanceof Error ? err.message : '保存失败');
+      console.error("Failed to save:", err);
+      setError(err instanceof Error ? err.message : "保存失败");
     } finally {
       setSaving(false);
     }
@@ -944,13 +1019,15 @@ function CreateKeyModal({
         <Form.Item
           name="name"
           label="密钥名称"
-          rules={[{ required: true, message: '请输入密钥名称' }]}
+          rules={[{ required: true, message: "请输入密钥名称" }]}
         >
           <Input placeholder="如：生产环境密钥" />
         </Form.Item>
 
         <Form.Item name="provider_id" label="Provider">
-          <Select options={providers.map((p) => ({ label: p.name, value: p.id }))} />
+          <Select
+            options={providers.map((p) => ({ label: p.name, value: p.id }))}
+          />
         </Form.Item>
 
         <Form.Item
@@ -965,7 +1042,7 @@ function CreateKeyModal({
           }
         >
           <Input
-            type={showKey ? 'text' : 'password'}
+            type={showKey ? "text" : "password"}
             placeholder="输入完整的 API 密钥"
             className="font-mono"
             suffix={
@@ -989,7 +1066,9 @@ function CreateKeyModal({
             {hasExpiry && (
               <Form.Item name="expiresAt" noStyle>
                 <DatePicker
-                  disabledDate={(current) => current && current < dayjs().startOf('day')}
+                  disabledDate={(current) =>
+                    current && current < dayjs().startOf("day")
+                  }
                 />
               </Form.Item>
             )}
@@ -997,7 +1076,14 @@ function CreateKeyModal({
         </Form.Item>
       </Form>
       {error && (
-        <Alert type="error" title={error} showIcon closable onClose={() => setError(null)} className="mt-3" />
+        <Alert
+          type="error"
+          title={error}
+          showIcon
+          closable
+          onClose={() => setError(null)}
+          className="mt-3"
+        />
       )}
     </Modal>
   );
@@ -1035,8 +1121,8 @@ function QuotaEditModal({
       form.resetFields();
     } catch (err: any) {
       if (err?.errorFields) return;
-      console.error('Failed to save:', err);
-      setError(err instanceof Error ? err.message : '保存失败');
+      console.error("Failed to save:", err);
+      setError(err instanceof Error ? err.message : "保存失败");
     } finally {
       setSaving(false);
     }
@@ -1071,7 +1157,14 @@ function QuotaEditModal({
         </Form.Item>
       </Form>
       {error && (
-        <Alert type="error" title={error} showIcon closable onClose={() => setError(null)} className="mt-3" />
+        <Alert
+          type="error"
+          title={error}
+          showIcon
+          closable
+          onClose={() => setError(null)}
+          className="mt-3"
+        />
       )}
     </Modal>
   );
@@ -1112,13 +1205,13 @@ function CreateQuotaModal({
           maxConversations: values.maxConversations ?? 0,
           maxCost: values.maxCost ?? 0,
         },
-        period: values.period ?? 'monthly',
+        period: values.period ?? "monthly",
       });
       form.resetFields();
     } catch (err: any) {
       if (err?.errorFields) return;
-      console.error('Failed to save:', err);
-      setError(err instanceof Error ? err.message : '创建失败');
+      console.error("Failed to save:", err);
+      setError(err instanceof Error ? err.message : "创建失败");
     } finally {
       setSaving(false);
     }
@@ -1144,12 +1237,19 @@ function CreateQuotaModal({
       <Form
         form={form}
         layout="vertical"
-        initialValues={{ targetType: 'global', period: 'monthly', maxTokens: 1000000, maxRequests: 10000, maxConversations: 5000, maxCost: 1000 }}
+        initialValues={{
+          targetType: "global",
+          period: "monthly",
+          maxTokens: 1000000,
+          maxRequests: 10000,
+          maxConversations: 5000,
+          maxCost: 1000,
+        }}
       >
         <Form.Item
           name="name"
           label="配额名称"
-          rules={[{ required: true, message: '请输入配额名称' }]}
+          rules={[{ required: true, message: "请输入配额名称" }]}
         >
           <Input placeholder="如：全局配额" />
         </Form.Item>
@@ -1157,10 +1257,10 @@ function CreateQuotaModal({
         <Form.Item name="targetType" label="目标类型">
           <Select
             options={[
-              { label: '全局', value: 'global' },
-              { label: '用户', value: 'user' },
-              { label: '部门', value: 'department' },
-              { label: 'Agent', value: 'agent' },
+              { label: "全局", value: "global" },
+              { label: "用户", value: "user" },
+              { label: "部门", value: "department" },
+              { label: "Agent", value: "agent" },
             ]}
           />
         </Form.Item>
@@ -1172,9 +1272,9 @@ function CreateQuotaModal({
         <Form.Item name="period" label="统计周期">
           <Select
             options={[
-              { label: '每日', value: 'daily' },
-              { label: '每周', value: 'weekly' },
-              { label: '每月', value: 'monthly' },
+              { label: "每日", value: "daily" },
+              { label: "每周", value: "weekly" },
+              { label: "每月", value: "monthly" },
             ]}
           />
         </Form.Item>
@@ -1196,14 +1296,21 @@ function CreateQuotaModal({
         </Form.Item>
       </Form>
       {error && (
-        <Alert type="error" title={error} showIcon closable onClose={() => setError(null)} className="mt-3" />
+        <Alert
+          type="error"
+          title={error}
+          showIcon
+          closable
+          onClose={() => setError(null)}
+          className="mt-3"
+        />
       )}
     </Modal>
   );
 }
 
 // Import dayjs for DatePicker
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 
 // 编辑 Provider 弹窗
 function EditProviderModal({
@@ -1235,8 +1342,8 @@ function EditProviderModal({
       await onSave(apiKey.id, values.provider_id);
     } catch (err: any) {
       if (err?.errorFields) return;
-      console.error('Failed to save:', err);
-      setError(err instanceof Error ? err.message : '保存失败');
+      console.error("Failed to save:", err);
+      setError(err instanceof Error ? err.message : "保存失败");
     } finally {
       setSaving(false);
     }
@@ -1264,7 +1371,7 @@ function EditProviderModal({
         <Form.Item
           name="provider_id"
           label="选择 Provider"
-          rules={[{ required: true, message: '请选择 Provider' }]}
+          rules={[{ required: true, message: "请选择 Provider" }]}
         >
           <Select
             options={providers.map((p) => ({ label: p.name, value: p.id }))}

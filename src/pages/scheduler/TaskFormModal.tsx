@@ -121,7 +121,7 @@ function AgentTestConfigForm({
   }, [loadOptions]);
 
   return (
-    <div className="space-y-4 p-3 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
+    <div className="space-y-4 p-3 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
       <h4 className="text-sm font-medium text-[var(--color-text-primary)]">
         Agent 测试配置
       </h4>
@@ -167,16 +167,19 @@ function AgentTestConfigForm({
         />
       </Form.Item>
 
-      {config.agent_ids && config.agent_ids.length > 0 && config.test_set_id && (
-        <div className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-1">
-          <Tag color="blue">{config.agent_ids.length} 个 Agent</Tag>
-          <span>×</span>
-          <Tag color="blue">
-            {testSets.find((t) => t.id === config.test_set_id)?.name || "测试集"}
-          </Tag>
-          <span>= 每次 {config.agent_ids.length} 组测试</span>
-        </div>
-      )}
+      {config.agent_ids &&
+        config.agent_ids.length > 0 &&
+        config.test_set_id && (
+          <div className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-1">
+            <Tag color="blue">{config.agent_ids.length} 个 Agent</Tag>
+            <span>×</span>
+            <Tag color="blue">
+              {testSets.find((t) => t.id === config.test_set_id)?.name ||
+                "测试集"}
+            </Tag>
+            <span>= 每次 {config.agent_ids.length} 组测试</span>
+          </div>
+        )}
     </div>
   );
 }
@@ -211,7 +214,7 @@ function AgentLoopConfigForm({
   const selectedAgent = agents.find((a) => a.id === config.agent_id);
 
   return (
-    <div className="space-y-4 p-3 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
+    <div className="space-y-4 p-3 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
       <h4 className="text-sm font-medium text-[var(--color-text-primary)]">
         Agent 调度配置
       </h4>
@@ -273,7 +276,9 @@ function AgentLoopConfigForm({
         <Form.Item label="超时时间" className="mb-0">
           <InputNumber
             value={config.timeout_seconds ?? 3600}
-            onChange={(v) => onChange({ ...config, timeout_seconds: v ?? 3600 })}
+            onChange={(v) =>
+              onChange({ ...config, timeout_seconds: v ?? 3600 })
+            }
             min={60}
             max={86400}
             style={{ width: "100%" }}
@@ -299,7 +304,7 @@ function GenericConfigForm({
   onChange: (config: TaskConfig) => void;
 }) {
   return (
-    <div className="p-3 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
+    <div className="p-3 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
       <p className="text-xs text-[var(--color-text-tertiary)] mb-2">
         任务配置（JSON）
       </p>
@@ -373,7 +378,10 @@ export default function TaskFormModal({
         message.warning("请选择测试集");
         return;
       }
-      if (!formData.config.agent_ids || formData.config.agent_ids.length === 0) {
+      if (
+        !formData.config.agent_ids ||
+        formData.config.agent_ids.length === 0
+      ) {
         message.warning("请至少选择一个 Agent");
         return;
       }

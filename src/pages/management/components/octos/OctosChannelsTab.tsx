@@ -4,19 +4,8 @@
  */
 
 import { useState, useEffect } from "react";
-import {
-  Typography,
-  Alert,
-  Card,
-  Space,
-  Tag,
-  Spin,
-  Empty,
-} from "antd";
-import {
-  InfoCircleOutlined,
-  CheckCircleOutlined,
-} from "@ant-design/icons";
+import { Typography, Alert, Card, Space, Tag, Spin, Empty } from "antd";
+import { InfoCircleOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import type { OctosProfileConfig } from "@/types/octos";
 import { channelApi } from "@/services";
 import { channelTypeConfig } from "@/services/mock/channels";
@@ -31,15 +20,15 @@ interface Props {
 
 // Octos 支持的渠道类型
 const OCTOS_SUPPORTED_CHANNEL_TYPES = [
-  'telegram',
-  'discord',
-  'slack',
-  'whatsapp',
-  'feishu',
-  'email',
-  'wecom_bot',
-  'qq_bot',
-  'wechat',
+  "telegram",
+  "discord",
+  "slack",
+  "whatsapp",
+  "feishu",
+  "email",
+  "wecom_bot",
+  "qq_bot",
+  "wechat",
 ] as const;
 
 export default function OctosChannelsTab({ config, onChange }: Props) {
@@ -54,9 +43,13 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
 
   // 当 config.channel_ids 或 channels 变化时，同步更新 selectedChannels
   useEffect(() => {
-    if (config.channel_ids && config.channel_ids.length > 0 && channels.length > 0) {
+    if (
+      config.channel_ids &&
+      config.channel_ids.length > 0 &&
+      channels.length > 0
+    ) {
       const current = channels.filter((c: Channel) =>
-        config.channel_ids?.includes(c.id)
+        config.channel_ids?.includes(c.id),
       );
       setSelectedChannels(current);
     } else if (!config.channel_ids || config.channel_ids.length === 0) {
@@ -70,7 +63,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
       const data = await channelApi.getAll();
       // 只显示 Octos 支持的渠道类型
       const supportedChannels = data.filter((c: Channel) =>
-        OCTOS_SUPPORTED_CHANNEL_TYPES.includes(c.type as any)
+        OCTOS_SUPPORTED_CHANNEL_TYPES.includes(c.type as any),
       );
       setChannels(supportedChannels);
     } catch (error) {
@@ -102,7 +95,6 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
 
     updateConfig({ channel_ids: newIds });
   };
-
 
   if (loading) {
     return (
@@ -152,14 +144,18 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={
               <div className="text-center">
-                <p className="text-[var(--color-text-tertiary)]">暂无可用渠道</p>
+                <p className="text-[var(--color-text-tertiary)]">
+                  暂无可用渠道
+                </p>
                 <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
                   请先在渠道管理页面添加渠道
                 </p>
                 <div className="mt-3 p-3 bg-[var(--color-bg-tertiary)] rounded text-left">
-                  <p className="text-xs font-medium mb-1">Octos 支持的渠道类型：</p>
+                  <p className="text-xs font-medium mb-1">
+                    Octos 支持的渠道类型：
+                  </p>
                   <p className="text-xs text-[var(--color-text-tertiary)] break-all font-mono">
-                    {OCTOS_SUPPORTED_CHANNEL_TYPES.join(', ')}
+                    {OCTOS_SUPPORTED_CHANNEL_TYPES.join(", ")}
                   </p>
                 </div>
               </div>
@@ -168,7 +164,9 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {channels.map((channel) => {
-              const isSelected = (config.channel_ids || []).includes(channel.id);
+              const isSelected = (config.channel_ids || []).includes(
+                channel.id,
+              );
               const typeConfig = channelTypeConfig[channel.type];
 
               return (
@@ -177,8 +175,8 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
                   size="small"
                   className={`cursor-pointer transition-all ${
                     isSelected
-                      ? "border-[var(--color-primary)] bg-[var(--color-primary-bg)]"
-                      : "border-[var(--color-border)] hover:border-[var(--color-primary)]/50"
+                      ? "border-(--color-primary) bg-(--color-primary-bg)"
+                      : "border-(--color-border) hover:border-(--color-primary)/50"
                   }`}
                   onClick={() => handleChannelToggle(channel.id)}
                 >
@@ -188,7 +186,10 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
                         <span className="text-2xl">{typeConfig?.icon}</span>
                         <div>
                           <div className="flex items-center gap-2">
-                            <Text strong className="text-[var(--color-text-primary)]">
+                            <Text
+                              strong
+                              className="text-[var(--color-text-primary)]"
+                            >
                               {channel.name}
                             </Text>
                             {isSelected && (
@@ -208,7 +209,12 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
                       >
                         {channel.enabled ? "已启用" : "已禁用"}
                       </Tag>
-                      <Tag color={channel.status === "active" ? "success" : "default"} className="text-xs">
+                      <Tag
+                        color={
+                          channel.status === "active" ? "success" : "default"
+                        }
+                        className="text-xs"
+                      >
                         {channel.status === "active" ? "正常" : "离线"}
                       </Tag>
                     </div>
@@ -222,7 +228,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
 
       {/* 已选渠道汇总 */}
       {selectedChannels.length > 0 && (
-        <div className="p-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
+        <div className="p-4 rounded-lg border border-(--color-border) bg-[var(--color-bg-secondary)]">
           <Text type="secondary" className="block mb-2">
             已选择 {selectedChannels.length} 个渠道
           </Text>
@@ -264,7 +270,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
             <div className="mt-2 p-2 bg-[var(--color-bg-tertiary)] rounded">
               <p className="font-medium mb-1">后端配置格式示例：</p>
               <pre className="text-xs text-[var(--color-text-tertiary)] overflow-x-auto">
-{`{
+                {`{
   "channels": [
     {
       "type": "feishu",

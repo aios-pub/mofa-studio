@@ -43,7 +43,7 @@ export default function LoginPage() {
             <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors">
               <GlobalOutlined />
             </button>
-            <div className="absolute right-0 top-full mt-1 py-1 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+            <div className="absolute right-0 top-full mt-1 py-1 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
               <button
                 onClick={() => setLanguage("zh-CN")}
                 className={`w-full px-4 py-2 text-left text-sm hover:bg-[var(--color-bg-tertiary)] ${
@@ -78,7 +78,7 @@ export default function LoginPage() {
                 <DesktopOutlined />
               )}
             </button>
-            <div className="absolute right-0 top-full mt-1 py-1 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+            <div className="absolute right-0 top-full mt-1 py-1 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
               <button
                 onClick={() => setTheme("light")}
                 className={`w-full px-4 py-2 text-left text-sm hover:bg-[var(--color-bg-tertiary)] flex items-center gap-2 ${

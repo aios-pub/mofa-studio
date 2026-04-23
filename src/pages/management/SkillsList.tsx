@@ -136,7 +136,7 @@ export default function SkillsListPage() {
       return (
         <div className="flex h-full">
           {/* 本地技能列表 */}
-          <div className="w-80 border-r border-[var(--color-border)] flex flex-col bg-[var(--color-bg-secondary)]">
+          <div className="w-80 border-r border-(--color-border) flex flex-col bg-[var(--color-bg-secondary)]">
             <LocalSkillsList
               selectedSkill={selectedSkill}
               onSelectSkill={setSelectedSkill}
@@ -202,7 +202,7 @@ export default function SkillsListPage() {
   return (
     <div className="flex flex-col h-full">
       {/* 顶部横向菜单 */}
-      <div className="border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
+      <div className="border-b border-(--color-border) bg-[var(--color-bg-secondary)]">
         <div className="flex items-center gap-1 px-4 py-2">
           <div className="flex gap-2">
             {menuGroups.map((group) => (

@@ -83,7 +83,7 @@ export interface OctosEmailSettings {
 
 /** Profile 配置 */
 export interface OctosProfileConfig {
-  // LLM 配置（新版结构）
+  // LLM 配置
   llm?: LlmProfileConfig | null;
   // API protocol type: "openai" or "anthropic"
   api_type?: string | null;

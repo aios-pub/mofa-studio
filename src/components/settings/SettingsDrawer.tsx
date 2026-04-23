@@ -128,7 +128,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
             icon={
               isFullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />
             }
-            className="h-10 border-dashed hover:!border-[var(--color-primary)] hover:!text-[var(--color-primary)]"
+            className="h-10 border-dashed hover:!border-(--color-primary) hover:!text-[var(--color-primary)]"
           >
             {isFullscreen
               ? t("settings.exitFullscreen", "退出全屏")

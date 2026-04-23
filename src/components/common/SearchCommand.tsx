@@ -301,7 +301,7 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
       }}
     >
       {/* 搜索输入框 */}
-      <div className="p-3 border-b border-[var(--color-border)]">
+      <div className="p-3 border-b border-(--color-border)">
         <Input
           prefix={
             <SearchOutlined className="text-[var(--color-text-tertiary)]" />
@@ -334,7 +334,9 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
                     <span className="text-lg">{item.icon}</span>
                     <div className="flex-1">
                       <div className="font-medium">{item.title}</div>
-                      <div className="text-xs text-[var(--color-text-tertiary)]">{item.category}</div>
+                      <div className="text-xs text-[var(--color-text-tertiary)]">
+                        {item.category}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -386,7 +388,7 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
       </div>
 
       {/* 底部提示 */}
-      <div className="px-4 py-2 border-t border-[var(--color-border)] flex items-center justify-between text-xs text-[var(--color-text-tertiary)]">
+      <div className="px-4 py-2 border-t border-(--color-border) flex items-center justify-between text-xs text-[var(--color-text-tertiary)]">
         <Space>
           <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-bg-tertiary)]">
             ↑

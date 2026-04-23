@@ -210,13 +210,19 @@ export function TestSetTree({
         ],
       };
     },
-    [keyMap, onCreateTestSet, onCreateCategory, onEditCategory, onDeleteCategory],
+    [
+      keyMap,
+      onCreateTestSet,
+      onCreateCategory,
+      onEditCategory,
+      onDeleteCategory,
+    ],
   );
 
   return (
     <div className="flex flex-col h-full">
       {/* 头部搜索 */}
-      <div className="p-3 space-y-2 border-b border-[var(--color-border)]">
+      <div className="p-3 space-y-2 border-b border-(--color-border)">
         <div className="flex items-center gap-2">
           <Input
             placeholder="搜索测试集..."
@@ -241,7 +247,12 @@ export function TestSetTree({
         {treeData.length === 0 ? (
           <div className="text-center py-8">
             <ExperimentOutlined
-              style={{ fontSize: 24, opacity: 0.5, marginBottom: 8, display: "block" }}
+              style={{
+                fontSize: 24,
+                opacity: 0.5,
+                marginBottom: 8,
+                display: "block",
+              }}
             />
             <span className="text-[var(--color-text-tertiary)] text-sm">
               暂无测试集
@@ -251,21 +262,27 @@ export function TestSetTree({
           <DirectoryTree
             treeData={treeData}
             onSelect={handleSelect}
-            selectedKeys={selectedTestSetId ? [`testset-${selectedTestSetId}`] : []}
+            selectedKeys={
+              selectedTestSetId ? [`testset-${selectedTestSetId}`] : []
+            }
             defaultExpandAll
             showIcon
             className="bg-transparent test-set-tree"
             titleRender={(nodeData) => {
               const nodeKey = nodeData.key as string;
               const entry = keyMap[nodeKey];
-              const isCategory = entry?.type === "category" || nodeKey === "uncategorized";
+              const isCategory =
+                entry?.type === "category" || nodeKey === "uncategorized";
               const menu = getContextMenu(nodeKey);
 
-              const categoryId = entry?.type === "category"
-                ? (entry.data as TestCategory).id
-                : undefined;
+              const categoryId =
+                entry?.type === "category"
+                  ? (entry.data as TestCategory).id
+                  : undefined;
 
-              const titleEl = <span className="text-[13px]">{nodeData.title as string}</span>;
+              const titleEl = (
+                <span className="text-[13px]">{nodeData.title as string}</span>
+              );
 
               if (isCategory) {
                 const inner = (

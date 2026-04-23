@@ -454,7 +454,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
       </Card>
 
       {/* 回退模型 */}
-      <Divider orientation="left" className="text-xs">
+      <Divider titlePlacement="left" className="text-xs">
         回退模型
       </Divider>
       <Alert

@@ -57,7 +57,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
   if (loading) {
     return (
       <div className="flex justify-center py-8">
-        <Spin tip="加载中..." />
+        <Spin description="加载中..." />
       </div>
     );
   }

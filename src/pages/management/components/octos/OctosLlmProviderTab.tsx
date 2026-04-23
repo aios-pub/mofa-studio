@@ -57,6 +57,25 @@ function getPrimaryModelId(config: OctosProfileConfig): string | null {
 }
 
 /**
+ * 获取主模型的数据库 ID（用于 Select 的 value）
+ * 需要通过 model_id (name) 在 providers 中查找对应的 id
+ */
+function getPrimaryModelDbId(
+  config: OctosProfileConfig,
+  providers: ProviderWithModels[],
+): string | null {
+  const modelName = getPrimaryModelId(config);
+  const providerId = getPrimaryProviderId(config);
+  if (!modelName || !providerId) return null;
+
+  const provider = providers.find((p) => p.id === providerId);
+  if (!provider) return null;
+
+  const model = provider.models.find((m) => m.name === modelName);
+  return model?.id || null;
+}
+
+/**
  * 获取回退配置列表，优先从 llm.fallbacks 获取
  */
 function getFallbackConfigs(
@@ -264,6 +283,9 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
       ? providers.find((p) => p.id === providerId)
       : null;
 
+    // 根据 modelId (id) 找到对应的 model，然后保存 model.name
+    const model = provider?.models.find((m) => m.id === modelId);
+
     onChange({
       ...config,
       llm: {
@@ -271,7 +293,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
         primary: provider
           ? {
               family_id: getFamilyId(provider),
-              model_id: modelId || undefined,
+              model_id: model?.name,
               route: {
                 route_id: providerId || undefined,
               },
@@ -388,7 +410,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
               </Text>
               <Select
                 className="w-full"
-                value={getPrimaryModelId(config) || undefined}
+                value={getPrimaryModelDbId(config, providers) || undefined}
                 placeholder="请选择模型..."
                 onChange={handleModelChange}
                 options={selectedProvider.models
@@ -551,14 +573,23 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
                   {fbProvider && (
                     <Select
                       className="w-full"
-                      value={fb.model_id || undefined}
+                      value={
+                        fb.model_id
+                          ? fbProvider.models.find((m) => m.name === fb.model_id)
+                              ?.id
+                          : undefined
+                      }
                       placeholder="选择模型..."
-                      onChange={(modelId) => {
+                      onChange={(modelDbId) => {
+                        // 根据 modelDbId 找到对应的 model，然后保存 model.name
+                        const model = fbProvider.models.find(
+                          (m) => m.id === modelDbId,
+                        );
                         const currentFallbacks = getFallbackConfigs(config);
                         const newFallbacks = [...currentFallbacks];
                         newFallbacks[idx] = {
                           ...newFallbacks[idx],
-                          model_id: modelId,
+                          model_id: model?.name,
                         };
                         onChange({
                           ...config,

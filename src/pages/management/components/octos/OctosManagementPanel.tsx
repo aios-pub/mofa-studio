@@ -558,25 +558,6 @@ export default function OctosManagementPanel({ agent }: Props) {
           {/* Save Bar */}
           <div className="flex items-center justify-between pt-4 border-t border-[var(--color-border)]">
             <Space>
-              <div className="flex items-center gap-2">
-                <Text type="secondary" className="text-sm">
-                  Agent Code:
-                </Text>
-                <Input
-                  value={
-                    profileAgentCodes[selectedProfile.id] ?? agent.agent_code
-                  }
-                  onChange={(e) =>
-                    setProfileAgentCodes((prev) => ({
-                      ...prev,
-                      [selectedProfile.id]: e.target.value,
-                    }))
-                  }
-                  placeholder="agent_code"
-                  className="w-48"
-                  size="small"
-                />
-              </div>
               <Button
                 icon={<ReloadOutlined />}
                 onClick={() => handleStartStop(selectedProfile.id, "restart")}

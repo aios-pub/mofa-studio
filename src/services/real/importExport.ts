@@ -79,6 +79,26 @@ const importExportRealApi = {
     });
   },
 
+  importCurl: async (
+    command: string,
+    testSetName?: string,
+    testSetId?: string,
+    options?: {
+      conflictResolution?: "skip" | "overwrite" | "rename";
+      includeAssertions?: boolean;
+      includePreScripts?: boolean;
+      includeTestScripts?: boolean;
+      includeEnvironment?: boolean;
+    },
+  ): Promise<ImportResult> => {
+    return await apiClient.post<ImportResult>("/api/testset/import/curl", {
+      command,
+      test_set_name: testSetName,
+      test_set_id: testSetId,
+      options: options ?? {},
+    });
+  },
+
   // ==================== 导出 ====================
 
   exportTestSet: async (

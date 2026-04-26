@@ -381,13 +381,21 @@ export default function TestSetsListPage() {
       <ImportModal
         open={importModalOpen}
         onClose={() => setImportModalOpen(false)}
-        onImport={async (format, content, options) => {
+        existingTestSets={testSets.map((ts) => ({ id: ts.id, name: ts.name }))}
+        onImport={async (format, content, options, targetTestSetId) => {
           try {
             let result;
             if (format === "postman") {
               result = await importExportApi.importPostman(content as any, options);
-            } else {
+            } else if (format === "openapi") {
               result = await importExportApi.importOpenAPI(content as any, options);
+            } else {
+              result = await importExportApi.importCurl(
+                content as string,
+                undefined,
+                targetTestSetId,
+                options,
+              );
             }
 
             message.success(

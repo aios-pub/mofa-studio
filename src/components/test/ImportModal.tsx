@@ -18,11 +18,13 @@ import {
   Progress,
   Card,
   Divider,
+  Input,
 } from "antd";
 import {
   InboxOutlined,
   FileTextOutlined,
   ApiOutlined,
+  CodeOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import type { UploadProps } from "antd/es/upload";
@@ -30,10 +32,16 @@ import type { UploadProps } from "antd/es/upload";
 const { Title, Text, Paragraph } = Typography;
 const { Dragger } = Upload;
 
+interface ExistingTestSet {
+  id: string;
+  name: string;
+}
+
 interface ImportModalProps {
   open: boolean;
   onClose: () => void;
-  onImport: (format: "postman" | "openapi", content: unknown, options: ImportOptions) => Promise<void>;
+  onImport: (format: "postman" | "openapi" | "curl", content: unknown, options: ImportOptions, targetTestSetId?: string) => Promise<void>;
+  existingTestSets?: ExistingTestSet[];
 }
 
 interface ImportOptions {
@@ -63,13 +71,15 @@ interface ParsedRequest {
   description?: string;
 }
 
-export function ImportModal({ open, onClose, onImport }: ImportModalProps) {
-  const [format, setFormat] = useState<"postman" | "openapi">("postman");
+export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: ImportModalProps) {
+  const [format, setFormat] = useState<"postman" | "openapi" | "curl">("postman");
   const [fileList, setFileList] = useState<any[]>([]);
   const [parsing, setParsing] = useState(false);
   const [parsedData, setParsedData] = useState<ParsedCollection | null>(null);
   const [importing, setImporting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
+  const [curlCommand, setCurlCommand] = useState("");
+  const [targetTestSetId, setTargetTestSetId] = useState<string>("");
 
   const [options, setOptions] = useState<ImportOptions>({
     conflictResolution: "skip",
@@ -86,7 +96,7 @@ export function ImportModal({ open, onClose, onImport }: ImportModalProps) {
         const content = e.target?.result;
         if (typeof content === "string") {
           const json = JSON.parse(content);
-          const parsed = parseCollection(format, json);
+          const parsed = parseCollection(format as "postman" | "openapi", json);
           setParsedData(parsed);
           onSuccess?.(file);
         }
@@ -215,6 +225,45 @@ export function ImportModal({ open, onClose, onImport }: ImportModalProps) {
     }
   };
 
+  const parseCurlCommand = (cmd: string): ParsedRequest | null => {
+    const trimmed = cmd.trim();
+    if (!trimmed.toLowerCase().startsWith("curl")) {
+      return null;
+    }
+
+    // 简单提取方法和 URL
+    let method = "GET";
+    let url = "";
+
+    const args = trimmed.substring(4).trim();
+
+    // 匹配 -X METHOD 或 --request METHOD
+    const methodMatch = args.match(/(?:-X\s+|--request\s+)(\w+)/i);
+    if (methodMatch) {
+      method = methodMatch[1].toUpperCase();
+    }
+
+    // 匹配 URL (以 http 开头的不在引号内的内容)
+    const urlMatch = args.match(/(https?:\/\/[^\s'"]+)/i);
+    if (urlMatch) {
+      url = urlMatch[1];
+    } else {
+      // 尝试匹配引号内的 URL
+      const quotedUrlMatch = args.match(/['"](https?:\/\/[^'"]+)['"]/i);
+      if (quotedUrlMatch) {
+        url = quotedUrlMatch[1];
+      }
+    }
+
+    if (!url) return null;
+
+    return {
+      name: `${method} ${url}`,
+      method,
+      url,
+    };
+  };
+
   const handleImport = async () => {
     if (!parsedData) return;
 
@@ -222,7 +271,11 @@ export function ImportModal({ open, onClose, onImport }: ImportModalProps) {
     setImportProgress(0);
 
     try {
-      await onImport(format, parsedData, options);
+      if (format === "curl") {
+        await onImport(format, curlCommand, options, targetTestSetId || undefined);
+      } else {
+        await onImport(format, parsedData, options);
+      }
       setImportProgress(100);
 
       Modal.success({
@@ -246,6 +299,8 @@ export function ImportModal({ open, onClose, onImport }: ImportModalProps) {
     setFileList([]);
     setParsedData(null);
     setFormat("postman");
+    setCurlCommand("");
+    setTargetTestSetId("");
     setOptions({
       conflictResolution: "skip",
       includeAssertions: true,
@@ -320,7 +375,13 @@ export function ImportModal({ open, onClose, onImport }: ImportModalProps) {
           <Text strong>导入格式</Text>
           <Select
             value={format}
-            onChange={setFormat}
+            onChange={(value) => {
+              setFormat(value);
+              setParsedData(null);
+              setFileList([]);
+              setCurlCommand("");
+              setTargetTestSetId("");
+            }}
             options={[
               {
                 label: (
@@ -338,29 +399,95 @@ export function ImportModal({ open, onClose, onImport }: ImportModalProps) {
                 ),
                 value: "openapi",
               },
+              {
+                label: (
+                  <Space>
+                    <CodeOutlined /> cURL 命令
+                  </Space>
+                ),
+                value: "curl",
+              },
             ]}
             className="w-full mt-1"
             disabled={parsing || importing}
           />
         </div>
 
-        {/* 文件上传 */}
-        <div>
-          <Text strong>上传文件</Text>
-          <div className="mt-1">
-            <Dragger {...uploadProps} disabled={parsing || importing}>
-              <p className="ant-upload-drag-icon">
-                <InboxOutlined />
-              </p>
-              <p className="ant-upload-text">
-                点击或拖拽文件到此区域上传
-              </p>
-              <p className="ant-upload-hint">
-                支持 JSON、YAML 格式
-              </p>
-            </Dragger>
+        {/* 输入区域：文件上传或 cURL 文本 */}
+        {format === "curl" ? (
+          <div className="space-y-4">
+            <div>
+              <Text strong>cURL 命令</Text>
+              <div className="mt-1">
+                <Input.TextArea
+                  rows={6}
+                  placeholder="在此粘贴 cURL 命令...&#10;例如: curl -X POST https://api.example.com/users -H 'Content-Type: application/json' -d '{&quot;name&quot;:&quot;test&quot;}'"
+                  value={curlCommand}
+                  onChange={(e) => {
+                    setCurlCommand(e.target.value);
+                    // 实时解析
+                    const parsed = parseCurlCommand(e.target.value);
+                    if (parsed) {
+                      setParsedData({
+                        name: "cURL 导入",
+                        testSets: [{
+                          name: "默认分组",
+                          requestCount: 1,
+                          requests: [parsed],
+                        }],
+                        totalRequests: 1,
+                      });
+                    } else {
+                      setParsedData(null);
+                    }
+                  }}
+                  disabled={importing}
+                  className="font-mono text-sm"
+                />
+              </div>
+            </div>
+
+            {/* 测试集选择 */}
+            {existingTestSets.length > 0 && (
+              <div>
+                <Text strong>导入到</Text>
+                <div className="mt-1">
+                  <Select
+                    value={targetTestSetId}
+                    onChange={setTargetTestSetId}
+                    placeholder="选择现有测试集或创建新测试集"
+                    options={[
+                      { label: "创建新测试集", value: "" },
+                      ...existingTestSets.map((ts) => ({
+                        label: ts.name,
+                        value: ts.id,
+                      })),
+                    ]}
+                    className="w-full"
+                    disabled={importing}
+                  />
+                </div>
+              </div>
+            )}
           </div>
-        </div>
+        ) : (
+          <div>
+            <Text strong>上传文件</Text>
+            <div className="mt-1">
+              <Dragger {...uploadProps} disabled={parsing || importing}>
+                <p className="ant-upload-drag-icon">
+                  <InboxOutlined />
+                </p>
+                <p className="ant-upload-text">
+                  点击或拖拽文件到此区域上传
+                </p>
+                <p className="ant-upload-hint">
+                  支持 JSON、YAML 格式
+                </p>
+              </Dragger>
+            </div>
+          </div>
+        )}
 
         {/* 解析结果 */}
         {parsedData && (

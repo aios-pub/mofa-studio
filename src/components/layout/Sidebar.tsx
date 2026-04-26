@@ -1,6 +1,7 @@
 /**
  * 侧边栏导航组件
  * 支持桌面端固定侧边栏和移动端抽屉模式
+ * 支持拖拽调整宽度
  */
 
 import { useNavigate, useLocation } from "react-router-dom";
@@ -35,6 +36,7 @@ import {
 import type { MenuProps } from "antd";
 import { useAppStore, useSettings } from "../../stores";
 import { useTheme } from "../../hooks";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 const { Sider } = Layout;
 
@@ -218,6 +220,10 @@ const menuItems: MenuProps["items"] = [
   },
 ];
 
+const MIN_WIDTH = 150;
+const MAX_WIDTH = 400;
+const DEFAULT_WIDTH = 224;
+
 export default function Sidebar({ isMobile = false }: SidebarProps) {
   const { sidebarCollapsed, toggleSidebar, setSidebarCollapsed } =
     useAppStore();
@@ -230,6 +236,40 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     ? false
     : settings.themeLayout === "mini" || sidebarCollapsed;
   const isHorizontal = settings.themeLayout === "horizontal";
+
+  const [siderWidth, setSiderWidth] = useState(DEFAULT_WIDTH);
+  const [isResizing, setIsResizing] = useState(false);
+  const siderRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (siderRef.current) {
+        const newWidth = e.clientX;
+        if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH) {
+          setSiderWidth(newWidth);
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isResizing]);
 
   // 主题相关样式
   const siderBg = isDark ? "#001529" : "#ffffff";
@@ -284,13 +324,18 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
 
   return (
     <Sider
+      ref={siderRef}
       collapsible
       collapsed={isMini}
       onCollapse={toggleSidebar}
-      width={224}
+      width={isMini ? 64 : siderWidth}
       collapsedWidth={64}
       className="h-screen overflow-hidden relative transition-all duration-300 ease-in-out border-r"
-      style={{ backgroundColor: siderBg, borderColor: borderColor }}
+      style={{
+        backgroundColor: siderBg,
+        borderColor: borderColor,
+        transition: isResizing ? "none" : undefined,
+      }}
       trigger={null}
     >
       <div
@@ -319,7 +364,10 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
         <Button
           type="text"
           size="small"
-          onClick={toggleSidebar}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleSidebar();
+          }}
           className="!absolute !right-0 translate-x-1/2 !w-7 !h-7 !rounded-full !border !border-(--color-border) !bg-[var(--color-bg-base)] hover:!bg-[var(--color-bg-secondary)] z-10 flex items-center justify-center"
           icon={
             isMini ? (
@@ -350,6 +398,20 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           className="!border-none"
         />
       </div>
+
+      {/* 拖拽调整宽度的手柄 */}
+      {!isMini && (
+        <div
+          className="absolute top-0 right-0 w-1 h-full cursor-col-resize z-20 hover:bg-[var(--color-primary)]/30 transition-colors"
+          style={{
+            backgroundColor: isResizing
+              ? "var(--color-primary)"
+              : "transparent",
+            opacity: isResizing ? 0.5 : 1,
+          }}
+          onMouseDown={handleMouseDown}
+        />
+      )}
     </Sider>
   );
 }

@@ -2,6 +2,7 @@
  * 可调整宽度的侧边栏组件
  * 支持鼠标拖拽调整宽度，带最小/最大宽度限制
  * 支持拖拽到最小尺寸后自动折叠
+ * 支持 localStorage 持久化宽度
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -16,6 +17,52 @@ interface ResizableSidebarProps {
   style?: React.CSSProperties;
   collapseThreshold?: number;
   collapsedWidth?: number;
+  storageKey?: string;
+}
+
+function getStoredWidth(key: string | undefined, defaultWidth: number): number {
+  if (!key) return defaultWidth;
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (typeof parsed.width === "number") {
+        return parsed.width;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return defaultWidth;
+}
+
+function getStoredCollapsed(key: string | undefined): boolean {
+  if (!key) return false;
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (typeof parsed.collapsed === "boolean") {
+        return parsed.collapsed;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return false;
+}
+
+function storeState(
+  key: string | undefined,
+  width: number,
+  collapsed: boolean,
+) {
+  if (!key) return;
+  try {
+    localStorage.setItem(key, JSON.stringify({ width, collapsed }));
+  } catch {
+    // ignore
+  }
 }
 
 export default function ResizableSidebar({
@@ -27,10 +74,14 @@ export default function ResizableSidebar({
   style,
   collapseThreshold = 20,
   collapsedWidth = 40,
+  storageKey,
 }: ResizableSidebarProps) {
-  const [width, setWidth] = useState(defaultWidth);
+  const storedWidth = getStoredWidth(storageKey, defaultWidth);
+  const storedCollapsed = getStoredCollapsed(storageKey);
+
+  const [width, setWidth] = useState(storedWidth);
   const [isResizing, setIsResizing] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(storedCollapsed);
   const [showCollapseBtn, setShowCollapseBtn] = useState(false);
 
   // 用 ref 保存最新值，避免事件监听器闭包捕获旧值
@@ -38,11 +89,16 @@ export default function ResizableSidebar({
   const collapsedRef = useRef(collapsed);
   const startXRef = useRef(0);
   const startWidthRef = useRef(0);
-  const preCollapseWidthRef = useRef(defaultWidth);
+  const preCollapseWidthRef = useRef(storedCollapsed ? storedWidth : defaultWidth);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { widthRef.current = width; }, [width]);
   useEffect(() => { collapsedRef.current = collapsed; }, [collapsed]);
+
+  // 持久化状态
+  useEffect(() => {
+    storeState(storageKey, width, collapsed);
+  }, [storageKey, width, collapsed]);
 
   // 拖拽逻辑
   useEffect(() => {

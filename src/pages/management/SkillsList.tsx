@@ -137,7 +137,7 @@ export default function SkillsListPage() {
       return (
         <div className="flex h-full">
           {/* 本地技能列表 */}
-          <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]">
+          <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]" storageKey="sidebar:skills">
             <LocalSkillsList
               selectedSkill={selectedSkill}
               onSelectSkill={setSelectedSkill}

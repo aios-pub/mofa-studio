@@ -219,7 +219,7 @@ export default function KnowledgeBaseListPage() {
 
   return (
     <div className="flex h-full">
-      <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]">
+      <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]" storageKey="sidebar:knowledge">
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">

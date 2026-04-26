@@ -8,6 +8,7 @@ import { Modal, Input, message } from "antd";
 import { conversationApi, agentApi } from "@/services";
 import { ConversationList } from "../../components/common";
 import { ChatContainer } from "../../components/conversation";
+import ResizableSidebar from "@/components/layout/ResizableSidebar";
 import type { Conversation, Agent, MessageAttachment } from "../../types";
 
 export default function ConversationPage() {
@@ -179,13 +180,17 @@ export default function ConversationPage() {
   return (
     <div className="flex h-full">
       {/* 左侧会话列表 */}
-      <div className="w-72 flex-shrink-0 border-r border-(--color-border)">
+      <ResizableSidebar
+        defaultWidth={288}
+        className="border-r border-(--color-border)"
+        storageKey="sidebar:conversation"
+      >
         <ConversationList
           onSelectConversation={handleSelectConversation}
           selectedId={selectedConversation?.id}
           onCreateConversation={handleCreateConversation}
         />
-      </div>
+      </ResizableSidebar>
 
       {/* 右侧对话区域 */}
       <div className="flex-1">

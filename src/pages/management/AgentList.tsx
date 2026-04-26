@@ -1773,7 +1773,7 @@ export default function AgentListPage() {
   return (
     <div className="flex h-full">
       {/* 左侧列表 */}
-      <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]">
+      <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]" storageKey="sidebar:agents">
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">

@@ -267,7 +267,7 @@ export default function TestSetsListPage() {
   return (
     <div className="flex h-full">
       {/* 左侧树形列表 */}
-      <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]">
+      <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]" storageKey="sidebar:test-sets">
         {/* 头部 */}
         <div className="p-4 flex items-center justify-between border-b border-(--color-border)">
           <Title level={5} style={{ margin: 0 }}>

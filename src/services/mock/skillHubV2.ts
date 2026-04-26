@@ -378,16 +378,16 @@ const skillHubV2MockApi = {
     newStatus: 'DELETED',
   }),
 
-  archiveSkill: async (namespace: string, slug: string): Promise<SkillLifecycleResponse> => ({
+  archiveSkill: async (_namespace: string, _slug: string): Promise<SkillLifecycleResponse> => ({
     skill_id: '1',
     action: 'archive',
-    newStatus: 'ARCHIVED',
+    new_status: 'ARCHIVED',
   }),
 
-  unarchiveSkill: async (namespace: string, slug: string): Promise<SkillLifecycleResponse> => ({
+  unarchiveSkill: async (_namespace: string, _slug: string): Promise<SkillLifecycleResponse> => ({
     skill_id: '1',
     action: 'unarchive',
-    newStatus: 'ACTIVE',
+    new_status: 'ACTIVE',
   }),
 
   // Social
@@ -401,23 +401,23 @@ const skillHubV2MockApi = {
     if (skill) skill.star_count--;
   },
 
-  checkStarred: async (skill_id: string): Promise<boolean> => false,
+  checkStarred: async (_skill_id: string): Promise<boolean> => false,
 
-  rateSkill: async (skill_id: string, score: number): Promise<void> => {},
+  rateSkill: async (_skill_id: string, _score: number): Promise<void> => {},
 
-  getRating: async (skill_id: string): Promise<SkillRatingStatus> => ({ score: 0, hasRated: false }),
+  getRating: async (_skill_id: string): Promise<SkillRatingStatus> => ({ score: 0, has_rated: false }),
 
   // Labels
-  getLabels: async (locale = 'zh-CN'): Promise<HubLabel[]> => mockLabels,
+  getLabels: async (_locale = 'zh-CN'): Promise<HubLabel[]> => mockLabels,
 
-  getSkillLabels: async (skill_id: string): Promise<HubLabel[]> => {
-    const skill = mockSkills.find(s => s.id === skill_id);
-    return skill?.labels || [];
+  getSkillLabels: async (_skill_id: string): Promise<HubLabel[]> => {
+    // const skill = mockSkills.find(s => s.id === skill_id);
+    return [];
   },
 
-  assignLabels: async (skill_id: string, labelIds: string[]): Promise<void> => {},
+  assignLabels: async (_skill_id: string, _labelIds: string[]): Promise<void> => {},
 
-  removeLabel: async (skill_id: string, labelId: string): Promise<void> => {},
+  removeLabel: async (_skill_id: string, _labelId: string): Promise<void> => {},
 
   createLabel: async (data: { slug: string; type: LabelType; translations: LabelTranslation[] }): Promise<LabelDefinition> => ({
     id: 'new-' + Date.now(),
@@ -441,22 +441,22 @@ const skillHubV2MockApi = {
     created_at: new Date(),
   }),
 
-  deleteLabel: async (id: string): Promise<void> => {},
+  deleteLabel: async (_id: string): Promise<void> => {},
 
   // Tags
-  getTags: async (namespace: string, slug: string): Promise<string[]> => {
-    const skill = mockSkills.find(s => s.namespace_slug === namespace && s.slug === slug);
-    return skill?.tags || [];
+  getTags: async (_namespace: string, _slug: string): Promise<string[]> => {
+    // const skill = mockSkills.find(s => s.namespace_slug === namespace && s.slug === slug);
+    return [];
   },
 
-  addTag: async (namespace: string, slug: string, tagName: string): Promise<void> => {},
+  addTag: async (_namespace: string, _slug: string, _tagName: string): Promise<void> => {},
 
-  removeTag: async (namespace: string, slug: string, tagName: string): Promise<void> => {},
+  removeTag: async (_namespace: string, _slug: string, _tagName: string): Promise<void> => {},
 
   // Reviews
-  submitReviewTask: async (skill_version_id: string): Promise<ReviewTask> => mockReviews[0],
+  submitReviewTask: async (_skill_version_id: string): Promise<ReviewTask> => mockReviews[0],
 
-  listReviews: async (params: { status?: string; page?: number; size?: number }): Promise<PageResponse<ReviewTask>> => ({
+  listReviews: async (_params: { status?: string; page?: number; size?: number }): Promise<PageResponse<ReviewTask>> => ({
     items: mockReviews,
     total: mockReviews.length,
     page: 0,
@@ -464,7 +464,7 @@ const skillHubV2MockApi = {
     total_pages: 1,
   }),
 
-  listPendingReviews: async (namespace_id: string, page = 0, size = 20): Promise<PageResponse<ReviewTask>> => ({
+  listPendingReviews: async (_namespace_id: string, _page = 0, _size = 20): Promise<PageResponse<ReviewTask>> => ({
     items: mockReviews,
     total: mockReviews.length,
     page,
@@ -472,7 +472,7 @@ const skillHubV2MockApi = {
     total_pages: 1,
   }),
 
-  listMyReviewSubmissions: async (page = 0, size = 20): Promise<PageResponse<ReviewTask>> => ({
+  listMyReviewSubmissions: async (_page = 0, _size = 20): Promise<PageResponse<ReviewTask>> => ({
     items: [],
     total: 0,
     page,
@@ -480,18 +480,18 @@ const skillHubV2MockApi = {
     total_pages: 0,
   }),
 
-  getReviewDetail: async (id: string): Promise<ReviewTask> => mockReviews[0],
+  getReviewDetail: async (_id: string): Promise<ReviewTask> => mockReviews[0],
 
-  approveReview: async (id: string, comment?: string): Promise<ReviewTask> => ({ ...mockReviews[0], status: 'APPROVED' }),
+  approveReview: async (_id: string, _comment?: string): Promise<ReviewTask> => ({ ...mockReviews[0], status: 'APPROVED' }),
 
-  rejectReview: async (id: string, comment?: string): Promise<ReviewTask> => ({ ...mockReviews[0], status: 'REJECTED' }),
+  rejectReview: async (_id: string, _comment?: string): Promise<ReviewTask> => ({ ...mockReviews[0], status: 'REJECTED' }),
 
-  withdrawReviewTask: async (id: string): Promise<void> => {},
+  withdrawReviewTask: async (_id: string): Promise<void> => {},
 
   // Reports
-  submitReport: async (namespace: string, slug: string, data: { reason: string; details?: string }): Promise<void> => {},
+  submitReport: async (_namespace: string, _slug: string, _data: { reason: string; details?: string }): Promise<void> => {},
 
-  listReports: async (params: { status?: string; page?: number; size?: number }): Promise<PageResponse<SkillReport>> => ({
+  listReports: async (_params: { status?: string; page?: number; size?: number }): Promise<PageResponse<SkillReport>> => ({
     items: mockReports,
     total: mockReports.length,
     page: 0,
@@ -499,25 +499,25 @@ const skillHubV2MockApi = {
     total_pages: 1,
   }),
 
-  resolveReport: async (id: string, data: { action: string; comment?: string }): Promise<void> => {},
+  resolveReport: async (_id: string, _data: { action: string; comment?: string }): Promise<void> => {},
 
   // Admin
-  hideSkill: async (skill_id: string, reason?: string): Promise<void> => {
-    const skill = mockSkills.find(s => s.id === skill_id);
-    if (skill) skill.hidden = true;
+  hideSkill: async (_skill_id: string, _reason?: string): Promise<void> => {
+    // const skill = mockSkills.find(s => s.id === skill_id);
+    // if (skill) skill.hidden = true;
   },
 
-  unhideSkill: async (skill_id: string): Promise<void> => {
-    const skill = mockSkills.find(s => s.id === skill_id);
-    if (skill) skill.hidden = false;
+  unhideSkill: async (_skill_id: string): Promise<void> => {
+    // const skill = mockSkills.find(s => s.id === skill_id);
+    // if (skill) skill.hidden = false;
   },
 
-  yankVersion: async (version_id: string, reason?: string): Promise<void> => {},
+  yankVersion: async (_version_id: string, _reason?: string): Promise<void> => {},
 
   // Namespaces
   listNamespaces: async (): Promise<HubNamespace[]> => mockNamespaces,
 
-  createNamespace: async (data: { slug: string; display_name: string; type: NamespaceType }): Promise<HubNamespace> => ({
+  createNamespace: async (_data: { slug: string; display_name: string; type: NamespaceType }): Promise<HubNamespace> => ({
     id: 'new-' + Date.now(),
     tenant_id: 'default',
     ...data,
@@ -527,35 +527,35 @@ const skillHubV2MockApi = {
     updated_at: new Date(),
   }),
 
-  getNamespace: async (id: string): Promise<HubNamespace> => mockNamespaces[0],
+  getNamespace: async (_id: string): Promise<HubNamespace> => mockNamespaces[0],
 
-  listMembers: async (namespace_id: string): Promise<NamespaceMember[]> => [],
+  listMembers: async (_namespace_id: string): Promise<NamespaceMember[]> => [],
 
-  addMember: async (namespace_id: string, userId: string, role: NamespaceRole): Promise<void> => {},
+  addMember: async (_namespace_id: string, _userId: string, _role: NamespaceRole): Promise<void> => {},
 
-  updateMemberRole: async (namespace_id: string, userId: string, role: NamespaceRole): Promise<void> => {},
+  updateMemberRole: async (_namespace_id: string, _userId: string, _role: NamespaceRole): Promise<void> => {},
 
-  removeMember: async (namespace_id: string, userId: string): Promise<void> => {},
+  removeMember: async (_namespace_id: string, _userId: string): Promise<void> => {},
 
   listTenantUsers: async (): Promise<TenantUser[]> => {
     return [
-      { id: 'user-1', username: 'admin', email: 'admin@example.com', nickname: '管理员', avatar: null },
-      { id: 'user-2', username: 'developer', email: 'dev@example.com', nickname: '开发者', avatar: null },
-      { id: 'user-3', username: 'tester', email: 'tester@example.com', nickname: '测试员', avatar: null },
-      { id: 'user-4', username: 'reviewer', email: 'reviewer@example.com', nickname: '审核员', avatar: null },
+      { id: 'user-1', username: 'admin', email: 'admin@example.com', nickname: '管理员' },
+      { id: 'user-2', username: 'developer', email: 'dev@example.com', nickname: '开发者' },
+      { id: 'user-3', username: 'tester', email: 'tester@example.com', nickname: '测试员' },
+      { id: 'user-4', username: 'reviewer', email: 'reviewer@example.com', nickname: '审核员' },
     ];
   },
 
   // Stats
   getStats: async (): Promise<HubStats> => ({
-    totalSkills: mockSkills.length,
-    totalDownloads: mockSkills.reduce((sum, s) => sum + s.download_count, 0),
-    totalNamespaces: mockNamespaces.length,
-    totalRatings: mockSkills.reduce((sum, s) => sum + s.rating_count, 0),
+    total_skills: mockSkills.length,
+    total_downloads: mockSkills.reduce((sum, s) => sum + s.download_count, 0),
+    total_namespaces: mockNamespaces.length,
+    total_ratings: mockSkills.reduce((sum, s) => sum + s.rating_count, 0),
   }),
 
   // Promotion
-  submitPromotion: async (data: { source_skill_id: string; source_version_id: string; target_namespace_id: string }): Promise<{ id: string }> => ({
+  submitPromotion: async (_data: { source_skill_id: string; source_version_id: string; target_namespace_id: string }): Promise<{ id: string }> => ({
     id: 'promo-' + Date.now(),
   }),
 
@@ -567,7 +567,7 @@ const skillHubV2MockApi = {
     total_pages: 0,
   }),
 
-  approvePromotion: async (id: string, data?: { comment?: string }): Promise<any> => ({
+  approvePromotion: async (_id: string, _data?: { comment?: string }): Promise<any> => ({
     new_skill_id: 'new-' + Date.now(),
     new_version_id: 'v-' + Date.now(),
     target_namespace: 'global',
@@ -575,7 +575,7 @@ const skillHubV2MockApi = {
     target_version: '1.0.0',
   }),
 
-  rejectPromotion: async (id: string, data?: { comment?: string }): Promise<void> => {},
+  rejectPromotion: async (_id: string, _data?: { comment?: string }): Promise<void> => {},
 
   // API Tokens
   getTokens: async (params?: { page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> => ({
@@ -585,17 +585,17 @@ const skillHubV2MockApi = {
     size: params?.size || 20,
   }),
 
-  createToken: async (data: { name: string; scopes?: string[]; expirationMode?: string; customExpiresAt?: string }): Promise<{ token: string; id: string; name: string; tokenPrefix: string; created_at: string }> => ({
+  createToken: async (_data: { name: string; scopes?: string[]; expirationMode?: string; customExpiresAt?: string }): Promise<{ token: string; id: string; name: string; tokenPrefix: string; created_at: string }> => ({
     token: 'mock-token-' + Date.now() + '-' + Math.random().toString(36).substring(7),
     id: 'token-' + Date.now(),
-    name: data.name,
+    name: 'mock-token',
     tokenPrefix: 'mock_' + Math.random().toString(36).substring(2, 10),
     created_at: new Date().toISOString(),
   }),
 
-  deleteToken: async (id: string): Promise<void> => {},
+  deleteToken: async (_id: string): Promise<void> => {},
 
-  updateTokenExpiration: async (id: string, expiresAt?: string): Promise<void> => {},
+  updateTokenExpiration: async (_id: string, _expiresAt?: string): Promise<void> => {},
 };
 
 export { skillHubV2MockApi };

@@ -91,6 +91,11 @@ const menuItems: MenuProps["items"] = [
     label: "测试集管理",
   },
   {
+    key: "/management/load-test",
+    icon: <BarChartOutlined />,
+    label: "压测管理",
+  },
+  {
     key: "/management/channels",
     icon: <LinkOutlined />,
     label: "渠道管理",

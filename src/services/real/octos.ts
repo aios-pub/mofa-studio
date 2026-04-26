@@ -334,11 +334,11 @@ export class OctosApiClient {
 
 /**
  * 从 Agent 创建 OctosApiClient
- * 读取 customParams.claw 中的 endpointUrl 和 authConfig
+ * 读取 custom_params.claw 中的 endpointUrl 和 authConfig
  */
 export function createOctosApiClient(agent: Agent): OctosApiClient {
   const claw =
-    ((agent.customParams as Record<string, unknown>)?.claw as Record<
+    ((agent.custom_params as Record<string, unknown>)?.claw as Record<
       string,
       unknown
     >) || {};

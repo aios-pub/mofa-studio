@@ -176,7 +176,7 @@ export default function ConversationList({
                     {/* Agent 分组标题 */}
                     <div className="flex items-center gap-2 px-2 py-1 text-xs font-medium text-[var(--color-text-tertiary)]">
                       <span>{agent.avatar || "🤖"}</span>
-                      <span>{agent.name}</span>
+                      <span>{agent.agent_name}</span>
                       <span className="text-[var(--color-text-tertiary)]">
                         ({groupConvs.length})
                       </span>

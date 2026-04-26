@@ -94,7 +94,7 @@ export interface OctosProfileConfig {
   admin_mode?: boolean;
   hooks?: HookConfig[];
   sandbox?: SandboxConfig;
-  channel_ids?: [];
+  channel_ids?: string[];
   // 允许额外的未知字段（对应 Rust 的 flatten extra）
   [key: string]: unknown;
 }

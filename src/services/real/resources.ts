@@ -128,7 +128,7 @@ function mapApiKey(raw: BackendApiKey): ApiKey {
     lastUsedAt: parseDate(raw.last_used_at),
     usageCount: raw.usage_count || 0,
     createdBy: raw.created_by || "",
-    createdAt: parseDate(raw.create_time),
+    createdAt: parseDate(raw.create_time) || new Date(),
   };
 }
 

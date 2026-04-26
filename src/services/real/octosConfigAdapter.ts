@@ -7,6 +7,7 @@ import type {
   OctosProfileConfig,
   OctosChannelCredentials,
 } from "@/types/octos";
+import type { Channel } from "@/types/channel";
 import { channelApi } from "@/services";
 
 /**
@@ -14,7 +15,7 @@ import { channelApi } from "@/services";
  * 将渠道的 config 转换为扁平的 Octos 格式（字段直接在对象上）
  * 额外保存 channel_id 用于回显时的匹配
  */
-function channelToOctosFormat(channel: any): OctosChannelCredentials {
+function channelToOctosFormat(channel: Channel): OctosChannelCredentials {
   const octosChannel: any = { type: channel.type };
 
   // 保存 channel_id 用于回显时的精确匹配
@@ -87,8 +88,7 @@ function channelToOctosFormat(channel: any): OctosChannelCredentials {
       break;
 
     case "wechat_work":
-    case "wecom_bot":
-      octosChannel.type = "wecom_bot";
+      octosChannel.type = "wecom_bot" as const;
       octosChannel.corp_id_env = channel.config.corp_id;
       octosChannel.agent_id_env = channel.config.agent_id;
       octosChannel.secret_env = channel.config.secret;
@@ -97,6 +97,7 @@ function channelToOctosFormat(channel: any): OctosChannelCredentials {
       }
       break;
 
+    // @ts-expect-error - qq_bot is supported by Octos but not defined in ChannelType yet
     case "qq_bot":
       octosChannel.bot_token_env =
         channel.config.bot_token || channel.config.access_token;
@@ -133,7 +134,7 @@ export async function toBackendFormat(
   if (frontendConfig.channel_ids && frontendConfig.channel_ids.length > 0) {
     try {
       const channels = await channelApi.getAll();
-      const selectedChannels = channels.filter((c: any) =>
+      const selectedChannels = channels.filter((c: Channel) =>
         frontendConfig.channel_ids?.includes(c.id),
       );
 

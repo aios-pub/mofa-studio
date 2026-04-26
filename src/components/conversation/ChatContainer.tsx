@@ -118,10 +118,10 @@ export default function ChatContainer({
 
     // 检查是否需要填写参数
     if (
-      selectedAgent?.inputParameters &&
-      selectedAgent.inputParameters.length > 0
+      selectedAgent?.input_parameters &&
+      selectedAgent.input_parameters.length > 0
     ) {
-      const hasRequiredEmpty = selectedAgent.inputParameters
+      const hasRequiredEmpty = selectedAgent.input_parameters
         .filter((p) => p.required)
         .some(
           (p) => paramValues[p.id] === undefined || paramValues[p.id] === "",
@@ -287,15 +287,15 @@ export default function ChatContainer({
             onChange={onSelectAgent}
             style={{ width: 180 }}
             options={agents.map((a) => ({
-              label: a.name,
+              label: a.agent_name,
               value: a.id,
             }))}
           />
         )}
 
         {/* 参数设置按钮 */}
-        {selectedAgent?.inputParameters &&
-          selectedAgent.inputParameters.length > 0 && (
+        {selectedAgent?.input_parameters &&
+          selectedAgent.input_parameters.length > 0 && (
             <Button
               icon={<SettingOutlined />}
               onClick={() => setShowParamModal(true)}
@@ -451,7 +451,7 @@ export default function ChatContainer({
         width={500}
       >
         <div className="space-y-4">
-          {selectedAgent?.inputParameters?.map((param) => (
+          {selectedAgent?.input_parameters?.map((param) => (
             <div key={param.id}>
               <div className="flex items-center gap-2 mb-1">
                 <label className="text-sm font-medium text-[var(--color-text-primary)]">

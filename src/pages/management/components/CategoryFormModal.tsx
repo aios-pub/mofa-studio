@@ -3,7 +3,7 @@
  */
 
 import { useEffect } from "react";
-import { Form, Input } from "antd";
+import { Form, Input, Select } from "antd";
 import { FormModal, useFormError } from "@/components/common/Modal";
 import type { TestCategory, TestCategoryFormData } from "@/types/testset";
 
@@ -13,6 +13,7 @@ interface CategoryFormModalProps {
   onSubmit: (data: TestCategoryFormData) => Promise<void>;
   category?: TestCategory | null;
   parentId?: string;
+  categories?: TestCategory[];
   loading?: boolean;
 }
 
@@ -22,6 +23,7 @@ export function CategoryFormModal({
   onSubmit,
   category,
   parentId,
+  categories = [],
   loading,
 }: CategoryFormModalProps) {
   const [form] = Form.useForm<TestCategoryFormData>();
@@ -31,23 +33,28 @@ export function CategoryFormModal({
   useEffect(() => {
     if (open) {
       if (category) {
-        form.setFieldsValue({ name: category.name });
+        form.setFieldsValue({ name: category.name, parentId: category.parentId });
       } else {
-        form.resetFields();
+        form.setFieldsValue({ name: undefined, parentId: parentId });
       }
     }
-  }, [open, category, form]);
+  }, [open, category, parentId, form]);
 
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
-      await onSubmit({ ...values, parentId: parentId });
+      await onSubmit(values);
       form.resetFields();
     } catch (err: any) {
       if (err?.errorFields) return;
       handleError(err);
     }
   };
+
+  // 排除当前分类本身作为父选项（防止选择自己作为父分类）
+  const parentOptions = categories
+    .filter((c) => !category || c.id !== category.id)
+    .map((c) => ({ label: c.name, value: c.id }));
 
   return (
     <FormModal
@@ -67,6 +74,14 @@ export function CategoryFormModal({
           rules={[{ required: true, message: "请输入分类名称" }]}
         >
           <Input placeholder="请输入分类名称" />
+        </Form.Item>
+
+        <Form.Item name="parentId" label="父分类">
+          <Select
+            placeholder="选择父分类（可选）"
+            allowClear
+            options={parentOptions}
+          />
         </Form.Item>
       </Form>
     </FormModal>

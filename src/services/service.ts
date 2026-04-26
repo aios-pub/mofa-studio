@@ -60,6 +60,9 @@ import { scheduledTaskRealApi } from "./real/scheduledTasks";
 import { clawMockApi } from "./mock/claws";
 import { clawRealApi } from "./real/claws";
 import { permissionRealApi } from "./real/permissions";
+import { environmentRealApi } from "./real/environments";
+import { loadTestRealApi } from "./real/loadtest";
+import { importExportRealApi } from "./real/importExport";
 
 /**
  * 创建动态代理服务
@@ -162,6 +165,15 @@ export const permissionApi = createProxyService(permissionMockApi, permissionRea
 
 // Claws
 export const clawApi = createProxyService(clawMockApi, clawRealApi);
+
+// Environments - 暂时不使用代理，直接使用真实API
+export const environmentApi = environmentRealApi;
+
+// LoadTest - 直接使用真实API
+export const loadTestApi = loadTestRealApi;
+
+// Import/Export - 直接使用真实API
+export const importExportApi = importExportRealApi;
 
 // Octos — 工厂函数，不使用代理模式
 export { createOctosApiClient } from "./real/octos";

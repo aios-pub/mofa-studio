@@ -4,16 +4,25 @@
  */
 
 import { apiClient } from "../api/apiClient";
+import { mapToCamel } from "./fieldMapper";
 import type {
   TestSet,
   TestSetFormData,
   TestCase,
   TestCaseFormData,
+  TestCaseRequestType,
   TestReport,
+  TestReportDetail,
   TestCategory,
   TestCategoryFormData,
   Assertion,
 } from "../../types/testset";
+import type {
+  ApiDocumentation,
+  EndpointDocumentation,
+  TestExecutionParams,
+  TestExecutionResult,
+} from "../../types/documentation";
 
 // ==================== 数据映射 ====================
 
@@ -47,6 +56,11 @@ interface BackendTestCase {
   expected_output?: string;
   assertions?: Assertion[] | Record<string, unknown>;
   status: string;
+  request_type?: string;
+  request_config?: Record<string, unknown>;
+  pre_request_script?: string;
+  test_script?: string;
+  environment_id?: string;
   tenant_id?: string;
   create_time: string;
   update_time: string;
@@ -102,6 +116,11 @@ function mapTestCase(raw: BackendTestCase): TestCase {
     expectedOutput: raw.expected_output,
     assertions: raw.assertions,
     status: raw.status,
+    requestType: raw.request_type as TestCaseRequestType | undefined,
+    requestConfig: raw.request_config,
+    preRequestScript: raw.pre_request_script,
+    testScript: raw.test_script,
+    environmentId: raw.environment_id,
     tenantId: raw.tenant_id,
     createTime: raw.create_time,
     updateTime: raw.update_time,
@@ -195,6 +214,11 @@ const testSetRealApi = {
         input: data.input,
         expected_output: data.expectedOutput,
         assertions: data.assertions,
+        request_type: data.requestType,
+        request_config: data.requestConfig,
+        pre_request_script: data.preRequestScript,
+        test_script: data.testScript,
+        environment_id: data.environmentId,
       },
     );
     return mapTestCase(raw);
@@ -217,6 +241,11 @@ const testSetRealApi = {
         input: merged.input,
         expected_output: merged.expectedOutput ?? merged.expectedOutput,
         assertions: merged.assertions,
+        request_type: merged.requestType,
+        request_config: merged.requestConfig,
+        pre_request_script: merged.preRequestScript,
+        test_script: merged.testScript,
+        environment_id: merged.environmentId,
       },
     );
     return mapTestCase(raw);
@@ -225,6 +254,20 @@ const testSetRealApi = {
   deleteCase: async (id: string): Promise<boolean> => {
     await apiClient.delete(`/api/testset/case/delete/${id}`);
     return true;
+  },
+
+  copyCase: async (
+    id: string,
+    testSetId: string,
+  ): Promise<TestCase> => {
+    const raw = await apiClient.post<BackendTestCase>(
+      "/api/testset/case/copy",
+      {
+        id,
+        test_set_id: testSetId,
+      },
+    );
+    return mapTestCase(raw);
   },
 
   // ==================== Test Execution ====================
@@ -260,15 +303,30 @@ const testSetRealApi = {
 
   runTestCase: async (
     testCase: TestCase,
-  ): Promise<{ status: string; output: string }> => {
-    // 后端无单独运行 test case 的端点，复用 run-test 接口（运行整个测试集）
-    const raw = await apiClient.post<BackendTestReport>("/api/testset/run-test", {
-      test_set_id: testCase.testSetId,
+    agentId: string,
+  ): Promise<{
+    status: string;
+    statusCode: number;
+    statusMessage: string;
+    duration: number;
+    error?: string;
+    scriptLogs: string[];
+    testResults: Array<{ name: string; passed: boolean; error?: string }>;
+    body: string;
+  }> => {
+    const raw = await apiClient.post<any>("/api/testset/run-case", {
+      test_case_id: testCase.id,
+      agent_id: agentId,
     });
-    const report = mapTestReport(raw);
     return {
-      status: report.failedCases === 0 ? "passed" : "failed",
-      output: `通过 ${report.passedCases}/${report.totalCases}, 失败 ${report.failedCases}`,
+      status: raw.status,
+      statusCode: raw.status_code,
+      statusMessage: raw.status_message,
+      duration: raw.duration,
+      error: raw.error,
+      scriptLogs: raw.script_logs || [],
+      testResults: raw.test_results || [],
+      body: raw.body,
     };
   },
 
@@ -295,6 +353,14 @@ const testSetRealApi = {
     return mapTestReport(raw);
   },
 
+  getReportDetail: async (id: string): Promise<TestReportDetail | null> => {
+    const raw = await apiClient.get<TestReportDetail | null>(
+      `/api/testset/report/${id}/detail`,
+    );
+    if (!raw) return null;
+    return mapToCamel<TestReportDetail>(raw);
+  },
+
   // ==================== TestCategory CRUD ====================
 
   getAllCategories: async (): Promise<TestCategory[]> => {
@@ -317,13 +383,14 @@ const testSetRealApi = {
 
   updateCategory: async (
     id: string,
-    data: { name: string },
+    data: { name: string; parentId?: string },
   ): Promise<TestCategory> => {
     const raw = await apiClient.post<BackendTestCategory>(
       "/api/testset/category/update",
       {
         id,
         name: data.name,
+        parent_id: data.parentId,
       },
     );
     return mapTestCategory(raw);
@@ -332,6 +399,120 @@ const testSetRealApi = {
   deleteCategory: async (id: string): Promise<boolean> => {
     await apiClient.delete(`/api/testset/category/delete/${id}`);
     return true;
+  },
+
+  // ==================== API Documentation ====================
+
+  getDocumentation: async (testSetId: string): Promise<ApiDocumentation> => {
+    return await apiClient.get<ApiDocumentation>(`/api/docs/${testSetId}`);
+  },
+
+  getEndpointDoc: async (testCaseId: string): Promise<EndpointDocumentation> => {
+    return await apiClient.get<EndpointDocumentation>(
+      `/api/docs/endpoint/${testCaseId}`,
+    );
+  },
+
+  executeFromDocs: async (
+    testCaseId: string,
+    params: TestExecutionParams,
+  ): Promise<TestExecutionResult> => {
+    return await apiClient.post<TestExecutionResult>(
+      `/api/docs/execute/${testCaseId}`,
+      params,
+    );
+  },
+
+  // ==================== HTTP Test Execution ====================
+
+  executeHttpRequest: async (request: {
+    url: string;
+    method: string;
+    headers?: Record<string, string>;
+    params?: Array<{ key: string; value: string; enabled?: boolean }>;
+    body?: unknown;
+    bodyType?: string;
+    timeout?: number;
+    authType?: string;
+    authConfig?: Record<string, unknown>;
+  }): Promise<TestExecutionResult> => {
+    return await apiClient.post<TestExecutionResult>(
+      "/api/testset/execute-http",
+      {
+        url: request.url,
+        method: request.method,
+        headers: request.headers,
+        params: request.params,
+        body: request.body,
+        body_type: request.bodyType,
+        timeout: request.timeout,
+        auth_type: request.authType,
+        auth_config: request.authConfig,
+      },
+    );
+  },
+
+  // ==================== WebSocket Test Execution ====================
+
+  executeWebSocketRequest: async (request: {
+    url: string;
+    protocols?: string[];
+    headers?: Record<string, string>;
+    messagesToSend?: Array<{ message: string; delay?: number }>;
+    timeout?: number;
+  }): Promise<TestExecutionResult> => {
+    return await apiClient.post<TestExecutionResult>(
+      "/api/testset/execute-websocket",
+      {
+        url: request.url,
+        protocols: request.protocols,
+        headers: request.headers,
+        messages_to_send: request.messagesToSend,
+        timeout: request.timeout,
+      },
+    );
+  },
+
+  // ==================== SSE Test Execution ====================
+
+  executeSSERequest: async (request: {
+    url: string;
+    headers?: Record<string, string>;
+    minEvents?: number;
+    maxDuration?: number;
+  }): Promise<TestExecutionResult> => {
+    return await apiClient.post<TestExecutionResult>(
+      "/api/testset/execute-sse",
+      {
+        url: request.url,
+        headers: request.headers,
+        min_events: request.minEvents,
+        max_duration: request.maxDuration,
+      },
+    );
+  },
+
+  // ==================== Socket.IO Test Execution ====================
+
+  executeSocketIORequest: async (request: {
+    url: string;
+    namespace?: string;
+    auth?: Record<string, unknown>;
+    eventsToEmit?: Array<{ event: string; data: unknown }>;
+    eventsToListen?: Array<{ event: string }>;
+    timeout?: number;
+  }): Promise<TestExecutionResult> => {
+    return await apiClient.post<TestExecutionResult>(
+      "/api/testset/execute-socketio",
+      {
+        url: request.url,
+        namespace: request.namespace,
+        auth: request.auth,
+        events_to_emit: request.eventsToEmit,
+        events_to_listen: request.eventsToListen,
+        timeout: request.timeout,
+      },
+    );
   },
 };
 

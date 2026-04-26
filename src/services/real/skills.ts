@@ -37,6 +37,9 @@ interface Skill {
   timeout: number;
   enabled: boolean;
   installed?: boolean;
+  hubSkillId?: string;
+  installedVersion?: string;
+  source?: 'local' | 'hub' | 'installed';
   createdAt: Date;
   updatedAt: Date;
 }

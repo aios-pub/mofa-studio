@@ -61,25 +61,24 @@ interface BackendAgentVo {
 
 /** 前端 → 后端 */
 function toBackend(data: Partial<Agent>, isUpdate = false): BackendAgentReq {
-  const agentType = data.agent_category || data.agentType || 'native';
   const req: BackendAgentReq = {
-    provider_id: data.provider?.id || data.providerId || '',
-    model_id: data.model_id || data.modelId || '',
-    model_name: data.model_name || data.modelName || '',
-    agent_code: data.agent_code || data.agentCode || '',
-    agent_name: data.agent_name || data.name || '',
-    system_prompt: data.system_prompt || data.systemPrompt || '',
+    provider_id: data.provider?.id || '',
+    model_id: data.model_id || '',
+    model_name: data.model_name || '',
+    agent_code: data.agent_code || '',
+    agent_name: data.agent_name || '',
+    system_prompt: data.system_prompt || '',
     temperature: data.temperature,
     thinking: data.thinking,
     stream: data.stream,
-    context_limit: data.context_limit || data.contextLimit,
-    response_format: data.response_format || data.responseFormat,
-    max_completion_tokens: data.max_completion_tokens || data.maxCompletionTokens,
+    context_limit: data.context_limit,
+    response_format: data.response_format,
+    max_completion_tokens: data.max_completion_tokens,
     platform: data.platform,
-    custom_params: data.custom_params || data.customParams,
-    agent_order: data.agent_order || data.order,
+    custom_params: data.custom_params,
+    agent_order: data.agent_order,
     agent_status: data.enabled,
-    agent_type: agentType,
+    agent_type: data.agent_category || 'native',
   };
 
   if (isUpdate && data.id) {
@@ -126,20 +125,6 @@ function fromBackend(vo: BackendAgentVo): Agent {
     custom_params: cp,
     status: vo.enabled ? 'idle' : 'offline',
     agent_category: agentType,
-    // 别名，兼容可能使用旧字段的代码
-    name: vo.agent_name,
-    agentCode: vo.agent_code,
-    systemPrompt: vo.system_prompt,
-    modelId: vo.model_id,
-    modelName: vo.model_name,
-    providerId: vo.provider?.id,
-    providerName: vo.provider?.provider_name,
-    customParams: cp,
-    agentType: agentType,
-    order: vo.agent_order,
-    contextLimit: vo.context_limit,
-    responseFormat: vo.response_format,
-    maxCompletionTokens: vo.max_completion_tokens,
   };
 }
 

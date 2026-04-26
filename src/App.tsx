@@ -6,6 +6,7 @@ import { ToastProvider } from './components/common';
 import Dashboard from './pages/workbench/Dashboard';
 import Conversation from './pages/workbench/Conversation';
 import { AgentListPage, PromptListPage, SkillsListPage, TestSetsListPage, ProvidersListPage, ChannelsListPage } from './pages/management';
+import LoadTestPage from './pages/management/LoadTestPage';
 import { HubSkillDetail } from './pages/management/skills';
 import SchedulerPage from './pages/scheduler';
 import AnalyticsPage from './pages/analytics/AnalyticsPage';
@@ -25,6 +26,7 @@ import EvaluationPage from './pages/evaluation/EvaluationPage';
 import WorkflowListPage from './pages/workflow/WorkflowList';
 import WorkflowEditorPage from './pages/workflow/WorkflowEditor';
 import KnowledgeBaseListPage from './pages/knowledge/KnowledgeBaseList';
+import { InteractiveDocs } from './pages/docs/InteractiveDocs';
 import { ThemeProvider } from './theme';
 import { useFloatingBridge } from './tauri/useFloatingBridge';
 
@@ -57,6 +59,8 @@ function App() {
                   <Route path="/management/skills" element={<SkillsListPage />} />
                   <Route path="/management/skills/hub/:namespace/:slug" element={<HubSkillDetail />} />
                   <Route path="/management/test-sets" element={<TestSetsListPage />} />
+                  <Route path="/management/test-sets/:testSetId/docs" element={<InteractiveDocs />} />
+                  <Route path="/management/load-test" element={<LoadTestPage />} />
                   <Route path="/management/providers" element={<ProvidersListPage />} />
                   <Route path="/management/channels" element={<ChannelsListPage />} />
 

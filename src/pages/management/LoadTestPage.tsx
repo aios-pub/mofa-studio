@@ -36,6 +36,7 @@ import { loadTestRealApi } from "@/services/real/loadtest";
 import type { LoadTest, LoadTestConfig, LoadTestMetric } from "@/services/real/loadtest";
 import { testSetApi } from "@/services";
 import type { TestSet } from "@/types/testset";
+import ResizableSidebar from "@/components/layout/ResizableSidebar";
 
 const { Title, Text } = Typography;
 
@@ -482,16 +483,10 @@ export default function LoadTestPage() {
   ];
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <Title level={4} style={{ margin: 0 }}>
-          负载测试
-        </Title>
-      </div>
-
-      <Row gutter={16} className="mb-6">
-        {/* 创建压测任务 */}
-        <Col span={10}>
+    <div className="flex h-full">
+      <ResizableSidebar storageKey="sidebar:load-test">
+        <div className="p-4">
+          {/* 创建压测任务 */}
           <Card title="创建压测任务" size="small">
             <Form
               form={form}
@@ -586,38 +581,44 @@ export default function LoadTestPage() {
               </Form.Item>
             </Form>
           </Card>
-        </Col>
+        </div>
+      </ResizableSidebar>
+
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex items-center justify-between mb-6">
+          <Title level={4} style={{ margin: 0 }}>
+            负载测试
+          </Title>
+        </div>
 
         {/* 压测任务列表 */}
-        <Col span={14}>
-          <Card
-            title="压测任务列表"
-            size="small"
-            extra={
-              <Button
-                size="small"
-                icon={<ReloadOutlined spin={refreshing} />}
-                loading={refreshing}
-                onClick={handleRefresh}
-              >
-                刷新
-              </Button>
-            }
-          >
-            <Table
-              columns={columns}
-              dataSource={tasks}
-              rowKey="id"
-              pagination={false}
+        <Card
+          title="压测任务列表"
+          size="small"
+          extra={
+            <Button
               size="small"
-              locale={{ emptyText: "暂无压测任务，请在左侧创建" }}
-              rowClassName={(record) =>
-                record.status === "running" ? "bg-blue-50" : ""
-              }
-            />
-          </Card>
-        </Col>
-      </Row>
+              icon={<ReloadOutlined spin={refreshing} />}
+              loading={refreshing}
+              onClick={handleRefresh}
+            >
+              刷新
+            </Button>
+          }
+        >
+          <Table
+            columns={columns}
+            dataSource={tasks}
+            rowKey="id"
+            pagination={false}
+            size="small"
+            locale={{ emptyText: "暂无压测任务，请在左侧创建" }}
+            rowClassName={(record) =>
+              record.status === "running" ? "bg-blue-50" : ""
+            }
+          />
+        </Card>
+      </div>
 
       {/* 结果详情弹窗 */}
       <Modal

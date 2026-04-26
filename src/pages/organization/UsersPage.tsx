@@ -3,8 +3,8 @@
  * 使用 Ant Design 组件重构
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Card,
   Table,
@@ -22,55 +22,55 @@ import {
   Popconfirm,
   message,
   Alert,
-} from 'antd';
+} from "antd";
 import {
   SearchOutlined,
   UserAddOutlined,
   EditOutlined,
   DeleteOutlined,
   UserOutlined,
-} from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
-import { PageHeader } from '@/components/common';
-import type { User as UserType } from '@/services';
-import { organizationApi } from '@/services';
-import { formatDate } from '@/utils';
+} from "@ant-design/icons";
+import type { ColumnsType } from "antd/es/table";
+import { PageHeader } from "@/components/common";
+import type { User as UserType } from "@/services";
+import { organizationApi } from "@/services";
+import { formatDate } from "@/utils";
 
 const { Text } = Typography;
 
-const roleLabels: Record<UserType['role'], string> = {
-  admin: '管理员',
-  manager: '经理',
-  user: '普通用户',
+const roleLabels: Record<UserType["role"], string> = {
+  admin: "管理员",
+  manager: "经理",
+  user: "普通用户",
 };
 
-const roleColors: Record<UserType['role'], string> = {
-  admin: 'purple',
-  manager: 'blue',
-  user: 'default',
+const roleColors: Record<UserType["role"], string> = {
+  admin: "purple",
+  manager: "blue",
+  user: "default",
 };
 
-const statusLabels: Record<UserType['status'], string> = {
-  active: '正常',
-  inactive: '禁用',
-  pending: '待激活',
+const statusLabels: Record<UserType["status"], string> = {
+  active: "正常",
+  inactive: "禁用",
+  pending: "待激活",
 };
 
-const statusColors: Record<UserType['status'], string> = {
-  active: 'success',
-  inactive: 'error',
-  pending: 'warning',
+const statusColors: Record<UserType["status"], string> = {
+  active: "success",
+  inactive: "error",
+  pending: "warning",
 };
 
 export default function UsersPage() {
   const { t } = useTranslation();
   const [users, setUsers] = useState<UserType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [filterDepartment, setFilterDepartment] = useState<string>('');
-  const [filterStatus, setFilterStatus] = useState<string>('');
-  const [filterRole, setFilterRole] = useState<string>('');
+  const [filterDepartment, setFilterDepartment] = useState<string>("");
+  const [filterStatus, setFilterStatus] = useState<string>("");
+  const [filterRole, setFilterRole] = useState<string>("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -86,7 +86,7 @@ export default function UsersPage() {
       });
       setUsers(data);
     } catch (error) {
-      console.error('Failed to load users:', error);
+      console.error("Failed to load users:", error);
     } finally {
       setLoading(false);
     }
@@ -110,20 +110,25 @@ export default function UsersPage() {
     );
   });
 
-  const handleBatchUpdateStatus = async (status: UserType['status']) => {
+  const handleBatchUpdateStatus = async (status: UserType["status"]) => {
     if (selectedRowKeys.length === 0) {
-      message.warning('请选择要操作的用户');
+      message.warning("请选择要操作的用户");
       return;
     }
-    await organizationApi.batchUpdateStatus(selectedRowKeys as string[], status);
+    await organizationApi.batchUpdateStatus(
+      selectedRowKeys as string[],
+      status,
+    );
     setSelectedRowKeys([]);
-    message.success(`已批量${statusLabels[status]} ${selectedRowKeys.length} 个用户`);
+    message.success(
+      `已批量${statusLabels[status]} ${selectedRowKeys.length} 个用户`,
+    );
     loadUsers();
   };
 
   const handleDeleteUser = async (id: string) => {
     await organizationApi.deleteUser(id);
-    message.success('用户已删除');
+    message.success("用户已删除");
     loadUsers();
   };
 
@@ -153,17 +158,17 @@ export default function UsersPage() {
       setFormError(null);
       if (editingUser) {
         await organizationApi.updateUser(editingUser.id, values);
-        message.success('用户已更新');
+        message.success("用户已更新");
       } else {
         await organizationApi.createUser(values);
-        message.success('用户已创建');
+        message.success("用户已创建");
       }
       handleModalClose();
       loadUsers();
     } catch (error: any) {
       if (error?.errorFields) return;
-      console.error('Failed to save user:', error);
-      setFormError(error instanceof Error ? error.message : '保存失败');
+      console.error("Failed to save user:", error);
+      setFormError(error instanceof Error ? error.message : "保存失败");
     }
   };
 
@@ -176,15 +181,15 @@ export default function UsersPage() {
   // 表格列配置
   const columns: ColumnsType<UserType> = [
     {
-      title: t('user.userName', '用户'),
-      key: 'user',
+      title: t("user.userName", "用户"),
+      key: "user",
       render: (_, record) => (
         <Space>
           <Avatar
-            style={{ backgroundColor: 'var(--color-primary)' }}
+            style={{ backgroundColor: "var(--color-primary)" }}
             icon={<UserOutlined />}
           >
-            {record.name.charAt(0)}
+            {record.name?.charAt(0) || ""}
           </Avatar>
           <div>
             <Text strong>{record.name}</Text>
@@ -197,54 +202,54 @@ export default function UsersPage() {
       ),
     },
     {
-      title: t('user.department', '部门'),
-      dataIndex: 'department',
-      key: 'department',
+      title: t("user.department", "部门"),
+      dataIndex: "department",
+      key: "department",
       width: 120,
     },
     {
-      title: t('user.role', '角色'),
-      dataIndex: 'role',
-      key: 'role',
+      title: t("user.role", "角色"),
+      dataIndex: "role",
+      key: "role",
       width: 100,
-      render: (role: UserType['role']) => (
+      render: (role: UserType["role"]) => (
         <Tag color={roleColors[role]}>{roleLabels[role]}</Tag>
       ),
     },
     {
-      title: t('user.status', '状态'),
-      dataIndex: 'status',
-      key: 'status',
+      title: t("user.status", "状态"),
+      dataIndex: "status",
+      key: "status",
       width: 100,
-      render: (status: UserType['status']) => (
+      render: (status: UserType["status"]) => (
         <Tag color={statusColors[status]}>{statusLabels[status]}</Tag>
       ),
     },
     {
-      title: '使用量',
-      key: 'usage',
+      title: "使用量",
+      key: "usage",
       width: 140,
       render: (_, record) => (
         <div className="text-xs">
-          <div>{record.usage.totalConversations} 对话</div>
-          <div>{formatNumber(record.usage.totalTokens)} tokens</div>
+          <div>{record.usage?.totalConversations || 0} 对话</div>
+          <div>{formatNumber(record.usage?.totalTokens || 0)} tokens</div>
         </div>
       ),
     },
     {
-      title: t('user.lastLogin', '最后登录'),
-      dataIndex: 'lastLoginAt',
-      key: 'lastLoginAt',
+      title: t("user.lastLogin", "最后登录"),
+      dataIndex: "lastLoginAt",
+      key: "lastLoginAt",
       width: 120,
       render: (date: Date) => (
         <Text type="secondary" className="text-xs">
-          {date ? formatDate(date) : '-'}
+          {date ? formatDate(date) : "-"}
         </Text>
       ),
     },
     {
-      title: t('common.actions', '操作'),
-      key: 'actions',
+      title: t("common.actions", "操作"),
+      key: "actions",
       width: 100,
       render: (_, record) => (
         <Space>
@@ -260,13 +265,13 @@ export default function UsersPage() {
             />
           </Tooltip>
           <Popconfirm
-            title={t('user.deleteConfirm', '确定要删除这个用户吗？')}
+            title={t("user.deleteConfirm", "确定要删除这个用户吗？")}
             onConfirm={(e) => {
               e?.stopPropagation();
               handleDeleteUser(record.id);
             }}
-            okText={t('common.confirm', '确认')}
-            cancelText={t('common.cancel', '取消')}
+            okText={t("common.confirm", "确认")}
+            cancelText={t("common.cancel", "取消")}
           >
             <Button
               type="text"
@@ -284,21 +289,21 @@ export default function UsersPage() {
   // 批量操作菜单
   const batchMenuItems = [
     {
-      key: 'active',
-      label: '批量激活',
-      onClick: () => handleBatchUpdateStatus('active'),
+      key: "active",
+      label: "批量激活",
+      onClick: () => handleBatchUpdateStatus("active"),
     },
     {
-      key: 'inactive',
-      label: '批量禁用',
-      onClick: () => handleBatchUpdateStatus('inactive'),
+      key: "inactive",
+      label: "批量禁用",
+      onClick: () => handleBatchUpdateStatus("inactive"),
     },
   ];
 
   return (
     <div className="space-y-4">
       <PageHeader
-        title={t('user.title', '用户管理')}
+        title={t("user.title", "用户管理")}
         description="管理系统用户和权限"
         icon={<UserOutlined className="text-xl" />}
         actions={
@@ -307,7 +312,7 @@ export default function UsersPage() {
             icon={<UserAddOutlined />}
             onClick={() => setModalOpen(true)}
           >
-            {t('user.createUser', '添加用户')}
+            {t("user.createUser", "添加用户")}
           </Button>
         }
       />
@@ -316,7 +321,7 @@ export default function UsersPage() {
       <Card size="small">
         <Space wrap>
           <Input
-            placeholder={t('common.search', '搜索用户...')}
+            placeholder={t("common.search", "搜索用户...")}
             prefix={<SearchOutlined />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -358,9 +363,7 @@ export default function UsersPage() {
           />
           {selectedRowKeys.length > 0 && (
             <Dropdown menu={{ items: batchMenuItems }} placement="bottomRight">
-              <Button>
-                批量操作 ({selectedRowKeys.length})
-              </Button>
+              <Button>批量操作 ({selectedRowKeys.length})</Button>
             </Dropdown>
           )}
         </Space>
@@ -381,37 +384,42 @@ export default function UsersPage() {
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (total) => t('pagination.total', `共 ${total} 条`, { total }),
-            pageSizeOptions: ['10', '20', '50', '100'],
+            showTotal: (total) =>
+              t("pagination.total", `共 ${total} 条`, { total }),
+            pageSizeOptions: ["10", "20", "50", "100"],
           }}
           locale={{
-            emptyText: t('user.noUsers', '暂无用户数据'),
+            emptyText: t("user.noUsers", "暂无用户数据"),
           }}
         />
       </Card>
 
       {/* 创建/编辑用户弹窗 */}
       <Modal
-        title={editingUser ? t('user.editUser', '编辑用户') : t('user.createUser', '添加用户')}
+        title={
+          editingUser
+            ? t("user.editUser", "编辑用户")
+            : t("user.createUser", "添加用户")
+        }
         open={modalOpen}
         onCancel={handleModalClose}
         onOk={handleSave}
-        okText={t('common.save', '保存')}
-        cancelText={t('common.cancel', '取消')}
+        okText={t("common.save", "保存")}
+        cancelText={t("common.cancel", "取消")}
         destroyOnHidden
       >
         <Form
           form={form}
           layout="vertical"
           initialValues={{
-            role: 'user',
-            status: 'active',
+            role: "user",
+            status: "active",
           }}
         >
           <Form.Item
             name="name"
             label="姓名"
-            rules={[{ required: true, message: '请输入姓名' }]}
+            rules={[{ required: true, message: "请输入姓名" }]}
           >
             <Input placeholder="请输入姓名" />
           </Form.Item>
@@ -420,8 +428,8 @@ export default function UsersPage() {
             name="email"
             label="邮箱"
             rules={[
-              { required: true, message: '请输入邮箱' },
-              { type: 'email', message: '请输入有效的邮箱地址' },
+              { required: true, message: "请输入邮箱" },
+              { type: "email", message: "请输入有效的邮箱地址" },
             ]}
           >
             <Input placeholder="请输入邮箱" />
@@ -459,7 +467,14 @@ export default function UsersPage() {
           )}
         </Form>
         {formError && (
-          <Alert type="error" title={formError} showIcon closable onClose={() => setFormError(null)} className="mt-3" />
+          <Alert
+            type="error"
+            title={formError}
+            showIcon
+            closable
+            onClose={() => setFormError(null)}
+            className="mt-3"
+          />
         )}
       </Modal>
     </div>

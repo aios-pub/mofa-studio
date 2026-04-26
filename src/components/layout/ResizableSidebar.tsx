@@ -21,11 +21,11 @@ interface ResizableSidebarProps {
 export default function ResizableSidebar({
   children,
   defaultWidth = 320,
-  minWidth = 200,
+  minWidth = 80,
   maxWidth = 500,
   className = "",
   style,
-  collapseThreshold = 60,
+  collapseThreshold = 20,
   collapsedWidth = 40,
 }: ResizableSidebarProps) {
   const [width, setWidth] = useState(defaultWidth);
@@ -36,6 +36,9 @@ export default function ResizableSidebar({
   // 用 ref 保存最新值，避免事件监听器闭包捕获旧值
   const widthRef = useRef(width);
   const collapsedRef = useRef(collapsed);
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(0);
+  const preCollapseWidthRef = useRef(defaultWidth);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { widthRef.current = width; }, [width]);
@@ -46,7 +49,8 @@ export default function ResizableSidebar({
     if (!isResizing) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      const newWidth = Math.max(0, Math.min(maxWidth, e.clientX));
+      const deltaX = e.clientX - startXRef.current;
+      const newWidth = Math.max(0, Math.min(maxWidth, startWidthRef.current + deltaX));
       setWidth(newWidth);
       if (collapsedRef.current && newWidth > collapsedWidth + collapseThreshold) {
         setCollapsed(false);
@@ -57,6 +61,7 @@ export default function ResizableSidebar({
       setIsResizing(false);
       const currentWidth = widthRef.current;
       if (currentWidth < minWidth + collapseThreshold) {
+        preCollapseWidthRef.current = Math.max(minWidth, currentWidth);
         setCollapsed(true);
         setWidth(collapsedWidth);
       } else {
@@ -76,24 +81,27 @@ export default function ResizableSidebar({
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
+      startXRef.current = e.clientX;
+      startWidthRef.current = collapsedRef.current ? collapsedWidth : widthRef.current;
       setIsResizing(true);
       if (collapsedRef.current) {
         setCollapsed(false);
         setWidth(minWidth);
       }
     },
-    [minWidth],
+    [minWidth, collapsedWidth],
   );
 
   const handleToggle = useCallback(() => {
     if (collapsedRef.current) {
       setCollapsed(false);
-      setWidth(defaultWidth);
+      setWidth(preCollapseWidthRef.current);
     } else {
+      preCollapseWidthRef.current = Math.max(minWidth, widthRef.current);
       setCollapsed(true);
       setWidth(collapsedWidth);
     }
-  }, [defaultWidth, collapsedWidth]);
+  }, [minWidth, collapsedWidth]);
 
   return (
     <div

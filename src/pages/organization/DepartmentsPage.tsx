@@ -16,6 +16,7 @@ import {
 import type { Department, User as UserType } from "@/services";
 import { organizationApi } from "@/services";
 import { formatDate } from "@/utils";
+import ResizableSidebar from "@/components/layout/ResizableSidebar";
 
 export default function DepartmentsPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -79,7 +80,7 @@ export default function DepartmentsPage() {
   return (
     <div className="flex h-full">
       {/* 左侧列表 */}
-      <div className="w-80 border-r border-(--color-border) flex flex-col bg-[var(--color-bg-secondary)]">
+      <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]">
         {/* 头部 */}
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
@@ -161,7 +162,7 @@ export default function DepartmentsPage() {
             ))
           )}
         </div>
-      </div>
+      </ResizableSidebar>
 
       {/* 右侧详情 */}
       <div className="flex-1 overflow-y-auto">

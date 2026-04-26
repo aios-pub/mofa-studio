@@ -53,6 +53,7 @@ import type {
 import { testSetApi, agentApi, importExportApi } from "@/services";
 import { showDeleteConfirm } from "@/components/common/Modal";
 import { TestSetFormModal } from "./components/TestSetFormModal";
+import ResizableSidebar from "@/components/layout/ResizableSidebar";
 import { TestCaseFormModal } from "./components/TestCaseFormModal";
 import { CategoryFormModal } from "./components/CategoryFormModal";
 import { TestSetTree } from "./components/TestSetTree";
@@ -266,7 +267,7 @@ export default function TestSetsListPage() {
   return (
     <div className="flex h-full">
       {/* 左侧树形列表 */}
-      <div className="w-80 border-r border-(--color-border) flex flex-col bg-[var(--color-bg-secondary)]">
+      <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]">
         {/* 头部 */}
         <div className="p-4 flex items-center justify-between border-b border-(--color-border)">
           <Title level={5} style={{ margin: 0 }}>
@@ -314,7 +315,7 @@ export default function TestSetsListPage() {
             onDeleteCategory={handleDeleteCategory}
           />
         )}
-      </div>
+      </ResizableSidebar>
 
       {/* 右侧详情 */}
       <div className="flex-1 overflow-hidden">

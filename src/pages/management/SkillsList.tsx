@@ -34,6 +34,7 @@ import {
   PromotionQueue,
 } from "./skills";
 import { SkillDetail } from "./SkillDetail";
+import ResizableSidebar from "@/components/layout/ResizableSidebar";
 import type { Skill } from "@/services";
 import { skillApi } from "@/services";
 
@@ -136,12 +137,12 @@ export default function SkillsListPage() {
       return (
         <div className="flex h-full">
           {/* 本地技能列表 */}
-          <div className="w-80 border-r border-(--color-border) flex flex-col bg-[var(--color-bg-secondary)]">
+          <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]">
             <LocalSkillsList
               selectedSkill={selectedSkill}
               onSelectSkill={setSelectedSkill}
             />
-          </div>
+          </ResizableSidebar>
           {/* 技能详情 */}
           <div className="flex-1 overflow-y-auto">
             {selectedSkill ? (

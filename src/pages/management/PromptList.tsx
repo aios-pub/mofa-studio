@@ -37,6 +37,7 @@ import {
 import type { Prompt, PromptVariable } from "@/services";
 import { promptApi } from "@/services";
 import PromptVersionHistory from "../../components/prompt/PromptVersionHistory";
+import ResizableSidebar from "@/components/layout/ResizableSidebar";
 import PromptTestPanel from "../../components/prompt/PromptTestPanel";
 
 // 变量类型选项
@@ -410,7 +411,7 @@ export default function PromptListPage() {
   return (
     <div className="flex h-full">
       {/* 左侧列表 */}
-      <div className="w-80 border-r border-(--color-border) flex flex-col bg-[var(--color-bg-secondary)]">
+      <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]">
         {/* 头部 */}
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
@@ -516,7 +517,7 @@ export default function PromptListPage() {
             ))
           )}
         </div>
-      </div>
+      </ResizableSidebar>
 
       {/* 右侧详情 */}
       <div className="flex-1 overflow-y-auto">

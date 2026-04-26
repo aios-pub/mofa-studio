@@ -61,6 +61,7 @@ import type { ClawType, ClawChannelMapping } from "@/types/claw";
 import { clawTypeConfig, channelProxyTypeConfig } from "@/types/claw";
 import { channelTypeConfig } from "@/services/mock/channels";
 import OctosManagementPanel from "./components/octos/OctosManagementPanel";
+import ResizableSidebar from "@/components/layout/ResizableSidebar";
 
 /** 从 agent.custom_params.claw 提取 Agent 类型配置 */
 function getClaw(agent: Agent): Record<string, unknown> {
@@ -1772,7 +1773,7 @@ export default function AgentListPage() {
   return (
     <div className="flex h-full">
       {/* 左侧列表 */}
-      <div className="w-80 border-r border-(--color-border) flex flex-col bg-[var(--color-bg-secondary)]">
+      <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]">
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
@@ -1896,7 +1897,7 @@ export default function AgentListPage() {
             })
           )}
         </div>
-      </div>
+      </ResizableSidebar>
 
       {/* 右侧详情 */}
       <div className="flex-1 overflow-y-auto">

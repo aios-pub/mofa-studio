@@ -27,6 +27,7 @@ import {
 } from "@ant-design/icons";
 import { knowledgeApi } from "@/services";
 import SearchPanel from "./components/SearchPanel";
+import ResizableSidebar from "@/components/layout/ResizableSidebar";
 import type { KnowledgeBase, Document } from "../../types/knowledge";
 
 const formatSize = (bytes: number) => {
@@ -218,7 +219,7 @@ export default function KnowledgeBaseListPage() {
 
   return (
     <div className="flex h-full">
-      <div className="w-80 border-r border-(--color-border) flex flex-col bg-[var(--color-bg-secondary)]">
+      <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]">
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
@@ -298,7 +299,7 @@ export default function KnowledgeBaseListPage() {
             ))
           )}
         </div>
-      </div>
+      </ResizableSidebar>
       <div className="flex-1 overflow-y-auto">
         {selectedKB ? (
           <div className="p-6">

@@ -24,7 +24,7 @@ function parseJSON<T>(value: string | null, fallback: T): T {
 /**
  * useLocalStorage Hook
  * 与 localStorage 同步的状态管理
- * @param key 存储键名
+ * @param key Storage key names
  * @param initialValue 初始值
  * @returns [storedValue, setValue, removeValue]
  */
@@ -38,7 +38,7 @@ export function useLocalStorage<T>(
 /**
  * useSessionStorage Hook
  * 与 sessionStorage 同步的状态管理
- * @param key 存储键名
+ * @param key Storage key names
  * @param initialValue 初始值
  * @returns [storedValue, setValue, removeValue]
  */
@@ -99,7 +99,7 @@ function useStorage<T>(
           storage.setItem(key, JSON.stringify(valueToStore));
         }
 
-        // 触发 storage 事件（用于跨标签页同步）
+        // 触发 storage 事件（用于跨Tabs同步）
         window.dispatchEvent(
           new StorageEvent('storage', {
             key,
@@ -128,14 +128,14 @@ function useStorage<T>(
     }
   }, [initialValue, key, storage]);
 
-  // 监听其他标签页的变化
+  // 监听其他Tabs的变化
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key !== key || event.storageArea !== storage) {
         return;
       }
 
-      // 如果值被删除
+      // e.g.果值被删除
       if (event.newValue === null) {
         setStoredValue(initialValue);
         return;
@@ -200,7 +200,7 @@ export function usePersistedState<T>(
         return parseJSON(currentVersionItem, initialValue);
       }
 
-      // 如果当前版本不存在，检查旧版本并迁移
+      // e.g.果当前版本不存在，检查旧版本并迁移
       if (migrate) {
         for (let v = version - 1; v >= 0; v--) {
           const oldKey = `${key}_v${v}`;

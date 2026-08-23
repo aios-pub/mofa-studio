@@ -153,7 +153,7 @@ export const clawRealApi = {
     return data.map(fromBackendSession);
   },
 
-  /** 获取渠道映射的代理配置 */
+  /** 获取Channel mapping的代理配置 */
   async getChannelProxyConfig(mappingId: string): Promise<ChannelProxyInfo> {
     const data = await apiClient.get<{
       proxy_send_url: string;

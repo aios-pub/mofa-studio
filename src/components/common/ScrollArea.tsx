@@ -1,6 +1,6 @@
 /**
  * 滚动区域组件
- * 提供自定义滚动条样式的容器
+ * 提供Custom滚动条样式的容器
  */
 
 import React, { forwardRef } from 'react';
@@ -11,7 +11,7 @@ export interface ScrollAreaProps extends React.HTMLAttributes<HTMLDivElement> {
 
 /**
  * 滚动区域组件
- * 提供美观的自定义滚动条
+ * 提供美观的Custom滚动条
  */
 export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
   (

@@ -1,5 +1,5 @@
 /**
- * 工作流编辑器页面
+ * Workflow编辑器页面
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -41,7 +41,7 @@ import ConfigPanel from "./panels/ConfigPanel";
 import { useWorkflowStore } from "../../stores/useWorkflowStore";
 import type { Workflow, NodeType, NodeConfig } from "../../types/workflow";
 
-// 自定义节点组件
+// Custom节点组件
 import StartNode from "./nodes/StartNode";
 import EndNode from "./nodes/EndNode";
 import AgentNode from "./nodes/AgentNode";
@@ -53,7 +53,7 @@ import TransformNode from "./nodes/TransformNode";
 import VariableNode from "./nodes/VariableNode";
 import DelayNode from "./nodes/DelayNode";
 
-// 节点类型映射
+// Node type映射
 const nodeTypes = {
   start: StartNode,
   end: EndNode,
@@ -87,7 +87,7 @@ export default function WorkflowEditorPage() {
     canRedo,
   } = useWorkflowStore();
 
-  // 加载工作流
+  // 加载Workflow
   useEffect(() => {
     if (id) {
       loadWorkflow(id);
@@ -150,12 +150,12 @@ export default function WorkflowEditorPage() {
     }
   };
 
-  // 保存工作流
+  // 保存Workflow
   const handleSave = async () => {
     if (!workflow) return;
     try {
       setSaving(true);
-      // 转换回工作流格式
+      // 转换回Workflow格式
       const wfNodes = nodes.map((n) => ({
         id: n.id,
         type: n.type as NodeType,
@@ -183,7 +183,7 @@ export default function WorkflowEditorPage() {
     }
   };
 
-  // 发布工作流
+  // 发布Workflow
   const handlePublish = async () => {
     if (!workflow) return;
     try {
@@ -197,7 +197,7 @@ export default function WorkflowEditorPage() {
     }
   };
 
-  // 执行工作流
+  // 执行Workflow
   const handleExecute = async () => {
     if (!workflow || workflow.status !== "published") {
       message.warning("请先发布工作流");

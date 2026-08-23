@@ -421,7 +421,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
               <div className="mt-1">
                 <Input.TextArea
                   rows={6}
-                  placeholder="在此粘贴 cURL 命令...&#10;例如: curl -X POST https://api.example.com/users -H 'Content-Type: application/json' -d '{&quot;name&quot;:&quot;test&quot;}'"
+                  placeholder="在此粘贴 cURL 命令...&#10;例e.g.: curl -X POST https://api.example.com/users -H 'Content-Type: application/json' -d '{&quot;name&quot;:&quot;test&quot;}'"
                   value={curlCommand}
                   onChange={(e) => {
                     setCurlCommand(e.target.value);

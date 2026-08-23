@@ -976,7 +976,7 @@ function CreateKeyModal({
         name: values.name,
         provider_id: values.provider_id,
         key: values.key,
-        keyPrefix: values.key ? undefined : "", // 如果用户输入了密钥，不需要生成前缀
+        keyPrefix: values.key ? undefined : "", // e.g.果用户输入了密钥，不需要生成前缀
         description: values.description,
         expiresAt:
           hasExpiry && values.expiresAt ? values.expiresAt.toDate() : undefined,

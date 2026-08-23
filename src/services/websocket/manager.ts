@@ -22,7 +22,7 @@ export interface WebSocketManagerConfig extends Partial<WebSocketConfig> {
 }
 
 /** 存储键 */
-const STORAGE_KEY = "AMOS-claw-ws-mode";
+const STORAGE_KEY = "mofa-studio-ws-mode";
 
 /**
  * WebSocket 管理器
@@ -97,7 +97,7 @@ export class WebSocketManager {
 
     this._mode = mode;
 
-    // 如果之前是连接状态，自动重连
+    // e.g.果之前是连接状态，自动重连
     if (reconnect && wasConnected) {
       await this.connect();
     }
@@ -132,7 +132,7 @@ export class WebSocketManager {
   }
 
   /**
-   * 发送消息
+   * Send message
    */
   emit<T = unknown>(event: string, data: T): void {
     if (!this.adapter) {

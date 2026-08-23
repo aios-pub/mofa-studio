@@ -1,5 +1,5 @@
 /**
- * 数据表格组件
+ * 数据Table component
  * 基于 Ant Design Table 封装，提供统一的样式和功能
  */
 
@@ -19,13 +19,13 @@ export interface DataTableProps<T = any> extends Omit<
   columns: ColumnsType<T>;
   /** 数据源 */
   dataSource: T[];
-  /** 加载状态 */
+  /** Loading state */
   loading?: boolean;
   /** 加载提示文字 */
   loadingTip?: string;
   /** 分页配置 */
   pagination?: TablePaginationConfig | false;
-  /** 空状态配置 */
+  /** Empty state配置 */
   emptyConfig?: {
     type?: "default" | "search" | "data";
     title?: string;
@@ -44,7 +44,7 @@ export interface DataTableProps<T = any> extends Omit<
 }
 
 /**
- * 数据表格组件
+ * 数据Table component
  */
 export const DataTable = forwardRef<any, DataTableProps<any>>(
   (
@@ -90,7 +90,7 @@ export const DataTable = forwardRef<any, DataTableProps<any>>(
       return classes.join(" ");
     }, [striped, hoverable, variant]);
 
-    // 自定义空状态
+    // CustomEmpty state
     const locale = {
       emptyText: (
         <EmptyState

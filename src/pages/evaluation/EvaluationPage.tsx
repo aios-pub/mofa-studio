@@ -1,5 +1,5 @@
 /**
- * Agent 评估页面
+ * Agent Evaluation页面
  * 使用 Ant Design 组件重构
  */
 
@@ -118,7 +118,7 @@ export default function EvaluationPage() {
     loadData();
   }, [loadData]);
 
-  // 创建评估
+  // 创建Evaluation
   const handleCreateEvaluation = async () => {
     try {
       const values = await createForm.validateFields();
@@ -141,7 +141,7 @@ export default function EvaluationPage() {
     }
   };
 
-  // 删除评估
+  // 删除Evaluation
   const handleDeleteEvaluation = (record: EvaluationRecord) => {
     Modal.confirm({
       title: t("evaluation.confirmDelete", "确认删除"),
@@ -409,7 +409,7 @@ export default function EvaluationPage() {
         </Space>
       </Card>
 
-      {/* 评估记录表格 */}
+      {/* Evaluation记录表格 */}
       <Card>
         <Table
           columns={columns}
@@ -435,7 +435,7 @@ export default function EvaluationPage() {
         />
       </Card>
 
-      {/* 创建评估 Modal */}
+      {/* 创建Evaluation Modal */}
       <Modal
         title={t("evaluation.createEvaluation", "新建评估")}
         open={showCreateModal}

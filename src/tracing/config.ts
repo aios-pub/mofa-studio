@@ -1,12 +1,12 @@
 /**
- * OpenTelemetry 配置
- * 注意：这是基础配置，实际使用需要安装相关依赖
+ * OpenTelemetry configuration
+ * Note: this is base configuration，实际使用需要安装相关依赖
  */
 
-// 检查是否在浏览器环境
+// Check if in browser environment
 const isBrowser = typeof window !== "undefined";
 
-// 配置选项
+// Configuration options
 export interface TracingConfig {
   enabled: boolean;
   serviceName: string;
@@ -17,11 +17,11 @@ export interface TracingConfig {
 }
 
 const defaultConfig: TracingConfig = {
-  enabled: import.meta.env.PROD, // 只在生产环境启用
-  serviceName: "AMOS-claw-frontend",
+  enabled: import.meta.env.PROD, // Enable only in production
+  serviceName: "mofa-studio-frontend",
   serviceVersion: "1.0.0",
   otlpEndpoint: import.meta.env.VITE_OTLP_ENDPOINT || "/v1/traces",
-  sampleRate: 0.1, // 10% 采样率
+  sampleRate: 0.1, // 10% sampling rate
   propagateTraceHeader: true,
 };
 
@@ -29,8 +29,8 @@ let tracingInitialized = false;
 let currentConfig = { ...defaultConfig };
 
 /**
- * 初始化 OpenTelemetry 追踪
- * 实际使用时需要安装:
+ * Initialize OpenTelemetry tracing
+ * Needs to be installed for actual use:
  * npm install @opentelemetry/api @opentelemetry/sdk-trace-web @opentelemetry/sdk-trace-base @opentelemetry/exporter-trace-otlp-http @opentelemetry/resources @opentelemetry/semantic-conventions
  */
 export function initTracing(config: Partial<TracingConfig> = {}) {
@@ -49,8 +49,8 @@ export function initTracing(config: Partial<TracingConfig> = {}) {
   }
 
   try {
-    // 这里是伪代码，实际需要安装 OpenTelemetry 依赖
-    // 实际实现示例:
+    // This is pseudo-code，Actually need to install OpenTelemetry dependencies
+    // Actual implementation example:
     /*
     import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
     import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
@@ -81,21 +81,21 @@ export function initTracing(config: Partial<TracingConfig> = {}) {
 }
 
 /**
- * 获取当前配置
+ * Get current configuration
  */
 export function getTracingConfig(): TracingConfig {
   return { ...currentConfig };
 }
 
 /**
- * 检查追踪是否已初始化
+ * Check if tracing is initialized
  */
 export function isTracingInitialized(): boolean {
   return tracingInitialized;
 }
 
 /**
- * 关闭追踪
+ * Shutdown tracing
  */
 export function shutdownTracing() {
   tracingInitialized = false;

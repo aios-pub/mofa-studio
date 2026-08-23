@@ -1,6 +1,6 @@
 /**
  * 测试报告详情组件
- * 显示测试用例的详细执行结果，包括脚本执行结果
+ * 显示测试用例的详细执行结果，包括Script execution result
  */
 
 import { Card, Collapse, Tag, Typography, Space } from "antd";

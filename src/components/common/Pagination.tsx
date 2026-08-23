@@ -1,5 +1,5 @@
 /**
- * 分页组件 - 基于 Antd Pagination
+ * Pagination component - 基于 Antd Pagination
  */
 
 import { Pagination as AntdPagination } from "antd";

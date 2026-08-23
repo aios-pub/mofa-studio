@@ -1,5 +1,5 @@
 /**
- * Octos 网关设置 — 移植自 Octos GatewayTab
+ * Octos Gateway settings — 移植自 Octos GatewayTab
  * 包含 Gateway、Hooks、Sandbox 配置
  */
 

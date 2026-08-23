@@ -1,5 +1,5 @@
 /**
- * 环境变量 API 服务
+ * Environment variable API 服务
  * 后端端点: /api/environment/...
  */
 

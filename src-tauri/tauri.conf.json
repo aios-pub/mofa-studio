@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "AMOS",
+  "productName": "mofa-studio",
   "version": "0.1.0",
-  "identifier": "com.aios.AMOS",
+  "identifier": "com.aios.mofa-studio",
   "build": {
     "beforeDevCommand": "deno task dev",
     "devUrl": "http://localhost:3000",
@@ -14,7 +14,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "AMOS",
+        "title": "mofa-studio",
         "width": 1200,
         "height": 800,
         "minWidth": 800,
@@ -24,7 +24,7 @@
       },
       {
         "label": "floating",
-        "title": "AMOS Floating",
+        "title": "mofa-studio Floating",
         "url": "floating.html",
         "width": 64,
         "height": 64,

@@ -9,7 +9,7 @@ export * from './Pagination';
 export { default as StatusBadge } from './StatusBadge';
 export type { StatusType, StatusBadgeProps } from './StatusBadge';
 
-// 空状态
+// Empty state
 export { default as EmptyState } from './EmptyState';
 export type { EmptyType, EmptyStateProps } from './EmptyState';
 
@@ -28,7 +28,7 @@ export type { CardVariant, CardProps } from './Card';
 export { default as PageHeader } from './PageHeader';
 export type { PageHeaderProps } from './PageHeader';
 
-// 加载状态
+// Loading state
 export {
   default as LoadingState,
   CardSkeleton,
@@ -140,7 +140,7 @@ export type {
   ServerErrorPageProps,
 } from './ResultPage';
 
-// 多标签页管理
+// Multi-tab管理
 export {
   MultiTabProvider,
   MultiTabView,
@@ -157,7 +157,7 @@ export type {
 export { default as MarkdownRenderer } from './MarkdownRenderer';
 export type { MarkdownRendererProps } from './MarkdownRenderer';
 
-// 滚动进度条
+// 滚动Progress bar
 export { ScrollProgress } from './ScrollProgress';
 export type { ScrollProgressProps } from './ScrollProgress';
 
@@ -172,7 +172,7 @@ export {
 } from './AvatarGroup';
 export type { AvatarGroupItem, AvatarGroupProps } from './AvatarGroup';
 
-// 加载状态
+// Loading state
 export {
   default as Loading,
   LoadingSpinner,
@@ -193,5 +193,5 @@ export {
 } from './LoadingButton';
 export type { LoadingButtonProps } from './LoadingButton';
 
-// 路由加载进度条
+// 路由加载Progress bar
 export { default as RouteLoadingProgress } from './RouteLoadingProgress';

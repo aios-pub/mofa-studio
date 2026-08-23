@@ -1,5 +1,5 @@
 /**
- * 设置抽屉组件
+ * 设置Drawer组件
  */
 
 import { useTranslation } from "react-i18next";
@@ -89,10 +89,10 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
       : "#919EAB";
   };
 
-  // 主题色
+  // Theme色
   const primaryColor = themeColorPresetsMap[settings.themeColorPresets].default;
 
-  // 抽屉内容背景样式 - 模糊效果
+  // Drawer内容背景样式 - 模糊效果
   const drawerContentStyle: CSSProperties = {
     backdropFilter: "blur(20px)",
   };
@@ -145,7 +145,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
         style={drawerContentStyle}
       >
         <div className="flex flex-col gap-6 p-6">
-          {/* 主题模式 */}
+          {/* Theme mode */}
           <section className="flex flex-col gap-3">
             <h4 className="text-sm font-semibold text-[var(--color-text-primary)] m-0">
               {t("settings.mode", "主题模式")}
@@ -237,7 +237,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
             </div>
           </section>
 
-          {/* 布局模式 */}
+          {/* Layout mode */}
           <section className="flex flex-col gap-3">
             <h4 className="text-sm font-semibold text-[var(--color-text-primary)] m-0">
               {t("settings.layout", "布局模式")}
@@ -381,7 +381,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
               </Card>
             </div>
 
-            {/* 内容拉伸 */}
+            {/* Content stretch */}
             <div className="flex items-center justify-between">
               <Space size={4}>
                 <span className="text-sm text-[var(--color-text-secondary)]">
@@ -400,7 +400,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
             </div>
           </section>
 
-          {/* 主题颜色 */}
+          {/* Theme颜色 */}
           <section className="flex flex-col gap-3">
             <h4 className="text-sm font-semibold text-[var(--color-text-primary)] m-0">
               {t("settings.presetThemes", "预设主题")}
@@ -436,7 +436,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
             </div>
           </section>
 
-          {/* 字体大小 */}
+          {/* Font size */}
           <section className="flex flex-col gap-3">
             <h4 className="text-sm font-semibold text-[var(--color-text-primary)] m-0">
               {t("settings.fontSize", "字体大小")}

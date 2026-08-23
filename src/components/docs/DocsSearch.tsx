@@ -1,6 +1,6 @@
 /**
- * 文档搜索组件
- * 支持按路径、方法、标签搜索API端点
+ * Document搜索组件
+ * 支持按路径、方法、Label搜索API端点
  */
 
 import { useState } from "react";

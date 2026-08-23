@@ -95,7 +95,7 @@ export default function AgentPromptSelector({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      {/* 已选择的提示词标签 */}
+      {/* 已选择的提示词Label */}
       {selectedPromptObjects.length > 0 && (
         <div>
           <Text

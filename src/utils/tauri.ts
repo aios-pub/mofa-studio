@@ -10,11 +10,11 @@ export const isTauriApp = () => {
 };
 
 /**
- * 从 Rust 端获取悬浮球模式配置
+ * 从 Rust 端Get floating ball mode配置
  */
 export async function getFloatingMode(): Promise<"floating" | "window"> {
   if (!isTauriApp()) {
-    // 非 Tauri 环境使用环境变量
+    // 非 Tauri 环境使用Environment variable
     return import.meta.env.VITE_FLOATING_MODE || "floating";
   }
 

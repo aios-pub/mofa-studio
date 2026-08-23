@@ -33,7 +33,7 @@ export interface Skill {
   updated_at: Date;
 }
 
-// ===== Skill 来源类型 =====
+// ===== Skill Source类型 =====
 
 export type SkillSource = "local" | "hub" | "installed";
 
@@ -132,7 +132,7 @@ export interface HubSkillFile {
   created_at: Date;
 }
 
-// ===== 标签 =====
+// ===== Label =====
 
 export interface HubLabel {
   id: string;
@@ -414,7 +414,7 @@ export interface HubStats {
   total_ratings: number;
 }
 
-// ===== 分页响应 =====
+// ===== Pagination response =====
 
 export interface PageResponse<T> {
   items: T[];

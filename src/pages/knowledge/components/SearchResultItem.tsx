@@ -1,5 +1,5 @@
 /**
- * 搜索结果项组件
+ * Search result item组件
  */
 
 import {

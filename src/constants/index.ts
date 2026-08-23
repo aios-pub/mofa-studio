@@ -2,19 +2,19 @@
  * 应用常量定义
  */
 
-// 应用信息
-export const APP_NAME = "AMOS";
+// App information
+export const APP_NAME = "mofa-studio";
 export const APP_VERSION = "0.1.0";
 
-// 窗口尺寸
+// Window dimensions
 export const FLOATING_BALL_SIZE = 60;
 export const EXPANDED_MENU_WIDTH = 280;
 
-// 默认配置
+// Default configuration
 export const DEFAULT_PAGE_SIZE = 20;
 export const MAX_PAGE_SIZE = 100;
 
-// Agent 状态颜色映射
+// Agent status color mapping
 export const AGENT_STATUS_COLORS: Record<string, string> = {
   idle: "#22c55e", // 绿色
   thinking: "#eab308", // 黄色
@@ -24,7 +24,7 @@ export const AGENT_STATUS_COLORS: Record<string, string> = {
   offline: "#6b7280", // 灰色
 };
 
-// Agent 状态文本
+// Agent status text
 export const AGENT_STATUS_TEXT: Record<string, string> = {
   idle: "空闲",
   thinking: "思考中",
@@ -34,10 +34,10 @@ export const AGENT_STATUS_TEXT: Record<string, string> = {
   offline: "离线",
 };
 
-// 存储键名
+// Storage key names
 export const STORAGE_KEYS = {
-  THEME: "AMOS-claw-theme",
-  LANGUAGE: "AMOS-claw-language",
-  WINDOW_MODE: "AMOS-claw-window-mode",
-  RECENT_CONVERSATIONS: "AMOS-claw-recent-conversations",
+  THEME: "mofa-studio-theme",
+  LANGUAGE: "mofa-studio-language",
+  WINDOW_MODE: "mofa-studio-window-mode",
+  RECENT_CONVERSATIONS: "mofa-studio-recent-conversations",
 } as const;

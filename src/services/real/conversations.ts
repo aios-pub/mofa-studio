@@ -58,21 +58,21 @@ export const conversationRealApi = {
     return mapConversation(raw);
   },
 
-  /** 按 user_id 获取会话 */
+  /** 按 user_id Get conversation */
   async getByUser(userId: string): Promise<Conversation[]> {
     const data = await apiClient.get<BackendConversation[]>(`/api/conversation/by-user?user_id=${userId}`);
     if (!Array.isArray(data)) return [];
     return data.map(mapConversation);
   },
 
-  /** 按 agent_id 获取会话 */
+  /** 按 agent_id Get conversation */
   async getByAgent(agentId: string): Promise<Conversation[]> {
     const data = await apiClient.get<BackendConversation[]>(`/api/conversation/by-agent?agent_id=${agentId}`);
     if (!Array.isArray(data)) return [];
     return data.map(mapConversation);
   },
 
-  /** 创建会话 */
+  /** Create conversation */
   async create(data: { agentId: string; title?: string }): Promise<Conversation> {
     const body = {
       agent_id: data.agentId,
@@ -82,7 +82,7 @@ export const conversationRealApi = {
     return mapConversation(raw);
   },
 
-  /** 更新会话 */
+  /** Update conversation */
   async update(id: string, data: Partial<Conversation>): Promise<Conversation> {
     const existing = await conversationRealApi.getById(id);
     const merged = { ...(existing || {}), ...data };
@@ -93,18 +93,18 @@ export const conversationRealApi = {
     return mapConversation(raw);
   },
 
-  /** 删除会话 */
+  /** Delete conversation */
   async delete(id: string): Promise<boolean> {
     await apiClient.delete(`/api/conversation/delete/${id}`);
     return true;
   },
 
-  /** 获取会话消息 - 后端暂无单独消息列表端点 */
+  /** Get conversationMessages - 后端暂无单独Messages列表端点 */
   async getMessages(_conversationId: string): Promise<Message[]> {
     return [];
   },
 
-  /** 发送消息 */
+  /** Send message */
   async sendMessage(
     _conversationId: string,
     content: string,

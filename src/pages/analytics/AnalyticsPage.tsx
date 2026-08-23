@@ -288,7 +288,7 @@ export default function AnalyticsPage() {
         </div>
       )}
 
-      {/* 标签栏 */}
+      {/* Label栏 */}
       <div className="flex gap-1 px-6 border-b border-(--color-border)">
         {[
           { key: "overview", label: "使用概览", icon: BarChartOutlined },
@@ -346,7 +346,7 @@ export default function AnalyticsPage() {
   );
 }
 
-// 概览标签页
+// 概览Tabs
 function OverviewTab({
   stats,
   dailyStats,
@@ -434,7 +434,7 @@ function OverviewTab({
         </div>
       </div>
 
-      {/* 小时分布热力图 */}
+      {/* 小时分布Heatmap */}
       <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
         <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-4">
           24小时使用分布
@@ -466,7 +466,7 @@ function OverviewTab({
   );
 }
 
-// Agent 统计标签页
+// Agent 统计Tabs
 function AgentsTab({
   stats,
   formatNumber,
@@ -541,7 +541,7 @@ function AgentsTab({
   );
 }
 
-// 用户统计标签页
+// 用户统计Tabs
 function UsersTab({
   stats,
   formatNumber,

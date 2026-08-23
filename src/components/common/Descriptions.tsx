@@ -1,6 +1,6 @@
 /**
  * 描述列表组件
- * 用于展示信息的键值对
+ * 用于展示信息的Key-value pair
  */
 
 import React from "react";
@@ -9,7 +9,7 @@ import type { DescriptionsProps } from "antd";
 
 // 描述项类型
 export interface DescriptionItem {
-  /** 标签 */
+  /** Label */
   label: React.ReactNode;
   /** 值 */
   value: React.ReactNode;
@@ -29,11 +29,11 @@ export interface DataDescriptionsProps extends Omit<
   loading?: boolean;
   /** 是否为空 */
   empty?: boolean;
-  /** 空状态文字 */
+  /** Empty state文字 */
   emptyText?: string;
   /** 列数 */
   columns?: number;
-  /** 标签宽度 */
+  /** Label宽度 */
   labelWidth?: number | string;
   /** 是否显示边框 */
   variant?: boolean;
@@ -59,7 +59,7 @@ export const DataDescriptions: React.FC<DataDescriptionsProps> = ({
   className = "",
   ...restProps
 }) => {
-  // 加载状态
+  // Loading state
   if (loading) {
     return (
       <div className={`p-4 ${className}`}>
@@ -71,7 +71,7 @@ export const DataDescriptions: React.FC<DataDescriptionsProps> = ({
     );
   }
 
-  // 空状态
+  // Empty state
   if (empty || items.length === 0) {
     return (
       <div className={`py-8 ${className}`}>
@@ -120,7 +120,7 @@ export interface SimpleDescriptionsProps {
   loading?: boolean;
   /** 列数 */
   columns?: number;
-  /** 标签宽度 */
+  /** Label宽度 */
   labelWidth?: number | string;
   /** 是否显示边框 */
   variant?: boolean;
@@ -172,9 +172,9 @@ export interface VerticalDescriptionsProps {
   items: DescriptionItem[];
   /** 是否加载中 */
   loading?: boolean;
-  /** 标签宽度 */
+  /** Label宽度 */
   labelWidth?: number | string;
-  /** 标签对齐 */
+  /** Label对齐 */
   labelAlign?: "left" | "right";
   /** 间隙大小 */
   gutter?: number;
@@ -184,7 +184,7 @@ export interface VerticalDescriptionsProps {
 
 /**
  * 垂直描述列表
- * 每行显示一个键值对
+ * 每行显示一个Key-value pair
  */
 export const VerticalDescriptions: React.FC<VerticalDescriptionsProps> = ({
   items,

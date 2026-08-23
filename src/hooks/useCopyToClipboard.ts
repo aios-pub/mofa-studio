@@ -9,13 +9,13 @@ import { copyToClipboard } from "@/utils";
 export interface UseCopyToClipboardOptions {
   /** 成功提示文字 */
   successText?: string;
-  /** 失败提示文字 */
+  /** Failed提示文字 */
   errorText?: string;
   /** 是否显示提示 */
   showMessage?: boolean;
   /** 复制成功回调 */
   onSuccess?: () => void;
-  /** 复制失败回调 */
+  /** 复制Failed回调 */
   onError?: () => void;
 }
 
@@ -32,7 +32,7 @@ export interface UseCopyToClipboardReturn {
 
 /**
  * 复制到剪贴板 Hook
- * @param options 配置选项
+ * @param options Configuration options
  * @returns 复制函数和状态
  */
 export function useCopyToClipboard(

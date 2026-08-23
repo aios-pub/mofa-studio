@@ -101,7 +101,7 @@ export const toast = {
   },
 
   /**
-   * 自定义通知
+   * Custom通知
    */
   custom: (
     jsx: (id: string | number) => React.ReactElement,

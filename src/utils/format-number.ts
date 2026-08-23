@@ -70,7 +70,7 @@ export function fPercent(value: InputValue, decimals: number = 1): string {
 }
 
 /**
- * 缩写数字（如 1K, 1M, 1B）
+ * 缩写数字（e.g. 1K, 1M, 1B）
  * @param value 数字或字符串
  * @param decimals 小数位数
  * @returns 格式化后的字符串
@@ -123,7 +123,7 @@ export function fBytes(value: InputValue, decimals: number = 1): string {
 }
 
 /**
- * 格式化文件大小（fBytes 的别名）
+ * 格式化File size（fBytes 的别名）
  */
 export const fFileSize = fBytes;
 

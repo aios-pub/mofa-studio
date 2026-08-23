@@ -29,7 +29,7 @@ export interface BaseModalProps extends Omit<ModalProps, 'footer'> {
   submitButtonType?: 'primary' | 'default' | 'dashed' | 'text' | 'link';
   /** 提交按钮是否危险 */
   submitDanger?: boolean;
-  /** 加载状态 */
+  /** Loading state */
   loading?: boolean;
   /** 禁用状态 */
   disabled?: boolean;
@@ -39,9 +39,9 @@ export interface BaseModalProps extends Omit<ModalProps, 'footer'> {
   onCancel?: () => void;
   /** 底部按钮对齐方式 */
   footerAlign?: 'left' | 'center' | 'right';
-  /** 表单错误信息，显示在表单下方 */
+  /** 表单Error information，显示在表单下方 */
   error?: string | null;
-  /** 错误信息关闭回调 */
+  /** Error information关闭回调 */
   onClearError?: () => void;
 }
 
@@ -154,7 +154,7 @@ export const FormModal: React.FC<FormModalProps> = ({
 export type ConfirmType = 'info' | 'success' | 'warning' | 'error' | 'confirm';
 
 export interface ConfirmModalOptions {
-  /** 标题 */
+  /** Title */
   title?: string;
   /** 内容 */
   content?: React.ReactNode;
@@ -228,15 +228,15 @@ export interface BaseDrawerProps extends Omit<DrawerProps, 'footer'> {
   showCancel?: boolean;
   /** 是否显示提交按钮 */
   showSubmit?: boolean;
-  /** 加载状态 */
+  /** Loading state */
   loading?: boolean;
   /** 禁用状态 */
   disabled?: boolean;
   /** 提交回调 */
   onSubmit?: () => void;
-  /** 表单错误信息，显示在表单下方 */
+  /** 表单Error information，显示在表单下方 */
   error?: string | null;
-  /** 错误信息关闭回调 */
+  /** Error information关闭回调 */
   onClearError?: () => void;
 }
 

@@ -172,7 +172,7 @@ export default function MonitoringPage() {
         </div>
       )}
 
-      {/* 标签栏 */}
+      {/* Label栏 */}
       <div className="flex gap-1 px-6 border-b border-(--color-border)">
         {[
           {
@@ -244,7 +244,7 @@ export default function MonitoringPage() {
   );
 }
 
-// Agent 状态标签页
+// Agent statusTabs
 function AgentsTab({ statuses }: { statuses: AgentStatus[] }) {
   const getStatusColor = (status: AgentStatus["status"]) => {
     switch (status) {
@@ -356,7 +356,7 @@ function AgentsTab({ statuses }: { statuses: AgentStatus[] }) {
   );
 }
 
-// 活动流标签页
+// 活动流Tabs
 function ActivityTab({ events }: { events: ActivityEvent[] }) {
   const getEventIcon = (type: ActivityEvent["type"]) => {
     switch (type) {
@@ -441,7 +441,7 @@ function ActivityTab({ events }: { events: ActivityEvent[] }) {
   );
 }
 
-// 告警标签页
+// 告警Tabs
 function AlertsTab({
   alerts,
   onAcknowledge,

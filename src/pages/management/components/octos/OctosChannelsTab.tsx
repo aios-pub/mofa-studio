@@ -18,7 +18,7 @@ interface Props {
   onChange: (config: OctosProfileConfig) => void;
 }
 
-// Octos 支持的渠道类型
+// Octos Supported Channel types
 const OCTOS_SUPPORTED_CHANNEL_TYPES = [
   "telegram",
   "discord",
@@ -61,7 +61,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
     try {
       setLoading(true);
       const data = await channelApi.getAll();
-      // 只显示 Octos 支持的渠道类型
+      // 只显示 Octos Supported Channel types
       const supportedChannels = data.filter((c: Channel) =>
         OCTOS_SUPPORTED_CHANNEL_TYPES.includes(c.type as any),
       );

@@ -260,7 +260,7 @@ export function generateId(prefix = "id"): string {
 }
 
 /**
- * 格式化文件大小
+ * 格式化File size
  * @param bytes 字节数
  * @returns 格式化后的字符串
  */
@@ -339,7 +339,7 @@ export function formatRelativeTime(date: Date | string | number): string {
 /**
  * 防抖函数
  * @param fn 要执行的函数
- * @param delay 延迟时间（毫秒）
+ * @param delay 延迟时间（milliseconds）
  * @returns 防抖后的函数
  */
 export function debounce<T extends (...args: any[]) => any>(
@@ -357,7 +357,7 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * 节流函数
  * @param fn 要执行的函数
- * @param delay 间隔时间（毫秒）
+ * @param delay 间隔时间（milliseconds）
  * @returns 节流后的函数
  */
 export function throttle<T extends (...args: any[]) => any>(

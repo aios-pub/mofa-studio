@@ -1,5 +1,5 @@
 /**
- * 举报表单组件
+ * 举报Form component
  */
 
 import { useState } from 'react';

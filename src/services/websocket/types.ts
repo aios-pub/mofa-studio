@@ -40,11 +40,11 @@ export interface WebSocketConfig {
   heartbeatInterval?: number;
 }
 
-/** WebSocket 消息 */
+/** WebSocket Messages */
 export interface WebSocketMessage<T = unknown> {
   /** 事件名 */
   event: string;
-  /** 消息数据 */
+  /** Messages数据 */
   data: T;
   /** 时间戳 */
   timestamp: number;
@@ -56,7 +56,7 @@ export interface WebSocketConnector {
   connect(): Promise<void>;
   /** 断开连接 */
   disconnect(): void;
-  /** 发送消息 */
+  /** Send message */
   emit<T = unknown>(event: string, data: T): void;
   /** 订阅事件 */
   on<T = unknown>(event: string, handler: WebSocketEventHandler<T>): () => void;

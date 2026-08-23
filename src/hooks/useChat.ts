@@ -27,7 +27,7 @@ export function useChat({ conversation, onMessageAdded, onError }: UseChatOption
   const abortControllerRef = useRef<AbortController | null>(null);
   const lastUserMessageRef = useRef<string>('');
 
-  // 发送消息
+  // Send message
   const sendMessage = useCallback(
     async (content: string) => {
       if (!conversation || isLoading) return;
@@ -40,7 +40,7 @@ export function useChat({ conversation, onMessageAdded, onError }: UseChatOption
       abortControllerRef.current = new AbortController();
 
       try {
-        // 构建消息历史
+        // 构建Messages历史
         const messages: ChatRequest['messages'] = [
           ...conversation.messages.map((m) => ({
             role: m.role as 'system' | 'user' | 'assistant',
@@ -49,7 +49,7 @@ export function useChat({ conversation, onMessageAdded, onError }: UseChatOption
           { role: 'user' as const, content },
         ];
 
-        // 创建用户消息
+        // 创建User message
         const userMessage: Message = {
           id: `msg-${Date.now()}`,
           conversationId: conversation.id,
@@ -60,14 +60,14 @@ export function useChat({ conversation, onMessageAdded, onError }: UseChatOption
         };
         onMessageAdded?.(userMessage);
 
-        // 创建 AI 消息占位
+        // 创建 AI Messages占位
         const aiMessageId = `msg-${Date.now() + 1}`;
         let accumulatedContent = '';
 
         // 流式响应回调
         const onChunk: StreamCallback = (chunk, done) => {
           if (done) {
-            // 完成时创建完整的 AI 消息
+            // 完成时创建完整的 AI Messages
             const aiMessage: Message = {
               id: aiMessageId,
               conversationId: conversation.id,

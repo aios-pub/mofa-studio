@@ -1,6 +1,6 @@
 /**
- * 工作流测试构建器组件
- * 用于配置工作流测试的输入参数映射和预期输出
+ * Workflow测试构建器组件
+ * 用于配置Workflow测试的输入参数映射和预期输出
  */
 
 import { useState, useEffect, useMemo } from "react";
@@ -69,14 +69,14 @@ export function WorkflowTestBuilder({
     }
   };
 
-  // 模拟的工作流列表（实际应该从API获取）
+  // 模拟的Workflow列表（实际应该从API获取）
   const mockWorkflows = [
     { id: "wf-1", name: "数据处理工作流" },
     { id: "wf-2", name: "文档生成工作流" },
     { id: "wf-3", name: "邮件发送工作流" },
   ];
 
-  // 模拟的工作流参数（实际应该从API获取）
+  // 模拟的Workflow参数（实际应该从API获取）
   const mockWorkflowParams: Record<string, Array<{ name: string; type: string; required: boolean }>> = {
     "wf-1": [
       { name: "input_data", type: "string", required: true },
@@ -205,7 +205,7 @@ export function WorkflowTestBuilder({
 
   return (
     <div className="space-y-4">
-      {/* 工作流选择 */}
+      {/* Workflow选择 */}
       <Card title="选择工作流" size="small">
         <div className="space-y-3">
           <div>

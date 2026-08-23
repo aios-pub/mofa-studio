@@ -1,6 +1,6 @@
 /**
- * 环境变量工具函数
- * 处理环境变量的替换和管理
+ * Environment variable工具函数
+ * 处理Environment variable的替换和管理
  */
 
 import type { Environment, EnvironmentVariable } from "@/types/testset";
@@ -78,7 +78,7 @@ export function extractVariables(text: string): string[] {
 }
 
 /**
- * 验证环境变量配置
+ * 验证Environment variable配置
  * 检查是否有循环引用或其他问题
  */
 export function validateEnvironment(env: Environment): {
@@ -87,27 +87,27 @@ export function validateEnvironment(env: Environment): {
 } {
   const errors: string[] = [];
 
-  // 检查变量名是否重复
+  // Check if variable name is duplicated
   const keys = env.variables.map((v) => v.key);
   const duplicates = keys.filter((key, index) => keys.indexOf(key) !== index);
   if (duplicates.length > 0) {
     errors.push(`发现重复的变量名: ${duplicates.join(", ")}`);
   }
 
-  // 检查变量名格式
+  // Check variable name format
   const invalidKeys = keys.filter((key) => !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key));
   if (invalidKeys.length > 0) {
     errors.push(`变量名格式不正确: ${invalidKeys.join(", ")}`);
   }
 
-  // 检查循环引用（变量值中引用了其他变量）
+  // Check for circular references（Variable value references other variables）
   const enabledVars = env.variables.filter((v) => v.enabled);
   for (const variable of enabledVars) {
     const referencedVars = extractVariables(variable.value);
     for (const refVar of referencedVars) {
       const refVariable = enabledVars.find((v) => v.key === refVar);
       if (refVariable) {
-        // 检查是否循环引用
+        // Check for circular reference
         const refRefVars = extractVariables(refVariable.value);
         if (refRefVars.includes(variable.key)) {
           errors.push(`检测到循环引用: ${variable.key} <-> ${refVar}`);
@@ -123,7 +123,7 @@ export function validateEnvironment(env: Environment): {
 }
 
 /**
- * 获取环境变量的预览值
+ * 获取Environment variable的预览值
  * 返回替换后的结果，用于预览
  */
 export function getPreviewValue(

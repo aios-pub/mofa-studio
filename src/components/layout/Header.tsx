@@ -68,7 +68,7 @@ export default function Header({
     role: t("nav.role", "角色管理"),
   };
 
-  // 根据路径生成面包屑
+  // 根据路径生成Breadcrumb
   const getBreadcrumbs = () => {
     const paths = location.pathname.split("/").filter(Boolean);
     const breadcrumbs: BreadcrumbProps["items"] = [
@@ -97,7 +97,7 @@ export default function Header({
     return breadcrumbs;
   };
 
-  // 语言切换菜单
+  // Language切换菜单
   const languageMenu: MenuProps["items"] = [
     {
       key: "zh-CN",
@@ -111,7 +111,7 @@ export default function Header({
     },
   ];
 
-  // 主题切换菜单
+  // Theme切换菜单
   const themeMenu: MenuProps["items"] = [
     {
       key: "light",
@@ -182,7 +182,7 @@ export default function Header({
           className="lg:hidden"
         />
 
-        {/* 面包屑 */}
+        {/* Breadcrumb */}
         {showBreadcrumb && (
           <Breadcrumb items={getBreadcrumbs()} className="hidden md:flex" />
         )}
@@ -209,7 +209,7 @@ export default function Header({
         {/* 分隔线 */}
         <div className="w-px h-5 bg-[var(--color-border)] mx-1" />
 
-        {/* 语言切换 */}
+        {/* Language切换 */}
         <Dropdown
           menu={{ items: languageMenu, selectedKeys: [language] }}
           trigger={["click"]}
@@ -221,7 +221,7 @@ export default function Header({
           />
         </Dropdown>
 
-        {/* 主题切换 */}
+        {/* Theme切换 */}
         <Dropdown
           menu={{ items: themeMenu, selectedKeys: [theme] }}
           trigger={["click"]}

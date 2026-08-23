@@ -1,5 +1,5 @@
 /**
- * Loading 加载状态组件
+ * Loading Loading state组件
  * 提供多种加载指示器样式
  */
 
@@ -17,7 +17,7 @@ interface LoadingProps {
   fullscreen?: boolean;
   /** 是否显示为简单模式（只有图标） */
   simple?: boolean;
-  /** 自定义类名 */
+  /** Custom类名 */
   className?: string;
   /** 是否正在加载 */
   loading?: boolean;
@@ -50,7 +50,7 @@ export function LoadingSpinner({
 }
 
 /**
- * 加载状态组件
+ * Loading state组件
  */
 export default function Loading({
   tip = "加载中...",
@@ -132,14 +132,14 @@ export function InlineLoading({
 }
 
 /**
- * 按钮加载状态
+ * 按钮Loading state
  */
 export function ButtonLoading({ className }: { className?: string }) {
   return <LoadingOutlined className={cn("text-current", className)} spin />;
 }
 
 /**
- * 骨架屏组件
+ * Skeleton screen组件
  */
 export function Skeleton({
   className,
@@ -157,7 +157,7 @@ export function Skeleton({
 }
 
 /**
- * 骨架屏 - 文本行
+ * Skeleton screen - 文本行
  */
 export function SkeletonText({
   lines = 3,
@@ -179,7 +179,7 @@ export function SkeletonText({
 }
 
 /**
- * 骨架屏 - 头像
+ * Skeleton screen - 头像
  */
 export function SkeletonAvatar({
   size = 40,
@@ -197,7 +197,7 @@ export function SkeletonAvatar({
 }
 
 /**
- * 骨架屏 - 卡片
+ * Skeleton screen - 卡片
  */
 export function SkeletonCard({ className }: { className?: string }) {
   return (

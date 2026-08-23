@@ -8,15 +8,15 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 /** SSE 连接状态 */
 export type SSEConnectionState = 'connecting' | 'open' | 'closed' | 'error';
 
-/** SSE Hook 配置 */
+/** SSE Hook configuration */
 interface UseSSEOptions {
   /** 自动连接 */
   autoConnect?: boolean;
-  /** 重连间隔（毫秒） */
+  /** 重连间隔（milliseconds） */
   reconnectInterval?: number;
   /** 最大重连次数 */
   maxReconnectAttempts?: number;
-  /** 消息解析函数 */
+  /** Messages解析函数 */
   parseMessage?: (data: string) => unknown;
 }
 
@@ -26,7 +26,7 @@ interface UseSSEReturn {
   state: SSEConnectionState;
   /** 是否已连接 */
   isConnected: boolean;
-  /** 最后一条消息 */
+  /** 最后一条Messages */
   lastMessage: unknown | null;
   /** 连接 */
   connect: () => void;
@@ -34,7 +34,7 @@ interface UseSSEReturn {
   disconnect: () => void;
   /** 重新连接 */
   reconnect: () => void;
-  /** 错误信息 */
+  /** Error information */
   error: Event | null;
 }
 
@@ -107,7 +107,7 @@ export function useSSE(
         setError(err);
         setState('error');
 
-        // 如果是手动关闭或达到最大重连次数，则不再重连
+        // e.g.果是手动关闭或达到最大重连次数，则不再重连
         if (isManualCloseRef.current || reconnectAttemptsRef.current >= maxReconnectAttempts) {
           cleanup();
           setState('closed');

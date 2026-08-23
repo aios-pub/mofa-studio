@@ -1,5 +1,5 @@
 /**
- * 用户状态管理
+ * User state management
  */
 
 import { create } from "zustand";
@@ -34,7 +34,7 @@ const useUserStore = create<UserStore>()(
       },
     }),
     {
-      name: "AMOS-claw-user-store",
+      name: "mofa-studio-user-store",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         userInfo: state.userInfo,
@@ -52,7 +52,7 @@ export const useUserRoles = () =>
   useUserStore((state) => state.userInfo.roles || []);
 export const useUserActions = () => useUserStore((state) => state.actions);
 
-// 检查是否已登录
+// Check if already logged in
 export const useIsAuthenticated = () => {
   const { accessToken } = useUserToken();
   return !!accessToken;

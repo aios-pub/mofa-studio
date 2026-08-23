@@ -64,7 +64,7 @@ export default function OctosLogsTab({ profileId, apiClient }: Props) {
       try {
         return JSON.parse(data) as OctosLogEntry;
       } catch {
-        // 如果不是 JSON，直接返回字符串
+        // e.g.果不是 JSON，直接返回字符串
         return data;
       }
     },
@@ -76,7 +76,7 @@ export default function OctosLogsTab({ profileId, apiClient }: Props) {
 
     if (paused) return; // 暂停时不添加新日志
 
-    // 判断消息类型
+    // 判断Message type
     if (typeof lastMessage === 'string') {
       // 纯文本日志
       const log: OctosLogEntry = {

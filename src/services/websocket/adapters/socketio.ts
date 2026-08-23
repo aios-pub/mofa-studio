@@ -38,7 +38,7 @@ async function loadSocketIO(): Promise<SocketIOConstructor> {
     socketIO = module.default || module.io;
     return socketIO!;
   } catch {
-    // 如果 CDN 加载失败，尝试从 npm 包加载
+    // e.g.果 CDN 加载Failed，尝试从 npm 包加载
     try {
       // @ts-ignore
       const module = await import('socket.io-client');
@@ -182,7 +182,7 @@ export class SocketIOAdapter extends BaseWebSocketAdapter {
       this.handleError(error);
     });
 
-    // 监听所有消息
+    // 监听所有Messages
     this.socket.on('message', (data: unknown) => {
       this.emitInternal('message', data);
     });
@@ -192,7 +192,7 @@ export class SocketIOAdapter extends BaseWebSocketAdapter {
     this.setState('disconnected');
     this.emitInternal('disconnect', { reason, mode: this.mode });
 
-    // 如果不是主动断开，尝试重连
+    // e.g.果不是主动断开，尝试重连
     if (reason !== 'client namespace disconnect') {
       this.scheduleReconnect();
     }

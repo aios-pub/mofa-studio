@@ -18,13 +18,13 @@ export interface UseScrollProgressReturn {
 }
 
 /**
- * 自定义 Hook，用于获取滚动进度
+ * Custom Hook，用于获取滚动进度
  *
- * @param target - 滚动目标类型，可选值为 "document" 或 "container"，默认为 "document"
+ * @param target - 滚动目标类型，Optional值为 "document" 或 "container"，默认为 "document"
  * @returns 返回包含滚动进度值和元素引用的对象
  *
  * @example
- * // 监听整个文档的滚动
+ * // 监听整个Document的滚动
  * const { scrollYProgress } = useScrollProgress();
  *
  * @example

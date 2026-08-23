@@ -13,7 +13,7 @@ import type {
   ExecutionStatus,
 } from '../../types/workflow';
 
-// 节点类型配置
+// Node type配置
 export const nodeTypeConfig: Record<NodeType, { name: string; icon: string; category: string; description: string; color: string }> = {
   start: { name: '开始', icon: '▶️', category: 'trigger', description: '工作流开始节点', color: '#52c41a' },
   end: { name: '结束', icon: '⏹️', category: 'trigger', description: '工作流结束节点', color: '#ff4d4f' },
@@ -165,7 +165,7 @@ const createSampleEdges = (): WorkflowEdge[] => [
   { id: 'edge-4', sourceNodeId: 'node-condition-1', sourcePortId: 'out-no', targetNodeId: 'node-end-failure', label: '失败' },
 ];
 
-// Mock 工作流数据
+// Mock Workflow数据
 export const mockWorkflows: Workflow[] = [
   {
     id: 'workflow-1',
@@ -346,19 +346,19 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Workflow API Mock
 export const workflowApi = {
-  // 获取所有工作流
+  // 获取所有Workflow
   async getAll(): Promise<Workflow[]> {
     await delay(300);
     return mockWorkflows;
   },
 
-  // 获取单个工作流
+  // 获取单个Workflow
   async getById(id: string): Promise<Workflow | undefined> {
     await delay(200);
     return mockWorkflows.find((w) => w.id === id);
   },
 
-  // 创建工作流
+  // 创建Workflow
   async create(data: Partial<Workflow>): Promise<Workflow> {
     await delay(500);
     const newWorkflow: Workflow = {
@@ -379,7 +379,7 @@ export const workflowApi = {
     return newWorkflow;
   },
 
-  // 更新工作流
+  // 更新Workflow
   async update(id: string, data: Partial<Workflow>): Promise<Workflow | undefined> {
     await delay(300);
     const index = mockWorkflows.findIndex((w) => w.id === id);
@@ -388,7 +388,7 @@ export const workflowApi = {
     return mockWorkflows[index];
   },
 
-  // 删除工作流
+  // 删除Workflow
   async delete(id: string): Promise<boolean> {
     await delay(300);
     const index = mockWorkflows.findIndex((w) => w.id === id);
@@ -397,7 +397,7 @@ export const workflowApi = {
     return true;
   },
 
-  // 复制工作流
+  // 复制Workflow
   async duplicate(id: string): Promise<Workflow | undefined> {
     await delay(500);
     const workflow = mockWorkflows.find((w) => w.id === id);
@@ -416,7 +416,7 @@ export const workflowApi = {
     return newWorkflow;
   },
 
-  // 发布工作流
+  // 发布Workflow
   async publish(id: string): Promise<Workflow | undefined> {
     await delay(300);
     const workflow = mockWorkflows.find((w) => w.id === id);
@@ -473,7 +473,7 @@ export const workflowApi = {
     return workflow;
   },
 
-  // 执行工作流
+  // 执行Workflow
   async execute(workflowId: string, payload?: Record<string, unknown>): Promise<WorkflowExecution> {
     await delay(500);
     const workflow = mockWorkflows.find((w) => w.id === workflowId);
@@ -524,7 +524,7 @@ export const workflowApi = {
     return true;
   },
 
-  // 验证工作流
+  // 验证Workflow
   async validate(workflowId: string): Promise<{ valid: boolean; errors: string[] }> {
     await delay(300);
     const workflow = mockWorkflows.find((w) => w.id === workflowId);
@@ -534,12 +534,12 @@ export const workflowApi = {
 
     const errors: string[] = [];
 
-    // 检查是否有开始节点
+    // 检查是否有Start node
     if (!workflow.nodes.some((n) => n.type === 'start')) {
       errors.push('缺少开始节点');
     }
 
-    // 检查是否有结束节点
+    // 检查是否有End node
     if (!workflow.nodes.some((n) => n.type === 'end')) {
       errors.push('缺少结束节点');
     }
@@ -575,12 +575,12 @@ export const workflowApi = {
     };
   },
 
-  // 获取节点类型配置
+  // 获取Node type配置
   getNodeTypeConfig(type: NodeType) {
     return nodeTypeConfig[type];
   },
 
-  // 获取所有节点类型
+  // 获取所有Node type
   getAllNodeTypes() {
     return Object.entries(nodeTypeConfig).map(([type, config]) => ({
       type: type as NodeType,

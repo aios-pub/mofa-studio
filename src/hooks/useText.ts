@@ -112,11 +112,11 @@ export function useElementTextSelection<T extends HTMLElement>(
 export interface UseClipboardOptions {
   /** 成功提示 */
   successMessage?: string | false;
-  /** 失败提示 */
+  /** Failed提示 */
   errorMessage?: string | false;
   /** 复制成功回调 */
   onSuccess?: (text: string) => void;
-  /** 复制失败回调 */
+  /** 复制Failed回调 */
   onError?: (error: Error) => void;
   /** 读取成功回调 */
   onRead?: (text: string) => void;
@@ -125,7 +125,7 @@ export interface UseClipboardOptions {
 export interface UseClipboardReturn {
   /** 复制文本 */
   copy: (text: string) => Promise<boolean>;
-  /** 复制富文本（HTML） */
+  /** 复制Rich text（HTML） */
   copyHTML: (html: string, plainText?: string) => Promise<boolean>;
   /** 读取剪贴板文本 */
   read: () => Promise<string | null>;
@@ -141,7 +141,7 @@ export interface UseClipboardReturn {
 
 /**
  * 剪贴板操作 Hook（增强版）
- * @param options 配置选项
+ * @param options Configuration options
  * @returns 剪贴板操作方法
  */
 export function useClipboard(options: UseClipboardOptions = {}): UseClipboardReturn {
@@ -333,7 +333,7 @@ export interface UseTextHighlightOptions {
  * 文本搜索高亮
  * @param text 原始文本
  * @param search 搜索词
- * @param options 配置选项
+ * @param options Configuration options
  * @returns 高亮后的文本片段数组
  */
 export function useTextHighlight(

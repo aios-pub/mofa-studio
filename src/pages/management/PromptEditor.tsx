@@ -284,7 +284,7 @@ export default function PromptEditor({
   // 预览内容（替换变量）
   const getPreviewContent = useCallback(() => {
     let preview = content;
-    // 替换自定义变量
+    // 替换Custom变量
     variables.forEach((v) => {
       const value = previewValues[v.name] || v.defaultValue || `[${v.name}]`;
       preview = preview.replace(
@@ -497,7 +497,7 @@ export default function PromptEditor({
               </div>
             </div>
 
-            {/* 标签栏 */}
+            {/* Label栏 */}
             <div className="flex border-b border-(--color-border)">
               {[
                 { key: "content", label: "内容", icon: FileTextOutlined },

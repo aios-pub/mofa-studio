@@ -1,6 +1,6 @@
 /**
- * LoadingButton 加载状态按钮
- * 自动处理加载状态，禁用点击
+ * LoadingButton Loading state按钮
+ * 自动处理Loading state，禁用点击
  */
 
 import { Button } from 'antd';

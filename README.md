@@ -1,146 +1,157 @@
-# AMOS
+# mofa-studio
 
-AMOS 是一款基于 Tauri 构建的桌面 AI 助手应用，集成了智能体管理、对话交互、工作流编排等功能，并提供了独特的悬浮桌宠交互体验。
+<!-- lang-toggle -->
+🇬🇧 English | [中文](./README.zh-CN.md)
+<!-- /lang-toggle -->
 
-## 功能特性
+mofa-studio is a desktop AI assistant application built with Tauri, integrating agent management, conversational interaction, and workflow orchestration, along with a unique floating desktop companion experience.
 
-### 桌面悬浮助手
-- 可拖拽的悬浮球，支持边缘自动吸附
-- 可爱的桌宠互动（喂食、玩耍、睡觉）
-- 气泡消息提示
-- 快速输入，一键发起对话
-- 右键菜单快捷操作
+## Features
 
-### 工作台
-- 仪表盘概览
-- AI 对话界面
-- 历史记录管理
+### Floating Desktop Assistant
+- Draggable floating ball with edge auto-snapping
+- Cute desktop pet interaction (feeding, playing, sleeping)
+- Bubble message notifications
+- Quick input, one-click conversation initiation
+- Right-click menu for quick actions
 
-### 资源管理
-- **智能体管理** - 创建和配置 AI 智能体
-- **提示词管理** - 管理和版本化提示词模板
-- **技能管理** - 定义智能体可使用的技能
-- **测试集管理** - 管理测试用例
-- **提供者管理** - 配置 AI 模型提供者
-- **渠道管理** - 管理模型调用渠道
-- **定时任务** - 配置计划任务
+### Workbench
+- Dashboard overview
+- AI conversation interface
+- History management
 
-### 监控与分析
-- 使用分析统计
-- 实时监控面板
-- 追踪记录查看
-- 评估测试报告
+### Resource Management
+- **Agent Management** - Create and configure AI agents
+- **Prompt Management** - Manage and version prompt templates
+- **Skill Management** - Define skills available to agents
+- **Test Set Management** - Manage test cases
+- **Provider Management** - Configure AI model providers
+- **Channel Management** - Manage model call channels
+- **Scheduled Tasks** - Configure planned tasks
 
-### 工作流
-- 可视化工作流编辑器
-- 工作流列表管理
+### Monitoring & Analytics
+- Usage analytics statistics
+- Real-time monitoring dashboard
+- Trace log viewer
+- Evaluation test reports
 
-### 知识库
-- 知识库创建与管理
+### Workflow
+- Visual workflow editor
+- Workflow list management
 
-### 组织与系统
-- 用户管理
-- 部门管理
-- 角色权限管理
-- 菜单配置
-- 审计日志
-- 系统设置
-- 资源管理
+### Knowledge Base
+- Knowledge base creation and management
 
-## 技术栈
+### Organization & System
+- User management
+- Department management
+- Role-based permission management
+- Menu configuration
+- Audit logs
+- System settings
+- Resource management
 
-| 类别 | 技术 |
+## Tech Stack
+
+| Category | Technology |
 |------|------|
-| 框架 | Tauri 2.x + React 19 |
-| 语言 | TypeScript 5.8 |
-| 构建工具 | Vite 7 |
-| UI 组件 | Ant Design 5 |
-| 样式 | Tailwind CSS 4 |
-| 状态管理 | Zustand 5 |
-| 路由 | React Router 7 |
-| 国际化 | i18next |
-| 动画 | Framer Motion |
-| 工作流图形 | XYFlow |
-| HTTP 客户端 | Axios |
+| Framework | Tauri 2.x + React 19 |
+| Language | TypeScript 5.8 |
+| Build Tool | Vite 7 |
+| UI Components | Ant Design 5 |
+| Styling | Tailwind CSS 4 |
+| State Management | Zustand 5 |
+| Routing | React Router 7 |
+| Internationalization | i18next |
+| Animation | Framer Motion |
+| Workflow Graph | XYFlow |
+| HTTP Client | Axios |
 
-## 项目结构
+## Project Structure
 
 ```
-AMOS-claw/
-├── src/                    # 前端源代码
-│   ├── components/         # 可复用组件
-│   ├── pages/              # 页面组件
-│   ├── hooks/              # 自定义 Hooks
-│   ├── stores/             # Zustand 状态管理
-│   ├── services/           # API 服务
-│   ├── types/              # TypeScript 类型定义
-│   ├── utils/              # 工具函数
-│   ├── theme/              # 主题配置
-│   ├── i18n/               # 国际化配置
-│   ├── floating/           # 悬浮窗口组件
-│   └── tauri/              # Tauri 相关功能
-├── src-tauri/              # Tauri 后端代码
-│   ├── src/                # Rust 源代码
-│   ├── icons/              # 应用图标
-│   └── tauri.conf.json     # Tauri 配置
-├── docs/                   # 文档
-└── public/                 # 静态资源
+mofa-studio/
+├── src/                    # Frontend source code
+│   ├── components/         # Reusable components
+│   ├── pages/              # Page components
+│   ├── hooks/              # Custom hooks
+│   ├── stores/             # Zustand state management
+│   ├── services/           # API services
+│   ├── types/              # TypeScript type definitions
+│   ├── utils/              # Utility functions
+│   ├── theme/              # Theme configuration
+│   ├── i18n/               # Internationalization config
+│   ├── floating/           # Floating window components
+│   └── tauri/              # Tauri-related features
+├── src-tauri/              # Tauri backend code
+│   ├── src/                # Rust source code
+│   ├── icons/              # App icons
+│   └── tauri.conf.json     # Tauri configuration
+├── docs/                   # Documentation
+└── public/                 # Static assets
 ```
 
-## 快速开始
+## Getting Started
 
-### 环境要求
+### Prerequisites
 
 - Node.js 18+
-- Deno (推荐) 或 pnpm/npm
+- Deno (recommended) or pnpm/npm
 - Rust 1.90+
-- 系统依赖参考 [Tauri 官方文档](https://tauri.app/start/prerequisites/)
+- System dependencies see [Tauri official docs](https://tauri.app/start/prerequisites/)
 
-### 安装依赖
+### Install Dependencies
 
 ```bash
 deno install
 ```
 
-### 开发模式
+### Development Mode
 
 ```bash
-# 启动前端开发服务器
+# Start frontend dev server
 deno task dev
 
-# 启动 Tauri 开发模式（包含前端）
+# Start Tauri dev mode (includes frontend)
 deno task tauri-dev
 ```
 
-### 构建发布
+### Build & Release
 
 ```bash
-# 构建前端
+# Build frontend
 deno task build
 
-# 构建 Tauri 应用
+# Build Tauri application
 deno task tauri-build
 ```
 
-## 配置
+## Configuration
 
-### 环境变量
+### Environment Variables
 
-复制 `.env.example` 为 `.env` 并配置：
+Copy `.env.example` to `.env` and configure:
 
 ```bash
 cp .env.example .env
 ```
 
-主要配置项：
-- `VITE_API_BASE_URL` - API 基础地址
-- `VITE_APP_TITLE` - 应用标题
+Key configuration items:
+- `VITE_API_BASE_URL` - API base URL
+- `VITE_APP_TITLE` - Application title
 
-## 许可证
+## License
 
-本项目采用商业源代码许可协议。详见 [LICENSE](LICENSE) 文件。
+This project uses a commercial source code license agreement. See the [LICENSE](LICENSE) file for details.
 
-**重要提示：**
-- 本软件仅授权查看源代码，用于个人学习或研究目的
-- 禁止复制、修改、分发或商业使用
-- 如需商业许可，请联系版权持有者
+**Important Notice:**
+- This software is licensed for source code viewing only, for personal learning or research purposes
+- Copying, modification, distribution, or commercial use is prohibited
+- For commercial licensing, please contact the copyright holder
+
+## Acknowledgements
+
+We would like to express our sincere gratitude to:
+
+- **Dr. Wu** - For invaluable guidance, support, and inspiration throughout the development of this project.
+- **The mofa-org team** - For their dedication, collaboration, and contributions that made this project possible.

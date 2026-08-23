@@ -131,7 +131,7 @@ export default function NotificationDropdown() {
         </div>
       </div>
 
-      {/* 标签页 */}
+      {/* Tabs */}
       <Tabs
         activeKey={activeTab}
         onChange={(key) => setActiveTab(key as "all" | "unread")}

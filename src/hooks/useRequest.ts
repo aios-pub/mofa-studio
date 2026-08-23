@@ -20,7 +20,7 @@ export interface UseRequestOptions<T> {
   initialData?: T;
   /** 成功回调 */
   onSuccess?: (data: T) => void;
-  /** 失败回调 */
+  /** Failed回调 */
   onError?: (error: Error) => void;
   /** 完成回调 */
   onFinally?: () => void;
@@ -34,7 +34,7 @@ export interface UseRequestOptions<T> {
   ready?: () => boolean;
   /** 依赖数组，变化时重新执行 */
   deps?: unknown[];
-  /** 转换响应数据 */
+  /** 转换Response data */
   transform?: (data: unknown) => T;
 }
 
@@ -245,7 +245,7 @@ export function useRequest<T, TArgs extends unknown[] = unknown[]>(
 export interface UseQueryOptions<T> extends Omit<UseRequestOptions<T>, 'immediate'> {
   /** 缓存 key */
   cacheKey?: string;
-  /** 缓存时间（毫秒） */
+  /** 缓存时间（milliseconds） */
   cacheTime?: number;
   /** 窗口聚焦时重新请求 */
   refetchOnWindowFocus?: boolean;

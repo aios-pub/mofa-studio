@@ -1,6 +1,6 @@
 /**
- * 可视化API文档页面
- * 类似Swagger UI的交互界面，支持浏览API文档和在线测试
+ * 可视化APIDocument页面
+ * 类似Swagger UI的交互界面，支持浏览APIDocument和在线测试
  */
 
 import { useState, useEffect } from "react";
@@ -120,7 +120,7 @@ export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsPro
             />
           </div>
 
-          {/* 标签筛选 */}
+          {/* Label筛选 */}
           <div className="px-4 py-2 border-b border-gray-200">
             <div className="flex flex-wrap gap-1">
               <Tag
@@ -304,7 +304,7 @@ export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsPro
   );
 }
 
-// HTTP方法标签组件
+// HTTP methodLabel组件
 function MethodTag({ method }: { method: string }) {
   const colors: Record<string, string> = {
     GET: "blue",

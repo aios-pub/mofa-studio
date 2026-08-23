@@ -15,7 +15,7 @@ const { RangePicker } = DatePicker;
 export interface FormFieldBaseProps {
   /** 字段名 */
   name: string;
-  /** 标签 */
+  /** Label */
   label?: React.ReactNode;
   /** 是否必填 */
   required?: boolean;
@@ -48,7 +48,7 @@ export interface SelectFieldProps extends FormFieldBaseProps {
   showSearch?: boolean;
 }
 
-// 数字输入字段
+// Number input字段
 export interface NumberFieldProps extends FormFieldBaseProps {
   value?: number;
   onChange?: (value: number | null) => void;
@@ -160,7 +160,7 @@ export const FormField = forwardRef<any, FormFieldProps>(
       }
     };
 
-    // 标签渲染（包含 tooltip）
+    // Label渲染（包含 tooltip）
     const labelNode = tooltip ? (
       <span className="flex items-center gap-1">
         {label}

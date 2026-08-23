@@ -11,7 +11,7 @@ export interface ApiKey {
   name: string;
   provider_id: string;
   provider_name: string | null;
-  keyPrefix: string; // 打码前缀，如 "sk-abc...xyz"
+  keyPrefix: string; // 打码前缀，e.g. "sk-abc...xyz"
   fullKey: string; // 完整密钥，后端返回
   status: ApiKeyStatus;
   createdAt: Date;
@@ -415,7 +415,7 @@ export const resourceApi = {
     const index = mockApiKeys.findIndex((k) => k.id === id);
     if (index === -1) return undefined;
 
-    // 如果更新了 provider_id，需要同时更新 provider_name
+    // e.g.果更新了 provider_id，需要同时更新 provider_name
     let providerName = mockApiKeys[index].provider_name;
     if (data.provider_id) {
       const provider = providerOptions.find((p) => p.value === data.provider_id);

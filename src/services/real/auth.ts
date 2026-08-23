@@ -70,7 +70,7 @@ const authRealApi = {
     }),
 
   /**
-   * 获取当前用户信息
+   * 获取当前User information
    */
   getCurrentUser: (): Promise<UserInfo> =>
     apiClient.post<UserInfo>("/api/auth/current_user"),

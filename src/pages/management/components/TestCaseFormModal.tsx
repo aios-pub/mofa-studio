@@ -74,7 +74,7 @@ export function TestCaseFormModal({
   const [dataDrivenConfig, setDataDrivenConfig] = useState<any>(undefined);
   const [advancedActiveKey, setAdvancedActiveKey] = useState<string | string[]>([]);
 
-  // 缓存数据驱动测试默认配置，避免每次渲染创建新对象导致子组件状态重置
+  // 缓存数据驱动测试Default configuration，避免每次渲染创建新对象导致子组件状态重置
   const defaultDataDrivenConfig = useMemo(
     () => ({
       id: `ddt-${testCase?.id || "new"}`,
@@ -141,10 +141,10 @@ export function TestCaseFormModal({
         setPreRequestScript(testCase.preRequestScript || "");
         setTestScript(testCase.testScript || "");
 
-        // 加载环境变量
+        // 加载Environment variable
         setSelectedEnvironment(testCase.environmentId || "");
 
-        // 加载数据驱动测试配置
+        // 加载Data-driven test configuration
         if (testCase.requestConfig) {
           const config = testCase.requestConfig as any;
           if (config.dataDrivenConfig) {
@@ -153,32 +153,32 @@ export function TestCaseFormModal({
           }
         }
 
-        // 如果是HTTP请求类型，设置HTTP配置
+        // e.g.果是HTTP请求类型，设置HTTP配置
         if (reqType === "http" && testCase.requestConfig) {
           setHttpConfig(testCase.requestConfig as unknown as HttpRequestConfig);
         }
 
-        // 如果是WebSocket请求类型，设置WebSocket配置
+        // e.g.果是WebSocket请求类型，设置WebSocket配置
         if (reqType === "websocket" && testCase.requestConfig) {
           setWebSocketConfig(testCase.requestConfig as unknown as WebSocketRequestConfig);
         }
 
-        // 如果是SSE请求类型，设置SSE配置
+        // e.g.果是SSE请求类型，设置SSE配置
         if (reqType === "sse" && testCase.requestConfig) {
           setSSEConfig(testCase.requestConfig as unknown as SSERequestConfig);
         }
 
-        // 如果是Socket.IO请求类型，设置Socket.IO配置
+        // e.g.果是Socket.IO请求类型，设置Socket.IO配置
         if (reqType === "socketio" && testCase.requestConfig) {
           setSocketIOConfig(testCase.requestConfig as unknown as SocketIORequestConfig);
         }
 
-        // 如果是工作流请求类型，设置工作流配置
+        // e.g.果是Workflow请求类型，设置Workflow配置
         if (reqType === "workflow" && testCase.requestConfig) {
           setWorkflowConfig(testCase.requestConfig as unknown as WorkflowRequestConfig);
         }
 
-        // 如果有高级配置，自动展开高级功能面板
+        // e.g.果有高级配置，自动展开高级功能面板
         const hasAdvancedConfig =
           !!testCase.preRequestScript ||
           !!testCase.testScript ||
@@ -211,7 +211,7 @@ export function TestCaseFormModal({
         requestType,
       };
 
-      // 非 Agent 类型不保留 expectedOutput，避免数据污染
+      // 非 Agent type不保留 expectedOutput，避免数据污染
       if (requestType !== "agent") {
         submitData.expectedOutput = "";
       }
@@ -221,7 +221,7 @@ export function TestCaseFormModal({
       submitData.testScript = testScript;
       submitData.environmentId = selectedEnvironment;
 
-      // 根据请求类型设置requestConfig（包含数据驱动测试配置）
+      // 根据请求类型设置requestConfig（包含Data-driven test configuration）
       if (requestType === "http" && httpConfig) {
         const configWithDdt = { ...httpConfig };
         if (dataDrivenEnabled && dataDrivenConfig) {
@@ -288,7 +288,7 @@ export function TestCaseFormModal({
       setHttpTestLoading(true);
       setHttpTestResult(null);
 
-      // 应用环境变量替换
+      // 应用Environment variable替换
       const resolvedUrl = replaceVariables(config.url, environmentVariables);
       const resolvedHeaders = config.headers?.reduce((acc, h) => {
         if (h.enabled !== false && h.key) {
@@ -391,7 +391,7 @@ export function TestCaseFormModal({
       });
     }
     if (newType === "workflow" && !workflowConfig) {
-      // 初始化默认工作流配置
+      // 初始化默认Workflow配置
       setWorkflowConfig({
         workflowId: "",
         inputMapping: {},
@@ -605,7 +605,7 @@ export function TestCaseFormModal({
               label: "高级功能",
               children: (
                 <div className="space-y-4">
-                  {/* 环境变量选择 */}
+                  {/* Environment variable选择 */}
                   <div>
                     <div className="text-sm font-medium mb-2">环境变量</div>
                     <EnvironmentManager

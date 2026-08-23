@@ -24,7 +24,7 @@ export interface WebSocketAdapter {
   /** 断开连接 */
   disconnect(): void;
 
-  /** 发送消息 */
+  /** Send message */
   emit<T = unknown>(event: string, data: T): void;
 
   /** 订阅事件 */

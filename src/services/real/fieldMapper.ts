@@ -6,7 +6,7 @@
 /** 安全解析后端返回的日期字符串或 Date 对象 */
 export function parseDate(value: string | number | Date | null | undefined): Date | undefined {
   if (!value) return undefined;
-  // 如果已经是 Date 对象，直接返回
+  // e.g.果已经是 Date 对象，直接返回
   if (value instanceof Date) return isNaN(value.getTime()) ? undefined : value;
   if (typeof value === 'number') return new Date(value);
   if (typeof value === 'string') {

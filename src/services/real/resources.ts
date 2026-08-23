@@ -29,7 +29,7 @@ interface ApiKey {
   provider_id: string;
   provider_name: string | null;
   keyPrefix: string; // 打码前缀，用于显示
-  fullKey?: string; // 完整密钥，后端返回（可选，兼容老数据）
+  fullKey?: string; // 完整密钥，后端返回（Optional，兼容老数据）
   status: ApiKeyStatus;
   createdAt: Date;
   expiresAt?: Date;

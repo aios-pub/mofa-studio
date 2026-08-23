@@ -18,7 +18,7 @@ import type {
 export type { ConnectionState, ConnectionMode, WebSocketEventHandler };
 import { GLOBAL_CONFIG } from '@/config/global-config';
 
-/** WebSocket Hook 配置 */
+/** WebSocket Hook configuration */
 interface UseWebSocketOptions {
   /** 认证令牌 */
   authToken?: string;
@@ -42,7 +42,7 @@ interface UseWebSocketReturn {
   connect: () => Promise<void>;
   /** 断开连接 */
   disconnect: () => void;
-  /** 发送消息 */
+  /** Send message */
   emit: <T = unknown>(event: string, data: T) => void;
   /** 订阅事件 */
   on: <T = unknown>(event: string, handler: WebSocketEventHandler<T>) => () => void;
@@ -117,7 +117,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
     managerRef.current?.disconnect();
   }, []);
 
-  // 发送消息
+  // Send message
   const emit = useCallback(<T = unknown,>(event: string, data: T) => {
     managerRef.current?.emit(event, data);
   }, []);

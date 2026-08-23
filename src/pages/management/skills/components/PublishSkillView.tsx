@@ -474,7 +474,7 @@ export function PublishSkillView({
         )}
       </div>
 
-      {/* SKILL.md 格式说明模态框 */}
+      {/* SKILL.md 格式说明Modal */}
       <Modal
         title="SKILL.md 格式说明"
         open={formatModalOpen}

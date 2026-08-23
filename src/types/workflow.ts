@@ -1,39 +1,39 @@
 /**
- * Workflow 工作流类型定义
+ * Workflow Workflow类型定义
  */
 
-/** 节点类型 */
+/** Node type */
 export type NodeType =
-  | 'start'        // 开始节点
-  | 'end'          // 结束节点
-  | 'agent'        // Agent 调用节点
-  | 'prompt'       // 提示词节点
-  | 'skill'        // Skill 调用节点
-  | 'condition'    // 条件分支节点
-  | 'loop'         // 循环节点
-  | 'parallel'     // 并行执行节点
-  | 'http_request' // HTTP 请求节点
-  | 'transform'    // 数据转换节点
-  | 'variable'     // 变量设置节点
-  | 'delay'        // 延迟节点
-  | 'webhook'      // Webhook 触发节点
-  | 'schedule';    // 定时触发节点
+  | 'start'        // Start node
+  | 'end'          // End node
+  | 'agent'        // Agent call node
+  | 'prompt'       // Prompt node
+  | 'skill'        // Skill call node
+  | 'condition'    // Condition branch node
+  | 'loop'         // Loop node
+  | 'parallel'     // Parallel execution node
+  | 'http_request' // HTTP request node
+  | 'transform'    // Data transform node
+  | 'variable'     // Variable node
+  | 'delay'        // Delay node
+  | 'webhook'      // Webhook trigger node
+  | 'schedule';    // Scheduled trigger node
 
-/** 工作流状态 */
+/** Workflow status */
 export type WorkflowStatus =
-  | 'draft'        // 草稿
+  | 'draft'        // Draft
   | 'published'    // 已发布
-  | 'archived';    // 已归档
+  | 'archived';    // Archived
 
-/** 执行状态 */
+/** Execution status */
 export type ExecutionStatus =
-  | 'pending'      // 等待中
-  | 'running'      // 运行中
-  | 'completed'    // 已完成
-  | 'failed'       // 失败
+  | 'pending'      // Pending
+  | 'running'      // Running
+  | 'completed'    // Completed
+  | 'failed'       // Failed
   | 'cancelled';   // 已取消
 
-/** 节点端口定义 */
+/** Node port definition */
 export interface NodePort {
   id: string;
   name: string;
@@ -43,19 +43,19 @@ export interface NodePort {
   description?: string;
 }
 
-/** 节点位置 */
+/** Node position */
 export interface NodePosition {
   x: number;
   y: number;
 }
 
-/** 基础节点配置 */
+/** Base node configuration */
 export interface BaseNodeConfig {
   label: string;
   description?: string;
 }
 
-/** 开始节点配置 */
+/** Start node configuration */
 export interface StartNodeConfig extends BaseNodeConfig {
   inputs: {
     name: string;
@@ -66,28 +66,28 @@ export interface StartNodeConfig extends BaseNodeConfig {
   }[];
 }
 
-/** 结束节点配置 */
+/** End node configuration */
 export interface EndNodeConfig extends BaseNodeConfig {
   outputs: {
     name: string;
-    source: string; // 引用上游节点的输出
+    source: string; // Reference upstream node output
   }[];
 }
 
-/** Agent 节点配置 */
+/** Agent node configuration */
 export interface AgentNodeConfig extends BaseNodeConfig {
   agentId: string;
   agentName?: string;
   inputMapping: {
     paramName: string;
-    source: string; // 引用变量或上游节点输出
+    source: string; // Reference variable or upstream node output
   }[];
   outputVariable?: string;
   timeout?: number;
   retryCount?: number;
 }
 
-/** 提示词节点配置 */
+/** Prompt node configuration */
 export interface PromptNodeConfig extends BaseNodeConfig {
   promptId: string;
   promptName?: string;
@@ -98,7 +98,7 @@ export interface PromptNodeConfig extends BaseNodeConfig {
   outputVariable?: string;
 }
 
-/** Skill 节点配置 */
+/** Skill node configuration */
 export interface SkillNodeConfig extends BaseNodeConfig {
   skillId: string;
   skillName?: string;
@@ -109,39 +109,39 @@ export interface SkillNodeConfig extends BaseNodeConfig {
   outputVariable?: string;
 }
 
-/** 条件分支配置 */
+/** Condition branch configuration */
 export interface ConditionBranch {
   id: string;
   label: string;
-  expression: string; // 条件表达式
+  expression: string; // Condition expression
   priority: number;
 }
 
-/** 条件节点配置 */
+/** Condition node configuration */
 export interface ConditionNodeConfig extends BaseNodeConfig {
   branches: ConditionBranch[];
-  defaultBranch: string; // 默认分支 ID
+  defaultBranch: string; // Default branch ID
 }
 
-/** 循环节点配置 */
+/** Loop node configuration */
 export interface LoopNodeConfig extends BaseNodeConfig {
-  iterateSource: string; // 迭代数据源
-  itemVariable: string;  // 当前项变量名
-  indexVariable?: string; // 索引变量名
+  iterateSource: string; // Iteration data source
+  itemVariable: string;  // Current item variable name
+  indexVariable?: string; // Index variable name
   maxIterations?: number;
 }
 
-/** 并行节点配置 */
+/** Parallel node configuration */
 export interface ParallelNodeConfig extends BaseNodeConfig {
   branches: {
     id: string;
     label: string;
   }[];
-  waitForAll: boolean; // 是否等待所有分支完成
-  failFast: boolean;   // 任一失败是否立即终止
+  waitForAll: boolean; // Whether to wait for all branches
+  failFast: boolean;   // Terminate immediately on any failure
 }
 
-/** HTTP 请求节点配置 */
+/** HTTP request node configuration */
 export interface HttpRequestNodeConfig extends BaseNodeConfig {
   url: string;
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -163,7 +163,7 @@ export interface HttpRequestNodeConfig extends BaseNodeConfig {
   };
 }
 
-/** 数据转换节点配置 */
+/** Data transform node configuration */
 export interface TransformNodeConfig extends BaseNodeConfig {
   inputSource: string;
   transformType: 'jsonpath' | 'jq' | 'javascript';
@@ -171,7 +171,7 @@ export interface TransformNodeConfig extends BaseNodeConfig {
   outputVariable?: string;
 }
 
-/** 变量节点配置 */
+/** Variable node configuration */
 export interface VariableNodeConfig extends BaseNodeConfig {
   variables: {
     name: string;
@@ -180,12 +180,12 @@ export interface VariableNodeConfig extends BaseNodeConfig {
   }[];
 }
 
-/** 延迟节点配置 */
+/** Delay node config */
 export interface DelayNodeConfig extends BaseNodeConfig {
-  duration: number; // 延迟时间（毫秒）
+  duration: number; // 延迟时间（milliseconds）
 }
 
-/** Webhook 触发节点配置 */
+/** Webhook trigger node config */
 export interface WebhookTriggerNodeConfig extends BaseNodeConfig {
   path: string;
   method: 'GET' | 'POST';
@@ -198,14 +198,14 @@ export interface WebhookTriggerNodeConfig extends BaseNodeConfig {
   responseTemplate?: string;
 }
 
-/** 定时触发节点配置 */
+/** Scheduled trigger node config */
 export interface ScheduleTriggerNodeConfig extends BaseNodeConfig {
   cron: string;
   timezone?: string;
   enabled: boolean;
 }
 
-/** 节点配置联合类型 */
+/** Node config union type */
 export type NodeConfig =
   | { type: 'start'; config: StartNodeConfig }
   | { type: 'end'; config: EndNodeConfig }
@@ -222,7 +222,7 @@ export type NodeConfig =
   | { type: 'webhook'; config: WebhookTriggerNodeConfig }
   | { type: 'schedule'; config: ScheduleTriggerNodeConfig };
 
-/** 工作流节点 */
+/** Workflow node */
 export interface WorkflowNode {
   id: string;
   type: NodeType;
@@ -234,7 +234,7 @@ export interface WorkflowNode {
   };
 }
 
-/** 工作流边（连接） */
+/** Workflow edge (connection) */
 export interface WorkflowEdge {
   id: string;
   sourceNodeId: string;
@@ -242,10 +242,10 @@ export interface WorkflowEdge {
   targetNodeId: string;
   targetPortId?: string;
   label?: string;
-  condition?: string; // 条件表达式（用于条件分支）
+  condition?: string; // Condition expression（用于条件分支）
 }
 
-/** 工作流变量 */
+/** Workflow variables */
 export interface WorkflowVariable {
   name: string;
   type: 'string' | 'number' | 'boolean' | 'object' | 'array';
@@ -254,14 +254,14 @@ export interface WorkflowVariable {
   description?: string;
 }
 
-/** 触发器配置 */
+/** Trigger configuration */
 export interface WorkflowTrigger {
   type: 'manual' | 'webhook' | 'schedule' | 'event';
   config: WebhookTriggerNodeConfig | ScheduleTriggerNodeConfig | Record<string, unknown>;
   enabled: boolean;
 }
 
-/** 工作流定义 */
+/** Workflow definition */
 export interface Workflow {
   id: string;
   name: string;
@@ -289,7 +289,7 @@ export interface Workflow {
   publishedAt?: Date;
 }
 
-/** 工作流版本 */
+/** Workflow version */
 export interface WorkflowVersion {
   id: string;
   workflowId: string;
@@ -300,7 +300,7 @@ export interface WorkflowVersion {
   changelog?: string;
 }
 
-/** 节点执行记录 */
+/** Node execution record */
 export interface NodeExecution {
   id: string;
   executionId: string;
@@ -315,7 +315,7 @@ export interface NodeExecution {
   retryCount?: number;
 }
 
-/** 工作流执行实例 */
+/** Workflow execution instance */
 export interface WorkflowExecution {
   id: string;
   workflowId: string;
@@ -334,7 +334,7 @@ export interface WorkflowExecution {
   error?: string;
 }
 
-/** 节点类型信息 */
+/** Node type info */
 export interface NodeTypeInfo {
   type: NodeType;
   name: string;
@@ -344,7 +344,7 @@ export interface NodeTypeInfo {
   color: string;
 }
 
-/** 工作流统计信息 */
+/** Workflow statistics */
 export interface WorkflowStats {
   totalExecutions: number;
   successfulExecutions: number;

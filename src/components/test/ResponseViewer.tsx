@@ -1,5 +1,5 @@
 /**
- * HTTP响应查看器组件
+ * HTTP response查看器组件
  * 用于展示HTTP请求的响应结果
  */
 

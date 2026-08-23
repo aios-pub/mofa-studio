@@ -92,7 +92,7 @@ export default function ConfigPanel({
             />
           </div>
 
-          {/* 根据节点类型渲染不同配置 */}
+          {/* 根据Node type渲染不同配置 */}
           {config.type === "agent" && (
             <AgentConfig
               config={config}
@@ -344,7 +344,7 @@ function DelayConfig({
   );
 }
 
-// 开始节点配置
+// Start node configuration
 function StartConfig({ config }: { config: NodeConfig }) {
   const startConfig = config as {
     type: "start";
@@ -384,7 +384,7 @@ function StartConfig({ config }: { config: NodeConfig }) {
   );
 }
 
-// 结束节点配置
+// End node configuration
 function EndConfig({ config }: { config: NodeConfig }) {
   const endConfig = config as {
     type: "end";

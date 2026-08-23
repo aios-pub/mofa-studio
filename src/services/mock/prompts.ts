@@ -440,7 +440,7 @@ export const promptApi = {
   replaceVariables(content: string, variables: PromptVariable[], values: Record<string, string> = {}): string {
     let result = content;
 
-    // 替换自定义变量
+    // 替换Custom变量
     variables.forEach((variable) => {
       const value = values[variable.name] ?? variable.defaultValue ?? '';
       const regex = new RegExp(`\\{\\{${variable.name}\\}\\}`, 'g');
@@ -465,7 +465,7 @@ export const promptApi = {
     return result;
   },
 
-  // 估算 Token 数量（简单估算：中文约1.5字符/token，英文约4字符/token）
+  // 估算 Token count（简单估算：中文约1.5字符/token，英文约4字符/token）
   estimateTokens(content: string): { input: number; estimated: number } {
     const chineseChars = (content.match(/[\u4e00-\u9fa5]/g) || []).length;
     const otherChars = content.length - chineseChars;

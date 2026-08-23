@@ -57,7 +57,7 @@ export async function executeScript(
   const testResults: Array<{ name: string; passed: boolean; error?: string }> = [];
   const environmentChanges: Array<{ key: string; value: string; action: "set" | "unset" }> = [];
 
-  // 监控环境变量的变化
+  // 监控Environment variable的变化
   const originalEnvGet = context.environment.get;
   const originalEnvSet = context.environment.set;
   const originalEnvUnset = context.environment.unset;

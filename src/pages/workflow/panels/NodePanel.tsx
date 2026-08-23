@@ -39,7 +39,7 @@ const nodeCategories = [
 export default function NodePanel({ onAddNode }: NodePanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // 过滤节点类型
+  // 过滤Node type
   const filteredCategories = nodeCategories
     .map((category) => ({
       ...category,

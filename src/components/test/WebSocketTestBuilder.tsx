@@ -274,7 +274,7 @@ export function WebSocketTestBuilder({
         </div>
       </Card>
 
-      {/* 消息区域 */}
+      {/* Messages区域 */}
       <Card
         title="消息"
         size="small"
@@ -290,7 +290,7 @@ export function WebSocketTestBuilder({
         }
       >
         <div className="space-y-3">
-          {/* 消息历史 */}
+          {/* Messages历史 */}
           <div className="bg-gray-50 rounded p-3 h-64 overflow-y-auto font-mono text-sm">
             {messages.length === 0 ? (
               <div className="text-center text-gray-400 py-8">
@@ -316,7 +316,7 @@ export function WebSocketTestBuilder({
             <div ref={messagesEndRef} />
           </div>
 
-          {/* 发送消息 */}
+          {/* Send message */}
           <div className="flex gap-2">
             <TextArea
               value={inputMessage}

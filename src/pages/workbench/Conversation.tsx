@@ -29,7 +29,7 @@ export default function ConversationPage() {
     loadAgents();
   }, []);
 
-  // 加载会话列表
+  // 加载Conversation list
   useEffect(() => {
     loadConversations();
   }, []);
@@ -70,7 +70,7 @@ export default function ConversationPage() {
   const handleSelectAgent = useCallback(
     (agentId: string) => {
       setSelectedAgentId(agentId);
-      // 如果当前会话存在，更新会话的agentId
+      // e.g.果当前会话存在，Update conversation的agentId
       if (selectedConversation) {
         setSelectedConversation((prev) => (prev ? { ...prev, agentId } : null));
       }
@@ -124,7 +124,7 @@ export default function ConversationPage() {
     }
   }, [selectedConversation]);
 
-  // 发送消息
+  // Send message
   const handleSendMessage = useCallback(
     async (
       content: string,
@@ -155,7 +155,7 @@ export default function ConversationPage() {
           };
         });
 
-        // 更新会话列表
+        // 更新Conversation list
         setConversations((prev) =>
           prev.map((c) =>
             c.id === selectedConversation.id
@@ -179,7 +179,7 @@ export default function ConversationPage() {
 
   return (
     <div className="flex h-full">
-      {/* 左侧会话列表 */}
+      {/* 左侧Conversation list */}
       <ResizableSidebar
         defaultWidth={288}
         className="border-r border-(--color-border)"

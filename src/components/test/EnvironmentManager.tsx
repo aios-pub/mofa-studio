@@ -1,5 +1,5 @@
 /**
- * 环境变量管理组件
+ * Environment variable管理组件
  * 类似Postman的环境管理功能
  */
 
@@ -108,7 +108,7 @@ export function EnvironmentManager({
   };
 
   const handleSetActive = async (envId: string) => {
-    // 如果选择了"不使用环境"，只通知父组件清除选择
+    // e.g.果选择了"不使用环境"，只通知父组件清除选择
     if (!envId) {
       onVariablesChange?.([]);
       onChange?.("");

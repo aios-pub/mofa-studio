@@ -1,5 +1,5 @@
 /**
- * 多标签页管理组件
+ * Multi-tab管理组件
  */
 
 import React, {
@@ -25,7 +25,7 @@ import type { MenuProps } from "antd";
 export interface TabItem {
   /** 唯一标识 */
   key: string;
-  /** 标签标题 */
+  /** LabelTitle */
   label: React.ReactNode;
   /** 是否可关闭 */
   closable?: boolean;
@@ -36,25 +36,25 @@ export interface TabItem {
 }
 
 export interface MultiTabContextType {
-  /** 当前标签页列表 */
+  /** 当前Tabs列表 */
   tabs: TabItem[];
-  /** 当前激活的标签 */
+  /** 当前激活的Label */
   activeKey: string;
-  /** 添加标签 */
+  /** 添加Label */
   addTab: (tab: TabItem) => void;
-  /** 关闭标签 */
+  /** 关闭Label */
   closeTab: (key: string) => void;
-  /** 关闭其他标签 */
+  /** 关闭其他Label */
   closeOthersTab: (key: string) => void;
-  /** 关闭所有标签 */
+  /** 关闭所有Label */
   closeAll: () => void;
-  /** 关闭左侧标签 */
+  /** 关闭左侧Label */
   closeLeft: (key: string) => void;
-  /** 关闭右侧标签 */
+  /** 关闭右侧Label */
   closeRight: (key: string) => void;
-  /** 刷新标签 */
+  /** 刷新Label */
   refreshTab: (key: string) => void;
-  /** 设置激活标签 */
+  /** 设置激活Label */
   setActiveKey: (key: string) => void;
 }
 
@@ -74,17 +74,17 @@ export const useMultiTab = () => {
 
 export interface MultiTabProviderProps {
   children: React.ReactNode;
-  /** 初始标签页 */
+  /** 初始Tabs */
   initialTabs?: TabItem[];
-  /** 默认激活的标签 */
+  /** 默认激活的Label */
   defaultActiveKey?: string;
-  /** 最大标签数量 */
+  /** 最大Label数量 */
   maxTabs?: number;
-  /** 标签变化回调 */
+  /** Label变化回调 */
   onTabsChange?: (tabs: TabItem[], activeKey: string) => void;
-  /** 标签关闭回调 */
+  /** Label关闭回调 */
   onClose?: (key: string) => void;
-  /** 标签刷新回调 */
+  /** Label刷新回调 */
   onRefresh?: (key: string) => void;
 }
 
@@ -111,7 +111,7 @@ export const MultiTabProvider: React.FC<MultiTabProviderProps> = ({
 
         // 检查是否超过最大数量
         if (prev.length >= maxTabs) {
-          // 移除第一个可关闭的标签
+          // 移除第一个可关闭的Label
           const closableIndex = prev.findIndex(
             (t) => t.closable !== false && !t.fixed,
           );
@@ -143,7 +143,7 @@ export const MultiTabProvider: React.FC<MultiTabProviderProps> = ({
 
         const newTabs = prev.filter((t) => t.key !== key);
 
-        // 如果关闭的是当前激活的标签，激活相邻标签
+        // e.g.果关闭的是当前激活的Label，激活相邻Label
         if (activeKey === key && newTabs.length > 0) {
           const newIndex = Math.min(index, newTabs.length - 1);
           setActiveKey(newTabs[newIndex].key);
@@ -233,10 +233,10 @@ export const MultiTabProvider: React.FC<MultiTabProviderProps> = ({
   );
 };
 
-// ==================== 多标签页视图组件 ====================
+// ==================== Multi-tab视图组件 ====================
 
 export interface MultiTabViewProps {
-  /** 标签页样式 */
+  /** Tabs样式 */
   tabStyle?: "card" | "line";
   /** 是否显示刷新按钮 */
   showRefresh?: boolean;
@@ -312,7 +312,7 @@ export const MultiTabView: React.FC<MultiTabViewProps> = ({
     ];
   };
 
-  // 渲染标签
+  // 渲染Label
   const renderTab: TabsProps["renderTabBar"] = () => (
     <div
       className={`flex items-center gap-1 px-4 py-2 bg-[var(--color-bg-secondary)] border-b border-(--color-border) ${className}`}

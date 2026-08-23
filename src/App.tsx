@@ -37,22 +37,22 @@ function App() {
     <ThemeProvider>
       <ToastProvider />
       <Routes>
-        {/* 公开路由 - 登录页 */}
+        {/* Public route - Login page */}
         <Route path="/auth/login" element={<LoginPage />} />
 
-        {/* 受保护的路由 */}
+        {/* Protected route */}
         <Route
           path="/*"
           element={
             <RouteGuard>
               <MainLayout>
                 <Routes>
-                  {/* 工作台 */}
+                  {/* Workbench */}
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/conversation" element={<Conversation />} />
                   <Route path="/conversation/:id" element={<Conversation />} />
 
-                  {/* 管理模块 */}
+                  {/* Management module */}
                   <Route path="/management/claws" element={<Navigate to="/management/agents" replace />} />
                   <Route path="/management/agents" element={<AgentListPage />} />
                   <Route path="/management/prompts" element={<PromptListPage />} />
@@ -64,18 +64,18 @@ function App() {
                   <Route path="/management/providers" element={<ProvidersListPage />} />
                   <Route path="/management/channels" element={<ChannelsListPage />} />
 
-                  {/* 任务调度模块 */}
+                  {/* Task scheduling module */}
                   <Route path="/scheduler" element={<SchedulerPage />} />
 
-                  {/* 监控模块 */}
+                  {/* Monitoring module */}
                   <Route path="/analytics" element={<AnalyticsPage />} />
                   <Route path="/monitoring" element={<MonitoringPage />} />
 
-                  {/* 组织模块 */}
+                  {/* Organization module */}
                   <Route path="/organization/users" element={<UsersPage />} />
                   <Route path="/organization/departments" element={<DepartmentsPage />} />
 
-                  {/* 系统模块 */}
+                  {/* System module */}
                   <Route path="/system/resources" element={<ResourceManagementPage />} />
                   <Route path="/system/audit-logs" element={<AuditLogsPage />} />
                   <Route path="/system/settings" element={<SettingsPage />} />
@@ -83,20 +83,20 @@ function App() {
                   <Route path="/system/menu" element={<MenuManagementPage />} />
                   <Route path="/system/role" element={<RoleManagementPage />} />
 
-                  {/* 个人中心 */}
+                  {/* Personal center */}
                   <Route path="/profile" element={<ProfilePage />} />
 
-                  {/* 追踪 */}
+                  {/* Tracing */}
                   <Route path="/tracing" element={<TracingPage />} />
 
-                  {/* 评估 */}
+                  {/* Evaluation */}
                   <Route path="/evaluation" element={<EvaluationPage />} />
 
-                  {/* 工作流 */}
+                  {/* Workflow */}
                   <Route path="/workflow" element={<WorkflowListPage />} />
                   <Route path="/workflow/editor/:id" element={<WorkflowEditorPage />} />
 
-                  {/* 知识库 */}
+                  {/* Knowledge base */}
                   <Route path="/knowledge" element={<KnowledgeBaseListPage />} />
                 </Routes>
               </MainLayout>

@@ -1,27 +1,27 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  /** 应用标题 */
+  /** Application title */
   readonly VITE_APP_TITLE: string;
-  /** 应用版本 */
+  /** Application version */
   readonly VITE_APP_VERSION: string;
-  /** 服务端 URL (同时作为 API 基础 URL) */
+  /** Server URL (also serves as API base URL) */
   readonly VITE_APP_SERVER_URL: string;
-  /** API 超时时间 */
+  /** API timeout */
   readonly VITE_APP_API_TIMEOUT: string;
-  /** 是否启用 Mock 数据 */
+  /** Whether to enable Mock data */
   readonly VITE_APP_ENABLE_MOCK: string;
-  /** 悬浮球模式 */
+  /** Floating ball mode */
   readonly VITE_APP_FLOATING_MODE: "floating" | "window";
-  /** 是否启用分析 */
+  /** Whether to enable analytics */
   readonly VITE_APP_ENABLE_ANALYTICS: string;
-  /** 是否启用调试 */
+  /** Whether to enable debug */
   readonly VITE_APP_ENABLE_DEBUG: string;
-  /** 默认路由 */
+  /** Default route */
   readonly VITE_APP_DEFAULT_ROUTE: string;
-  /** 静态资源公共路径 */
+  /** Static assets public path */
   readonly VITE_APP_PUBLIC_PATH: string;
-  /** 路由模式 */
+  /** Routing mode */
   readonly VITE_APP_ROUTER_MODE: "frontend" | "backend";
 }
 

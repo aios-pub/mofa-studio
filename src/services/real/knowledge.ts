@@ -134,7 +134,7 @@ interface SearchResponse {
 }
 
 const knowledgeRealApi = {
-  /** 获取所有知识库 */
+  /** 获取所有Knowledge base */
   async getAll(): Promise<KnowledgeBase[]> {
     const data = await apiClient.get<BackendKnowledgeBase[]>("/api/knowledge/list");
     if (!Array.isArray(data)) return [];
@@ -192,7 +192,7 @@ const knowledgeRealApi = {
     return apiClient.get<SearchResponse>("/api/knowledge/search", { params });
   },
 
-  // ==================== 文档管理 ====================
+  // ==================== Document管理 ====================
 
   async getDocuments(kbId?: string): Promise<Document[]> {
     const url = kbId

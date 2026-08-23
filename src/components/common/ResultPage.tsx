@@ -18,9 +18,9 @@ import {
 export interface ResultPageProps {
   /** 状态类型 */
   status?: 'success' | 'error' | 'warning' | 'info' | '404' | '403' | '500';
-  /** 标题 */
+  /** Title */
   title?: string;
-  /** 副标题 */
+  /** 副Title */
   subTitle?: string;
   /** 额外内容 */
   extra?: React.ReactNode;
@@ -93,7 +93,7 @@ export const ResultPage: React.FC<ResultPageProps> = ({
 // ==================== 成功页面 ====================
 
 export interface SuccessPageProps {
-  /** 标题 */
+  /** Title */
   title?: string;
   /** 描述 */
   description?: string;
@@ -160,7 +160,7 @@ export const SuccessPage: React.FC<SuccessPageProps> = ({
 // ==================== 错误页面 ====================
 
 export interface ErrorPageProps {
-  /** 标题 */
+  /** Title */
   title?: string;
   /** 描述 */
   description?: string;

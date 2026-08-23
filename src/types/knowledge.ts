@@ -1,17 +1,17 @@
 /**
- * Knowledge 知识库类型定义
+ * Knowledge Knowledge base类型定义
  */
 
-/** 向量数据库类型 */
+/** Vector database type */
 export type VectorStoreType =
-  | 'chroma'      // Chroma (默认推荐)
+  | 'chroma'      // Chroma (default recommended)
   | 'pinecone'    // Pinecone
   | 'weaviate'    // Weaviate
   | 'milvus'      // Milvus
   | 'qdrant'      // Qdrant
   | 'pgvector';   // PostgreSQL pgvector
 
-/** 嵌入模型类型 */
+/** Embedding model type */
 export type EmbeddingModelType =
   | 'openai_text_embedding_ada_002'
   | 'openai_text_embedding_3_small'
@@ -23,34 +23,34 @@ export type EmbeddingModelType =
   | 'huggingface_sentence_transformers'
   | 'custom';
 
-/** 文档状态 */
+/** Document status */
 export type DocumentStatus =
-  | 'pending'     // 待处理
-  | 'processing'  // 处理中
-  | 'completed'   // 已完成
-  | 'failed'      // 失败
-  | 'deleted';    // 已删除
+  | 'pending'     // Pending
+  | 'processing'  // Processing
+  | 'completed'   // Completed
+  | 'failed'      // Failed
+  | 'deleted';    // Deleted
 
-/** 分片策略 */
+/** Chunking strategy */
 export interface ChunkingStrategy {
   type: 'fixed_size' | 'semantic' | 'recursive' | 'custom';
-  chunkSize: number;           // 分片大小（字符数）
-  chunkOverlap: number;        // 重叠大小
-  separator?: string;          // 分隔符
-  customRules?: string;        // 自定义规则（JSON）
+  chunkSize: number;           // Chunk size（characters）
+  chunkOverlap: number;        // Overlap size
+  separator?: string;          // Separator
+  customRules?: string;        // Custom rules（JSON）
 }
 
-/** 检索配置 */
+/** Retrieval configuration */
 export interface RetrievalConfig {
-  topK: number;                // 返回结果数量
-  scoreThreshold: number;      // 相似度阈值 (0-1)
-  rerankingEnabled: boolean;   // 是否启用重排序
-  rerankingModel?: string;     // 重排序模型
-  hybridSearchEnabled: boolean; // 是否启用混合搜索
-  keywordWeight?: number;      // 关键词权重 (0-1)
+  topK: number;                // Number of results to return
+  scoreThreshold: number;      // Similarity threshold (0-1)
+  rerankingEnabled: boolean;   // Whether to enable reranking
+  rerankingModel?: string;     // Reranking model
+  hybridSearchEnabled: boolean; // Whether to enable hybrid search
+  keywordWeight?: number;      // Keyword weight (0-1)
 }
 
-/** 嵌入模型配置 */
+/** Embedding model configuration */
 export interface EmbeddingModelConfig {
   type: EmbeddingModelType;
   apiKey?: string;
@@ -60,7 +60,7 @@ export interface EmbeddingModelConfig {
   batchSize?: number;
 }
 
-/** 向量数据库配置 */
+/** Vector database configuration */
 export interface VectorStoreConfig {
   type: VectorStoreType;
   connectionString?: string;
@@ -74,7 +74,7 @@ export interface VectorStoreConfig {
   namespace?: string;
 }
 
-/** 知识库配置 */
+/** Knowledge base configuration */
 export interface KnowledgeBaseConfig {
   embeddingModel: EmbeddingModelConfig;
   vectorStore: VectorStoreConfig;
@@ -82,7 +82,7 @@ export interface KnowledgeBaseConfig {
   retrievalConfig: RetrievalConfig;
 }
 
-/** 知识库 */
+/** Knowledge base */
 export interface KnowledgeBase {
   id: string;
   name: string;
@@ -95,34 +95,34 @@ export interface KnowledgeBase {
   createdBy?: string;
 }
 
-/** 知识库统计信息 */
+/** Knowledge base statistics */
 export interface KnowledgeBaseStats {
-  documentCount: number;       // 文档数量
-  chunkCount: number;          // 分片数量
-  totalSize: number;           // 总大小（字节）
-  vectorCount: number;         // 向量数量
-  lastIndexedAt?: Date;        // 最后索引时间
+  documentCount: number;       // Document count
+  chunkCount: number;          // Chunk count
+  totalSize: number;           // Total size（字节）
+  vectorCount: number;         // Vector count
+  lastIndexedAt?: Date;        // Last indexed at
 }
 
-/** 文档元数据 */
+/** Document metadata */
 export interface DocumentMetadata {
-  source: string;              // 来源
-  author?: string;             // 作者
-  title?: string;              // 标题
-  created?: Date;              // 创建时间
-  modified?: Date;             // 修改时间
-  custom?: Record<string, unknown>; // 自定义字段
+  source: string;              // Source
+  author?: string;             // Author
+  title?: string;              // Title
+  created?: Date;              // Created time
+  modified?: Date;             // Modified time
+  custom?: Record<string, unknown>; // Custom fields
 }
 
-/** 文档 */
+/** Document */
 export interface Document {
   id: string;
   knowledgeBaseId: string;
   name: string;
   type: 'pdf' | 'txt' | 'md' | 'html' | 'docx' | 'json' | 'csv' | 'url';
   status: DocumentStatus;
-  size: number;                // 文件大小（字节）
-  content?: string;            // 文档内容（可选）
+  size: number;                // File size（字节）
+  content?: string;            // Document content（Optional）
   metadata: DocumentMetadata;
   chunkCount: number;
   createdAt: Date;
@@ -131,19 +131,19 @@ export interface Document {
   errorMessage?: string;
 }
 
-/** 文档分片 */
+/** Document chunk */
 export interface Chunk {
   id: string;
   documentId: string;
   knowledgeBaseId: string;
   content: string;
-  position: number;            // 在文档中的位置
-  tokens: number;              // Token 数量
+  position: number;            // Position in document
+  tokens: number;              // Token count
   metadata?: Record<string, unknown>;
   createdAt: Date;
 }
 
-/** 搜索请求 */
+/** Search request */
 export interface SearchRequest {
   knowledgeBaseId: string;
   query: string;
@@ -154,27 +154,27 @@ export interface SearchRequest {
   includeMetadata?: boolean;
 }
 
-/** 搜索结果项 */
+/** Search result item */
 export interface SearchResultItem {
   id: string;
   documentId: string;
   documentName: string;
   content: string;
-  score: number;               // 相似度分数 (0-1)
+  score: number;               // Similarity score (0-1)
   metadata?: DocumentMetadata;
   chunk?: Chunk;
 }
 
-/** 搜索响应 */
+/** Search response */
 export interface SearchResponse {
   query: string;
   results: SearchResultItem[];
   total: number;
-  took: number;                // 搜索耗时（毫秒）
+  took: number;                // Search duration（milliseconds）
   knowledgeBaseId: string;
 }
 
-/** Agent 与知识库的关联 */
+/** Agent knowledge base association */
 export interface AgentKnowledgeBase {
   id: string;
   agentId: string;
@@ -186,7 +186,7 @@ export interface AgentKnowledgeBase {
   updatedAt: Date;
 }
 
-/** 向量数据库配置信息 */
+/** Vector database configuration info */
 export interface VectorStoreTypeInfo {
   type: VectorStoreType;
   name: string;
@@ -196,7 +196,7 @@ export interface VectorStoreTypeInfo {
   recommended?: boolean;
 }
 
-/** 嵌入模型配置信息 */
+/** Embedding model configuration info */
 export interface EmbeddingModelTypeInfo {
   type: EmbeddingModelType;
   name: string;

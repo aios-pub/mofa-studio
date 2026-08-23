@@ -1,5 +1,5 @@
 /**
- * 渠道类型选择器组件
+ * Channel typeSelect component
  */
 
 import { Modal } from "antd";

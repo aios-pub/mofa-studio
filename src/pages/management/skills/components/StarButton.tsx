@@ -1,5 +1,5 @@
 /**
- * Star 按钮组件
+ * Star Button component
  */
 
 import { Button, Tooltip } from 'antd';

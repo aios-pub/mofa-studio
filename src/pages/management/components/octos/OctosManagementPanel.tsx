@@ -157,7 +157,7 @@ export default function OctosManagementPanel({ agent }: Props) {
           name: selectedProfile.name,
           config: backendConfig,
           email: userEmail, // 使用当前登录用户的邮箱
-          agent_code: profileAgentCodes[selectedProfile.id] ?? agent.agent_code, // Agent 唯一编码
+          agent_code: profileAgentCodes[selectedProfile.id] ?? agent.agent_code, // Agent unique code
         }),
       );
       // 将返回的配置转换回前端格式

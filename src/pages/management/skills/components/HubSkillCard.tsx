@@ -114,7 +114,7 @@ export function HubSkillCard({
           {description}
         </Paragraph>
 
-        {/* 标签 */}
+        {/* Label */}
         <div className="flex flex-wrap gap-1 mb-3">
           {labels.slice(0, 2).map(label => (
             <Tag key={label.id} color={label.type === 'RECOMMENDED' ? 'blue' : 'purple'} style={{ fontSize: 11, margin: 0 }}>

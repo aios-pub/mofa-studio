@@ -63,7 +63,7 @@ import { channelTypeConfig } from "@/services/mock/channels";
 import OctosManagementPanel from "./components/octos/OctosManagementPanel";
 import ResizableSidebar from "@/components/layout/ResizableSidebar";
 
-/** 从 agent.custom_params.claw 提取 Agent 类型配置 */
+/** 从 agent.custom_params.claw 提取 Agent type配置 */
 function getClaw(agent: Agent): Record<string, unknown> {
   return (
     ((agent.custom_params as Record<string, unknown>)?.claw as Record<
@@ -77,7 +77,7 @@ function clawVal(agent: Agent, key: string): string | undefined {
   return typeof v === "string" ? v : undefined;
 }
 
-// ==================== 自定义参数编辑器（JSON 可视化）===================
+// ==================== Custom parameters编辑器（JSON 可视化）===================
 
 type JsonValue =
   | string
@@ -87,7 +87,7 @@ type JsonValue =
   | JsonValue[]
   | { [k: string]: JsonValue };
 
-/** 获取 JSON 值的类型标签 */
+/** 获取 JSON 值的类型Label */
 function jsonTypeOf(v: JsonValue): string {
   if (v === null) return "null";
   if (Array.isArray(v)) return "array";
@@ -755,7 +755,7 @@ function AgentFormModal({
             await agentApi.updatePermissions(savedAgent.id, newPerm);
           }
         } catch (permError) {
-          // 如果是新建的 agent，关联失败时回滚
+          // e.g.果是新建的 agent，关联Failed时回滚
           if (!isEdit && savedAgent) {
             try {
               await agentApi.delete(savedAgent.id);
@@ -883,7 +883,7 @@ function AgentFormModal({
   );
 }
 
-// ==================== Agent 基本信息（可编辑）====================
+// ==================== Agent basic info（可编辑）====================
 
 function AgentBasicInfo({
   agent,
@@ -1565,7 +1565,7 @@ function AgentDetail({
   );
 }
 
-// 权限标签页
+// 权限Tabs
 function AgentPermissionTab({ agent }: { agent: Agent }) {
   return (
     <PermissionConfig
@@ -1963,7 +1963,7 @@ export default function AgentListPage() {
   );
 }
 
-// ==================== Agent 详情面板（外部 Agent 类型）====================
+// ==================== Agent 详情面板（外部 Agent type）====================
 
 interface ClawAgentDetailProps {
   agent: Agent;
@@ -2395,7 +2395,7 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
   );
 }
 
-// ==================== Agent Create Modal (Claw 类型) ====================
+// ==================== Agent Create Modal (Claw type) ====================
 
 function ClawCreateModal({
   open,
@@ -2421,7 +2421,7 @@ function ClawCreateModal({
         .getAll()
         .then(setProviders)
         .catch(() => {});
-      // 预设置 Agent 类型（如果有）
+      // 预设置 Agent type（e.g.果有）
       if (preselectedType && !selectedType) {
         setSelectedType(preselectedType);
         form.setFieldValue("clawType", preselectedType);
@@ -2587,7 +2587,7 @@ function ClawCreateModal({
   );
 }
 
-// ==================== Agent Edit Modal (Claw 类型) ====================
+// ==================== Agent Edit Modal (Claw type) ====================
 
 function ClawEditModal({
   open,
@@ -2963,7 +2963,7 @@ function ChannelAssignModal({
           <Select placeholder="选择渠道类型" options={channelTypeOptions} />
         </Form.Item>
         <Form.Item name="callbackUrl" label="回调地址">
-          <Input placeholder="https://your-claw.example.com/webhook（可选）" />
+          <Input placeholder="https://your-claw.example.com/webhook（Optional）" />
         </Form.Item>
       </Form>
     </Modal>

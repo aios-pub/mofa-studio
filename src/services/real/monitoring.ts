@@ -115,7 +115,7 @@ const monitoringRealApi = {
   },
 
   /**
-   * 订阅 Agent 状态更新
+   * 订阅 Agent status更新
    */
   subscribeToAgentStatus: (callback: (status: AgentStatus) => void): (() => void) => {
     try {

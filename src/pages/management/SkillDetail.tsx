@@ -226,7 +226,7 @@ export function SkillDetail({
         </Card>
       </div>
 
-      {/* 标签栏 */}
+      {/* Label栏 */}
       <Tabs
         activeKey={activeTab}
         onChange={(key) => setActiveTab(key as typeof activeTab)}

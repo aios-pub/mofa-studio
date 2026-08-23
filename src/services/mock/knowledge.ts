@@ -1,5 +1,5 @@
 /**
- * Knowledge 知识库 Mock 数据
+ * Knowledge Knowledge base Mock 数据
  */
 
 import type {
@@ -17,7 +17,7 @@ import type {
   KnowledgeBaseStats,
 } from '../../types/knowledge';
 
-// 向量数据库配置信息
+// Vector database configuration info
 export const vectorStoreTypeConfig: Record<VectorStoreType, VectorStoreTypeInfo> = {
   chroma: {
     type: 'chroma',
@@ -64,7 +64,7 @@ export const vectorStoreTypeConfig: Record<VectorStoreType, VectorStoreTypeInfo>
   },
 };
 
-// 嵌入模型配置信息
+// Embedding model configuration info
 export const embeddingModelTypeConfig: Record<EmbeddingModelType, EmbeddingModelTypeInfo> = {
   openai_text_embedding_ada_002: {
     type: 'openai_text_embedding_ada_002',
@@ -138,7 +138,7 @@ export const embeddingModelTypeConfig: Record<EmbeddingModelType, EmbeddingModel
   },
 };
 
-// Mock 知识库数据
+// Mock Knowledge base数据
 export const mockKnowledgeBases: KnowledgeBase[] = [
   {
     id: 'kb-1',
@@ -290,7 +290,7 @@ export const mockKnowledgeBases: KnowledgeBase[] = [
   },
 ];
 
-// Mock 文档数据
+// Mock Document数据
 export const mockDocuments: Document[] = [
   {
     id: 'doc-1',
@@ -397,7 +397,7 @@ export const mockChunks: Chunk[] = [
   },
 ];
 
-// Mock Agent-知识库关联
+// Mock Agent-Knowledge base关联
 export const mockAgentKnowledgeBases: AgentKnowledgeBase[] = [
   {
     id: 'akb-1',
@@ -433,19 +433,19 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Knowledge API Mock
 export const knowledgeApi = {
-  // 获取所有知识库
+  // 获取所有Knowledge base
   async getAllKnowledgeBases(): Promise<KnowledgeBase[]> {
     await delay(300);
     return mockKnowledgeBases;
   },
 
-  // 获取单个知识库
+  // 获取单个Knowledge base
   async getKnowledgeBaseById(id: string): Promise<KnowledgeBase | undefined> {
     await delay(200);
     return mockKnowledgeBases.find((kb) => kb.id === id);
   },
 
-  // 创建知识库
+  // 创建Knowledge base
   async createKnowledgeBase(data: Partial<KnowledgeBase>): Promise<KnowledgeBase> {
     await delay(500);
     const newKB: KnowledgeBase = {
@@ -472,7 +472,7 @@ export const knowledgeApi = {
     return newKB;
   },
 
-  // 更新知识库
+  // 更新Knowledge base
   async updateKnowledgeBase(id: string, data: Partial<KnowledgeBase>): Promise<KnowledgeBase | undefined> {
     await delay(300);
     const index = mockKnowledgeBases.findIndex((kb) => kb.id === id);
@@ -481,25 +481,25 @@ export const knowledgeApi = {
     return mockKnowledgeBases[index];
   },
 
-  // 删除知识库
+  // 删除Knowledge base
   async deleteKnowledgeBase(id: string): Promise<boolean> {
     await delay(300);
     const index = mockKnowledgeBases.findIndex((kb) => kb.id === id);
     if (index === -1) return false;
     mockKnowledgeBases.splice(index, 1);
-    // 删除相关文档
+    // 删除相关Document
     const docIndices = mockDocuments.map((d, i) => (d.knowledgeBaseId === id ? i : -1)).filter((i) => i !== -1).reverse();
     docIndices.forEach((i) => mockDocuments.splice(i, 1));
     return true;
   },
 
-  // 获取知识库文档
+  // 获取Knowledge baseDocument
   async getDocuments(knowledgeBaseId: string): Promise<Document[]> {
     await delay(200);
     return mockDocuments.filter((d) => d.knowledgeBaseId === knowledgeBaseId);
   },
 
-  // 上传文档
+  // 上传Document
   async uploadDocument(knowledgeBaseId: string, file: { name: string; type: Document['type']; size: number }): Promise<Document> {
     await delay(500);
     const newDoc: Document = {
@@ -532,7 +532,7 @@ export const knowledgeApi = {
     return newDoc;
   },
 
-  // 删除文档
+  // 删除Document
   async deleteDocument(documentId: string): Promise<boolean> {
     await delay(300);
     const index = mockDocuments.findIndex((d) => d.id === documentId);
@@ -605,7 +605,7 @@ export const knowledgeApi = {
     ].slice(0, topK);
   },
 
-  // 获取知识库统计
+  // 获取Knowledge base统计
   async getStats(knowledgeBaseId: string): Promise<KnowledgeBaseStats> {
     await delay(100);
     const kb = mockKnowledgeBases.find((k) => k.id === knowledgeBaseId);
@@ -617,7 +617,7 @@ export const knowledgeApi = {
     };
   },
 
-  // Agent 知识库关联
+  // Agent Knowledge base关联
   async getAgentKnowledgeBases(agentId: string): Promise<AgentKnowledgeBase[]> {
     await delay(200);
     return mockAgentKnowledgeBases.filter((akb) => akb.agentId === agentId);
@@ -661,12 +661,12 @@ export const knowledgeApi = {
     }));
   },
 
-  // 获取嵌入模型类型配置
+  // 获取Embedding model type配置
   getEmbeddingModelTypeConfig(type: EmbeddingModelType) {
     return embeddingModelTypeConfig[type];
   },
 
-  // 获取所有嵌入模型类型
+  // 获取所有Embedding model type
   getAllEmbeddingModelTypes() {
     return Object.entries(embeddingModelTypeConfig).map(([key, config]) => ({
       ...config,

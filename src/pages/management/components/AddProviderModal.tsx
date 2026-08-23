@@ -136,7 +136,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
           setError('请输入 API Key');
           return false;
         }
-        // 验证必填配置字段
+        // 验证必填Configuration fields
         for (const field of selectedConfig?.configFields || []) {
           if (field.required && !formData.config?.[field.key]) {
             setError(`请填写 ${field.label}`);
@@ -419,7 +419,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
       destroyOnHidden={false}
       mask={{ closable: false }}
     >
-      {/* 步骤条 */}
+      {/* Steps bar */}
       <div className="mb-6">
         <Steps
           current={isEditMode ? currentStep - 1 : currentStep}

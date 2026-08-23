@@ -1,5 +1,5 @@
 /**
- * 会话列表组件
+ * Conversation list组件
  */
 
 import { useState, useEffect } from "react";
@@ -37,7 +37,7 @@ export default function ConversationList({
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
 
-  // 加载会话列表
+  // 加载Conversation list
   useEffect(() => {
     loadConversations();
     agentApi.getAll().then(setAgents).catch(console.error);
@@ -73,7 +73,7 @@ export default function ConversationList({
     }
   };
 
-  // 删除会话
+  // Delete conversation
   const handleDeleteConversation = async (id: string) => {
     try {
       await conversationApi.delete(id);
@@ -153,7 +153,7 @@ export default function ConversationList({
         </div>
       </div>
 
-      {/* 会话列表 */}
+      {/* Conversation list */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center py-8">
@@ -173,7 +173,7 @@ export default function ConversationList({
               ({ agent, conversations: groupConvs }) =>
                 groupConvs.length > 0 && (
                   <div key={agent.id} className="mb-4">
-                    {/* Agent 分组标题 */}
+                    {/* Agent 分组Title */}
                     <div className="flex items-center gap-2 px-2 py-1 text-xs font-medium text-[var(--color-text-tertiary)]">
                       <span>{agent.avatar || "🤖"}</span>
                       <span>{agent.agent_name}</span>

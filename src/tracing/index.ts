@@ -1,5 +1,5 @@
 /**
- * Tracing 模块入口
+ * Tracing module entry
  */
 
 export * from './config';

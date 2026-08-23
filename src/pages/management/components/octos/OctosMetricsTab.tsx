@@ -1,5 +1,5 @@
 /**
- * Octos Provider QoS 指标
+ * Octos Provider QoS metrics
  * 展示 Provider 延迟、成功率、错误率等 QoS 数据
  */
 

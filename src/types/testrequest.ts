@@ -18,9 +18,9 @@ export type {
   WorkflowRequestConfig,
 } from "./testset";
 
-// ==================== 环境变量相关类型 ====================
+// ==================== Environment variable相关类型 ====================
 
-/** 环境变量 */
+/** Environment variable */
 export interface EnvironmentVariable {
   key: string;
   value: string;
@@ -41,10 +41,10 @@ export interface Environment {
 
 // ==================== 脚本相关类型 ====================
 
-/** 脚本类型 */
+/** Script type */
 export type ScriptType = "pre_request" | "test";
 
-/** 脚本配置 */
+/** Script configuration */
 export interface ScriptConfig {
   type: ScriptType;
   script: string;

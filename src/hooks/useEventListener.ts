@@ -45,7 +45,7 @@ export function useEventListener<
   }, [target, eventName, options]);
 }
 
-// ==================== 窗口尺寸 ====================
+// ==================== Window dimensions ====================
 
 export interface WindowSize {
   width: number;
@@ -53,7 +53,7 @@ export interface WindowSize {
 }
 
 /**
- * 窗口尺寸 Hook
+ * Window dimensions Hook
  * @returns 窗口宽度和高度
  */
 export function useWindowSize(): WindowSize {

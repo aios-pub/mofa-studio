@@ -1,5 +1,5 @@
 /**
- * 数据驱动测试配置组件
+ * Data-driven test configuration组件
  * 支持CSV、JSON、Excel数据源配置
  */
 

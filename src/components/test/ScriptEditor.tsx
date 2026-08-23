@@ -31,7 +31,7 @@ const SCRIPT_EXAMPLES: Record<ScriptType, { label: string; code: string }[]> = {
   pre_request: [
     {
       label: "设置环境变量",
-      code: `// 设置环境变量
+      code: `// 设置Environment variable
 pm.environment.set("baseUrl", "https://api.example.com");
 pm.environment.set("timestamp", Date.now().toString());
 
@@ -96,7 +96,7 @@ pm.test("Content-Type is present", function() {
   pm.response.headers["Content-Type"]?.includes("application/json");
 });
 
-// 检查自定义头
+// 检查Custom头
 pm.test("Custom header exists", function() {
   pm.response.headers["X-Custom-Header"];
 });`,

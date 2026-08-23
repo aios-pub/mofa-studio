@@ -1,5 +1,5 @@
 /**
- * 主题 Hook
+ * Theme Hook
  */
 
 import { useEffect, useCallback, useState } from 'react';
@@ -10,7 +10,7 @@ export function useTheme() {
   const { theme, setTheme } = useAppStore();
   const [isDark, setIsDark] = useState(false);
 
-  // 获取实际的主题模式
+  // 获取实际的Theme mode
   const getActualTheme = useCallback((mode: ThemeMode): 'light' | 'dark' => {
     if (mode === 'system') {
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -18,7 +18,7 @@ export function useTheme() {
     return mode;
   }, []);
 
-  // 应用主题
+  // 应用Theme
   const applyTheme = useCallback((mode: ThemeMode) => {
     const root = document.documentElement;
     const actualTheme = getActualTheme(mode);
@@ -28,7 +28,7 @@ export function useTheme() {
     setIsDark(dark);
   }, [getActualTheme]);
 
-  // 监听系统主题变化
+  // 监听系统Theme变化
   useEffect(() => {
     if (theme !== 'system') return;
 
@@ -41,12 +41,12 @@ export function useTheme() {
     return () => mediaQuery.removeEventListener('change', handler);
   }, [theme, applyTheme]);
 
-  // 初始化主题
+  // 初始化Theme
   useEffect(() => {
     applyTheme(theme);
   }, [theme, applyTheme]);
 
-  // 切换主题
+  // 切换Theme
   const toggleTheme = useCallback(() => {
     const nextTheme: ThemeMode = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light';
     setTheme(nextTheme);

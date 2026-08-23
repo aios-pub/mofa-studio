@@ -206,7 +206,7 @@ export function useKeyboardShortcuts() {
 
       for (const shortcut of shortcutsRef.current) {
         if (matchesShortcut(event, shortcut.keys)) {
-          // 检查是否启用
+          // 检查Whether to enable
           if (shortcut.enabled && !shortcut.enabled()) {
             continue;
           }

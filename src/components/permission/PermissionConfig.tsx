@@ -65,7 +65,7 @@ export default function PermissionConfig({
         setConfig(data);
         setOriginalConfig(JSON.parse(JSON.stringify(data)));
       } else {
-        // 默认配置
+        // Default configuration
         const defaultConfig: PermissionConfig = {
           features: {
             webSearch: true,

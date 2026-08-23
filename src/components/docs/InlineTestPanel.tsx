@@ -1,6 +1,6 @@
 /**
  * 内联测试面板组件
- * 支持在文档页面直接发送请求并展示响应
+ * 支持在Document页面直接发送请求并展示响应
  */
 
 import { useState, useEffect, useRef } from "react";
@@ -66,7 +66,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
   const [authKeyValue, setAuthKeyValue] = useState("");
   const [authKeyLocation, setAuthKeyLocation] = useState<"header" | "query">("header");
 
-  // 环境变量状态
+  // Environment variable状态
   const [selectedEnvironment, setSelectedEnvironment] = useState<string>("");
   const [environmentVariables, setEnvironmentVariables] = useState<EnvironmentVariable[]>([]);
 
@@ -117,7 +117,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
   const constructUrl = () => {
     let url = endpoint.path;
 
-    // 应用环境变量替换
+    // 应用Environment variable替换
     url = replaceVariables(url, environmentVariables);
 
     // 替换路径参数
@@ -207,11 +207,11 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
         body: endpoint.request_body && body ? (() => {
           try {
             let parsedBody = JSON.parse(body);
-            // 应用环境变量替换到请求体
+            // 应用Environment variable替换到请求体
             parsedBody = replaceVariablesInObject(parsedBody, environmentVariables);
             return parsedBody;
           } catch {
-            // 如果不是有效的JSON，直接应用字符串替换
+            // e.g.果不是有效的JSON，直接应用字符串替换
             return replaceVariables(body, environmentVariables);
           }
         })() : undefined,
@@ -283,7 +283,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
         </Space>
       }
          >
-      {/* 环境变量选择器 */}
+      {/* Environment variable选择器 */}
       <div className="mb-4">
         <Space className="w-full">
           <EnvironmentOutlined />

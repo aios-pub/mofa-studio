@@ -9,7 +9,7 @@ import type {
   ChannelTestResult,
 } from "../../types/channel";
 
-// 渠道类型配置信息
+// Channel type配置信息
 export const channelTypeConfig: Record<
   ChannelType,
   { name: string; icon: string; description: string }
@@ -251,7 +251,7 @@ export const mockChannels: Channel[] = [
       smtp_user: "noreply@example.com",
       smtp_password: "****",
       from_address: "noreply@example.com",
-      from_name: "AMOS",
+      from_name: "mofa-studio",
       use_tls: true,
     },
     stats: {
@@ -505,12 +505,12 @@ export const channelApi = {
     return channel;
   },
 
-  // 获取渠道类型配置
+  // 获取Channel type配置
   getChannelTypeConfig(type: ChannelType) {
     return channelTypeConfig[type];
   },
 
-  // 获取所有渠道类型
+  // 获取所有Channel type
   getAllChannelTypes() {
     return Object.entries(channelTypeConfig).map(([type, config]) => ({
       type: type as ChannelType,

@@ -89,7 +89,7 @@ function checkModifiers(event: KeyboardEvent, modifiers: KeyModifier[]): boolean
 /**
  * 检测单个按键是否被按下
  * @param targetKey 目标按键
- * @param options 配置选项
+ * @param options Configuration options
  * @returns 是否按下
  */
 export function useKeyPress(
@@ -139,9 +139,9 @@ export function useKeyPress(
 
 /**
  * 绑定单个快捷键
- * @param keyString 快捷键字符串，如 'ctrl+s'
+ * @param keyString 快捷键字符串，e.g. 'ctrl+s'
  * @param callback 回调函数
- * @param options 配置选项
+ * @param options Configuration options
  */
 export function useKeyBinding(
   keyString: string,
@@ -194,7 +194,7 @@ export function useKeyBinding(
 /**
  * 管理多个快捷键
  * @param bindings 快捷键绑定数组
- * @param options 配置选项
+ * @param options Configuration options
  */
 export function useHotkeys(
   bindings: KeyBinding[],

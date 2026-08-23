@@ -1,6 +1,6 @@
 /**
- * Provider 配置表单组件
- * 根据厂商类型动态生成配置字段
+ * Provider 配置Form component
+ * 根据厂商类型动态生成Configuration fields
  */
 
 import React, { useState, useEffect } from "react";
@@ -47,7 +47,7 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
       initialData.selectedModels = [];
     }
 
-    // 设置配置字段默认值
+    // 设置Configuration fields默认值
     config.configFields.forEach((field) => {
       if (
         field.defaultValue !== undefined &&
@@ -65,7 +65,7 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
     }
   }, [config.type]);
 
-  // 渲染配置字段
+  // 渲染Configuration fields
   const renderConfigField = (field: ConfigField) => {
     const value = formData.config?.[field.key] ?? field.defaultValue ?? "";
 
@@ -185,7 +185,7 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
         )}
       </div>
 
-      {/* API 配置 */}
+      {/* API configuration */}
       <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
         <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-3 flex items-center gap-2">
           <KeyOutlined />
@@ -244,7 +244,7 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
           )}
         </div>
 
-        {/* 厂商特定配置字段 */}
+        {/* 厂商特定Configuration fields */}
         {config.configFields.map((field) => (
           <div key={field.key} className="mb-3">
             <label className="block text-xs text-[var(--color-text-secondary)] mb-1">

@@ -203,7 +203,7 @@ const promptRealApi = {
     return result;
   },
 
-  /** 估算 Token 数量 - 前端实现 */
+  /** 估算 Token count - 前端实现 */
   estimateTokens(content: string): number {
     const chineseChars = (content.match(/[\u4e00-\u9fa5]/g) || []).length;
     const otherChars = content.length - chineseChars;

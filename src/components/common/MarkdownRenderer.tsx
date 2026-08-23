@@ -1,6 +1,6 @@
 /**
  * Markdown 渲染组件
- * 用于 LLM 对话消息渲染
+ * 用于 LLM 对话Messages渲染
  * 支持 GFM、代码高亮、数学公式等
  */
 
@@ -24,17 +24,17 @@ import 'katex/dist/katex.min.css';
 export interface MarkdownRendererProps {
   /** Markdown 内容 */
   content: string;
-  /** 是否启用 GFM (GitHub Flavored Markdown) */
+  /** Whether to enable GFM (GitHub Flavored Markdown) */
   gfm?: boolean;
-  /** 是否启用代码高亮 */
+  /** Whether to enable代码高亮 */
   highlight?: boolean;
-  /** 是否启用数学公式 */
+  /** Whether to enable数学公式 */
   math?: boolean;
   /** 是否允许 HTML */
   allowHtml?: boolean;
   /** 是否显示代码复制按钮 */
   showCopyButton?: boolean;
-  /** 自定义类名 */
+  /** Custom类名 */
   className?: string;
   /** 链接点击回调 */
   onLinkClick?: (href: string, e: React.MouseEvent) => void;
@@ -61,7 +61,7 @@ function CodeBlock({ language, code, showCopyButton = true }: CodeBlockProps) {
 
   return (
     <div className="relative group my-4">
-      {/* 语言标签和复制按钮 */}
+      {/* LanguageLabel和复制按钮 */}
       <div className="flex items-center justify-between px-4 py-2 bg-gray-800 rounded-t-lg border-b border-gray-700">
         <span className="text-xs text-gray-400 font-mono">
           {language || 'text'}
@@ -128,7 +128,7 @@ export function MarkdownRenderer({
     return plugins;
   }, [highlight, math, allowHtml]) as React.ComponentProps<typeof ReactMarkdown>['rehypePlugins'];
 
-  // 自定义组件
+  // Custom组件
   const components = useMemo(
     () => ({
       // 代码块
@@ -144,7 +144,7 @@ export function MarkdownRenderer({
           );
         }
 
-        // 提取语言
+        // 提取Language
         const match = /language-(\w+)/.exec(codeClassName || '');
         const language = match ? match[1] : undefined;
         const codeString = String(children).replace(/\n$/, '');
@@ -227,7 +227,7 @@ export function MarkdownRenderer({
         </blockquote>
       ),
 
-      // 标题
+      // Title
       h1: ({ children, ...props }: any) => (
         <h1 className="text-2xl font-bold my-4" {...props}>
           {children}

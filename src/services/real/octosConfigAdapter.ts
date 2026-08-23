@@ -21,10 +21,10 @@ function channelToOctosFormat(channel: Channel): OctosChannelCredentials {
   // 保存 channel_id 用于回显时的精确匹配
   octosChannel._channel_id = channel.id;
 
-  // 根据渠道类型映射配置到 Octos 期望的格式
+  // 根据Channel type映射配置到 Octos 期望的格式
   switch (channel.type) {
     case "feishu":
-      // 飞书渠道：同时传递环境变量名和实际凭据值
+      // 飞书渠道：同时传递Environment variable名和实际凭据值
       octosChannel.app_id_env = "FEISHU_APP_ID";
       octosChannel.app_secret_env = "FEISHU_APP_SECRET";
       // 传递实际的 app_id 和 app_secret 值给后端
@@ -159,7 +159,7 @@ export async function toFrontendFormat(
   const frontendConfig: OctosProfileConfig = { ...backendConfig };
 
   // 转换渠道配置：channels → channel_ids
-  // 如果后端已经有 channel_ids，直接使用
+  // e.g.果后端已经有 channel_ids，直接使用
   if (backendConfig.channel_ids && backendConfig.channel_ids.length > 0) {
     frontendConfig.channel_ids = backendConfig.channel_ids;
   } else if (backendConfig.channels && backendConfig.channels.length > 0) {
@@ -169,7 +169,7 @@ export async function toFrontendFormat(
       const matchedChannelIds: string[] = [];
 
       for (const backendChannel of backendConfig.channels) {
-        // 优先使用 _channel_id 进行精确匹配（如果存在）
+        // 优先使用 _channel_id 进行精确匹配（e.g.果存在）
         if (backendChannel._channel_id) {
           const channel = channels.find(
             (c: any) => c.id === backendChannel._channel_id,
@@ -180,11 +180,11 @@ export async function toFrontendFormat(
           }
         }
 
-        // 尝试精确匹配：通过渠道类型和配置值匹配
+        // 尝试精确匹配：通过Channel type和配置值匹配
         let matchedChannel = channels.find((c: any) => {
           if (c.type !== backendChannel.type) return false;
 
-          // 根据渠道类型进行更精确的匹配
+          // 根据Channel type进行更精确的匹配
           switch (backendChannel.type) {
             case "feishu":
               // 通过 app_id（实际值）进行匹配
@@ -234,7 +234,7 @@ export async function toFrontendFormat(
           }
         });
 
-        // 如果精确匹配失败，使用模糊匹配：通过渠道类型匹配第一个启用的渠道
+        // e.g.果精确匹配Failed，使用模糊匹配：通过Channel type匹配第一个启用的渠道
         if (!matchedChannel) {
           matchedChannel = channels.find((c: any) => {
             return c.type === backendChannel.type && c.enabled;

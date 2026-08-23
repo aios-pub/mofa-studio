@@ -2,7 +2,7 @@
  * Monitoring Mock 数据和 API
  */
 
-// Agent 状态类型 - 使用 snake_case 与后端保持一致
+// Agent status类型 - 使用 snake_case 与后端保持一致
 export interface AgentStatus {
   agent_id: string;
   agent_name: string;
@@ -220,7 +220,7 @@ const mockAlerts: Alert[] = [
     id: "alert-4",
     type: "info",
     title: "新版本可用",
-    message: "AMOS v1.2.0 已发布，包含多项性能优化",
+    message: "mofa-studio v1.2.0 已发布，包含多项性能优化",
     timestamp: new Date(Date.now() - 86400000),
     acknowledged: true,
   },
@@ -241,13 +241,13 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Monitoring API Mock
 export const monitoringApi = {
-  // 获取所有 Agent 状态
+  // 获取所有 Agent status
   async getAgentStatuses(): Promise<AgentStatus[]> {
     await delay(300);
     return mockAgentStatuses;
   },
 
-  // 获取单个 Agent 状态
+  // 获取单个 Agent status
   async getAgentStatus(agentId: string): Promise<AgentStatus | undefined> {
     await delay(200);
     return mockAgentStatuses.find((a) => a.agent_id === agentId);

@@ -35,7 +35,7 @@ export function createRestApi<T extends { id: string }>(basePath: string) {
 }
 
 /**
- * createActionApi 配置选项
+ * createActionApi Configuration options
  */
 interface CreateActionApiOptions {
   /** 列表动作名，默认 "list"，某些资源使用 "fetch" */
@@ -46,8 +46,8 @@ interface CreateActionApiOptions {
 
 /**
  * 创建基于 Action 的 API 方法 (匹配后端 API 风格)
- * @param basePath - 基础路径，如 "/api/agent"
- * @param listActionOrOptions - 列表动作名或配置选项
+ * @param basePath - 基础路径，e.g. "/api/agent"
+ * @param listActionOrOptions - 列表动作名或Configuration options
  */
 export function createActionApi<T extends { id: string }>(
   basePath: string,
@@ -80,7 +80,7 @@ export function createActionApi<T extends { id: string }>(
     },
   };
 
-  // 如果后端支持 getById，添加该方法
+  // e.g.果后端支持 getById，添加该方法
   if (hasGetById) {
     return {
       ...baseMethods,
@@ -89,7 +89,7 @@ export function createActionApi<T extends { id: string }>(
     };
   }
 
-  // 如果后端不支持 getById，返回一个警告方法
+  // e.g.果后端不支持 getById，返回一个警告方法
   return {
     ...baseMethods,
     getById: async (_id: string): Promise<T> => {
@@ -106,7 +106,7 @@ export function createActionApi<T extends { id: string }>(
 }
 
 /**
- * 创建自定义 API 方法
+ * 创建Custom API 方法
  */
 export function createApiMethod<T = unknown, R = unknown>(
   method: "get" | "post" | "put" | "patch" | "delete",

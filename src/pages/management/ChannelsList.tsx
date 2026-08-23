@@ -342,7 +342,7 @@ export default function ChannelsListPage() {
         )}
       </div>
 
-      {/* 渠道类型选择器 */}
+      {/* Channel type选择器 */}
       <ChannelTypeSelector
         open={showTypeSelector}
         onClose={() => setShowTypeSelector(false)}
@@ -486,7 +486,7 @@ function ChannelDetail({
         />
       </div>
 
-      {/* 标签栏 */}
+      {/* Label栏 */}
       <div className="flex gap-1 mb-6 border-b border-(--color-border)">
         {tabs.map((tab) => (
           <button

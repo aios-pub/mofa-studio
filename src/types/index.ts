@@ -1,5 +1,5 @@
 /**
- * AMOS 类型定义入口
+ * mofa-studio Type definition entry
  */
 
 // Agent 相关类型
@@ -20,7 +20,7 @@ export * from "./user";
 // Tracing 相关类型
 export * from "./tracing";
 
-// 评估相关类型
+// Evaluation相关类型
 export * from "./evaluation";
 
 // 系统管理相关类型
@@ -29,14 +29,14 @@ export * from "./system";
 // 通用类型
 export * from "./common";
 
-// Claw 类型
+// Claw type
 export * from "./claw";
 
-// Channel 渠道类型
+// Channel Channel type
 export * from "./channel";
 
 // Octos 类型
 export * from "./octos";
 
-// Workflow 工作流类型
+// Workflow Workflow类型
 export * from "./workflow";

@@ -862,7 +862,7 @@ function PromptDetail({
         </div>
       </div>
 
-      {/* 标签栏 */}
+      {/* Label栏 */}
       <div className="flex gap-1 px-6 border-b border-(--color-border)">
         {tabs.map((tab) => {
           const Icon = tab.icon;

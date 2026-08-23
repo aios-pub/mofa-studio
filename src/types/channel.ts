@@ -2,7 +2,7 @@
  * Channel 渠道连接器类型定义
  */
 
-/** 渠道类型 */
+/** Channel type */
 export type ChannelType =
   | 'wechat'      // 微信
   | 'wechat_work' // 企业微信
@@ -19,7 +19,7 @@ export type ChannelType =
   | 'webhook'     // Webhook
   | 'email'       // 邮件
   | 'sms'         // 短信
-  | 'custom';     // 自定义
+  | 'custom';     // Custom
 
 /** 渠道状态 */
 export type ChannelStatus =
@@ -31,12 +31,12 @@ export type ChannelStatus =
 
 /** 渠道统计信息 */
 export interface ChannelStats {
-  totalMessages: number;       // 总消息数
-  successMessages: number;     // 成功消息数
-  failedMessages: number;      // 失败消息数
+  totalMessages: number;       // 总Messages数
+  successMessages: number;     // 成功Messages数
+  failedMessages: number;      // FailedMessages数
   successRate: number;         // 成功率 (0-100)
   avgResponseTime: number;     // 平均响应时间 (ms)
-  lastMessageAt?: Date;        // 最后消息时间
+  lastMessageAt?: Date;        // Last message时间
 }
 
 /** 微信配置 */
@@ -166,7 +166,7 @@ export interface SmsConfig {
   region?: string;
 }
 
-/** 自定义渠道配置 */
+/** Custom渠道配置 */
 export interface CustomChannelConfig {
   endpoint: string;
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -235,7 +235,7 @@ export interface AgentChannel {
   updatedAt: Date;
 }
 
-/** 渠道类型信息 */
+/** Channel type信息 */
 export interface ChannelTypeInfo {
   type: ChannelType;
   name: string;
@@ -253,7 +253,7 @@ export interface ChannelTestResult {
   error?: string;
 }
 
-/** 渠道消息记录 */
+/** 渠道Messages记录 */
 export interface ChannelMessage {
   id: string;
   channelId: string;

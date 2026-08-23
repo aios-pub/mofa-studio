@@ -1,16 +1,16 @@
 /**
- * i18n 国际化配置
+ * i18n Internationalization configuration
  */
 
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
-// 导入语言文件
+// 导入Language文件
 import zhCN from "./locales/zh-CN.json";
 import enUS from "./locales/en-US.json";
 
-// 语言资源
+// Language resources
 const resources = {
   "zh-CN": {
     translation: zhCN,
@@ -20,13 +20,13 @@ const resources = {
   },
 };
 
-// 支持的语言列表
+// Supported language list
 export const supportedLanguages = [
   { code: "zh-CN", name: "简体中文", nativeName: "简体中文" },
   { code: "en-US", name: "English", nativeName: "English" },
 ];
 
-// 默认语言
+// Default language
 export const defaultLanguage = "zh-CN";
 
 i18n
@@ -44,7 +44,7 @@ i18n
     detection: {
       order: ["localStorage", "navigator"],
       caches: ["localStorage"],
-      lookupLocalStorage: "AMOS-claw-language",
+      lookupLocalStorage: "mofa-studio-language",
     },
 
     react: {

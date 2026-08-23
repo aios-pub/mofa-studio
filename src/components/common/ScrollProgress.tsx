@@ -1,5 +1,5 @@
 /**
- * 滚动进度条组件
+ * 滚动Progress bar组件
  * 显示页面滚动进度，提升阅读体验
  */
 
@@ -7,18 +7,18 @@ import { useSpring, motion, type MotionValue } from "framer-motion";
 import type { CSSProperties } from "react";
 
 export interface ScrollProgressProps {
-  /** 进度条颜色 */
+  /** Progress bar颜色 */
   color?: string;
   /** 滚动进度值 (0-1) */
   scrollYProgress: MotionValue<number>;
-  /** 进度条高度 */
+  /** Progress bar高度 */
   height?: number;
-  /** 自定义类名 */
+  /** Custom类名 */
   className?: string;
 }
 
 /**
- * 滚动进度条组件
+ * 滚动Progress bar组件
  *
  * 使用 Framer Motion 的 spring 动画实现平滑过渡
  *
@@ -34,14 +34,14 @@ export function ScrollProgress({
   color,
   className,
 }: ScrollProgressProps) {
-  // 使用 spring 动画使进度条变化更平滑
+  // 使用 spring 动画使Progress bar变化更平滑
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
     restDelta: 0.001,
   });
 
-  // 设置进度条颜色，默认使用主题色
+  // 设置Progress bar颜色，默认使用Theme色
   const backgroundColor = color || "var(--color-primary)";
 
   const style: CSSProperties = {

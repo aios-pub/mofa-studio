@@ -6,14 +6,14 @@ import { create } from 'zustand';
 import type { Conversation, Message } from '../types';
 
 interface ConversationState {
-  // 会话列表
+  // Conversation list
   conversations: Conversation[];
   setConversations: (conversations: Conversation[]) => void;
   addConversation: (conversation: Conversation) => void;
   updateConversation: (id: string, updates: Partial<Conversation>) => void;
   deleteConversation: (id: string) => void;
 
-  // 当前会话的消息
+  // Messages of current conversation
   currentMessages: Message[];
   setCurrentMessages: (messages: Message[]) => void;
   addMessage: (message: Message) => void;
@@ -21,7 +21,7 @@ interface ConversationState {
 }
 
 export const useConversationStore = create<ConversationState>((set) => ({
-  // 会话列表
+  // Conversation list
   conversations: [],
   setConversations: (conversations) => set({ conversations }),
   addConversation: (conversation) =>
@@ -39,7 +39,7 @@ export const useConversationStore = create<ConversationState>((set) => ({
       conversations: state.conversations.filter((c) => c.id !== id),
     })),
 
-  // 消息
+  // Messages
   currentMessages: [],
   setCurrentMessages: (currentMessages) => set({ currentMessages }),
   addMessage: (message) =>

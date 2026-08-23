@@ -1,6 +1,6 @@
 /**
  * 任务管理 Tab
- * 参考 apalis-board Tasks 页面：状态标签页过滤 + 分页表格 + 详情面板
+ * 参考 apalis-board Tasks 页面：状态Tabs过滤 + 分页表格 + 详情面板
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -376,7 +376,7 @@ export default function TasksTab({
         </Button>
       </div>
 
-      {/* 状态标签页 */}
+      {/* 状态Tabs */}
       <div className="flex border-b border-(--color-border)">
         {[
           { key: "all" as const, label: "全部", count: tasks.length },

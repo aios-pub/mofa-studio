@@ -2,20 +2,20 @@
  * 通用类型定义
  */
 
-/** 分页参数 */
+/** Pagination parameters */
 export interface Pagination {
   page: number;
   pageSize: number;
   total: number;
 }
 
-/** 分页响应 */
+/** Pagination response */
 export interface PaginatedResponse<T> {
   data: T[];
   pagination: Pagination;
 }
 
-/** API 响应 */
+/** API response */
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
@@ -25,29 +25,29 @@ export interface ApiResponse<T = unknown> {
   };
 }
 
-/** 排序方向 */
+/** Sort direction */
 export type SortOrder = 'asc' | 'desc';
 
-/** 排序参数 */
+/** Sort parameters */
 export interface SortParams {
   field: string;
   order: SortOrder;
 }
 
-/** ID 类型 */
+/** ID type */
 export type ID = string;
 
-/** 时间戳类型 */
+/** Timestamp type */
 export type Timestamp = Date | string | number;
 
-/** 键值对 */
+/** Key-value pair */
 export interface KeyValuePair<K = string, V = unknown> {
   key: K;
   value: V;
 }
 
-/** 主题模式 */
+/** Theme mode */
 export type ThemeMode = 'light' | 'dark' | 'system';
 
-/** 窗口模式 (悬浮球相关) */
+/** Window mode (floating ball related) */
 export type WindowMode = 'floating' | 'expanded' | 'full';

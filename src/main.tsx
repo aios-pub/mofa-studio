@@ -5,7 +5,7 @@ import App from "./App";
 import { isTauriApp } from "./utils/tauri";
 import "./styles/globals.css";
 
-// 主窗口入口 - 仅用于 main 窗口
+// Main window entry - For main window only
 const init = async () => {
   let RootApp: React.ReactNode;
 
@@ -15,7 +15,7 @@ const init = async () => {
       const appWindow = getCurrentWindow();
       const label = appWindow.label;
 
-      // 主窗口入口文件只处理 main 窗口
+      // Main window entry only handles main window
       if (label === "main") {
         RootApp = (
           <BrowserRouter>
@@ -23,7 +23,7 @@ const init = async () => {
           </BrowserRouter>
         );
       } else {
-        // 如果不是 main 窗口访问了这个入口，显示空白
+        // If not main window accessing this entry, show blank
         RootApp = null;
       }
     } catch (error) {

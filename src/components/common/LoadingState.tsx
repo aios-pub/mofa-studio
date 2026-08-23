@@ -1,5 +1,5 @@
 /**
- * 加载状态组件
+ * Loading state组件
  * 用于页面、卡片等加载中的展示
  */
 
@@ -55,7 +55,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   return content;
 };
 
-// 骨架屏组件
+// Skeleton screen组件
 export interface SkeletonProps {
   rows?: number;
   className?: string;
@@ -80,7 +80,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   );
 };
 
-// 卡片骨架屏
+// 卡片Skeleton screen
 export const CardSkeleton: React.FC<{ className?: string }> = ({
   className = "",
 }) => (
@@ -92,7 +92,7 @@ export const CardSkeleton: React.FC<{ className?: string }> = ({
   </div>
 );
 
-// 表格骨架屏
+// 表格Skeleton screen
 export const TableSkeleton: React.FC<{ rows?: number; className?: string }> = ({
   rows = 5,
   className = "",

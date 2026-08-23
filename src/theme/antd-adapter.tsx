@@ -1,5 +1,5 @@
 /**
- * Antd 主题适配器
+ * Antd Theme适配器
  */
 
 import { StyleProvider } from '@ant-design/cssinjs';
@@ -21,20 +21,20 @@ export function AntdAdapter({ children, mode }: AntdAdapterProps) {
   const { language } = useAppStore();
   const settings = useSettings();
 
-  // 确定实际主题模式
+  // 确定实际Theme mode
   const themeMode = mode || 'light';
 
-  // 配置 dayjs 语言
+  // 配置 dayjs Language
   dayjs.locale(language === 'zh-CN' ? 'zh-cn' : 'en');
 
-  // 根据主题模式选择算法
+  // 根据Theme mode选择算法
   const algorithm =
     themeMode === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm;
 
-  // 获取主题色
+  // 获取Theme色
   const primaryColor = themeColorPresetsMap[settings.themeColorPresets].default;
 
-  // antd 主题配置
+  // antd Theme配置
   const token: ThemeConfig['token'] = {
     colorPrimary: primaryColor,
     colorPrimaryBg: themeColorPresetsMap[settings.themeColorPresets].lighter,

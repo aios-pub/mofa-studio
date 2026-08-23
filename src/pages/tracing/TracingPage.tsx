@@ -1,5 +1,5 @@
 /**
- * Tracing 追踪页面
+ * Tracing Tracing页面
  * 使用 Ant Design 组件重构
  */
 
@@ -75,7 +75,7 @@ export default function TracingPage() {
     loadTraces();
   }, [loadTraces]);
 
-  // 过滤追踪
+  // 过滤Tracing
   const filteredTraces = traces.filter((trace) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
@@ -376,7 +376,7 @@ export default function TracingPage() {
         </Space>
       </Card>
 
-      {/* 追踪表格 */}
+      {/* Tracing表格 */}
       <Card>
         <Table
           columns={columns}
@@ -401,7 +401,7 @@ export default function TracingPage() {
         />
       </Card>
 
-      {/* 追踪详情抽屉 */}
+      {/* Tracing详情Drawer */}
       <Drawer
         title={t("tracing.traceDetails", "追踪详情")}
         placement="right"

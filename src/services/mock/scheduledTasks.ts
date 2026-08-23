@@ -8,7 +8,7 @@ export type TaskType = string;
 // 任务状态
 export type TaskStatus = "enabled" | "disabled";
 
-// 执行状态
+// Execution status
 export type ExecutionStatus = "success" | "failure" | "running" | "pending";
 
 // Cron 表达式预设
@@ -75,7 +75,7 @@ export interface TaskExecution {
   started_at: Date;
   completed_at?: Date;
   status: ExecutionStatus;
-  duration?: number; // 毫秒
+  duration?: number; // milliseconds
   result?: string;
   error?: string;
   details?: Record<string, unknown>;

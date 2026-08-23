@@ -22,7 +22,7 @@ import { useNavigate } from "react-router-dom";
 
 // 搜索项目配置
 const searchItems = [
-  // 工作台
+  // Workbench
   {
     id: "dashboard",
     title: "仪表盘",
@@ -105,7 +105,7 @@ const searchItems = [
     category: "监控",
     keywords: ["monitoring", "realtime"],
   },
-  // 追踪与评估
+  // Tracing与Evaluation
   {
     id: "tracing",
     title: "追踪分析",

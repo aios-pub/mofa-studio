@@ -112,7 +112,7 @@ export default function ChatContainer({
     setAttachments((prev) => prev.filter((a) => a.id !== file.uid));
   };
 
-  // 发送消息
+  // Send message
   const handleSend = () => {
     if (!input.trim() || isLoading) return;
 
@@ -247,7 +247,7 @@ export default function ChatContainer({
     }
   };
 
-  // 空状态
+  // Empty state
   if (!conversation) {
     return (
       <div className="flex items-center justify-center h-full bg-[var(--color-bg-base)]">
@@ -319,7 +319,7 @@ export default function ChatContainer({
         )}
       </div>
 
-      {/* 消息区域 */}
+      {/* Messages区域 */}
       <div className="flex-1 overflow-y-auto p-4">
         {conversation.messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
@@ -473,7 +473,7 @@ export default function ChatContainer({
   );
 }
 
-// 消息项组件
+// Messages项组件
 function MessageItem({ message }: { message: Message }) {
   const [showThinking, setShowThinking] = useState(false);
   const isUser = message.role === "user";
@@ -493,9 +493,9 @@ function MessageItem({ message }: { message: Message }) {
         )}
       </div>
 
-      {/* 消息内容 */}
+      {/* Message content */}
       <div className={`flex-1 max-w-[80%] ${isUser ? "text-right" : ""}`}>
-        {/* 思考过程 */}
+        {/* Thinking process */}
         {message.thinking && (
           <div className="mb-2">
             <button
@@ -530,7 +530,7 @@ function MessageItem({ message }: { message: Message }) {
           </div>
         )}
 
-        {/* 消息正文 */}
+        {/* Messages正文 */}
         <div
           className={`inline-block px-4 py-2 rounded-lg ${
             isUser
@@ -548,7 +548,7 @@ function MessageItem({ message }: { message: Message }) {
           )}
         </div>
 
-        {/* 工具调用 */}
+        {/* Tool call */}
         {message.toolCalls && message.toolCalls.length > 0 && (
           <div className="mt-2 space-y-1">
             {message.toolCalls.map((tool) => (
@@ -613,7 +613,7 @@ function formatTime(date: Date): string {
   });
 }
 
-// 格式化文件大小
+// 格式化File size
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;

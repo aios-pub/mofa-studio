@@ -36,7 +36,7 @@ function WelcomeBanner() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex-1">
             <h2 className="text-xl font-bold text-white mb-2">
-              {greeting}，欢迎使用 AMOS
+              {greeting}，欢迎使用 mofa-studio
             </h2>
             <p className="text-white/80 text-sm mb-4">
               强大的 AI Agent 管理平台，助您构建智能对话系统。探索无限可能。
@@ -174,7 +174,7 @@ export default function Dashboard() {
     },
   ];
 
-  // Agent 状态统计
+  // Agent status统计
   const agentStats = {
     online: agentStatuses.filter(
       (a) => a.status === "online" || a.status === "busy",
@@ -340,7 +340,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* 折线图区域 */}
+              {/* Line chart区域 */}
               <div className="h-48 relative" ref={chartRef}>
                 {(() => {
                   if (dailyStats.length === 0) {
@@ -538,7 +538,7 @@ export default function Dashboard() {
                                 stroke={config.color}
                                 strokeWidth={isToday ? "0" : "2"}
                               />
-                              {/* 今日标签 */}
+                              {/* 今日Label */}
                               {isToday && (
                                 <text
                                   x={point.x}
@@ -553,7 +553,7 @@ export default function Dashboard() {
                                   今日
                                 </text>
                               )}
-                              {/* X轴标签 */}
+                              {/* X轴Label */}
                               <text
                                 x={point.x}
                                 y={height - 8}
@@ -714,7 +714,7 @@ export default function Dashboard() {
               </div>
             </Card>
 
-            {/* Agent 状态概览 */}
+            {/* Agent status概览 */}
             <Card styles={{ body: { padding: "20px" } }}>
               <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-4">
                 Agent 状态

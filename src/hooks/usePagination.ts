@@ -30,7 +30,7 @@ export interface UsePaginationReturn<T> {
 /**
  * 分页 Hook
  * @param fetchData 获取数据的函数
- * @param defaultPageSize 默认每页条数
+ * @param defaultPageSize 默认Items per page
  * @param deps 依赖项数组，当依赖变化时重新获取数据
  */
 export function usePagination<T>(
@@ -68,7 +68,7 @@ export function usePagination<T>(
 
   const onChange = useCallback((newPage: number, newPageSize: number) => {
     if (newPageSize !== pageSize) {
-      // 如果每页条数变化，重置到第一页
+      // e.g.果Items per page变化，重置到第一页
       setPage(1);
       setPageSize(newPageSize);
     } else {
@@ -138,7 +138,7 @@ export function useFrontendPagination<T>(
     }
   };
 
-  // 当数据变化时，如果当前页超出范围，重置到最后一页
+  // 当数据变化时，e.g.果当前页超出范围，重置到最后一页
   useEffect(() => {
     if (page > totalPages && totalPages > 0) {
       setPage(totalPages);

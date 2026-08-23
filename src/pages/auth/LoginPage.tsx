@@ -25,7 +25,7 @@ export default function LoginPage() {
   const isAuthenticated = useIsAuthenticated();
   const [mode, setMode] = useState<AuthMode>("login");
 
-  // 如果已登录，重定向到首页
+  // e.g.果已登录，重定向到首页
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/", { replace: true });
@@ -38,7 +38,7 @@ export default function LoginPage() {
       <div className="flex-1 flex flex-col">
         {/* 顶部工具栏 */}
         <div className="flex items-center justify-end gap-2 p-4">
-          {/* 语言切换 */}
+          {/* Language切换 */}
           <div className="relative group">
             <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-(--color-bg-tertiary) transition-colors">
               <GlobalOutlined />
@@ -67,7 +67,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* 主题切换 */}
+          {/* Theme切换 */}
           <div className="relative group">
             <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-(--color-bg-tertiary) transition-colors">
               {theme === "light" ? (
@@ -127,7 +127,7 @@ export default function LoginPage() {
 
         {/* 底部版权 */}
         <div className="p-4 text-center text-sm text-[var(--color-text-tertiary)]">
-          © {new Date().getFullYear()} AMOS.{" "}
+          © {new Date().getFullYear()} mofa-studio.{" "}
           {t("common.allRightsReserved", "保留所有权利")}
         </div>
       </div>

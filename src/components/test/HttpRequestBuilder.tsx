@@ -91,7 +91,7 @@ export function HttpRequestBuilder({
 
       <Divider className="my-2" />
 
-      {/* 标签页 */}
+      {/* Tabs */}
       <Tabs
         defaultActiveKey="params"
         items={[
@@ -257,7 +257,7 @@ function BodyEditor({
 }: BodyEditorProps) {
   const [selectedBodyType, setSelectedBodyType] = useState<BodyType>(bodyType);
 
-  // 同步父组件传递的 bodyType 变化（如加载已有配置）
+  // 同步父组件传递的 bodyType 变化（e.g.加载已有配置）
   useEffect(() => {
     setSelectedBodyType(bodyType);
   }, [bodyType]);
@@ -364,7 +364,7 @@ function AuthEditor({
 }: AuthEditorProps) {
   const handleTypeChange = (newType: AuthType) => {
     if (onChange) {
-      // 切换认证类型时清除旧配置，避免发送混合数据
+      // 切换Authentication type时清除旧配置，避免发送混合数据
       const newAuthConfig =
         newType === "none"
           ? undefined

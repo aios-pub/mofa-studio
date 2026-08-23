@@ -70,7 +70,7 @@ const ICON_MAP: Record<string, string> = {
 };
 
 function mapIcon(icon: string): string {
-  // 如果已经是 emoji（非 ASCII 或常见 emoji 范围），直接返回
+  // e.g.果已经是 emoji（非 ASCII 或常见 emoji 范围），直接返回
   if (icon && /[\u{1F000}-\u{1FFFF}]/u.test(icon)) return icon;
   return ICON_MAP[icon] || icon;
 }
@@ -206,7 +206,7 @@ const scheduledTaskRealApi = {
     id: string,
     data: Partial<ScheduledTask>,
   ): Promise<ScheduledTask | undefined> {
-    // 后端 update 要求必传字段（如 task_type），先获取现有数据合并
+    // 后端 update 要求必传字段（e.g. task_type），先获取现有数据合并
     const existing = await apiClient.get<BackendTask>(`/api/task/${id}`);
     const merged = { ...mapTaskFromBackend(existing), ...data };
     const body = { id, ...mapTaskToBackend(merged) };

@@ -37,7 +37,7 @@ const { Text } = Typography;
 // ==================== 辅助函数：处理新旧结构 ====================
 
 /**
- * 获取主模型配置，优先从 llm.primary.route.route_id 获取
+ * 获取Primary model configuration，优先从 llm.primary.route.route_id 获取
  */
 function getPrimaryProviderId(config: OctosProfileConfig): string | null {
   if (config.llm?.primary?.route?.route_id) {
@@ -153,10 +153,10 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
       }));
       setProviders(providersWithModels);
 
-      // 获取当前配置
+      // Get current configuration
       const currentProviderId = getPrimaryProviderId(config);
 
-      // 如果当前配置了 provider_id，则设置选中的 provider
+      // e.g.果当前配置了 provider_id，则设置选中的 provider
       if (currentProviderId) {
         const current = providersWithModels.find(
           (p) => p.id === currentProviderId,

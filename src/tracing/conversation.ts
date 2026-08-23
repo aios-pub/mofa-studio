@@ -1,5 +1,5 @@
 /**
- * 对话追踪功能
+ * Conversation tracing functionality
  */
 
 import { startSpan, endSpan, setAttribute, addEvent, traceAsync } from './utils';
@@ -18,11 +18,11 @@ interface ConversationTraceContext {
   parentSpan?: Span;
 }
 
-// 存储活跃的对话追踪
+// Store active conversation traces
 const activeConversationTraces = new Map<string, Span>();
 
 /**
- * 开始追踪对话
+ * Start tracing conversation
  */
 export function startConversationTrace(context: ConversationTraceContext): Span {
   const span = startSpan(
@@ -40,7 +40,7 @@ export function startConversationTrace(context: ConversationTraceContext): Span 
 }
 
 /**
- * 追踪消息
+ * Trace message
  */
 export function traceMessage(
   conversationId: string,
@@ -57,7 +57,7 @@ export function traceMessage(
 }
 
 /**
- * 追踪 Token 使用
+ * Trace token usage
  */
 export function traceTokenUsage(
   conversationId: string,
@@ -76,7 +76,7 @@ export function traceTokenUsage(
 }
 
 /**
- * 追踪模型调用
+ * Trace model invocation
  */
 export async function traceModelCall<T>(
   conversationId: string,
@@ -97,7 +97,7 @@ export async function traceModelCall<T>(
 }
 
 /**
- * 追踪技能执行
+ * Trace skill execution
  */
 export async function traceSkillExecution<T>(
   conversationId: string,
@@ -115,7 +115,7 @@ export async function traceSkillExecution<T>(
 }
 
 /**
- * 结束追踪对话
+ * End tracing conversation
  */
 export function endConversationTrace(
   conversationId: string,
@@ -129,7 +129,7 @@ export function endConversationTrace(
 }
 
 /**
- * 获取活跃的对话追踪
+ * Get active conversation trace
  */
 export function getActiveConversationTrace(conversationId: string): Span | undefined {
   return activeConversationTraces.get(conversationId);

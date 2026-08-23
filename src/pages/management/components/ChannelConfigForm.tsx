@@ -1,5 +1,5 @@
 /**
- * 渠道配置表单组件
+ * 渠道配置Form component
  */
 
 import { useState, useEffect } from "react";
@@ -64,7 +64,7 @@ export default function ChannelConfigForm({
 
   const handleTypeChange = (type: ChannelType) => {
     setChannelType(type);
-    // 重置配置字段
+    // 重置Configuration fields
     const currentName = form.getFieldValue("name");
     const currentDesc = form.getFieldValue("description");
     form.resetFields();
@@ -498,7 +498,7 @@ function EmailConfigForm() {
         <Input placeholder="noreply@example.com" />
       </Form.Item>
       <Form.Item name="from_name" label="发件人名称">
-        <Input placeholder="AMOS" />
+        <Input placeholder="mofa-studio" />
       </Form.Item>
       <Form.Item
         name="use_tls"
@@ -557,7 +557,7 @@ function SmsConfigForm() {
   );
 }
 
-// 自定义配置表单
+// Custom配置表单
 function CustomConfigForm() {
   return (
     <>

@@ -1,9 +1,9 @@
 /**
- * Octos 相关类型定义
- * 与 Octos 后端 API 对应，字段保持 snake_case 以匹配后端
+ * Octos-related type definitions
+ * Corresponds to Octos backend API，Fields keep snake_case to match backend
  */
 
-/** 进程状态 */
+/** Process status */
 export interface OctosProcessStatus {
   running: boolean;
   pid: number | null;
@@ -11,7 +11,7 @@ export interface OctosProcessStatus {
   uptime_secs: number | null;
 }
 
-/** 网关设置 */
+/** Gateway settings */
 export interface OctosGatewaySettings {
   max_history?: number | null;
   max_iterations?: number | null;
@@ -21,53 +21,53 @@ export interface OctosGatewaySettings {
   max_output_tokens?: number | null;
 }
 
-/** 渠道凭据 */
+/** Channel credentials */
 export interface OctosChannelCredentials {
   type: string;
   [key: string]: string | number;
 }
 
-// ==================== LLM 配置 ====================
+// ==================== LLM configuration ====================
 
-/** LLM 路由配置 */
+/** LLM routing configuration */
 export interface LlmRouteConfig {
-  /** Route ID (对应后端的 route_id) */
+  /** Route ID (Corresponds to backend route_id) */
   route_id?: string;
   /** Base URL */
   base_url?: string;
-  /** API Key 环境变量名 */
+  /** API Key environment variable name */
   api_key_env?: string;
-  /** API 类型 */
+  /** API type */
   api_type?: string;
-  /** 标签 */
+  /** Label */
   label?: string;
 }
 
-/** LLM 模型选择配置 */
+/** LLM model selection configuration */
 export interface LlmModelSelectionConfig {
-  /** 模型家族/提供者家族 (如 "moonshot", "deepseek") */
+  /** Model family/provider family (e.g. "moonshot", "deepseek") */
   family_id?: string | null;
-  /** 具体模型标识符 (如 "kimi-k2.5") */
+  /** Specific model identifier (e.g. "kimi-k2.5") */
   model_id?: string | null;
-  /** 选择的提供者路由 */
+  /** Selected provider route */
   route?: LlmRouteConfig | null;
-  /** 可选的模型行为提示 */
+  /** Optional model behavior hint */
   model_hints?: Record<string, unknown> | null;
-  /** 输出价格 (每百万 token USD) */
+  /** Output price (USD per million tokens) */
   cost_per_m?: number | null;
-  /** 是否为强大的模型 (用于大型工具密集型运行) */
+  /** Whether it is a powerful model (Used for large tool-intensive runs) */
   strong?: boolean | null;
 }
 
-/** LLM Profile 配置 */
+/** LLM Profile configuration */
 export interface LlmProfileConfig {
-  /** 主模型配置 */
+  /** Primary model configuration */
   primary?: LlmModelSelectionConfig | null;
-  /** 回退模型配置列表 */
+  /** Fallback model configuration list */
   fallbacks?: LlmModelSelectionConfig[];
 }
 
-/** 邮件设置 */
+/** Email settings */
 export interface OctosEmailSettings {
   provider: string;
   smtp_host?: string | null;
@@ -81,9 +81,9 @@ export interface OctosEmailSettings {
   feishu_region?: string | null;
 }
 
-/** Profile 配置 */
+/** Profile configuration */
 export interface OctosProfileConfig {
-  // LLM 配置
+  // LLM configuration
   llm?: LlmProfileConfig | null;
   // API protocol type: "openai" or "anthropic"
   api_type?: string | null;
@@ -95,29 +95,29 @@ export interface OctosProfileConfig {
   hooks?: HookConfig[];
   sandbox?: SandboxConfig;
   channel_ids?: string[];
-  // 允许额外的未知字段（对应 Rust 的 flatten extra）
+  // Allow extra unknown fields（Corresponds to Rust flatten extra）
   [key: string]: unknown;
 }
 
-/** Profile 更新请求参数 (PUT /api/admin/profiles/:id) */
+/** Profile update request params (PUT /api/admin/profiles/:id) */
 export interface OctosUpdateProfileRequest {
-  /** Profile 名称 */
+  /** Profile name */
   name?: string;
-  /** 公开子域名，设置为 null 可清除 */
+  /** Public subdomain，Set to null to clear */
   public_subdomain?: string | null;
-  /** 是否启用 */
+  /** Whether to enable */
   enabled?: boolean;
-  /** 数据目录，设置为 null 可清除 */
+  /** Data directory，Set to null to clear */
   data_dir?: string | null;
-  /** Profile 配置 */
+  /** Profile configuration */
   config?: OctosProfileConfig;
-  /** OTP 登录邮箱 */
+  /** OTP login email */
   email?: string;
-  /** Agent 唯一编码 */
+  /** Agent unique code */
   agent_code?: string;
 }
 
-/** Profile 响应 */
+/** Profile response */
 export interface OctosProfileResponse {
   id: string;
   name: string;
@@ -132,13 +132,13 @@ export interface OctosProfileResponse {
   email?: string | null;
 }
 
-/** 操作响应 */
+/** Operation response */
 export interface OctosActionResponse {
   ok: boolean;
   message?: string;
 }
 
-/** 测试 Provider 响应 */
+/** Test provider response */
 export interface OctosTestProviderResponse {
   ok: boolean;
   message?: string;
@@ -146,7 +146,7 @@ export interface OctosTestProviderResponse {
   models?: string[];
 }
 
-/** Provider 模型条目 */
+/** Provider model entry */
 export interface OctosProviderModelEntry {
   id: string;
   input: number;
@@ -160,13 +160,13 @@ export interface OctosProviderModelEntry {
   }[];
 }
 
-/** Provider 目录条目 */
+/** Provider directory entry */
 export interface OctosProviderCatalogEntry {
   env: string;
   models: OctosProviderModelEntry[];
 }
 
-/** 支持的渠道类型 */
+/** Supported Channel types */
 export type OctosChannelType =
   | "telegram"
   | "discord"
@@ -214,7 +214,7 @@ export const OCTOS_CHANNEL_ICONS: Record<OctosChannelType, string> = {
   wechat: "💚",
 };
 
-/** 支持的 Provider */
+/** Supported Providers */
 export const OCTOS_PROVIDERS = [
   "anthropic",
   "openai",
@@ -237,7 +237,7 @@ export type OctosProviderName = (typeof OCTOS_PROVIDERS)[number];
 
 // ── Hooks & Sandbox ─────────────────────────────────────────────
 
-/** Hook 配置 */
+/** Hook configuration */
 export interface HookConfig {
   event: string;
   command: string[];
@@ -245,7 +245,7 @@ export interface HookConfig {
   tool_filter?: string[];
 }
 
-/** Docker 沙箱配置 */
+/** Docker sandbox configuration */
 export interface DockerConfig {
   image?: string | null;
   cpu_limit?: string | null;
@@ -253,7 +253,7 @@ export interface DockerConfig {
   pids_limit?: number | null;
 }
 
-/** 沙箱配置 */
+/** Sandbox configuration */
 export interface SandboxConfig {
   enabled?: boolean;
   mode?: "auto" | "macos" | "docker" | "bwrap";
@@ -263,7 +263,7 @@ export interface SandboxConfig {
 
 // ── QoS Metrics ─────────────────────────────────────────────────
 
-/** Provider QoS 指标 */
+/** Provider QoS metrics */
 export interface OctosSharedProviderMetrics {
   provider: string;
   model: string;
@@ -276,7 +276,7 @@ export interface OctosSharedProviderMetrics {
   score: number;
 }
 
-/** QoS 策略配置 */
+/** QoS policy configuration */
 export interface OctosSharedPolicy {
   ema_alpha: number;
   failure_threshold: number;
@@ -289,7 +289,7 @@ export interface OctosSharedPolicy {
   weight_priority: number;
 }
 
-/** Profile QoS 指标汇总 */
+/** Profile QoS metrics summary */
 export interface OctosSharedMetrics {
   updated_at: string;
   policy: OctosSharedPolicy;
@@ -298,7 +298,7 @@ export interface OctosSharedMetrics {
 
 // ── Profile Skills ───────────────────────────────────────────────
 
-/** Profile 安装的 Skill 条目 */
+/** Profile installed Skill entries */
 export interface OctosSkillEntry {
   name: string;
   version: string | null;
@@ -308,7 +308,7 @@ export interface OctosSkillEntry {
 
 // ── Monitor ─────────────────────────────────────────────────────
 
-/** 监控状态 */
+/** Monitoring status */
 export interface OctosMonitorStatus {
   watchdog_enabled: boolean;
   alerts_enabled: boolean;
@@ -316,7 +316,7 @@ export interface OctosMonitorStatus {
 
 // ── Purge ───────────────────────────────────────────────────────
 
-/** Profile 清理报告 */
+/** Profile cleanup report */
 export interface OctosPurgeReport {
   profile_id: string;
   user_email: string | null;
@@ -329,7 +329,7 @@ export interface OctosPurgeReport {
 
 // ── WhatsApp QR ─────────────────────────────────────────────────
 
-/** WhatsApp 桥接 QR 信息 */
+/** WhatsApp bridge QR info */
 export interface OctosBridgeQrInfo {
   qr: string | null;
   status: "waiting" | "connected" | "disconnected" | "logged_out";
@@ -341,7 +341,7 @@ export interface OctosBridgeQrInfo {
 
 // ── Overview ────────────────────────────────────────────────────
 
-/** 概览响应 */
+/** Overview response */
 export interface OctosOverviewResponse {
   total_profiles: number;
   running: number;

@@ -7,30 +7,30 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 // ==================== 图片加载 ====================
 
 export interface UseImageLoadOptions {
-  /** 加载失败时显示的图片 */
+  /** 加载Failed时显示的图片 */
   fallback?: string;
   /** 加载超时时间 */
   timeout?: number;
 }
 
 export interface UseImageLoadReturn {
-  /** 加载状态 */
+  /** Loading state */
   status: 'loading' | 'loaded' | 'error';
   /** 是否加载中 */
   isLoading: boolean;
   /** 是否加载完成 */
   isLoaded: boolean;
-  /** 是否加载失败 */
+  /** 是否加载Failed */
   isError: boolean;
   /** 当前显示的图片 URL */
   src: string;
 }
 
 /**
- * 图片加载状态 Hook
+ * 图片Loading state Hook
  * @param src 图片 URL
- * @param options 配置选项
- * @returns 加载状态
+ * @param options Configuration options
+ * @returns Loading state
  */
 export function useImageLoad(
   src: string,
@@ -89,7 +89,7 @@ export function useImageLoad(
 /**
  * 批量图片加载
  * @param srcs 图片 URL 数组
- * @returns 加载状态
+ * @returns Loading state
  */
 export function useImagesLoad(srcs: string[]): {
   loadedCount: number;
@@ -132,7 +132,7 @@ export function useImagesLoad(srcs: string[]): {
   };
 }
 
-// ==================== 图片预览 ====================
+// ==================== Image preview ====================
 
 export interface ImagePreviewItem {
   src: string;
@@ -159,7 +159,7 @@ export interface UseImagePreviewReturn {
 }
 
 /**
- * 图片预览 Hook
+ * Image preview Hook
  * @param images 图片列表
  * @returns 预览控制
  */
@@ -239,7 +239,7 @@ export interface UseInfiniteScrollOptions {
 
 /**
  * 无限滚动 Hook
- * @param options 配置选项
+ * @param options Configuration options
  */
 export function useInfiniteScroll(options: UseInfiniteScrollOptions): {
   isLoading: boolean;
@@ -293,7 +293,7 @@ export interface UseScrollToOptions {
 
 /**
  * 滚动到指定元素
- * @param options 配置选项
+ * @param options Configuration options
  * @returns 滚动函数
  */
 export function useScrollTo(options: UseScrollToOptions = {}) {

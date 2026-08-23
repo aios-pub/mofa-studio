@@ -104,7 +104,7 @@ function convertDateFields<T>(data: T): T {
       let dateStr = value;
       if (dateStr.includes(' ') && !dateStr.includes('T')) {
         dateStr = dateStr.replace(' ', 'T');
-        // 如果没有时区信息，添加 Z 表示 UTC
+        // e.g.果没有时区信息，添加 Z 表示 UTC
         if (!dateStr.includes('Z') && !dateStr.includes('+') && !dateStr.includes('-', 10)) {
           dateStr += 'Z';
         }
@@ -131,7 +131,7 @@ function convertDateFields<T>(data: T): T {
  */
 function getAccessToken(): string | null {
   try {
-    const stored = localStorage.getItem("AMOS-claw-user-store");
+    const stored = localStorage.getItem("mofa-studio-user-store");
     if (stored) {
       const parsed = JSON.parse(stored);
       return parsed.state?.userToken?.accessToken || null;
@@ -146,8 +146,8 @@ function getAccessToken(): string | null {
  * 清除用户认证信息
  */
 function clearAuth() {
-  localStorage.removeItem("AMOS-claw-user-store");
-  // 同时也清除旧格式的 token（如果有）
+  localStorage.removeItem("mofa-studio-user-store");
+  // 同时也清除旧格式的 token（e.g.果有）
   localStorage.removeItem("token");
 }
 
@@ -159,11 +159,11 @@ axiosInstance.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // 添加语言
+    // 添加Language
     const language = localStorage.getItem("language") || "zh-CN";
     config.headers["Accept-Language"] = language;
 
-    // 添加链路追踪 ID (X_REQUEST_ID)
+    // 添加链路Tracing ID (X_REQUEST_ID)
     config.headers["X_REQUEST_ID"] = generateUUID();
 
     // FormData 请求不要设置 Content-Type，让浏览器自动设置带 boundary 的值
@@ -209,12 +209,12 @@ axiosInstance.interceptors.response.use(
       console.log('[apiClient] Response data field:', data.data);
     }
 
-    // 如果响应直接是数据，返回
+    // e.g.果响应直接是数据，返回
     if (data === undefined || data === null) {
       return response.data;
     }
 
-    // 如果有 code 字段，检查业务状态码
+    // e.g.果有 code 字段，检查业务状态码
     if ("code" in data) {
       if (data.code === 0 || data.code === 200) {
         const converted = convertDateFields(data.data);
@@ -244,7 +244,7 @@ axiosInstance.interceptors.response.use(
           break;
         case 401:
           errorMessage = "未授权，请重新登录";
-          // 清除认证信息并跳转登录页
+          // 清除认证信息并跳转Login page
           clearAuth();
           window.location.href = "/auth/login";
           break;
@@ -285,7 +285,7 @@ axiosInstance.interceptors.response.use(
 
 class ApiClient {
   /**
-   * 获取基础 URL
+   * 获取base URL
    */
   getBaseUrl(): string {
     return axiosInstance.defaults.baseURL || "";

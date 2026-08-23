@@ -44,7 +44,7 @@ export function uniqueId(prefix = "id"): string {
 
 /**
  * 延迟执行
- * @param ms 延迟时间（毫秒）
+ * @param ms 延迟时间（milliseconds）
  * @returns Promise
  */
 export function sleep(ms: number): Promise<void> {
@@ -55,7 +55,7 @@ export function sleep(ms: number): Promise<void> {
  * 带超时的 Promise
  * @param promise Promise
  * @param ms 超时时间
- * @param error 超时错误信息
+ * @param error 超时Error information
  * @returns Promise
  */
 export function timeout<T>(
@@ -372,7 +372,7 @@ export function groupBy<T, K extends string | number>(
  * 数组排序
  * @param arr 数组
  * @param key 排序键或函数
- * @param order 排序方向
+ * @param order Sort direction
  * @returns 排序后的数组
  */
 export function sortBy<T>(

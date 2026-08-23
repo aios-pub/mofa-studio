@@ -419,7 +419,7 @@ export default function AuditLogsPage() {
         />
       </Card>
 
-      {/* 日志详情抽屉 */}
+      {/* 日志详情Drawer */}
       <Drawer
         title={t("auditLog.details", "日志详情")}
         placement="right"

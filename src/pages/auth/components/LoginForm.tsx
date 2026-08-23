@@ -1,5 +1,5 @@
 /**
- * 登录表单组件
+ * 登录Form component
  * 使用 AntDesign 组件保持风格一致
  */
 
@@ -76,11 +76,11 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
       <div className="flex items-center justify-center gap-2 mb-6">
         <RobotOutlined className="text-3xl text-[var(--color-primary)]" />
         <span className="text-2xl font-bold text-[var(--color-text-primary)]">
-          AMOS
+          mofa-studio
         </span>
       </div>
 
-      {/* 标题 */}
+      {/* Title */}
       <div className="text-center mb-6">
         <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-1">
           {t("auth.welcomeBack", "欢迎回来")}

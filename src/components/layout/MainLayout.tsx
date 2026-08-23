@@ -21,7 +21,7 @@ import { RouteLoadingProgress } from "../common";
 
 const { Content } = Layout;
 
-// 设置抽屉上下文
+// 设置Drawer上下文
 interface SettingsContextType {
   settingsOpen: boolean;
   setSettingsOpen: (open: boolean) => void;
@@ -77,7 +77,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   if (isMobile) {
     return (
       <SettingsContext.Provider value={contextValue}>
-        {/* 路由加载进度条 */}
+        {/* 路由加载Progress bar */}
         <RouteLoadingProgress />
         <Layout className="min-h-screen bg-[var(--color-bg-base)]">
           {/* 移动端头部 - 传入移动端导航作为左侧插槽 */}
@@ -88,7 +88,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {children}
           </Content>
 
-          {/* 移动端侧边栏抽屉 */}
+          {/* 移动端侧边栏Drawer */}
           <Drawer
             placement="left"
             open={!sidebarCollapsed}
@@ -103,7 +103,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             <Sidebar isMobile />
           </Drawer>
 
-          {/* 设置抽屉 */}
+          {/* 设置Drawer */}
           <SettingsDrawer
             open={settingsOpen}
             onClose={() => setSettingsOpen(false)}
@@ -117,7 +117,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   if (isHorizontal) {
     return (
       <SettingsContext.Provider value={contextValue}>
-        {/* 路由加载进度条 */}
+        {/* 路由加载Progress bar */}
         <RouteLoadingProgress />
         <Layout className="min-h-screen bg-[var(--color-bg-base)]">
           {/* 顶部导航栏 */}
@@ -125,7 +125,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {/* Logo */}
             <div className="flex items-center gap-2 mr-6">
               <RobotOutlined className="text-2xl text-[var(--color-primary)]" />
-              <span className="text-lg font-bold text-white">AMOS</span>
+              <span className="text-lg font-bold text-white">mofa-studio</span>
             </div>
 
             {/* 水平菜单 */}
@@ -144,7 +144,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             </Content>
           </Layout>
 
-          {/* 设置抽屉 */}
+          {/* 设置Drawer */}
           <SettingsDrawer
             open={settingsOpen}
             onClose={() => setSettingsOpen(false)}
@@ -157,7 +157,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   // 垂直/迷你布局 (桌面端)
   return (
     <SettingsContext.Provider value={contextValue}>
-      {/* 路由加载进度条 */}
+      {/* 路由加载Progress bar */}
       <RouteLoadingProgress />
       <Layout className="min-h-screen bg-[var(--color-bg-base)]">
         {/* 侧边栏 */}
@@ -180,7 +180,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           </Content>
         </Layout>
 
-        {/* 设置抽屉 */}
+        {/* 设置Drawer */}
         <SettingsDrawer
           open={settingsOpen}
           onClose={() => setSettingsOpen(false)}

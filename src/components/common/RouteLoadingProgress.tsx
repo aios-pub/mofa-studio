@@ -1,6 +1,6 @@
 /**
- * 路由加载进度条组件
- * 在路由切换时显示顶部进度条
+ * 路由加载Progress bar组件
+ * 在路由切换时显示顶部Progress bar
  */
 
 import { useEffect, useState } from "react";
@@ -39,7 +39,7 @@ export function RouteLoadingProgress() {
       }
     });
 
-    // 观察整个文档的变化
+    // 观察整个Document的变化
     observer.observe(document, {
       subtree: true,
       childList: true,

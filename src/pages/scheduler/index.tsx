@@ -1,5 +1,5 @@
 /**
- * 任务调度模块主页面
+ * Task scheduling module主页面
  * 参考 apalis-board 布局：Tabs 导航（概览/任务管理/执行记录/Worker监控）
  */
 

@@ -1,5 +1,5 @@
 /**
- * 工作流状态管理
+ * Workflow status管理
  */
 
 import { create } from 'zustand';

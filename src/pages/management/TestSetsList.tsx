@@ -584,7 +584,7 @@ function TestSetDetail({
       setCurrentReport(report);
       onUpdate();
       loadReports();
-      loadCases(); // 刷新测试用例状态
+      loadCases(); // 刷新Test case status
     } catch (error) {
       console.error("Failed to run test set:", error);
       message.error("测试运行失败");
@@ -606,7 +606,7 @@ function TestSetDetail({
           ? `测试用例 "${testCase.name}" 通过`
           : `测试用例 "${testCase.name}" 失败`,
       );
-      loadCases(); // 刷新测试用例状态
+      loadCases(); // 刷新Test case status
       loadReports(); // 刷新报告列表
     } catch (error) {
       console.error("Failed to run test case:", error);
@@ -816,7 +816,7 @@ function TestSetDetail({
         </Card>
       </div>
 
-      {/* 标签栏 */}
+      {/* Label栏 */}
       <Tabs
         activeKey={activeTab}
         onChange={(key) => setActiveTab(key as typeof activeTab)}

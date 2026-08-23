@@ -119,7 +119,7 @@ function GeneralSettings() {
     <div className="space-y-6">
       <Title level={4}>{t("settings.general")}</Title>
 
-      {/* 语言设置 */}
+      {/* Language设置 */}
       <Card
         title={
           <Space>
@@ -334,7 +334,7 @@ function DataSettings() {
         conversations,
         prompts,
         settings: JSON.parse(
-          localStorage.getItem("AMOS-claw-app-store") || "{}",
+          localStorage.getItem("mofa-studio-app-store") || "{}",
         ),
         exportedAt: new Date().toISOString(),
       };
@@ -345,7 +345,7 @@ function DataSettings() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `AMOS-claw-backup-${new Date().toISOString().split("T")[0]}.json`;
+      a.download = `mofa-studio-backup-${new Date().toISOString().split("T")[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
@@ -371,7 +371,7 @@ function DataSettings() {
           // 导入操作仅恢复客户端设置，后端数据需通过后端 API 导入
           if (data.settings) {
             localStorage.setItem(
-              "AMOS-claw-app-store",
+              "mofa-studio-app-store",
               JSON.stringify(data.settings),
             );
           }
@@ -477,7 +477,7 @@ function AboutSettings() {
             <span style={{ fontSize: 40 }}>🤖</span>
           </Avatar>
           <Title level={3} style={{ marginBottom: 8 }}>
-            AMOS
+            mofa-studio
           </Title>
           <Text type="secondary">AI Dialogue Platform</Text>
 

@@ -151,7 +151,7 @@ function SimpleDonutChart({ data }: { data: { label: string; value: number; colo
   );
 }
 
-// 柱状图组件
+// Bar chart组件
 function SimpleColumnChart({ data }: { data: { date: string; value: number }[] }) {
   const maxValue = Math.max(...data.map(d => d.value));
   const minValue = Math.min(...data.map(d => d.value));
@@ -353,7 +353,7 @@ export default function InsightPage() {
         </Col>
       </Row>
 
-      {/* 图表区域 */}
+      {/* Chart area */}
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={16}>
           <Card title={t('insight.dailyTrend', '每日对话趋势')} className="h-full">

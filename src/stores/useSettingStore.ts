@@ -1,5 +1,5 @@
 /**
- * 设置状态管理
+ * Settings state management
  */
 
 import { create } from "zustand";
@@ -16,21 +16,21 @@ export type ThemeColorPresets =
 export type ThemeLayout = "vertical" | "horizontal" | "mini";
 
 export type SettingsType = {
-  // 主题颜色预设
+  // Theme color presets
   themeColorPresets: ThemeColorPresets;
-  // 布局模式
+  // Layout mode
   themeLayout: ThemeLayout;
-  // 内容拉伸
+  // Content stretch
   themeStretch: boolean;
-  // 面包屑
+  // Breadcrumb
   breadCrumb: boolean;
-  // 多标签页
+  // Multi-tab
   multiTab: boolean;
-  // 手风琴菜单
+  // Accordion menu
   accordion: boolean;
-  // 侧边栏深色
+  // Dark sidebar
   darkSidebar: boolean;
-  // 字体大小
+  // Font size
   fontSize: number;
 };
 
@@ -67,7 +67,7 @@ export const useSettingStore = create<SettingStore>()(
       },
     }),
     {
-      name: "AMOS-claw-setting-store",
+      name: "mofa-studio-setting-store",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ settings: state.settings }),
     },

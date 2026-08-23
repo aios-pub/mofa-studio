@@ -1,5 +1,5 @@
 /**
- * 注册表单组件
+ * 注册Form component
  */
 
 import { useState } from "react";
@@ -74,11 +74,11 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
       <div className="flex items-center justify-center gap-2 mb-6">
         <RobotOutlined className="text-3xl text-[var(--color-primary)]" />
         <span className="text-2xl font-bold text-[var(--color-text-primary)]">
-          AMOS
+          mofa-studio
         </span>
       </div>
 
-      {/* 标题 */}
+      {/* Title */}
       <div className="text-center mb-6">
         <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-1">
           {t("auth.createAccount", "创建账户")}

@@ -1,5 +1,5 @@
 /**
- * 标签面板组件
+ * Label面板组件
  */
 
 import { useEffect, useState } from 'react';

@@ -1,22 +1,22 @@
 /**
- * 全局应用配置
+ * Global application configuration
  */
 
 import pkg from "../../package.json";
 
-/** 悬浮球模式类型 */
+/** Floating ball mode类型 */
 export type FloatingMode = "floating" | "window";
 
 /**
- * 服务端配置
+ * Server configuration
  */
 export const SERVER_CONFIG = {
-  /** 本地开发环境 */
+  /** Local development environment */
   development: {
     baseURL: "http://localhost:3002",
     wsURL: "ws://localhost:3002",
   },
-  /** 生产环境 */
+  /** Production environment */
   production: {
     baseURL: "https://agentos.aios.pub",
     wsURL: "wss://agentos.aios.pub",
@@ -24,7 +24,7 @@ export const SERVER_CONFIG = {
 } as const;
 
 /**
- * 获取服务端 URL
+ * Get server URL
  */
 export function getServerURL(): string {
   const envURL = import.meta.env.VITE_APP_SERVER_URL;
@@ -36,7 +36,7 @@ export function getServerURL(): string {
 }
 
 /**
- * 获取 WebSocket URL
+ * Get WebSocket URL
  */
 export function getWebSocketURL(): string {
   return import.meta.env.DEV
@@ -45,54 +45,54 @@ export function getWebSocketURL(): string {
 }
 
 /**
- * 是否启用 Mock 数据
+ * Whether to enable Mock data
  */
 export function isMockEnabled(): boolean {
   const mockEnv = import.meta.env.VITE_APP_ENABLE_MOCK;
-  // 如果环境变量有设置，使用环境变量的值
+  // e.g.果Environment variable有设置，使用Environment variable的值
   if (mockEnv !== undefined) {
     return mockEnv === "true" || mockEnv === "1";
   }
-  // 默认：开发环境开启mock，生产环境关闭
+  // 默认：开发环境开启mock，Production environment关闭
   return import.meta.env.DEV;
 }
 
 /**
- * 全局配置类型定义
+ * Global configuration type definition
  */
 export type GlobalConfig = {
-  /** 应用名称 */
+  /** Application name */
   appName: string;
-  /** 应用版本 */
+  /** Application version */
   appVersion: string;
-  /** 默认路由 */
+  /** Default route */
   defaultRoute: string;
-  /** 静态资源公共路径 */
+  /** Static assets public path */
   publicPath: string;
-  /** 服务端 URL (同时作为 API 基础 URL) */
+  /** Server URL (also serves as API base URL) */
   serverURL: string;
-  /** API 请求超时时间 (ms) */
+  /** API request timeout (ms) */
   apiTimeout: number;
-  /** 路由模式 */
+  /** Routing mode */
   routerMode: "frontend" | "backend";
-  /** 应用标题 */
+  /** Application title */
   appTitle: string;
-  /** 悬浮球模式 */
+  /** Floating ball mode */
   floatingMode: FloatingMode;
-  /** 是否为悬浮球模式 */
+  /** Is floating ball mode */
   isFloatingMode: boolean;
-  /** 是否启用分析 */
+  /** Whether to enable analytics */
   enableAnalytics: boolean;
-  /** 是否启用调试 */
+  /** Whether to enable debug */
   enableDebug: boolean;
   /** WebSocket URL */
   wsURL: string;
-  /** 是否启用 Mock */
+  /** Whether to enable Mock */
   enableMock: boolean;
 };
 
 /**
- * 解析布尔值环境变量
+ * Parse boolean environment variable
  */
 function parseBoolean(
   value: string | undefined,
@@ -103,7 +103,7 @@ function parseBoolean(
 }
 
 /**
- * 解析数字环境变量
+ * Parse numeric environment variable
  */
 function parseNumber(value: string | undefined, defaultValue: number): number {
   if (value === undefined) return defaultValue;
@@ -112,22 +112,22 @@ function parseNumber(value: string | undefined, defaultValue: number): number {
 }
 
 /**
- * 获取悬浮球模式
+ * Get floating ball mode
  */
 function getFloatingMode(): FloatingMode {
   const mode = import.meta.env.VITE_APP_FLOATING_MODE;
   if (mode === "floating" || mode === "window") {
     return mode;
   }
-  return "window"; // 默认使用窗口模式
+  return "window"; // 默认使用Window mode
 }
 
 /**
- * 全局配置常量
- * 从环境变量和 package.json 读取配置
+ * Global configuration constants
+ * 从Environment variable和 package.json 读取配置
  */
 export const GLOBAL_CONFIG: GlobalConfig = {
-  appName: "AMOS",
+  appName: "mofa-studio",
   appVersion: pkg.version,
   defaultRoute: import.meta.env.VITE_APP_DEFAULT_ROUTE || "/workbench",
   publicPath: import.meta.env.VITE_APP_PUBLIC_PATH || "/",
@@ -136,7 +136,7 @@ export const GLOBAL_CONFIG: GlobalConfig = {
   routerMode:
     (import.meta.env.VITE_APP_ROUTER_MODE as "frontend" | "backend") ||
     "frontend",
-  appTitle: import.meta.env.VITE_APP_TITLE || "AMOS - AI Agent Management",
+  appTitle: import.meta.env.VITE_APP_TITLE || "mofa-studio - AI Agent Management",
   floatingMode: getFloatingMode(),
   isFloatingMode: getFloatingMode() === "floating",
   enableAnalytics: parseBoolean(
@@ -152,34 +152,34 @@ export const GLOBAL_CONFIG: GlobalConfig = {
 };
 
 /**
- * 布局配置
+ * Layout configuration
  */
 export const LAYOUT_CONFIG = {
-  /** 侧边栏宽度 */
+  /** Sidebar width */
   navWidth: 260,
-  /** 收缩侧边栏宽度 */
+  /** Collapsed sidebar width */
   navWidthMini: 80,
-  /** 头部高度 */
+  /** Header height */
   headerHeight: 64,
-  /** 水平导航高度 */
+  /** Horizontal nav height */
   navHeightHorizontal: 48,
-  /** 多标签页高度 */
+  /** Multi-tab height */
   multiTabsHeight: 40,
 } as const;
 
 /**
- * 存储键名枚举
+ * Storage key name enum
  */
 export const StorageEnum = {
-  ThemeMode: "AMOS-claw-theme-mode",
-  Settings: "AMOS-claw-settings",
-  Token: "AMOS-claw-token",
-  User: "AMOS-claw-user",
-  Language: "AMOS-claw-language",
+  ThemeMode: "mofa-studio-theme-mode",
+  Settings: "mofa-studio-settings",
+  Token: "mofa-studio-token",
+  User: "mofa-studio-user",
+  Language: "mofa-studio-language",
 } as const;
 
 /**
- * 主题模式枚举
+ * Theme mode enum
  */
 export const ThemeMode = {
   Light: "light",
@@ -190,7 +190,7 @@ export const ThemeMode = {
 export type ThemeModeType = (typeof ThemeMode)[keyof typeof ThemeMode];
 
 /**
- * 主题布局枚举
+ * Theme layout enum
  */
 export const ThemeLayout = {
   Vertical: "vertical",
@@ -201,7 +201,7 @@ export const ThemeLayout = {
 export type ThemeLayoutType = (typeof ThemeLayout)[keyof typeof ThemeLayout];
 
 /**
- * 主题颜色预设枚举
+ * Theme color preset enum
  */
 export const ThemeColorPresets = {
   Default: "default",
@@ -216,7 +216,7 @@ export type ThemeColorPresetsType =
   (typeof ThemeColorPresets)[keyof typeof ThemeColorPresets];
 
 /**
- * HTML data 属性
+ * HTML data attributes
  */
 export const HtmlDataAttribute = {
   ThemeMode: "data-theme-mode",

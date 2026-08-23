@@ -35,7 +35,7 @@ const generateMockSpan = (
     "cache.get",
     "cache.set",
   ];
-  const services = ["AMOS-claw-frontend", "AMOS-claw-api", "AMOS-claw-worker"];
+  const services = ["mofa-studio-frontend", "mofa-studio-api", "mofa-studio-worker"];
   const hasError = Math.random() < 0.1;
   const status = hasError ? "ERROR" : "OK";
   const resourceService = services[Math.floor(Math.random() * services.length)];
@@ -112,7 +112,7 @@ const MOCK_TRACES: Trace[] = Array.from({ length: 50 }, generateMockTrace);
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 export const tracingApi = {
   /**
-   * 获取追踪列表
+   * 获取Tracing列表
    * 返回格式与真实 API（apiClient 解包后）一致：直接返回数组
    */
   getTraces: async (filter?: TracingFilter): Promise<{ data: Trace[] }> => {
@@ -155,14 +155,14 @@ export const tracingApi = {
     };
   },
   /**
-   * 获取单个追踪详情
+   * 获取单个Tracing详情
    */
   getTraceById: async (trace_id: string): Promise<Trace | null> => {
     await delay(200);
     return MOCK_TRACES.find((t) => t.trace_id === trace_id) || null;
   },
   /**
-   * 获取追踪统计
+   * 获取Tracing统计
    */
   getTracingStats: async (): Promise<TracingStats> => {
     await delay(200);
@@ -193,7 +193,7 @@ export const tracingApi = {
   },
 
   /**
-   * 导出追踪数据
+   * 导出Tracing数据
    */
   exportTraces: async (
     filter?: TracingFilter,
@@ -235,7 +235,7 @@ export const tracingApi = {
   },
 
   /**
-   * 导出单个追踪数据
+   * 导出单个Tracing数据
    */
   exportTrace: async (
     traceId: string,

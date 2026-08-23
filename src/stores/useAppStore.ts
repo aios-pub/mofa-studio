@@ -1,5 +1,5 @@
 /**
- * 应用全局状态管理
+ * Global application state management
  */
 
 import { create } from "zustand";
@@ -9,28 +9,28 @@ import type { ThemeMode, WindowMode } from "../types";
 export type SupportedLanguage = "zh-CN" | "en-US";
 
 interface AppState {
-  // 主题
+  // Theme
   theme: ThemeMode;
   setTheme: (theme: ThemeMode) => void;
 
-  // 语言
+  // Language
   language: SupportedLanguage;
   setLanguage: (language: SupportedLanguage) => void;
 
-  // 窗口模式 (悬浮球相关)
+  // Window mode (floating ball related)
   windowMode: WindowMode;
   setWindowMode: (mode: WindowMode) => void;
 
-  // 侧边栏状态
+  // Sidebar state
   sidebarCollapsed: boolean;
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
 
-  // 当前选中的 Agent ID
+  // Currently selected Agent ID
   currentAgentId: string | null;
   setCurrentAgentId: (id: string | null) => void;
 
-  // 当前选中的会话 ID
+  // Currently selected conversation ID
   currentConversationId: string | null;
   setCurrentConversationId: (id: string | null) => void;
 }
@@ -38,15 +38,15 @@ interface AppState {
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
-      // 主题
+      // Theme
       theme: "system",
       setTheme: (theme) => set({ theme }),
 
-      // 语言
+      // Language
       language: "zh-CN",
       setLanguage: (language) => set({ language }),
 
-      // 窗口模式
+      // Window mode
       windowMode: "full",
       setWindowMode: (windowMode) => set({ windowMode }),
 
@@ -66,7 +66,7 @@ export const useAppStore = create<AppState>()(
         set({ currentConversationId }),
     }),
     {
-      name: "AMOS-claw-app-store",
+      name: "mofa-studio-app-store",
       partialize: (state) => ({
         theme: state.theme,
         language: state.language,

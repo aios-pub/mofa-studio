@@ -2,7 +2,7 @@
  * Agent 相关类型定义
  */
 
-/** Agent 状态 */
+/** Agent status */
 export type AgentStatus =
   | "idle"
   | "thinking"
@@ -11,59 +11,59 @@ export type AgentStatus =
   | "error"
   | "offline";
 
-/** 思考模式配置（对应后端 jsonb 字段） */
+/** Thinking mode config (corresponds to backend jsonb field) */
 export interface ThinkingConfig {
   enabled: boolean;
   budget_tokens?: number;
 }
 
-/** Agent 基本信息 */
+/** Agent basic info */
 export interface Agent {
   id: string;
-  /** Agent 名称 */
+  /** Agent name */
   agent_name: string;
-  /** Agent 唯一编码 */
+  /** Agent unique code */
   agent_code: string;
-  /** 描述 / 系统提示词（运行时从关联提示词生成） */
+  /** Description / system prompt (generated at runtime from linked prompt) */
   system_prompt: string;
-  /** 头像 emoji */
+  /** Avatar emoji */
   avatar?: string;
-  /** 启用状态 */
+  /** Enabled status */
   enabled: boolean;
-  /** 排序权重 */
+  /** Sort weight */
   agent_order?: number;
-  /** 模型 ID (UUID) */
+  /** Model ID (UUID) */
   model_id: string;
-  /** 模型名称 */
+  /** Model name */
   model_name: string;
-  /** 供应商 ID (UUID) */
+  /** Provider ID (UUID) */
   provider: {
     id: string;
     provider_name: string;
   };
-  /** Agent 类型: 'native' | 'openclaw' | 'zeroclaw' | 'octos' | 'claude_code' | 'codex' */
+  /** Agent type: 'native' | 'openclaw' | 'zeroclaw' | 'octos' | 'claude_code' | 'codex' */
   agent_category: string;
-  /** 自定义参数 */
+  /** Custom parameters */
   custom_params?: Record<string, unknown>;
-  /** 温度参数 */
+  /** Temperature parameter */
   temperature?: number;
-  /** 是否流式输出 */
+  /** Whether to stream output */
   stream?: boolean;
-  /** 思考模式配置（后端 jsonb 存储） */
+  /** Thinking mode config (stored as backend jsonb) */
   thinking?: ThinkingConfig;
-  /** 上下文限制 */
+  /** Context limit */
   context_limit?: number;
-  /** 响应格式 */
+  /** Response format */
   response_format?: string;
-  /** 最大完成 token 数 */
+  /** Max completion tokens */
   max_completion_tokens?: number;
-  /** 输入参数配置（前端使用） */
+  /** Input parameter config (frontend use) */
   input_parameters?: AgentInputParameter[];
   /** 平台标识 */
   platform?: number;
   /** 状态（前端用） */
   status?: AgentStatus;
-  /** 创建时间 */
+  /** Created time */
   created_at?: Date;
   /** 更新时间 */
   updated_at?: Date;

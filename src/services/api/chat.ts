@@ -5,7 +5,7 @@
 
 import { apiClient } from "../api/apiClient";
 
-// API 配置
+// API configuration
 export interface APIConfig {
   provider: string;
   apiKey: string;

@@ -114,7 +114,7 @@ export default function PromptTestPanel({
 
   return (
     <div className="flex flex-col h-full">
-      {/* 标签栏 */}
+      {/* Label栏 */}
       <div className="flex border-b border-(--color-border)">
         <button
           onClick={() => setActiveTab("preview")}
@@ -256,7 +256,7 @@ export default function PromptTestPanel({
           </div>
         ) : (
           <div className="h-full flex flex-col">
-            {/* 聊天消息 */}
+            {/* 聊天Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {chatMessages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-tertiary)]">

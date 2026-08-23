@@ -3,15 +3,15 @@
  * 支持主流模型厂商
  */
 
-// Provider 厂商类型
+// Provider vendor type
 export type ProviderType =
-  // 主流云厂商
+  // Major cloud providers
   | 'openai'
   | 'anthropic'
   | 'google'
   | 'azure'
   | 'aws_bedrock'
-  // 大型科技公司
+  // Large tech companies
   | 'meta'
   | 'mistral'
   | 'cohere'
@@ -28,7 +28,7 @@ export type ProviderType =
   | 'aleph_alpha'
   | 'microsoft'
   | 'ibm'
-  // 中国厂商
+  // Chinese vendors
   | 'zhipu'
   | 'alibaba'
   | 'baidu'
@@ -54,7 +54,7 @@ export type ProviderType =
   | 'sina'
   | 'sohu'
   | 'lenovo'
-  // 模型聚合平台
+  // Model aggregation platforms
   | 'openrouter'
   | 'together'
   | 'huggingface'
@@ -71,7 +71,7 @@ export type ProviderType =
   | 'prem'
   | 'monsterapi'
   | 'neuro'
-  // 开源/本地部署
+  // Open source / local deployment
   | 'ollama'
   | 'vllm'
   | 'lmstudio'
@@ -87,7 +87,7 @@ export type ProviderType =
   | 'dify'
   | 'fastgpt'
   | 'langchain_chatchat'
-  // 特定领域
+  // Specialized domains
   | 'assemblyai'
   | 'elevenlabs'
   | 'aws_polly'
@@ -96,16 +96,16 @@ export type ProviderType =
   | 'whisper'
   | 'claude'
   | 'gemini'
-  // 自定义
+  // Custom
   | 'custom';
 
-// Provider 厂商分类（按服务类型分类）
+// Provider vendor classification（按服务类型分类）
 export type ProviderCategory = 'cloud' | 'opensource' | 'custom';
 
-// 认证方式
+// Authentication method
 export type AuthType = 'api_key' | 'bearer' | 'basic' | 'oauth' | 'none';
 
-// 模型能力标识
+// Model capability identifier
 export interface ModelCapabilities {
   vision: boolean;
   streaming: boolean;
@@ -114,7 +114,7 @@ export interface ModelCapabilities {
   jsonMode: boolean;
 }
 
-// 模型信息
+// Model information
 export interface ProviderModel {
   id: string;
   name: string;
@@ -128,7 +128,7 @@ export interface ProviderModel {
   enabled?: boolean;
 }
 
-// 配置字段定义
+// Configuration field definition
 export interface ConfigField {
   key: string;
   label: string;
@@ -144,7 +144,7 @@ export interface ConfigField {
   };
 }
 
-// 厂商配置
+// Vendor configuration
 export interface ProviderConfig {
   type: ProviderType;
   name: string;
@@ -153,7 +153,7 @@ export interface ProviderConfig {
   description: string;
   website?: string;
   docs?: string;
-  // API 配置
+  // API configuration
   api: {
     defaultBaseUrl: string;
     authType: AuthType;
@@ -161,15 +161,15 @@ export interface ProviderConfig {
     apiKeyPlaceholder?: string;
     headers?: Record<string, string>;
   };
-  // 配置字段
+  // Configuration fields
   configFields: ConfigField[];
-  // 默认模型列表（已废弃，模型从厂商 API 实时获取）
+  // Default model list（Deprecated，Models fetched from vendor API in real-time）
   defaultModels?: ProviderModel[];
-  // 能力
+  // Capabilities
   capabilities: ModelCapabilities;
 }
 
-// Provider 实例
+// Provider instance
 export interface Provider {
   id: string;
   name: string;
@@ -188,7 +188,7 @@ export interface Provider {
   updatedAt: Date;
 }
 
-// 创建 Provider 的表单数据
+// Form data for creating a provider
 export interface CreateProviderFormData {
   type: ProviderType;
   name: string;

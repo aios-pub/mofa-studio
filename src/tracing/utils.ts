@@ -1,36 +1,36 @@
 /**
- * Tracing 工具函数
+ * Tracing utility functions
  */
 
 import { getTracingConfig, isTracingInitialized } from './config';
 import type { Span } from '../types/tracing';
 
-// 生成唯一的 Trace ID
+// Generate unique Trace ID
 export function generateTraceId(): string {
   return Array.from({ length: 32 }, () =>
     Math.floor(Math.random() * 16).toString(16)
   ).join('');
 }
 
-// 生成唯一的 Span ID
+// Generate unique Span ID
 export function generateSpanId(): string {
   return Array.from({ length: 16 }, () =>
         Math.floor(Math.random() * 16).toString(16)
   ).join('');
 }
 
-// 活跃的 Span 栈
+// Active Span stack
 const activeSpans: Span[] = [];
 
 /**
- * 获取当前活跃的 Span
+ * Get current active Span
  */
 export function getActiveSpan(): Span | undefined {
   return activeSpans[activeSpans.length - 1];
 }
 
 /**
- * 创建一个新的 Span
+ * Create a new Span
  */
 export function startSpan(
   name: string,
@@ -66,7 +66,7 @@ export function startSpan(
 }
 
 /**
- * 结束 Span
+ * End Span
  */
 export function endSpan(span: Span, status: Span['status'] = 'OK'): void {
   const now = new Date();
@@ -74,13 +74,13 @@ export function endSpan(span: Span, status: Span['status'] = 'OK'): void {
   span.duration = now.getTime() - new Date(span.start_time).getTime();
   span.status = status;
 
-  // 从活跃栈中移除
+  // Remove from active stack
   const index = activeSpans.indexOf(span);
   if (index > -1) {
     activeSpans.splice(index, 1);
   }
 
-  // 如果追踪已初始化，发送 span
+  // If tracing is initialized, send span
   if (isTracingInitialized()) {
     console.log('[Tracing] Span ended:', span.name, {
       trace_id: span.trace_id,
@@ -92,7 +92,7 @@ export function endSpan(span: Span, status: Span['status'] = 'OK'): void {
 }
 
 /**
- * 添加事件到 Span
+ * Add event to Span
  */
 export function addEvent(
   span: Span,
@@ -110,7 +110,7 @@ export function addEvent(
 }
 
 /**
- * 设置 Span 属性
+ * Set Span attributes
  */
 export function setAttribute(
   span: Span,
@@ -124,7 +124,7 @@ export function setAttribute(
 }
 
 /**
- * 追踪异步函数
+ * Trace async function
  */
 export async function traceAsync<T>(
   name: string,
@@ -146,7 +146,7 @@ export async function traceAsync<T>(
 }
 
 /**
- * 追踪同步函数
+ * Trace sync function
  */
 export function traceSync<T>(
   name: string,
@@ -168,7 +168,7 @@ export function traceSync<T>(
 }
 
 /**
- * 创建追踪装饰器
+ * Create trace decorator
  */
 export function traced(
   name?: string,

@@ -1,5 +1,5 @@
 /**
- * 个人中心页面
+ * Personal center页面
  */
 
 import { useState } from "react";
@@ -112,13 +112,13 @@ export default function ProfilePage() {
   return (
     <div className="h-full overflow-auto p-6 bg-[var(--color-bg-base)]">
       <div className="max-w-4xl mx-auto">
-        {/* 页面标题 */}
+        {/* 页面Title */}
         <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-6">
           {t("profile.title", "个人中心")}
         </h1>
 
         <div className="flex gap-6">
-          {/* 左侧标签页 */}
+          {/* 左侧Tabs */}
           <div className="w-48 flex-shrink-0">
             <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-2">
               {tabs.map((tab) => {

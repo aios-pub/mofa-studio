@@ -1,5 +1,5 @@
 /**
- * Provider 厂商配置
+ * Provider Vendor configuration
  * 包含 130+ 主流模型厂商的详细配置信息
  */
 
@@ -1033,7 +1033,7 @@ const opensourceProviders: ProviderConfig[] = [
   },
 ];
 
-// ==================== 自定义配置 ====================
+// ==================== Custom配置 ====================
 
 const customProviders: ProviderConfig[] = [
   {
@@ -1080,7 +1080,7 @@ const customProviders: ProviderConfig[] = [
 
 // ==================== 导出配置 ====================
 
-// 所有厂商配置
+// 所有Vendor configuration
 export const allProviderConfigs: ProviderConfig[] = [
   ...cloudProviders,
   ...opensourceProviders,

@@ -1,6 +1,6 @@
 /**
  * 侧边栏导航组件
- * 支持桌面端固定侧边栏和移动端抽屉模式
+ * 支持桌面端固定侧边栏和移动端Drawer模式
  * 支持拖拽调整宽度
  */
 
@@ -271,7 +271,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     };
   }, [isResizing]);
 
-  // 主题相关样式
+  // Theme相关样式
   const siderBg = isDark ? "#001529" : "#ffffff";
   const borderColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)";
   const logoTextColor = isDark
@@ -280,7 +280,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
 
   const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
     navigate(key);
-    // 移动端点击菜单后自动关闭抽屉
+    // 移动端点击菜单后自动关闭Drawer
     if (isMobile) {
       setSidebarCollapsed(true);
     }
@@ -304,7 +304,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           style={{ borderColor }}
         >
           <RobotOutlined className="text-2xl text-[var(--color-primary)]" />
-          <span className={`text-lg font-bold ${logoTextColor}`}>AMOS</span>
+          <span className={`text-lg font-bold ${logoTextColor}`}>mofa-studio</span>
         </div>
 
         {/* 菜单列表 */}
@@ -357,7 +357,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
               color: isDark ? "#fff" : "var(--color-text-primary)",
             }}
           >
-            AMOS
+            mofa-studio
           </span>
         </div>
 
@@ -379,7 +379,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
         />
       </div>
 
-      {/* 菜单列表 - 使用自定义滚动条 */}
+      {/* 菜单列表 - 使用Custom滚动条 */}
       <div
         className="h-[calc(100vh-var(--layout-header-height))] overflow-y-auto scrollbar-thin px-2"
         style={{

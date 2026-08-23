@@ -21,7 +21,7 @@ export interface UseDragOptions {
     right?: number;
     bottom?: number;
   };
-  /** 是否启用拖拽 */
+  /** Whether to enable拖拽 */
   disabled?: boolean;
   /** 拖拽开始回调 */
   onDragStart?: (position: Position) => void;
@@ -46,7 +46,7 @@ export interface UseDragReturn {
 
 /**
  * 拖拽 Hook
- * @param options 配置选项
+ * @param options Configuration options
  * @returns 拖拽状态和方法
  */
 export function useDrag(options: UseDragOptions = {}): UseDragReturn {
@@ -173,7 +173,7 @@ export interface UseResizeOptions {
   maxWidth?: number;
   /** 最大高度 */
   maxHeight?: number;
-  /** 是否启用 */
+  /** Whether to enable */
   disabled?: boolean;
   /** 调整大小开始回调 */
   onResizeStart?: (size: Size) => void;
@@ -200,7 +200,7 @@ type ResizeDirection = 'se' | 'sw' | 'ne' | 'nw' | 'n' | 's' | 'e' | 'w';
 
 /**
  * 调整大小 Hook
- * @param options 配置选项
+ * @param options Configuration options
  * @returns 调整大小状态和方法
  */
 export function useResize(options: UseResizeOptions = {}): UseResizeReturn {
@@ -311,7 +311,7 @@ export function useResize(options: UseResizeOptions = {}): UseResizeReturn {
 // ==================== 拖放区域 ====================
 
 export interface UseDropOptions {
-  /** 是否启用 */
+  /** Whether to enable */
   disabled?: boolean;
   /** 拖拽进入回调 */
   onDragEnter?: (e: DragEvent) => void;
@@ -337,7 +337,7 @@ export interface UseDropReturn {
 
 /**
  * 拖放区域 Hook
- * @param options 配置选项
+ * @param options Configuration options
  * @returns 拖放状态和绑定属性
  */
 export function useDrop(options: UseDropOptions = {}): UseDropReturn {
@@ -418,7 +418,7 @@ export function useDrop(options: UseDropOptions = {}): UseDropReturn {
 // ==================== 文件拖放 ====================
 
 export interface UseFileDropOptions {
-  /** 是否启用 */
+  /** Whether to enable */
   disabled?: boolean;
   /** 接受的文件类型 */
   accept?: string[];
@@ -454,7 +454,7 @@ export interface UseFileDropReturn {
 
 /**
  * 文件拖放 Hook
- * @param options 配置选项
+ * @param options Configuration options
  * @returns 拖放状态和属性
  */
 export function useFileDrop(options: UseFileDropOptions): UseFileDropReturn {

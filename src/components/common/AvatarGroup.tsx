@@ -38,7 +38,7 @@ export interface AvatarGroupProps {
   borderColor?: string;
   /** 布局方向 */
   direction?: 'ltr' | 'rtl';
-  /** 自定义类名 */
+  /** Custom类名 */
   className?: string;
   /** 点击头像回调 */
   onAvatarClick?: (avatar: AvatarGroupItem) => void;

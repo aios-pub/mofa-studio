@@ -56,7 +56,7 @@ export default function AccountDropdown({
 
   const popupRender = (menu: React.ReactNode) => (
     <div className="bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg shadow-lg overflow-hidden min-w-[220px]">
-      {/* 用户信息 */}
+      {/* User information */}
       <div className="flex items-center gap-3 p-3 border-b border-(--color-border)">
         <Avatar
           size={40}
@@ -76,7 +76,7 @@ export default function AccountDropdown({
         </div>
       </div>
 
-      {/* 角色标签 */}
+      {/* 角色Label */}
       {userInfo.roles && userInfo.roles.length > 0 && (
         <div className="px-3 py-2 border-b border-(--color-border)">
           <div className="flex flex-wrap gap-1">

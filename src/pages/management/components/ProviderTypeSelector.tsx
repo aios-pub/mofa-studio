@@ -1,5 +1,5 @@
 /**
- * Provider 类型选择器组件
+ * Provider 类型Select component
  * 支持分类展示、搜索过滤和卡片选择
  */
 
@@ -51,7 +51,7 @@ export const ProviderTypeSelector: React.FC<ProviderTypeSelectorProps> = ({
 
   return (
     <div className="flex flex-col h-full">
-      {/* 分类标签 */}
+      {/* 分类Label */}
       <div className="flex gap-1 p-4 pb-2">
         {categories.map((category) => {
           const info = categoryInfo[category];

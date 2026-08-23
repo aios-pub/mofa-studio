@@ -1,10 +1,10 @@
 /**
- * API 文档类型定义
- * 用于生成可视化 API 文档
+ * API Document类型定义
+ * 用于生成可视化 API Document
  */
 
 /**
- * API 文档主体结构
+ * API Document主体结构
  */
 export interface ApiDocumentation {
   info: DocInfo;
@@ -14,7 +14,7 @@ export interface ApiDocumentation {
 }
 
 /**
- * 文档基本信息
+ * Document基本信息
  */
 export interface DocInfo {
   title: string;
@@ -46,7 +46,7 @@ export interface ServerVariable {
 }
 
 /**
- * API 端点文档
+ * API 端点Document
  */
 export interface EndpointDocumentation {
   id: string;
@@ -162,7 +162,7 @@ export interface OAuthFlow {
 }
 
 /**
- * 测试执行参数（用于文档页面内联测试）
+ * 测试执行参数（用于Document页面内联测试）
  */
 export interface TestExecutionParams {
   path_params?: Record<string, string>;

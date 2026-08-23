@@ -1,34 +1,34 @@
 /**
- * Claw 相关类型定义
- * Claw 是一种特殊的 Agent，通过 AgentOS 代理 LLM 调用和渠道配置。
+ * Claw-related type definitions
+ * Claw is a special type of Agent，Proxies LLM calls and channel configuration through AgentOS。
  */
 
-/** Claw 类型 */
+/** Claw type */
 export type ClawType = 'openclaw' | 'zeroclaw' | 'octos' | 'claude_code' | 'codex';
 
-/** Claw 运行模式 */
+/** Claw run mode */
 export type ClawMode = 'server' | 'cli';
 
-/** Claw 状态 */
+/** Claw status */
 export type ClawStatus = 'online' | 'offline' | 'degraded' | 'unknown';
 
 
-/** 渠道代理状态 */
+/** Channel proxy status */
 export type ChannelProxyStatus = 'active' | 'inactive' | 'error';
 
-/** 渠道代理连接信息 */
+/** Channel proxy connection info */
 export interface ChannelProxyInfo {
-  /** Claw 通过此 URL 向渠道发送消息 */
+  /** Claw sends messages to channel via this URL */
   sendUrl: string;
-  /** Claw 通过此 URL 接收渠道消息（webhook 回调地址） */
+  /** Claw receives channel messages via this URL（webhook callback address） */
   receiveUrl: string;
-  /** Claw 注册的回调地址，AgentOS 将渠道消息转发到此地址 */
+  /** Claw registered callback address，AgentOS forwards channel messages to this address */
   callbackUrl?: string;
-  /** 渠道代理鉴权 Token */
+  /** Channel proxy auth token */
   proxyToken: string;
 }
 
-/** 渠道映射 */
+/** Channel mapping */
 export interface ClawChannelMapping {
   id: string;
   agentId: string;
@@ -41,21 +41,21 @@ export interface ClawChannelMapping {
   tenantId: string;
   createTime: string;
   updateTime: string;
-  /** 渠道名称 */
+  /** Channel name */
   channelName?: string;
-  /** 渠道类型 */
+  /** Channel type */
   channelType?: string;
-  /** 代理消息计数 */
+  /** Proxy message count */
   messageCount?: number;
-  /** 最后活动时间 */
+  /** Last active time */
   lastActivity?: string;
-  /** 代理连接信息 */
+  /** Proxy connection info */
   proxyInfo?: ChannelProxyInfo;
-  /** 代理状态 */
+  /** Proxy status */
   proxyStatus?: ChannelProxyStatus;
 }
 
-/** CLI 工具会话 */
+/** CLI tool session */
 export interface CliToolSession {
   id: string;
   agentId: string;
@@ -78,7 +78,7 @@ export interface CliToolSession {
   updateTime: string;
 }
 
-/** Claw 类型配置 */
+/** Claw type configuration */
 export const clawTypeConfig: Record<ClawType, {
   label: string;
   mode: ClawMode;
@@ -152,7 +152,7 @@ export const clawTypeConfig: Record<ClawType, {
   },
 };
 
-/** 渠道代理类型配置 */
+/** Channel proxy type configuration */
 export const channelProxyTypeConfig: Record<string, {
   label: string;
   icon: string;

@@ -1,5 +1,5 @@
 /**
- * 工作流列表页面
+ * Workflow列表页面
  */
 
 import { useState, useEffect } from "react";
@@ -281,7 +281,7 @@ export default function WorkflowListPage() {
   );
 }
 
-// 工作流卡片
+// Workflow卡片
 function WorkflowCard({
   workflow,
   onEdit,

@@ -1,5 +1,5 @@
 /**
- * 知识库列表页面
+ * Knowledge base列表页面
  */
 
 import { useState, useEffect } from "react";

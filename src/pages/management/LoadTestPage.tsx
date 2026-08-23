@@ -121,7 +121,7 @@ export default function LoadTestPage() {
     loadTestSets();
   }, []);
 
-  // 轮询运行中任务的状态
+  // 轮询Running任务的状态
   useEffect(() => {
     const hasRunningTask = tasks.some((t) => t.status === "running");
     if (hasRunningTask) {
@@ -522,7 +522,7 @@ export default function LoadTestPage() {
                 label="目标 URL"
                 rules={[{ required: true, message: "请输入目标 URL" }]}
               >
-                <Input placeholder="例如：https://api.example.com/v1/users" />
+                <Input placeholder="例e.g.：https://api.example.com/v1/users" />
               </Form.Item>
 
               <Row gutter={16}>

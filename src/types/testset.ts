@@ -3,10 +3,10 @@
  * 与后端 DTO 对齐
  */
 
-/** 测试用例状态 */
+/** Test case status */
 export type TestCaseStatus = "pending" | "running" | "passed" | "failed";
 
-/** 断言类型 */
+/** Assertion type */
 export type AssertionType = "exact" | "contains" | "regex" | "ai_eval" | "custom";
 
 /** 断言配置 */
@@ -30,15 +30,15 @@ export interface TestSet {
   updateTime: string;
 }
 
-/** 测试集详情 - 包含关联的测试用例 */
+/** Test set details - includes associated test cases */
 export interface TestSetDetail extends TestSet {
   cases: TestCase[];
 }
 
-/** 测试用例类型 */
+/** Test case type */
 export type TestCaseRequestType = "agent" | "http" | "workflow" | "websocket" | "sse" | "socketio";
 
-/** 测试用例 - 对应后端 TestCaseDTO */
+/** Test case - corresponds to backend TestCaseDTO */
 export interface TestCase {
   id: string;
   testSetId: string;
@@ -72,7 +72,7 @@ export interface TestCaseFormData {
   environmentId?: string;
 }
 
-/** 测试集创建/编辑表单数据 */
+/** Test set create/edit form data */
 export interface TestSetFormData {
   name: string;
   description?: string;
@@ -80,7 +80,7 @@ export interface TestSetFormData {
   categoryId?: string;
 }
 
-/** 测试分类 - 对应后端 TestCategoryDTO */
+/** Test category - corresponds to backend TestCategoryDTO */
 export interface TestCategory {
   id: string;
   name: string;
@@ -90,13 +90,13 @@ export interface TestCategory {
   updateTime: string;
 }
 
-/** 分类创建/编辑表单数据 */
+/** Category create/edit form data */
 export interface TestCategoryFormData {
   name: string;
   parentId?: string;
 }
 
-/** 测试报告 - 对应后端 TestReportDTO */
+/** Test report - corresponds to backend TestReportDTO */
 export interface TestReport {
   id: string;
   testSetId: string;
@@ -178,7 +178,7 @@ export interface TestIteration {
   response?: ResponseInfo;
 }
 
-/** 请求信息 */
+/** Request info */
 export interface RequestInfo {
   method: string;
   url: string;
@@ -186,7 +186,7 @@ export interface RequestInfo {
   body?: string;
 }
 
-/** 响应信息 */
+/** Response info */
 export interface ResponseInfo {
   statusCode: number;
   statusMessage: string;
@@ -194,7 +194,7 @@ export interface ResponseInfo {
   body: string;
 }
 
-/** 键值对 */
+/** Key-value pair */
 export interface NameValuePair {
   name: string;
   value: string;
@@ -202,19 +202,19 @@ export interface NameValuePair {
 
 // ==================== HTTP请求相关类型 ====================
 
-/** HTTP方法 */
+/** HTTP method */
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
 
-/** 认证类型 */
+/** Authentication type */
 export type AuthType = "none" | "bearer" | "api_key" | "basic" | "oauth2";
 
-/** 请求体类型 */
+/** Request body type */
 export type BodyType = "none" | "form_data" | "x_www_form_urlencoded" | "raw" | "binary";
 
-/** Raw类型 */
+/** Raw type */
 export type RawContentType = "text/plain" | "application/json" | "application/xml" | "text/html" | "text/javascript";
 
-/** 键值对 */
+/** Key-value pair */
 export interface KeyValue {
   key: string;
   value: string;
@@ -222,7 +222,7 @@ export interface KeyValue {
   enabled?: boolean;
 }
 
-/** HTTP请求配置 */
+/** HTTP request configuration */
 export interface HttpRequestConfig {
   url: string;
   method: HttpMethod;
@@ -243,7 +243,7 @@ export interface HttpRequestConfig {
   timeout?: number;
 }
 
-/** HTTP响应 */
+/** HTTP response */
 export interface HttpResponse {
   statusCode: number;
   statusMessage: string;
@@ -252,7 +252,7 @@ export interface HttpResponse {
   responseTime: number;
 }
 
-/** WebSocket请求配置 */
+/** WebSocket request configuration */
 export interface WebSocketRequestConfig {
   url: string;
   protocols?: string[];
@@ -268,7 +268,7 @@ export interface WebSocketRequestConfig {
   timeout?: number;
 }
 
-/** SSE请求配置 */
+/** SSE request configuration */
 export interface SSERequestConfig {
   url: string;
   headers?: KeyValue[];
@@ -279,7 +279,7 @@ export interface SSERequestConfig {
   }>;
 }
 
-/** Socket.IO请求配置 */
+/** Socket.IO request configuration */
 export interface SocketIORequestConfig {
   url: string;
   namespace?: string;
@@ -292,14 +292,14 @@ export interface SocketIORequestConfig {
   timeout?: number;
 }
 
-/** 工作流请求配置 */
+/** Workflow request configuration */
 export interface WorkflowRequestConfig {
   workflowId: string;
   inputMapping?: Record<string, string>;
   expectedOutput?: Record<string, unknown>;
 }
 
-/** 环境变量 */
+/** Environment variable */
 export interface Environment {
   id: string;
   name: string;
@@ -311,7 +311,7 @@ export interface Environment {
   updateTime: string;
 }
 
-/** 环境变量项 */
+/** Environment variable item */
 export interface EnvironmentVariable {
   key: string;
   value: string;
@@ -320,7 +320,7 @@ export interface EnvironmentVariable {
   type?: "string" | "number" | "boolean" | "json";
 }
 
-/** 环境变量表单数据 */
+/** Environment variable form data */
 export interface EnvironmentFormData {
   name: string;
   description?: string;
@@ -328,7 +328,7 @@ export interface EnvironmentFormData {
   isGlobal?: boolean;
 }
 
-/** 环境变量创建数据 */
+/** Environment variable create data */
 export interface EnvironmentCreateData {
   name: string;
   description?: string;
@@ -336,10 +336,10 @@ export interface EnvironmentCreateData {
   isGlobal?: boolean;
 }
 
-/** 脚本类型 */
+/** Script type */
 export type ScriptType = "pre_request" | "test";
 
-/** 脚本配置 */
+/** Script configuration */
 export interface Script {
   id: string;
   type: ScriptType;
@@ -350,16 +350,16 @@ export interface Script {
   updateTime: string;
 }
 
-/** 测试用例脚本关联 */
+/** Test case script association */
 export interface TestCaseScript {
   testCaseId: string;
   preRequestScript?: string;
   testScript?: string;
 }
 
-/** 脚本执行上下文 - 类似Postman的pm对象 */
+/** Script execution context - similar to Postman pm object */
 export interface ScriptContext {
-  // 环境变量
+  // Environment variable
   environment: {
     get: (key: string) => string | undefined;
     set: (key: string, value: string) => void;
@@ -382,7 +382,7 @@ export interface ScriptContext {
     headers: Record<string, string>;
     body?: unknown;
   };
-  // 响应数据（仅在后置脚本中可用）
+  // Response data（仅在后置脚本中可用）
   response?: {
     statusCode: number;
     statusMessage: string;
@@ -404,7 +404,7 @@ export interface ScriptContext {
   };
 }
 
-/** 脚本执行结果 */
+/** Script execution result */
 export interface ScriptExecutionResult {
   success: boolean;
   error?: string;
@@ -417,10 +417,10 @@ export interface ScriptExecutionResult {
   environmentChanges?: Array<{ key: string; value: string; action: "set" | "unset" }>;
 }
 
-/** 数据驱动测试数据源类型 */
+/** Data-driven test data source type */
 export type DataSourceType = "csv" | "json" | "excel";
 
-/** 数据驱动测试配置 */
+/** Data-driven test configuration */
 export interface DataDrivenTestConfig {
   id: string;
   testCaseId: string;
@@ -429,17 +429,17 @@ export interface DataDrivenTestConfig {
   dataSourceData: string; // 文件内容或内联数据
   variableMapping: Record<string, string>; // 数据列到变量名的映射
   enabled: boolean;
-  iterateCount?: number; // 迭代次数，默认为数据行数
+  iterateCount?: number; // 迭代次数，默认为Data row数
 }
 
-/** 数据行 */
+/** Data row */
 export interface DataRow {
   index: number;
   data: Record<string, string>;
   variables: Record<string, string>; // 应用映射后的变量
 }
 
-/** 数据驱动测试执行结果 */
+/** Data-driven test execution result */
 export interface DataDrivenTestResult {
   testCaseId: string;
   totalIterations: number;

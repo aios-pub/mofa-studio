@@ -54,7 +54,7 @@ const MENU_HEIGHT = 380;
 const MENU_GAP = 12;
 const EDGE_PEEK = 32;
 
-// ✅ 闲置气泡的触发间隔范围（毫秒）
+// ✅ 闲置气泡的触发间隔范围（milliseconds）
 const IDLE_BUBBLE_MIN_INTERVAL = 15000;
 const IDLE_BUBBLE_MAX_INTERVAL = 45000;
 
@@ -170,7 +170,7 @@ export default function FloatingApp() {
   const stateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const idleBubbleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ✅ 用 ref 追踪 expanded 状态，避免 showBubbleMessage 依赖 expanded 导致连锁重建
+  // ✅ 用 ref Tracing expanded 状态，避免 showBubbleMessage 依赖 expanded 导致连锁重建
   const expandedRef = useRef(expanded);
   useEffect(() => {
     expandedRef.current = expanded;
@@ -520,7 +520,7 @@ export default function FloatingApp() {
       if (isMouseDownRef.current && !isDraggingRef.current) {
         isDraggingRef.current = true;
         setPetState("dragging");
-        // ✅ 拖拽时显示 dragging 消息
+        // ✅ 拖拽时显示 dragging Messages
         showBubbleMessage(getRandomMessage("dragging"), 3000);
         void appWindow.startDragging();
       }
@@ -544,7 +544,7 @@ export default function FloatingApp() {
       }
       isDraggingRef.current = true;
       setPetState("dragging");
-      // ✅ 拖拽时显示 dragging 消息
+      // ✅ 拖拽时显示 dragging Messages
       showBubbleMessage(getRandomMessage("dragging"), 3000);
       void appWindow.startDragging();
     }
@@ -797,7 +797,7 @@ export default function FloatingApp() {
         onContextMenu={handleContextMenu}
         aria-label={expanded ? "收起菜单" : "展开菜单"}
       >
-        <img src="/claw512.png" alt="AMOS" />
+        <img src="/mofa512.png" alt="mofa-studio" />
 
         <div className="pet-effects">
           {particles.map((p) => (
@@ -829,9 +829,9 @@ export default function FloatingApp() {
         >
           <div className="floating-menu-header">
             <div className="floating-menu-title">
-              <img src="/claw512.png" alt="AMOS" />
+              <img src="/mofa512.png" alt="mofa-studio" />
               <div>
-                <div className="floating-menu-name">AMOS</div>
+                <div className="floating-menu-name">mofa-studio</div>
                 <div className="floating-menu-subtitle">你的桌面伙伴</div>
               </div>
             </div>

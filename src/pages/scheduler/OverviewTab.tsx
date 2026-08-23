@@ -1,6 +1,6 @@
 /**
  * 概览仪表盘 Tab
- * 参考 apalis-board Home 页面：统计卡片(含迷你柱状图) + 任务类型卡片(活动图)
+ * 参考 apalis-board Home 页面：统计卡片(含迷你Bar chart) + 任务类型卡片(活动图)
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -58,7 +58,7 @@ function groupExecutionsByDay(
   return result;
 }
 
-// 迷你柱状图组件（参考 apalis-board stats_card / queue_card 活动图）
+// 迷你Bar chart组件（参考 apalis-board stats_card / queue_card 活动图）
 function MiniBarChart({
   data,
   height = "h-8",

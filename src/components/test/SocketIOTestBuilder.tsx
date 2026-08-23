@@ -180,7 +180,7 @@ export function SocketIOTestBuilder({
       // 尝试解析为JSON
       data = inputData ? JSON.parse(inputData) : {};
     } catch {
-      // 如果不是JSON，使用原始字符串
+      // e.g.果不是JSON，使用原始字符串
     }
 
     if (socketRef.current) {
@@ -312,7 +312,7 @@ export function SocketIOTestBuilder({
         </div>
       </Card>
 
-      {/* 消息区域 */}
+      {/* Messages区域 */}
       <Card title="消息" size="small">
         <Tabs
           defaultActiveKey="messages"

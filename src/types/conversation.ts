@@ -2,13 +2,13 @@
  * 对话相关类型定义
  */
 
-/** 消息角色 */
+/** Messages角色 */
 export type MessageRole = 'user' | 'assistant' | 'system';
 
-/** 消息状态 */
+/** Message status */
 export type MessageStatus = 'pending' | 'streaming' | 'completed' | 'error';
 
-/** 工具调用结果 */
+/** Tool call结果 */
 export interface ToolCall {
   id: string;
   name: string;
@@ -19,13 +19,13 @@ export interface ToolCall {
   endTime?: Date;
 }
 
-/** 思考过程 */
+/** Thinking process */
 export interface ThinkingProcess {
   content: string;
   duration?: number;
 }
 
-/** 消息附件 */
+/** Messages附件 */
 export interface MessageAttachment {
   id: string;
   name: string;
@@ -35,7 +35,7 @@ export interface MessageAttachment {
   file?: File;
 }
 
-/** 消息 */
+/** Messages */
 export interface Message {
   id: string;
   conversationId: string;

@@ -1,7 +1,7 @@
 /**
  * 模型选择步骤组件
  * 用于创建 Provider 后选择要启用的模型
- * 支持模糊搜索、全选/取消全选、添加自定义模型
+ * 支持模糊搜索、全选/取消全选、添加Custom模型
  */
 
 import React, { useState, useMemo } from "react";
@@ -191,7 +191,7 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
         )}
       </div>
 
-      {/* 添加自定义模型弹窗 */}
+      {/* 添加Custom模型弹窗 */}
       <Modal
         title="添加自定义模型"
         open={showAddCustom}

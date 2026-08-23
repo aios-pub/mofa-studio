@@ -4,7 +4,7 @@
 
 import type { Conversation, Message } from '../../types';
 
-// Mock 消息
+// Mock Messages
 const createMockMessages = (conversationId: string): Message[] => [
   {
     id: `${conversationId}-msg-1`,
@@ -42,7 +42,7 @@ const createMockMessages = (conversationId: string): Message[] => [
   },
 ];
 
-// Mock 会话列表
+// Mock Conversation list
 export const mockConversations: Conversation[] = [
   {
     id: 'conv-1',
@@ -153,14 +153,14 @@ export const conversationApi = {
     return mockConversations.find((c) => c.id === id);
   },
 
-  // 获取会话消息
+  // Get conversationMessages
   async getMessages(conversationId: string): Promise<Message[]> {
     await delay(200);
     const conversation = mockConversations.find((c) => c.id === conversationId);
     return conversation?.messages || [];
   },
 
-  // 创建会话
+  // Create conversation
   async create(data: { agentId: string; title?: string }): Promise<Conversation> {
     await delay(500);
     const newConversation: Conversation = {
@@ -176,7 +176,7 @@ export const conversationApi = {
     return newConversation;
   },
 
-  // 更新会话
+  // Update conversation
   async update(id: string, data: Partial<Conversation>): Promise<Conversation> {
     await delay(300);
     const idx = mockConversations.findIndex((c) => c.id === id);
@@ -185,7 +185,7 @@ export const conversationApi = {
     return mockConversations[idx];
   },
 
-  // 删除会话
+  // Delete conversation
   async delete(id: string): Promise<boolean> {
     await delay(300);
     const idx = mockConversations.findIndex((c) => c.id === id);
@@ -194,7 +194,7 @@ export const conversationApi = {
     return true;
   },
 
-  // 发送消息
+  // Send message
   async sendMessage(
     conversationId: string,
     content: string

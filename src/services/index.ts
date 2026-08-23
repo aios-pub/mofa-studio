@@ -1,10 +1,10 @@
 /**
- * 统一服务入口
- * 根据 enableMock 配置自动切换 mock 和真实 API
+ * Unified service entry
+ * Switch between mock and real API automatically based on enableMock
  */
 
-// 导出所有智能服务（自动切换 mock/real）
+// Export all services (auto mock/real switching)
 export * from "./service";
 
-// 导出 API 客户端
+// Export API client
 export * from "./api";

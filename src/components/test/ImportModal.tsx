@@ -1,6 +1,6 @@
 /**
- * 导入弹窗组件
- * 支持导入Postman Collection和OpenAPI格式的测试集
+ * Import modal component
+ * Supports importing Postman Collection and OpenAPI test sets
  */
 
 import { useState } from "react";
@@ -125,7 +125,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
 
   const parseCollection = (type: "postman" | "openapi", content: any): ParsedCollection => {
     if (type === "postman") {
-      // Postman Collection v2.1格式
+      // Postman Collection v2.1 format
       const info = content.info || {};
       const items = content.item || [];
 
@@ -159,12 +159,12 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
 
       items.forEach((item: any) => {
         if (item.item && !item.request) {
-          // 这是一个文件夹
+          // This is a folder
           const testSet = parseFolder(item);
           testSets.push(testSet);
           totalRequests += testSet.requestCount;
         } else if (item.request) {
-          // 这是一个独立请求
+          // This is a standalone request
           testSets.push({
             name: "默认分组",
             requestCount: 1,
@@ -186,7 +186,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
         totalRequests,
       };
     } else {
-      // OpenAPI 3.0格式
+      // OpenAPI 3.0 format
       const info = content.info || {};
       const paths = content.paths || {};
 
@@ -231,24 +231,24 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
       return null;
     }
 
-    // 简单提取方法和 URL
+    // Simply extract method and URL
     let method = "GET";
     let url = "";
 
     const args = trimmed.substring(4).trim();
 
-    // 匹配 -X METHOD 或 --request METHOD
+    // Match -X METHOD or --request METHOD
     const methodMatch = args.match(/(?:-X\s+|--request\s+)(\w+)/i);
     if (methodMatch) {
       method = methodMatch[1].toUpperCase();
     }
 
-    // 匹配 URL (以 http 开头的不在引号内的内容)
+    // Match URL (unquoted content starting with http)
     const urlMatch = args.match(/(https?:\/\/[^\s'"]+)/i);
     if (urlMatch) {
       url = urlMatch[1];
     } else {
-      // 尝试匹配引号内的 URL
+      // Try matching a quoted URL
       const quotedUrlMatch = args.match(/['"](https?:\/\/[^'"]+)['"]/i);
       if (quotedUrlMatch) {
         url = quotedUrlMatch[1];
@@ -370,7 +370,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
       }
     >
       <div className="space-y-4">
-        {/* 格式选择 */}
+        {/* Format selection */}
         <div>
           <Text strong>导入格式</Text>
           <Select
@@ -413,7 +413,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
           />
         </div>
 
-        {/* 输入区域：文件上传或 cURL 文本 */}
+        {/* Input area: file upload or cURL text */}
         {format === "curl" ? (
           <div className="space-y-4">
             <div>
@@ -421,11 +421,11 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
               <div className="mt-1">
                 <Input.TextArea
                   rows={6}
-                  placeholder="在此粘贴 cURL 命令...&#10;例e.g.: curl -X POST https://api.example.com/users -H 'Content-Type: application/json' -d '{&quot;name&quot;:&quot;test&quot;}'"
+                  placeholder="在此粘贴 cURL 命令...&#10;例如: curl -X POST https://api.example.com/users -H 'Content-Type: application/json' -d '{&quot;name&quot;:&quot;test&quot;}'"
                   value={curlCommand}
                   onChange={(e) => {
                     setCurlCommand(e.target.value);
-                    // 实时解析
+                    // Real-time parsing
                     const parsed = parseCurlCommand(e.target.value);
                     if (parsed) {
                       setParsedData({
@@ -447,7 +447,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
               </div>
             </div>
 
-            {/* 测试集选择 */}
+            {/* Test set selection */}
             {existingTestSets.length > 0 && (
               <div>
                 <Text strong>导入到</Text>
@@ -489,7 +489,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
           </div>
         )}
 
-        {/* 解析结果 */}
+        {/* Parse result */}
         {parsedData && (
           <>
             <Alert
@@ -560,7 +560,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
           </>
         )}
 
-        {/* 导入选项 */}
+        {/* Import options */}
         {parsedData && (
           <>
             <Divider />
@@ -612,7 +612,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
           </>
         )}
 
-        {/* 导入进度 */}
+        {/* Import progress */}
         {importing && (
           <>
             <Divider />

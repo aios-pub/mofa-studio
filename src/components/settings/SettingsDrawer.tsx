@@ -1,5 +1,5 @@
 /**
- * 设置Drawer组件
+ * Settings drawer component
  */
 
 import { useTranslation } from "react-i18next";
@@ -37,7 +37,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
 
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // 全屏切换
+  // Toggle fullscreen
   const toggleFullScreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
@@ -67,7 +67,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
 
   const handleColorChange = (color: ThemeColorPresets) => {
     setSettings({ ...settings, themeColorPresets: color });
-    // 更新 CSS 变量
+    // Update CSS variables
     const root = document.documentElement;
     const colors = themeColorPresetsMap[color];
     root.style.setProperty("--color-primary", colors.default);
@@ -82,17 +82,17 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
     setSettings({ ...settings, [key]: !settings[key] });
   };
 
-  // 布局背景色
+  // Layout background color
   const getLayoutBg = (layout: ThemeLayout) => {
     return settings.themeLayout === layout
       ? themeColorPresetsMap[settings.themeColorPresets].default
       : "#919EAB";
   };
 
-  // Theme色
+  // Theme color
   const primaryColor = themeColorPresetsMap[settings.themeColorPresets].default;
 
-  // Drawer内容背景样式 - 模糊效果
+  // Drawer content background style - blur effect
   const drawerContentStyle: CSSProperties = {
     backdropFilter: "blur(20px)",
   };
@@ -244,7 +244,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
             </h4>
 
             <div className="grid grid-cols-3 gap-3">
-              {/* 垂直布局 */}
+              {/* Vertical layout */}
               <Card
                 hoverable
                 className={`cursor-pointer p-2 transition-all duration-200 ${
@@ -290,7 +290,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
                 </div>
               </Card>
 
-              {/* 迷你布局 */}
+              {/* Mini layout */}
               <Card
                 hoverable
                 className={`cursor-pointer p-2 transition-all duration-200 ${
@@ -334,7 +334,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
                 </div>
               </Card>
 
-              {/* 水平布局 */}
+              {/* Horizontal layout */}
               <Card
                 hoverable
                 className={`cursor-pointer p-2 transition-all duration-200 ${
@@ -400,7 +400,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
             </div>
           </section>
 
-          {/* Theme颜色 */}
+          {/* Theme colors */}
           <section className="flex flex-col gap-3">
             <h4 className="text-sm font-semibold text-[var(--color-text-primary)] m-0">
               {t("settings.presetThemes", "预设主题")}
@@ -458,7 +458,7 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
             </div>
           </section>
 
-          {/* 页面配置 */}
+          {/* Page configuration */}
           <section className="flex flex-col gap-3">
             <h4 className="text-sm font-semibold text-[var(--color-text-primary)] m-0">
               {t("settings.page", "页面配置")}

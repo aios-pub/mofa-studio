@@ -1,10 +1,10 @@
 /**
- * Mock 通知数据
+ * Mock notification data
  */
 
 import type { NotificationItem, NotificationGroup } from '@/types/notification';
 
-// 生成随机时间
+// Generate random time
 function randomTime(hoursAgo: number): string {
   const now = new Date();
   const randomHours = Math.floor(Math.random() * hoursAgo);
@@ -12,7 +12,7 @@ function randomTime(hoursAgo: number): string {
   return now.toISOString();
 }
 
-// Mock 通知数据
+// Mock notification data
 export const mockNotifications: NotificationItem[] = [
   {
     id: '1',
@@ -85,7 +85,7 @@ export const mockNotifications: NotificationItem[] = [
   },
 ];
 
-// 按日期分组
+// Group by date
 export function groupNotificationsByDate(
   notifications: NotificationItem[]
 ): NotificationGroup[] {
@@ -142,14 +142,14 @@ export function groupNotificationsByDate(
   return result;
 }
 
-// 模拟 API 获取通知
+// Mock API: get notifications
 export async function fetchNotifications(): Promise<NotificationItem[]> {
-  // 模拟网络延迟
+  // Simulate network latency
   await new Promise((resolve) => setTimeout(resolve, 500));
   return mockNotifications;
 }
 
-// 模拟 API 标记已读
+// Mock API: mark as read
 export async function markNotificationAsRead(id: string): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 200));
   const notification = mockNotifications.find((n) => n.id === id);
@@ -158,7 +158,7 @@ export async function markNotificationAsRead(id: string): Promise<void> {
   }
 }
 
-// 模拟 API 全部标记已读
+// Mock API: mark all as read
 export async function markAllNotificationsAsRead(): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 300));
   mockNotifications.forEach((n) => {
@@ -166,7 +166,7 @@ export async function markAllNotificationsAsRead(): Promise<void> {
   });
 }
 
-// 模拟 API 删除通知
+// Mock API: delete notification
 export async function deleteNotification(id: string): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 200));
   const index = mockNotifications.findIndex((n) => n.id === id);
@@ -175,12 +175,12 @@ export async function deleteNotification(id: string): Promise<void> {
   }
 }
 
-// 获取未读数量
+// Get unread count
 export function getUnreadCount(notifications: NotificationItem[]): number {
   return notifications.filter((n) => !n.read).length;
 }
 
-// 导出为 API 对象格式
+// Export as API object format
 export const notificationApi = {
   fetchNotifications,
   markNotificationAsRead,

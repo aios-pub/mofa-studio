@@ -1,5 +1,5 @@
 /**
- * 复制到剪贴板 Hook
+ * Copy to clipboard hook
  */
 
 import { useState, useCallback } from "react";
@@ -7,33 +7,33 @@ import { message } from "antd";
 import { copyToClipboard } from "@/utils";
 
 export interface UseCopyToClipboardOptions {
-  /** 成功提示文字 */
+  /** Success hint text */
   successText?: string;
-  /** Failed提示文字 */
+  /** Failure hint text */
   errorText?: string;
-  /** 是否显示提示 */
+  /** Whether to show hints */
   showMessage?: boolean;
-  /** 复制成功回调 */
+  /** Copy success callback */
   onSuccess?: () => void;
-  /** 复制Failed回调 */
+  /** Copy failure callback */
   onError?: () => void;
 }
 
 export interface UseCopyToClipboardReturn {
-  /** 复制状态 */
+  /** Copy state */
   copied: boolean;
-  /** 正在复制中 */
+  /** Copying */
   copying: boolean;
-  /** 复制函数 */
+  /** Copy function */
   copy: (text: string) => Promise<void>;
-  /** 重置状态 */
+  /** Reset state */
   reset: () => void;
 }
 
 /**
- * 复制到剪贴板 Hook
+ * Copy to clipboard hook
  * @param options Configuration options
- * @returns 复制函数和状态
+ * @returns Copy function and state
  */
 export function useCopyToClipboard(
   options: UseCopyToClipboardOptions = {},
@@ -63,7 +63,7 @@ export function useCopyToClipboard(
           }
           onSuccess?.();
 
-          // 自动重置状态
+          // Auto-reset state
           setTimeout(() => {
             setCopied(false);
           }, 2000);

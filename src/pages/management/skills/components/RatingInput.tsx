@@ -1,5 +1,5 @@
 /**
- * 评分输入组件
+ * Rating input component
  */
 
 import { Rate, Space, Typography, Tooltip } from 'antd';

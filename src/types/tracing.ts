@@ -1,6 +1,6 @@
 /**
- * Tracing 相关类型定义
- * 与后端 API response格式保持一致 (snake_case)
+ * Tracing-related type definitions
+ * Consistent with backend API response format (snake_case)
  */
 
 export interface SpanEvent {
@@ -72,7 +72,7 @@ export interface TracingStats {
   error_rate: number;
 }
 
-// API response包装
+// API response wrapper
 export interface TracingListResponse {
   data: Trace[];
   total: number;

@@ -1,5 +1,5 @@
 /**
- * 统计分析页面
+ * Analytics page
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -28,7 +28,7 @@ import type {
 } from "@/services";
 import { analyticsApi } from "@/services";
 
-// 日期范围选项
+// Date range options
 const dateRangeOptions = [
   { value: "today", label: "今天" },
   { value: "yesterday", label: "昨天" },
@@ -37,7 +37,7 @@ const dateRangeOptions = [
   { value: "custom", label: "自定义" },
 ];
 
-// 获取日期范围
+// Get date range
 const getDateRange = (
   option: string,
 ): { start_date: string; end_date: string } => {
@@ -84,7 +84,7 @@ export default function AnalyticsPage() {
     "overview",
   );
 
-  // 筛选状态
+  // Filter state
   const [dateRangeOption, setDateRangeOption] = useState("30days");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
@@ -166,7 +166,7 @@ export default function AnalyticsPage() {
     return `$${num.toFixed(2)}`;
   };
 
-  // 计算趋势（简单计算最近7天对比前7天）
+  // Compute trend (simple: last 7 days vs previous 7 days)
   const calculateTrend = (data: DailyStats[], key: keyof DailyStats) => {
     if (data.length < 14) return 0;
     const recent = data
@@ -191,7 +191,7 @@ export default function AnalyticsPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* 头部 */}
+      {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-(--color-border)">
         <div>
           <h1 className="text-xl font-semibold text-[var(--color-text-primary)]">
@@ -245,7 +245,7 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* 筛选器 */}
+      {/* Filters */}
       {showFilters && (
         <div className="p-4 bg-[var(--color-bg-secondary)] border-b border-(--color-border)">
           <div className="flex items-center gap-4">
@@ -288,7 +288,7 @@ export default function AnalyticsPage() {
         </div>
       )}
 
-      {/* Label栏 */}
+      {/* Tabs bar */}
       <div className="flex gap-1 px-6 border-b border-(--color-border)">
         {[
           { key: "overview", label: "使用概览", icon: BarChartOutlined },
@@ -313,7 +313,7 @@ export default function AnalyticsPage() {
         })}
       </div>
 
-      {/* 内容区 */}
+      {/* Content area */}
       <div className="flex-1 overflow-y-auto p-6">
         {loading ? (
           <div className="flex items-center justify-center h-64">
@@ -346,7 +346,7 @@ export default function AnalyticsPage() {
   );
 }
 
-// 概览Tabs
+// Overview tabs
 function OverviewTab({
   stats,
   dailyStats,
@@ -372,7 +372,7 @@ function OverviewTab({
 
   return (
     <div className="space-y-6">
-      {/* 统计卡片 */}
+      {/* Statistics cards */}
       <div className="grid grid-cols-4 gap-4">
         <StatCard
           icon={MessageOutlined}
@@ -405,7 +405,7 @@ function OverviewTab({
         />
       </div>
 
-      {/* 趋势图表 */}
+      {/* Trend chart */}
       <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
         <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-4">
           使用趋势
@@ -434,7 +434,7 @@ function OverviewTab({
         </div>
       </div>
 
-      {/* 小时分布Heatmap */}
+      {/* Hourly distribution heatmap */}
       <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
         <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-4">
           24小时使用分布
@@ -466,7 +466,7 @@ function OverviewTab({
   );
 }
 
-// Agent 统计Tabs
+// Agent statistics tabs
 function AgentsTab({
   stats,
   formatNumber,
@@ -480,7 +480,7 @@ function AgentsTab({
 
   return (
     <div className="space-y-4">
-      {/* Agent 排行榜 */}
+      {/* Agent leaderboard */}
       <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
         <div className="p-3 border-b border-(--color-border)">
           <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
@@ -541,7 +541,7 @@ function AgentsTab({
   );
 }
 
-// 用户统计Tabs
+// User statistics tabs
 function UsersTab({
   stats,
   formatNumber,
@@ -551,7 +551,7 @@ function UsersTab({
 }) {
   const maxConversations = Math.max(...stats.map((s) => s.conversations));
 
-  // 按部门分组
+  // Group by department
   const departmentStats = stats.reduce(
     (acc, user) => {
       if (!acc[user.department]) {
@@ -570,7 +570,7 @@ function UsersTab({
 
   return (
     <div className="space-y-6">
-      {/* 部门统计 */}
+      {/* Department statistics */}
       <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
         <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-4">
           部门使用统计
@@ -592,7 +592,7 @@ function UsersTab({
         </div>
       </div>
 
-      {/* 用户排行 */}
+      {/* User leaderboard */}
       <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
         <div className="p-3 border-b border-(--color-border)">
           <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
@@ -679,7 +679,7 @@ function UsersTab({
   );
 }
 
-// 统计卡片组件
+// Statistics card component
 function StatCard({
   icon: Icon,
   label,

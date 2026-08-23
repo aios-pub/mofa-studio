@@ -1,18 +1,18 @@
 /**
- * Resource Management Mock 数据和 API
+ * Resource management mock data and API
  */
 
-// API 密钥状态
+// API key status
 export type ApiKeyStatus = 'active' | 'expired' | 'revoked';
 
-// API 密钥
+// API key
 export interface ApiKey {
   id: string;
   name: string;
   provider_id: string;
   provider_name: string | null;
-  keyPrefix: string; // 打码前缀，e.g. "sk-abc...xyz"
-  fullKey: string; // 完整密钥，后端返回
+  keyPrefix: string; // masked prefix, e.g. "sk-abc...xyz"
+  fullKey: string; // full key returned by backend
   status: ApiKeyStatus;
   createdAt: Date;
   expiresAt?: Date;
@@ -22,7 +22,7 @@ export interface ApiKey {
   description?: string;
 }
 
-// 资源配额
+// Resource quotas
 export interface ResourceQuota {
   id: string;
   name: string;
@@ -35,15 +35,15 @@ export interface ResourceQuota {
   resetAt: Date;
 }
 
-// 配额限制
+// Quota limits
 export interface QuotaLimits {
   maxTokens: number;
   maxRequests: number;
   maxConversations: number;
-  maxCost: number; // 金额，单位：元
+  maxCost: number; // amount in CNY
 }
 
-// 配额使用情况
+// Quota usage
 export interface QuotaUsage {
   tokens: number;
   requests: number;
@@ -51,7 +51,7 @@ export interface QuotaUsage {
   cost: number;
 }
 
-// 资源使用统计
+// Resource usage statistics
 export interface ResourceUsageStats {
   totalTokens: number;
   totalRequests: number;
@@ -67,7 +67,7 @@ export interface ResourceUsageStats {
   }>;
 }
 
-// Provider 选项
+// Provider options
 export const providerOptions = [
   { value: 'openai', label: 'OpenAI', prefix: 'sk-' },
   { value: 'anthropic', label: 'Claude (Anthropic)', prefix: 'sk-ant-' },
@@ -78,7 +78,7 @@ export const providerOptions = [
   { value: 'deleted-provider-id', label: '已删除的 Provider', prefix: '' },
 ];
 
-// Mock API 密钥数据
+// Mock API key data
 const generateMockApiKeys = (): ApiKey[] => {
   const keys: ApiKey[] = [
     {
@@ -171,7 +171,7 @@ const generateMockApiKeys = (): ApiKey[] => {
   return keys;
 };
 
-// Mock 资源配额数据
+// Mock resource quota data
 const generateMockQuotas = (): ResourceQuota[] => {
   const quotas: ResourceQuota[] = [
     {
@@ -261,7 +261,7 @@ const generateMockQuotas = (): ResourceQuota[] => {
   return quotas;
 };
 
-// Mock 资源使用统计
+// Mock resource usage statistics
 const generateMockUsageStats = (): ResourceUsageStats => {
   const dailyUsage = [];
   const now = Date.now();
@@ -305,7 +305,7 @@ const generateMockUsageStats = (): ResourceUsageStats => {
 let mockApiKeys: ApiKey[] = [];
 let mockQuotas: ResourceQuota[] = [];
 
-// 初始化
+// Initialization
 const initData = () => {
   if (mockApiKeys.length === 0) {
     mockApiKeys = generateMockApiKeys();
@@ -313,10 +313,10 @@ const initData = () => {
   }
 };
 
-// 模拟延迟
+// Simulated latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// 生成随机 API Key
+// Generate random API key
 function generateApiKey(prefix: string): string {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let key = prefix;
@@ -326,7 +326,7 @@ function generateApiKey(prefix: string): string {
   return key;
 }
 
-// 获取 Key 前缀显示
+// Get key prefix display
 function getKeyPrefix(fullKey: string): string {
   if (fullKey.length <= 12) return fullKey;
   return fullKey.substring(0, 8) + '...' + fullKey.substring(fullKey.length - 4);
@@ -334,9 +334,9 @@ function getKeyPrefix(fullKey: string): string {
 
 // Resource Management API Mock
 export const resourceApi = {
-  // ============ API 密钥管理 ============
+  // ============ API key management ============
 
-  // 获取 API 密钥列表
+  // Get API key list
   async getApiKeys(filter?: {
     provider?: string;
     status?: ApiKeyStatus;
@@ -365,14 +365,14 @@ export const resourceApi = {
     return keys;
   },
 
-  // 获取单个 API 密钥
+  // Get a single API key
   async getApiKey(id: string): Promise<ApiKey | undefined> {
     await delay(200);
     initData();
     return mockApiKeys.find((k) => k.id === id);
   },
 
-  // 创建 API 密钥
+  // Create API key
   async createApiKey(data: {
     name: string;
     provider_id: string;
@@ -407,7 +407,7 @@ export const resourceApi = {
     return apiKey;
   },
 
-  // 更新 API 密钥
+  // Update API key
   async updateApiKey(id: string, data: Partial<ApiKey>): Promise<ApiKey | undefined> {
     await delay(300);
     initData();
@@ -415,7 +415,7 @@ export const resourceApi = {
     const index = mockApiKeys.findIndex((k) => k.id === id);
     if (index === -1) return undefined;
 
-    // e.g.果更新了 provider_id，需要同时更新 provider_name
+    // If provider_id changed, update provider_name as well
     let providerName = mockApiKeys[index].provider_name;
     if (data.provider_id) {
       const provider = providerOptions.find((p) => p.value === data.provider_id);
@@ -431,7 +431,7 @@ export const resourceApi = {
     return mockApiKeys[index];
   },
 
-  // 撤销 API 密钥
+  // Revoke API key
   async revokeApiKey(id: string): Promise<ApiKey | undefined> {
     await delay(200);
     initData();
@@ -443,7 +443,7 @@ export const resourceApi = {
     return key;
   },
 
-  // 删除 API 密钥
+  // Delete API key
   async deleteApiKey(id: string): Promise<boolean> {
     await delay(200);
     initData();
@@ -455,7 +455,7 @@ export const resourceApi = {
     return true;
   },
 
-  // 验证 API 密钥
+  // Validate API key
   async validateApiKey(id: string): Promise<{ valid: boolean; message: string }> {
     await delay(500);
     initData();
@@ -474,9 +474,9 @@ export const resourceApi = {
     return { valid: true, message: '密钥有效' };
   },
 
-  // ============ 资源配额管理 ============
+  // ============ Resource quota management ============
 
-  // 获取配额列表
+  // Get quota list
   async getQuotas(filter?: {
     targetType?: 'global' | 'user' | 'department' | 'agent';
   }): Promise<ResourceQuota[]> {
@@ -492,14 +492,14 @@ export const resourceApi = {
     return quotas;
   },
 
-  // 获取单个配额
+  // Get a single quota
   async getQuota(id: string): Promise<ResourceQuota | undefined> {
     await delay(200);
     initData();
     return mockQuotas.find((q) => q.id === id);
   },
 
-  // 更新配额
+  // Update quota
   async updateQuota(id: string, data: Partial<QuotaLimits>): Promise<ResourceQuota | undefined> {
     await delay(300);
     initData();
@@ -515,7 +515,7 @@ export const resourceApi = {
     return quota;
   },
 
-  // 创建配额
+  // Create quota
   async createQuota(data: {
     name: string;
     targetType: 'global' | 'user' | 'department' | 'agent';
@@ -548,7 +548,7 @@ export const resourceApi = {
     return quota;
   },
 
-  // 删除配额
+  // Delete quota
   async deleteQuota(id: string): Promise<boolean> {
     await delay(200);
     initData();
@@ -560,20 +560,20 @@ export const resourceApi = {
     return true;
   },
 
-  // ============ 资源使用统计 ============
+  // ============ Resource usage statistics ============
 
-  // 获取使用统计
+  // Get usage statistics
   async getUsageStats(_filter?: {
     startDate?: string;
     endDate?: string;
     provider?: string;
   }): Promise<ResourceUsageStats> {
     await delay(300);
-    // 简化处理，实际应根据筛选条件过滤
+    // Simplified; should actually filter by conditions
     return generateMockUsageStats();
   },
 
-  // 获取配额使用概览
+  // Get quota usage overview
   async getQuotaOverview(): Promise<{
     global: ResourceQuota | null;
     topUsers: Array<{ name: string; usage: number; limit: number }>;

@@ -1,8 +1,8 @@
 /**
- * Audit Logs Mock 数据和 API
+ * Audit logs mock data and API
  */
 
-// 审计日志类型
+// Audit log types
 export interface AuditLog {
   id: string;
   timestamp: Date;
@@ -19,7 +19,7 @@ export interface AuditLog {
   metadata?: Record<string, unknown>;
 }
 
-// 审计操作类型
+// Audit action types
 export type AuditAction =
   | 'login'
   | 'logout'
@@ -32,7 +32,7 @@ export type AuditAction =
   | 'execute'
   | 'config_change';
 
-// 操作分类
+// Action categories
 export const actionCategories: Record<string, AuditAction[]> = {
   '认证': ['login', 'logout'],
   '数据操作': ['create', 'update', 'delete', 'view'],
@@ -41,7 +41,7 @@ export const actionCategories: Record<string, AuditAction[]> = {
   '配置': ['config_change'],
 };
 
-// Mock 审计日志
+// Mock audit logs
 const generateMockLogs = (): AuditLog[] => {
   const users = [
     { id: 'user-1', name: '张三' },
@@ -97,7 +97,7 @@ const generateMockLogs = (): AuditLog[] => {
   return logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 };
 
-// 获取操作详情
+// Get action details
 function getActionDetails(action: AuditAction, resource: string, name: string): string {
   switch (action) {
     case 'login':
@@ -127,17 +127,17 @@ function getActionDetails(action: AuditAction, resource: string, name: string): 
 
 let mockLogs: AuditLog[] = [];
 
-// 初始化
+// Initialization
 const initLogs = () => {
   if (mockLogs.length === 0) {
     mockLogs = generateMockLogs();
   }
 };
 
-// 模拟延迟
+// Simulated latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// 筛选参数类型
+// Filter parameter types
 export interface AuditLogFilter {
   userId?: string;
   action?: AuditAction;
@@ -150,7 +150,7 @@ export interface AuditLogFilter {
 
 // Audit Log API Mock
 export const auditLogApi = {
-  // 获取审计日志列表
+  // Get audit log list
   async getLogs(filter?: AuditLogFilter): Promise<AuditLog[]> {
     await delay(300);
     initLogs();
@@ -188,14 +188,14 @@ export const auditLogApi = {
     return logs;
   },
 
-  // 获取单个日志详情
+  // Get a single log's details
   async getLog(id: string): Promise<AuditLog | undefined> {
     await delay(200);
     initLogs();
     return mockLogs.find((l) => l.id === id);
   },
 
-  // 获取日志统计
+  // Get log statistics
   async getStats(filter?: { startDate?: string; endDate?: string }): Promise<{
     total: number;
     success: number;
@@ -260,7 +260,7 @@ export const auditLogApi = {
     };
   },
 
-  // 导出日志
+  // Export logs
   async exportLogs(format: 'csv' | 'json', filter?: AuditLogFilter): Promise<string> {
     await delay(500);
     const logs = await this.getLogs(filter);
@@ -269,7 +269,7 @@ export const auditLogApi = {
       return JSON.stringify(logs, null, 2);
     }
 
-    // CSV 格式
+    // CSV format
     const headers = [
       '时间',
       '用户',
@@ -294,13 +294,13 @@ export const auditLogApi = {
     return [headers.join(','), ...rows.map((r) => r.map((c) => `"${c}"`).join(','))].join('\n');
   },
 
-  // 获取资源类型列表
+  // Get resource type list
   async getResourceTypes(): Promise<string[]> {
     await delay(100);
     return ['Agent', 'Prompt', 'Skill', 'TestSet', 'Provider', 'User', 'Department'];
   },
 
-  // 获取操作类型列表
+  // Get action type list
   async getActionTypes(): Promise<AuditAction[]> {
     await delay(100);
     return ['login', 'logout', 'create', 'update', 'delete', 'view', 'export', 'import', 'execute', 'config_change'];

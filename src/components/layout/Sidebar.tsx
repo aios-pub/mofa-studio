@@ -1,7 +1,7 @@
 /**
- * 侧边栏导航组件
- * 支持桌面端固定侧边栏和移动端Drawer模式
- * 支持拖拽调整宽度
+ * Sidebar navigation component
+ * Supports fixed sidebar on desktop and drawer mode on mobile
+ * Supports drag-to-resize width
  */
 
 import { useNavigate, useLocation } from "react-router-dom";
@@ -44,7 +44,7 @@ interface SidebarProps {
   isMobile?: boolean;
 }
 
-// 菜单配置 - 使用 Ant Design 图标组件
+// Menu configuration - Ant Design icon components
 const menuItems: MenuProps["items"] = [
   {
     key: "workbench",
@@ -271,7 +271,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     };
   }, [isResizing]);
 
-  // Theme相关样式
+  // Theme-related styles
   const siderBg = isDark ? "#001529" : "#ffffff";
   const borderColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)";
   const logoTextColor = isDark
@@ -280,25 +280,25 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
 
   const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
     navigate(key);
-    // 移动端点击菜单后自动关闭Drawer
+    // Auto-close the drawer after tapping a menu item on mobile
     if (isMobile) {
       setSidebarCollapsed(true);
     }
   };
 
-  // 水平布局且非移动端时不显示侧边栏
+  // Hide the sidebar in horizontal layout on non-mobile
   if (isHorizontal && !isMobile) {
     return null;
   }
 
-  // 移动端模式 - 渲染为普通 div（在 Drawer 中使用）
+  // Mobile mode - render as a plain div (used inside a drawer)
   if (isMobile) {
     return (
       <div
         className="h-full flex flex-col"
         style={{ backgroundColor: siderBg }}
       >
-        {/* Logo 区域 */}
+        {/* Logo area */}
         <div
           className="flex items-center gap-2 h-[var(--layout-header-height)] px-4 border-b"
           style={{ borderColor }}
@@ -307,7 +307,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           <span className={`text-lg font-bold ${logoTextColor}`}>mofa-studio</span>
         </div>
 
-        {/* 菜单列表 */}
+        {/* Menu list */}
         <div className="flex-1 overflow-y-auto scrollbar-thin px-2">
           <Menu
             theme={isDark ? "dark" : "light"}
@@ -379,7 +379,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
         />
       </div>
 
-      {/* 菜单列表 - 使用Custom滚动条 */}
+      {/* Menu list - custom scrollbar */}
       <div
         className="h-[calc(100vh-var(--layout-header-height))] overflow-y-auto scrollbar-thin px-2"
         style={{
@@ -399,7 +399,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
         />
       </div>
 
-      {/* 拖拽调整宽度的手柄 */}
+      {/* Drag handle for resizing width */}
       {!isMini && (
         <div
           className="absolute top-0 right-0 w-1 h-full cursor-col-resize z-20 hover:bg-[var(--color-primary)]/30 transition-colors"

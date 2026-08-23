@@ -1,6 +1,6 @@
 /**
- * 审计日志页面
- * 使用 Ant Design 组件重构
+ * Audit log page
+ * Rebuilt with Ant Design components
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -78,7 +78,7 @@ export default function AuditLogsPage() {
     failure: number;
   } | null>(null);
 
-  // 筛选状态
+  // Filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [filterAction, setFilterAction] = useState<string>("");
   const [filterResource, setFilterResource] = useState<string>("");
@@ -87,7 +87,7 @@ export default function AuditLogsPage() {
     [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
   >(null);
 
-  // 选项数据
+  // Option data
   const [resourceTypes, setResourceTypes] = useState<string[]>([]);
   const [actionTypes, setActionTypes] = useState<AuditAction[]>([]);
 
@@ -176,7 +176,7 @@ export default function AuditLogsPage() {
     return dayjs(date).format("YYYY-MM-DD HH:mm:ss");
   };
 
-  // 表格列配置
+  // Table column configuration
   const columns: ColumnsType<AuditLog> = [
     {
       title: t("auditLog.timestamp", "时间"),
@@ -246,7 +246,7 @@ export default function AuditLogsPage() {
     },
   ];
 
-  // 统计卡片
+  // Statistics cards
   const statCards = stats && (
     <div className="grid grid-cols-3 gap-4 mb-4">
       <Card size="small">
@@ -295,7 +295,7 @@ export default function AuditLogsPage() {
     </div>
   );
 
-  // 导出下拉菜单
+  // Export dropdown menu
   const exportMenuItems = [
     {
       key: "csv",
@@ -334,10 +334,10 @@ export default function AuditLogsPage() {
         }
       />
 
-      {/* 统计卡片 */}
+      {/* Statistics cards */}
       {statCards}
 
-      {/* 筛选区域 */}
+      {/* Filter area */}
       <Card size="small">
         <Space wrap>
           <Input
@@ -394,7 +394,7 @@ export default function AuditLogsPage() {
         </Space>
       </Card>
 
-      {/* 日志表格 */}
+      {/* Logs table */}
       <Card>
         <Table
           columns={columns}
@@ -419,7 +419,7 @@ export default function AuditLogsPage() {
         />
       </Card>
 
-      {/* 日志详情Drawer */}
+      {/* Log detail drawer */}
       <Drawer
         title={t("auditLog.details", "日志详情")}
         placement="right"
@@ -429,7 +429,7 @@ export default function AuditLogsPage() {
       >
         {selectedLog && (
           <div className="space-y-4">
-            {/* 基本信息 */}
+            {/* Basic information */}
             <Card size="small" title="基本信息">
               <Descriptions column={1} size="small">
                 <Descriptions.Item label="时间">
@@ -453,7 +453,7 @@ export default function AuditLogsPage() {
               </Descriptions>
             </Card>
 
-            {/* 资源信息 */}
+            {/* Resource information */}
             <Card size="small" title="资源信息">
               <Descriptions column={1} size="small">
                 <Descriptions.Item label="资源类型">
@@ -474,12 +474,12 @@ export default function AuditLogsPage() {
               </Descriptions>
             </Card>
 
-            {/* 操作详情 */}
+            {/* Action details */}
             <Card size="small" title="操作详情">
               <Text className="text-sm">{selectedLog.details}</Text>
             </Card>
 
-            {/* 客户端信息 */}
+            {/* Client information */}
             <Card size="small" title="客户端信息">
               <Descriptions column={1} size="small">
                 <Descriptions.Item label="IP 地址">

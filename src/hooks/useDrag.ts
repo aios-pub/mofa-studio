@@ -1,10 +1,10 @@
 /**
- * 拖拽和调整大小 Hook
+ * Drag and resize hook
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 
-// ==================== 拖拽 ====================
+// ==================== Dragging ====================
 
 export interface Position {
   x: number;
@@ -12,42 +12,42 @@ export interface Position {
 }
 
 export interface UseDragOptions {
-  /** 初始位置 */
+  /** Initial position */
   initialPosition?: Position;
-  /** 边界限制 */
+  /** Boundary constraints */
   bounds?: {
     left?: number;
     top?: number;
     right?: number;
     bottom?: number;
   };
-  /** Whether to enable拖拽 */
+  /** Whether to enable dragging */
   disabled?: boolean;
-  /** 拖拽开始回调 */
+  /** Drag start callback */
   onDragStart?: (position: Position) => void;
-  /** 拖拽中回调 */
+  /** Dragging callback */
   onDrag?: (position: Position) => void;
-  /** 拖拽结束回调 */
+  /** Drag end callback */
   onDragEnd?: (position: Position) => void;
 }
 
 export interface UseDragReturn {
-  /** 当前位置 */
+  /** Current position */
   position: Position;
-  /** 是否正在拖拽 */
+  /** Whether currently dragging */
   isDragging: boolean;
-  /** 拖拽开始事件处理器 */
+  /** Drag start event handler */
   handleDragStart: (e: React.MouseEvent | React.TouchEvent) => void;
-  /** 重置位置 */
+  /** Reset position */
   resetPosition: () => void;
-  /** 设置位置 */
+  /** Set position */
   setPosition: (position: Position) => void;
 }
 
 /**
- * 拖拽 Hook
+ * Drag hook
  * @param options Configuration options
- * @returns 拖拽状态和方法
+ * @returns Drag state and methods
  */
 export function useDrag(options: UseDragOptions = {}): UseDragReturn {
   const {
@@ -64,7 +64,7 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
   const dragStartRef = useRef<Position | null>(null);
   const elementStartRef = useRef<Position | null>(null);
 
-  // 限制位置在边界内
+  // Constrain position within bounds
   const clampPosition = useCallback(
     (pos: Position): Position => {
       if (!bounds) return pos;
@@ -155,7 +155,7 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
   };
 }
 
-// ==================== 调整大小 ====================
+// ==================== Resizing ====================
 
 export interface Size {
   width: number;
@@ -163,45 +163,45 @@ export interface Size {
 }
 
 export interface UseResizeOptions {
-  /** 初始大小 */
+  /** Initial size */
   initialSize?: Size;
-  /** 最小宽度 */
+  /** Minimum width */
   minWidth?: number;
-  /** 最小高度 */
+  /** Minimum height */
   minHeight?: number;
-  /** 最大宽度 */
+  /** Maximum width */
   maxWidth?: number;
-  /** 最大高度 */
+  /** Maximum height */
   maxHeight?: number;
   /** Whether to enable */
   disabled?: boolean;
-  /** 调整大小开始回调 */
+  /** Resize start callback */
   onResizeStart?: (size: Size) => void;
-  /** 调整大小中回调 */
+  /** Resizing callback */
   onResize?: (size: Size) => void;
-  /** 调整大小结束回调 */
+  /** Resize end callback */
   onResizeEnd?: (size: Size) => void;
 }
 
 export interface UseResizeReturn {
-  /** 当前大小 */
+  /** Current size */
   size: Size;
-  /** 是否正在调整 */
+  /** Whether currently resizing */
   isResizing: boolean;
-  /** 调整开始事件处理器 */
+  /** Resize start event handler */
   handleResizeStart: (e: React.MouseEvent | React.TouchEvent, direction?: ResizeDirection) => void;
-  /** 重置大小 */
+  /** Reset size */
   resetSize: () => void;
-  /** 设置大小 */
+  /** Set size */
   setSize: (size: Size) => void;
 }
 
 type ResizeDirection = 'se' | 'sw' | 'ne' | 'nw' | 'n' | 's' | 'e' | 'w';
 
 /**
- * 调整大小 Hook
+ * Resize hook
  * @param options Configuration options
- * @returns 调整大小状态和方法
+ * @returns Resize state and methods
  */
 export function useResize(options: UseResizeOptions = {}): UseResizeReturn {
   const {
@@ -265,7 +265,7 @@ export function useResize(options: UseResizeOptions = {}): UseResizeReturn {
       let newWidth = startSize.width;
       let newHeight = startSize.height;
 
-      // 根据方向计算新大小
+      // Compute new size by direction
       if (direction.includes('e')) newWidth = startSize.width + deltaX;
       if (direction.includes('w')) newWidth = startSize.width - deltaX;
       if (direction.includes('s')) newHeight = startSize.height + deltaY;
@@ -308,25 +308,25 @@ export function useResize(options: UseResizeOptions = {}): UseResizeReturn {
   };
 }
 
-// ==================== 拖放区域 ====================
+// ==================== Drop zone ====================
 
 export interface UseDropOptions {
   /** Whether to enable */
   disabled?: boolean;
-  /** 拖拽进入回调 */
+  /** Drag enter callback */
   onDragEnter?: (e: DragEvent) => void;
-  /** 拖拽离开回调 */
+  /** Drag leave callback */
   onDragLeave?: (e: DragEvent) => void;
-  /** 拖拽悬停回调 */
+  /** Drag over callback */
   onDragOver?: (e: DragEvent) => void;
-  /** 放置回调 */
+  /** Drop callback */
   onDrop?: (e: DragEvent) => void;
 }
 
 export interface UseDropReturn {
-  /** 是否拖拽悬停在区域上 */
+  /** Whether drag hovers over the zone */
   isOver: boolean;
-  /** 绑定到元素的属性 */
+  /** Props bound to the element */
   bind: {
     onDragEnter: (e: React.DragEvent) => void;
     onDragLeave: (e: React.DragEvent) => void;
@@ -336,9 +336,9 @@ export interface UseDropReturn {
 }
 
 /**
- * 拖放区域 Hook
+ * Drop zone hook
  * @param options Configuration options
- * @returns 拖放状态和绑定属性
+ * @returns Drop state and bound props
  */
 export function useDrop(options: UseDropOptions = {}): UseDropReturn {
   const {
@@ -415,34 +415,34 @@ export function useDrop(options: UseDropOptions = {}): UseDropReturn {
   };
 }
 
-// ==================== 文件拖放 ====================
+// ==================== File drag and drop ====================
 
 export interface UseFileDropOptions {
   /** Whether to enable */
   disabled?: boolean;
-  /** 接受的文件类型 */
+  /** Accepted file types */
   accept?: string[];
-  /** 是否多选 */
+  /** Multiple */
   multiple?: boolean;
-  /** 文件放下回调 */
+  /** File drop callback */
   onDrop: (files: File[]) => void;
-  /** 拖拽进入回调 */
+  /** Drag enter callback */
   onDragEnter?: () => void;
-  /** 拖拽离开回调 */
+  /** Drag leave callback */
   onDragLeave?: () => void;
 }
 
 export interface UseFileDropReturn {
-  /** 是否拖拽悬停 */
+  /** Whether drag is hovering */
   isOver: boolean;
-  /** 根元素属性 */
+  /** Root element props */
   getRootProps: () => {
     onDragEnter: (e: React.DragEvent) => void;
     onDragLeave: (e: React.DragEvent) => void;
     onDragOver: (e: React.DragEvent) => void;
     onDrop: (e: React.DragEvent) => void;
   };
-  /** 输入框属性 */
+  /** Input props */
   getInputProps: () => {
     type: 'file';
     accept?: string;
@@ -453,9 +453,9 @@ export interface UseFileDropReturn {
 }
 
 /**
- * 文件拖放 Hook
+ * File drag and drop hook
  * @param options Configuration options
- * @returns 拖放状态和属性
+ * @returns Drop state and props
  */
 export function useFileDrop(options: UseFileDropOptions): UseFileDropReturn {
   const {
@@ -511,7 +511,7 @@ export function useFileDrop(options: UseFileDropOptions): UseFileDropReturn {
 
       let fileList = Array.from(files);
 
-      // 过滤文件类型
+      // Filter file types
       if (accept && accept.length > 0) {
         fileList = fileList.filter((file) => {
           const fileType = file.type;
@@ -525,7 +525,7 @@ export function useFileDrop(options: UseFileDropOptions): UseFileDropReturn {
         });
       }
 
-      // 单选时只取第一个
+      // Take only the first one in single-select mode
       if (!multiple) {
         fileList = fileList.slice(0, 1);
       }
@@ -553,7 +553,7 @@ export function useFileDrop(options: UseFileDropOptions): UseFileDropReturn {
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       processFiles(e.target.files);
-      // 重置 input 以允许选择相同文件
+      // Reset the input to allow selecting the same file
       e.target.value = '';
     },
     [processFiles]

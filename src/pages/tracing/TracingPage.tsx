@@ -1,6 +1,6 @@
 /**
- * Tracing Tracing页面
- * 使用 Ant Design 组件重构
+ * Tracing page
+ * Rebuilt with Ant Design components
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -49,7 +49,7 @@ export default function TracingPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [expandedSpans, setExpandedSpans] = useState<Set<string>>(new Set());
 
-  // 过滤条件
+  // Filter conditions
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
 
@@ -75,7 +75,7 @@ export default function TracingPage() {
     loadTraces();
   }, [loadTraces]);
 
-  // 过滤Tracing
+  // Filter tracings
   const filteredTraces = traces.filter((trace) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
@@ -114,7 +114,7 @@ export default function TracingPage() {
     setDrawerOpen(true);
   };
 
-  // 导出功能
+  // Export functionality
   const handleExport = async (format: "json" | "csv") => {
     try {
       const blob = await tracingApi.exportTraces(
@@ -125,7 +125,7 @@ export default function TracingPage() {
         format,
       );
 
-      // 创建下载链接
+      // Create download link
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -141,7 +141,7 @@ export default function TracingPage() {
     }
   };
 
-  // 表格列配置
+  // Table column configuration
   const columns: ColumnsType<Trace> = [
     {
       title: t("tracing.operation", "操作"),
@@ -201,7 +201,7 @@ export default function TracingPage() {
     },
   ];
 
-  // 渲染 Span 树
+  // Render the span tree
   const renderSpanTree = (
     spans: Span[],
     parent_span_id?: string,
@@ -305,7 +305,7 @@ export default function TracingPage() {
         }
       />
 
-      {/* 统计卡片 */}
+      {/* Statistics cards */}
       {stats && (
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12} lg={6}>
@@ -348,7 +348,7 @@ export default function TracingPage() {
         </Row>
       )}
 
-      {/* 筛选区域 */}
+      {/* Filter area */}
       <Card size="small">
         <Space>
           <Input
@@ -376,7 +376,7 @@ export default function TracingPage() {
         </Space>
       </Card>
 
-      {/* Tracing表格 */}
+      {/* Tracing table */}
       <Card>
         <Table
           columns={columns}
@@ -401,7 +401,7 @@ export default function TracingPage() {
         />
       </Card>
 
-      {/* Tracing详情Drawer */}
+      {/* Tracing detail drawer */}
       <Drawer
         title={t("tracing.traceDetails", "追踪详情")}
         placement="right"
@@ -411,7 +411,7 @@ export default function TracingPage() {
       >
         {selectedTrace && (
           <div className="space-y-4">
-            {/* 基本信息 */}
+            {/* Basic information */}
             <Card size="small" title="基本信息">
               <Descriptions column={1} size="small">
                 <Descriptions.Item label={t("tracing.traceId", "Trace ID")}>
@@ -431,7 +431,7 @@ export default function TracingPage() {
               </Descriptions>
             </Card>
 
-            {/* Span 树 */}
+            {/* Span tree */}
             <Card size="small" title={t("tracing.spanTree", "Span 树")}>
               <div className="border border-(--color-border) rounded-lg max-h-96 overflow-y-auto">
                 {renderSpanTree(selectedTrace.spans || [])}

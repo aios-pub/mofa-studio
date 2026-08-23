@@ -1,8 +1,8 @@
 /**
- * Notification 真实 API
- * 后端端点: /api/notification/...
+ * Notification real API
+ * Backend endpoints: /api/notification/...
  *
- * 后端字段映射 (snake_case → camelCase):
+ * Backend field mapping (snake_case -> camelCase):
  *   notification_type → type
  *   create_time       → createdAt
  *   update_time       → updatedAt
@@ -10,7 +10,7 @@
 
 import { apiClient } from "../api/apiClient";
 
-// ==================== 前端类型 ====================
+// ==================== Frontend types ====================
 
 interface Notification {
   id: string;
@@ -24,7 +24,7 @@ interface Notification {
   createdAt: string | Date;
 }
 
-// ==================== 后端原始类型 ====================
+// ==================== Raw backend types ====================
 
 interface BackendNotification {
   id: string;
@@ -40,7 +40,7 @@ interface BackendNotification {
   update_time: string;
 }
 
-// ==================== 字段映射 ====================
+// ==================== Field mapping ====================
 
 function mapNotification(raw: BackendNotification): Notification {
   return {
@@ -56,7 +56,7 @@ function mapNotification(raw: BackendNotification): Notification {
   };
 }
 
-// ==================== API 方法 ====================
+// ==================== API methods ====================
 
 const notificationRealApi = {
   async getAll(): Promise<Notification[]> {
@@ -100,10 +100,10 @@ const notificationRealApi = {
     return true;
   },
 
-  /** 别名方法 */
+  /** Alias methods */
   fetchNotifications: (): Promise<Notification[]> => notificationRealApi.getAll(),
 
-  /** 获取未读 */
+  /** Get unread */
   async getUnread(): Promise<Notification[]> {
     const data = await apiClient.get<BackendNotification[]>("/api/notification/unread");
     if (!Array.isArray(data)) return [];
@@ -132,5 +132,5 @@ const notificationRealApi = {
 };
 
 export { notificationRealApi };
-// 从 mock 导出分组函数
+// Export grouping functions from mock
 export { groupNotificationsByDate, getUnreadCount } from "../mock/notification";

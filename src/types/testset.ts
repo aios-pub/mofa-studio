@@ -1,6 +1,6 @@
 /**
- * 测试集相关类型定义
- * 与后端 DTO 对齐
+ * Test set related type definitions
+ * Aligned with backend DTOs
  */
 
 /** Test case status */
@@ -9,7 +9,7 @@ export type TestCaseStatus = "pending" | "running" | "passed" | "failed";
 /** Assertion type */
 export type AssertionType = "exact" | "contains" | "regex" | "ai_eval" | "custom";
 
-/** 断言配置 */
+/** Assertion configuration */
 export interface Assertion {
   id: string;
   type: AssertionType;
@@ -17,7 +17,7 @@ export interface Assertion {
   description?: string;
 }
 
-/** 测试集 - 对应后端 TestSetDTO */
+/** Test set - corresponds to backend TestSetDTO */
 export interface TestSet {
   id: string;
   name: string;
@@ -58,7 +58,7 @@ export interface TestCase {
   updateTime: string;
 }
 
-/** 测试用例创建/编辑表单数据 */
+/** Test case create/edit form data */
 export interface TestCaseFormData {
   name: string;
   description?: string;
@@ -112,7 +112,7 @@ export interface TestReport {
   updateTime: string;
 }
 
-/** 报告中的用例结果（前端展示用） */
+/** Case results in the report (for frontend display) */
 export interface ReportCaseResult {
   caseId: string;
   caseName: string;
@@ -129,7 +129,7 @@ export interface ReportCaseResult {
   error?: string;
 }
 
-/** 测试报告详情（包含用例级别的详细结果） */
+/** Test report details (with case-level results) */
 export interface TestReportDetail {
   id: string;
   testSetId: string;
@@ -145,7 +145,7 @@ export interface TestReportDetail {
   metadata: Record<string, string>;
 }
 
-/** 测试用例报告详情 */
+/** Test case report details */
 export interface TestCaseReport {
   testCaseId: string;
   testCaseName: string;
@@ -161,14 +161,14 @@ export interface TestCaseReport {
   response?: ResponseInfo;
 }
 
-/** 测试脚本结果 */
+/** Test script results */
 export interface TestScriptResult {
   name: string;
   passed: boolean;
   error?: string;
 }
 
-/** 测试迭代（数据驱动测试） */
+/** Test iterations (data-driven testing) */
 export interface TestIteration {
   iterationNumber: number;
   dataRow: Record<string, string>;
@@ -200,7 +200,7 @@ export interface NameValuePair {
   value: string;
 }
 
-// ==================== HTTP请求相关类型 ====================
+// ==================== HTTP request types ====================
 
 /** HTTP method */
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
@@ -367,7 +367,7 @@ export interface ScriptContext {
     clear: () => void;
     toArray: () => Array<{ key: string; value: string }>;
   };
-  // 全局变量
+  // Global variables
   globals: {
     get: (key: string) => string | undefined;
     set: (key: string, value: string) => void;
@@ -375,14 +375,14 @@ export interface ScriptContext {
     clear: () => void;
     toArray: () => Array<{ key: string; value: string }>;
   };
-  // 请求数据
+  // Request data
   request: {
     url: string;
     method: string;
     headers: Record<string, string>;
     body?: unknown;
   };
-  // Response data（仅在后置脚本中可用）
+  // Response data (only available in post scripts)
   response?: {
     statusCode: number;
     statusMessage: string;
@@ -390,11 +390,11 @@ export interface ScriptContext {
     body: string;
     responseTime: number;
   };
-  // 测试断言（仅在后置脚本中可用）
+  // Test assertions (only available in post scripts)
   test?: {
     (name: string, fn: () => void): void;
   };
-  // 工具函数
+  // Utility functions
   utils: {
     replaceVariables: (text: string) => string;
     base64Encode: (text: string) => string;
@@ -426,17 +426,17 @@ export interface DataDrivenTestConfig {
   testCaseId: string;
   name: string;
   dataSourceType: DataSourceType;
-  dataSourceData: string; // 文件内容或内联数据
-  variableMapping: Record<string, string>; // 数据列到变量名的映射
+  dataSourceData: string; // file content or inline data
+  variableMapping: Record<string, string>; // data column to variable name mapping
   enabled: boolean;
-  iterateCount?: number; // 迭代次数，默认为Data row数
+  iterateCount?: number; // iteration count, defaults to the number of data rows
 }
 
 /** Data row */
 export interface DataRow {
   index: number;
   data: Record<string, string>;
-  variables: Record<string, string>; // 应用映射后的变量
+  variables: Record<string, string>; // variables after applying the mapping
 }
 
 /** Data-driven test execution result */

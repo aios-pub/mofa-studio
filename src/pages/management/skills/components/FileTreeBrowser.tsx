@@ -1,5 +1,5 @@
 /**
- * 文件树浏览器组件
+ * File tree browser component
  */
 
 import { Tree } from 'antd';

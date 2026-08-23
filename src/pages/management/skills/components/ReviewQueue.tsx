@@ -1,5 +1,5 @@
 /**
- * 审核队列组件
+ * Review queue component
  */
 
 import { useEffect, useState } from "react";
@@ -222,7 +222,7 @@ export function ReviewQueue() {
         />
       </Card>
 
-      {/* 审核 Modal */}
+      {/* Review modal */}
       <Modal
         title={action === "approve" ? "通过审核" : "拒绝审核"}
         open={modalVisible}

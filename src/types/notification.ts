@@ -1,5 +1,5 @@
 /**
- * 通知类型定义
+ * Notification type definitions
  */
 
 export type NotificationType = 'system' | 'message' | 'alert' | 'task';

@@ -1,6 +1,6 @@
 /**
- * 表单布局组件
- * 提供统一的表单布局样式
+ * Form layout component
+ * Provides unified form layout styling
  */
 
 import React, { forwardRef, createContext, useContext } from 'react';
@@ -8,7 +8,7 @@ import { Form, Row, Col, Button, Divider } from 'antd';
 import type { FormProps, FormInstance, ColProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 
-// 表单布局上下文
+// Form layout context
 interface FormLayoutContextType {
   layout: 'horizontal' | 'vertical' | 'inline';
   size: 'small' | 'middle' | 'large';
@@ -21,7 +21,7 @@ const FormLayoutContext = createContext<FormLayoutContextType>({
 
 export const useFormLayout = () => useContext(FormLayoutContext);
 
-// 表单区域组件
+// Form area component
 export interface FormSectionProps {
   title?: string;
   description?: string;
@@ -56,7 +56,7 @@ export const FormSection: React.FC<FormSectionProps> = ({
   );
 };
 
-// 表单行组件
+// Form row component
 export interface FormRowProps {
   children: React.ReactNode;
   gutter?: number | [number, number];
@@ -75,7 +75,7 @@ export const FormRow: React.FC<FormRowProps> = ({
   );
 };
 
-// 表单列组件
+// Form column component
 export interface FormColProps {
   children: React.ReactNode;
   span?: number;
@@ -96,7 +96,7 @@ export const FormCol: React.FC<FormColProps> = ({
   );
 };
 
-// 表单操作区域
+// Form action area
 export interface FormActionsProps {
   children?: React.ReactNode;
   submitText?: string;
@@ -166,12 +166,12 @@ export const FormActions: React.FC<FormActionsProps> = ({
   );
 };
 
-// 表单分隔线
+// Form divider
 export const FormDivider: React.FC<{ className?: string }> = ({ className = '' }) => (
   <Divider className={`my-4 ${className}`} />
 );
 
-// 表单布局组件属性
+// Form layout component props
 export interface FormLayoutProps extends Omit<FormProps, 'layout'> {
   layout?: 'horizontal' | 'vertical' | 'inline';
   labelCol?: ColProps;
@@ -181,7 +181,7 @@ export interface FormLayoutProps extends Omit<FormProps, 'layout'> {
 }
 
 /**
- * 表单布局组件
+ * Form layout component
  */
 export const FormLayout = forwardRef<FormInstance, FormLayoutProps>(
   (
@@ -201,7 +201,7 @@ export const FormLayout = forwardRef<FormInstance, FormLayoutProps>(
       size,
     };
 
-    // 根据布局计算列配置
+    // Compute column config by layout
     const colConfig = layout === 'horizontal'
       ? { labelCol: labelCol || { span: 6 }, wrapperCol: wrapperCol || { span: 18 } }
       : {};

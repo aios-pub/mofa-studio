@@ -1,6 +1,6 @@
 /**
- * 执行记录 Tab
- * 参考 apalis-board Tasks + Logs 页面：状态过滤 + 搜索 + 分页表格
+ * Execution records tab
+ * Modeled on apalis-board Tasks + Logs: status filter + search + paginated table
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -62,7 +62,7 @@ export default function ExecutionsTab() {
     return result;
   }, [executions, statusFilter, search]);
 
-  // 统计
+  // Statistics
   const counts = useMemo(
     () => ({
       all: executions.length,
@@ -144,7 +144,7 @@ export default function ExecutionsTab() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* 工具栏 */}
+      {/* Toolbar */}
       <div className="flex items-center gap-3 p-3 border-b border-(--color-border)">
         <Input
           placeholder="搜索执行记录..."
@@ -193,7 +193,7 @@ export default function ExecutionsTab() {
         </div>
       </div>
 
-      {/* 表格 */}
+      {/* Table */}
       <div className="flex-1 overflow-hidden">
         <Table
           dataSource={filteredExecutions}

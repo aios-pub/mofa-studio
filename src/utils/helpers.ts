@@ -1,12 +1,12 @@
 /**
- * 通用工具函数
+ * Common utility functions
  */
 
-// ==================== UUID 生成 ====================
+// ==================== UUID generation ====================
 
 /**
- * 生成 UUID v4
- * @returns UUID 字符串
+ * Generate UUID v4
+ * @returns UUID string
  */
 export function uuid(): string {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -17,9 +17,9 @@ export function uuid(): string {
 }
 
 /**
- * 生成短 ID
- * @param length 长度，默认 8
- * @returns 短 ID 字符串
+ * Generate short ID
+ * @param length Length, defaults to 8
+ * @returns Short ID string
  */
 export function shortId(length = 8): string {
   const chars =
@@ -32,19 +32,19 @@ export function shortId(length = 8): string {
 }
 
 /**
- * 生成唯一 ID（带前缀）
- * @param prefix 前缀
- * @returns 唯一 ID
+ * Generate unique ID (with prefix)
+ * @param prefix Prefix
+ * @returns Unique ID
  */
 export function uniqueId(prefix = "id"): string {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
-// ==================== 异步工具 ====================
+// ==================== Async utilities ====================
 
 /**
- * 延迟执行
- * @param ms 延迟时间（milliseconds）
+ * Delayed execution
+ * @param ms Delay in milliseconds
  * @returns Promise
  */
 export function sleep(ms: number): Promise<void> {
@@ -52,10 +52,10 @@ export function sleep(ms: number): Promise<void> {
 }
 
 /**
- * 带超时的 Promise
+ * Promise with timeout
  * @param promise Promise
- * @param ms 超时时间
- * @param error 超时Error information
+ * @param ms Timeout
+ * @param error Timeout error
  * @returns Promise
  */
 export function timeout<T>(
@@ -70,10 +70,10 @@ export function timeout<T>(
 }
 
 /**
- * 重试函数
- * @param fn 要执行的函数
- * @param retries 重试次数
- * @param delay 重试间隔
+ * Retry function
+ * @param fn Function to execute
+ * @param retries Retry count
+ * @param delay Retry interval
  * @returns Promise
  */
 export async function retry<T>(
@@ -97,12 +97,12 @@ export async function retry<T>(
   throw lastError;
 }
 
-// ==================== 空值检查 ====================
+// ==================== Null checks ====================
 
 /**
- * 检查值是否为空
- * @param value 要检查的值
- * @returns 是否为空
+ * Check whether the value is empty
+ * @param value Value to check
+ * @returns Whether empty
  */
 export function isEmpty(value: unknown): boolean {
   if (value === null || value === undefined) {
@@ -125,39 +125,39 @@ export function isEmpty(value: unknown): boolean {
 }
 
 /**
- * 检查值是否不为空
- * @param value 要检查的值
- * @returns 是否不为空
+ * Check whether the value is not empty
+ * @param value Value to check
+ * @returns Whether value is not empty
  */
 export function isNotEmpty<T>(value: T | null | undefined): value is T {
   return !isEmpty(value);
 }
 
 /**
- * 检查值是否为 null 或 undefined
- * @param value 要检查的值
- * @returns 是否为 null 或 undefined
+ * Check whether the value is null or undefined
+ * @param value Value to check
+ * @returns Whether value is null or undefined
  */
 export function isNil(value: unknown): value is null | undefined {
   return value === null || value === undefined;
 }
 
 /**
- * 检查值是否不为 null 或 undefined
- * @param value 要检查的值
- * @returns 是否不为 null 或 undefined
+ * Check whether the value is not null or undefined
+ * @param value Value to check
+ * @returns Whether value is not null or undefined
  */
 export function isNotNil<T>(value: T | null | undefined): value is T {
   return value !== null && value !== undefined;
 }
 
-// ==================== 对象操作 ====================
+// ==================== Object operations ====================
 
 /**
- * 省略对象的某些属性
- * @param obj 对象
- * @param keys 要省略的键
- * @returns 新对象
+ * Omit some properties of an object
+ * @param obj Object
+ * @param keys Keys to omit
+ * @returns New object
  */
 export function omit<T extends object, K extends keyof T>(
   obj: T,
@@ -171,10 +171,10 @@ export function omit<T extends object, K extends keyof T>(
 }
 
 /**
- * 选取对象的某些属性
- * @param obj 对象
- * @param keys 要选取的键
- * @returns 新对象
+ * Pick some properties of an object
+ * @param obj Object
+ * @param keys Keys to pick
+ * @returns New object
  */
 export function pick<T extends object, K extends keyof T>(
   obj: T,
@@ -190,10 +190,10 @@ export function pick<T extends object, K extends keyof T>(
 }
 
 /**
- * 合并对象（深度）
- * @param target 目标对象
- * @param sources 源对象
- * @returns 合并后的对象
+ * Merge objects (deep)
+ * @param target Target object
+ * @param sources Source objects
+ * @returns Merged object
  */
 export function deepMerge<T extends object>(
   target: T,
@@ -231,31 +231,31 @@ export function deepMerge<T extends object>(
   return deepMerge(target, ...sources);
 }
 
-// ==================== 深度比较 ====================
+// ==================== Deep comparison ====================
 
 /**
- * 深度比较两个值是否相等
- * @param a 第一个值
- * @param b 第二个值
- * @returns 是否相等
+ * Deep-compare two values for equality
+ * @param a First value
+ * @param b Second value
+ * @returns Whether equal
  */
 export function isEqual(a: unknown, b: unknown): boolean {
-  // 相同引用
+  // Same reference
   if (a === b) {
     return true;
   }
 
-  // 其中一个为 null 或 undefined
+  // Either value is null or undefined
   if (a == null || b == null) {
     return false;
   }
 
-  // 类型不同
+  // Different types
   if (typeof a !== typeof b) {
     return false;
   }
 
-  // 数组比较
+  // Array comparison
   if (Array.isArray(a) && Array.isArray(b)) {
     if (a.length !== b.length) {
       return false;
@@ -263,7 +263,7 @@ export function isEqual(a: unknown, b: unknown): boolean {
     return a.every((item, index) => isEqual(item, b[index]));
   }
 
-  // 对象比较
+  // Object comparison
   if (typeof a === "object" && typeof b === "object") {
     const keysA = Object.keys(a as object);
     const keysB = Object.keys(b as object);
@@ -287,10 +287,10 @@ export function isEqual(a: unknown, b: unknown): boolean {
 }
 
 /**
- * 浅比较两个值是否相等
- * @param a 第一个值
- * @param b 第二个值
- * @returns 是否相等
+ * Shallow-compare two values for equality
+ * @param a First value
+ * @param b Second value
+ * @returns Whether equal
  */
 export function shallowEqual(a: unknown, b: unknown): boolean {
   if (a === b) {
@@ -322,13 +322,13 @@ export function shallowEqual(a: unknown, b: unknown): boolean {
   });
 }
 
-// ==================== 数组操作 ====================
+// ==================== Array operations ====================
 
 /**
- * 数组去重
- * @param arr 数组
- * @param key 去重键（对象数组）
- * @returns 去重后的数组
+ * Array deduplication
+ * @param arr Array
+ * @param key Deduplication key (for object arrays)
+ * @returns Deduplicated array
  */
 export function unique<T>(arr: T[], key?: keyof T): T[] {
   if (key) {
@@ -346,10 +346,10 @@ export function unique<T>(arr: T[], key?: keyof T): T[] {
 }
 
 /**
- * 数组分组
- * @param arr 数组
- * @param key 分组键或函数
- * @returns 分组后的对象
+ * Array grouping
+ * @param arr Array
+ * @param key Group key or function
+ * @returns Grouped object
  */
 export function groupBy<T, K extends string | number>(
   arr: T[],
@@ -369,11 +369,11 @@ export function groupBy<T, K extends string | number>(
 }
 
 /**
- * 数组排序
- * @param arr 数组
- * @param key 排序键或函数
+ * Array sorting
+ * @param arr Array
+ * @param key Sort key or function
  * @param order Sort direction
- * @returns 排序后的数组
+ * @returns Sorted array
  */
 export function sortBy<T>(
   arr: T[],
@@ -390,30 +390,30 @@ export function sortBy<T>(
   });
 }
 
-// ==================== 函数工具 ====================
+// ==================== Function utilities ====================
 
 /**
- * 无操作函数
+ * No-op function
  */
 export function noop(): void {
   // do nothing
 }
 
 /**
- * 身份函数
- * @param value 值
- * @returns 原值
+ * Identity function
+ * @param value Value
+ * @returns Original value
  */
 export function identity<T>(value: T): T {
   return value;
 }
 
 /**
- * 创建范围数组
- * @param start 开始
- * @param end 结束
- * @param step 步长
- * @returns 数组
+ * Create range array
+ * @param start Start
+ * @param end End
+ * @param step Step size
+ * @returns Array
  */
 export function range(start: number, end?: number, step = 1): number[] {
   const result: number[] = [];

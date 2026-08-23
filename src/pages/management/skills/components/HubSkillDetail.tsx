@@ -1,6 +1,6 @@
 /**
- * Hub Skill 详情页
- * 多 Tab 布局：概览、版本、文件、README
+ * Hub skill detail page
+ * Multi-tab layout: overview, versions, files, README
  */
 
 import { useEffect, useState } from "react";

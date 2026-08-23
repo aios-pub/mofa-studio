@@ -1,5 +1,5 @@
 /**
- * Octos Mock API — 开发阶段使用
+ * Octos mock API - for development
  */
 
 import type {
@@ -143,7 +143,7 @@ export const octosMockApi = {
     pid: null,
   }),
 
-  // ==================== 批量操作 ====================
+  // ==================== Batch operations ====================
 
   startAll: async (): Promise<OctosActionResponse> => ({
     ok: true,
@@ -267,7 +267,7 @@ export const octosMockApi = {
   // ==================== SSE Log Stream URL ====================
 
   getLogStreamUrl: (profileId: string): string => {
-    // Mock 不需要代理，直接返回相对路径
+    // Mock does not need a proxy; return relative path directly
     const path = `/api/admin/profiles/${profileId}/logs`;
     return path;
   },

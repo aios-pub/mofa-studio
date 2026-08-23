@@ -1,19 +1,19 @@
 /**
- * Provider Mock 数据
+ * Provider mock data
  */
 
-// 重新导出类型以便其他模块使用
+// Re-export types for use by other modules
 export type { Provider, ProviderType, ProviderModel } from '../../types/provider';
 import type { Provider, ProviderModel, CreateProviderFormData } from '../../types/provider';
 
-/** 外部模型（来自厂商 API） */
+/** External models (from vendor API) */
 export interface ExternalModel {
   model_id: string;
   model_type: string | null;
   owned_by: string | null;
 }
 
-// 兼容旧类型
+// Legacy type compatibility
 export interface Model {
   id: string;
   name: string;
@@ -26,7 +26,7 @@ export interface Model {
   enabled: boolean;
 }
 
-// Mock Providers 列表
+// Mock providers list
 export const mockProviders: Provider[] = [
   {
     id: 'provider-1',
@@ -112,24 +112,24 @@ export const mockProviders: Provider[] = [
   },
 ];
 
-// 模拟 API 延迟
+// Mock API latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Provider API Mock
 export const providerApi = {
-  // 获取所有 Providers
+  // Get all providers
   async getAll(): Promise<Provider[]> {
     await delay(300);
     return mockProviders;
   },
 
-  // 获取单个 Provider
+  // Get a single provider
   async getById(id: string): Promise<Provider | undefined> {
     await delay(200);
     return mockProviders.find((p) => p.id === id);
   },
 
-  // 创建 Provider（兼容旧接口）
+  // Create provider (legacy interface compatibility)
   async create(data: Partial<Provider>): Promise<Provider> {
     await delay(500);
     const newProvider: Provider = {
@@ -153,7 +153,7 @@ export const providerApi = {
     return newProvider;
   },
 
-  // 从表单数据创建 Provider（返回外部可用模型列表）
+  // Create a provider from form data (returns externally available model list)
   async createFromFormData(formData: CreateProviderFormData): Promise<Provider & { availableModels?: ExternalModel[] }> {
     await delay(500);
     const { getProviderConfig } = await import('../provider/providerConfigs');
@@ -185,7 +185,7 @@ export const providerApi = {
     return newProvider;
   },
 
-  // 更新 Provider
+  // Update provider
   async update(id: string, data: Partial<Provider>): Promise<Provider | undefined> {
     await delay(300);
     const index = mockProviders.findIndex((p) => p.id === id);
@@ -194,7 +194,7 @@ export const providerApi = {
     return mockProviders[index];
   },
 
-  // 删除 Provider
+  // Delete provider
   async delete(id: string): Promise<boolean> {
     await delay(300);
     const index = mockProviders.findIndex((p) => p.id === id);
@@ -203,7 +203,7 @@ export const providerApi = {
     return true;
   },
 
-  // 验证 API Key
+  // Validate API key
   async validateApiKey(id: string): Promise<{ valid: boolean; message: string }> {
     await delay(1000);
     const provider = mockProviders.find((p) => p.id === id);
@@ -213,14 +213,14 @@ export const providerApi = {
     return { valid: true, message: 'API Key 有效' };
   },
 
-  // 获取模型列表
+  // Get model list
   async getModels(id: string): Promise<ProviderModel[]> {
     await delay(200);
     const provider = mockProviders.find((p) => p.id === id);
     return provider?.models || [];
   },
 
-  // 获取外部可用模型列表（模拟厂商 API 返回）
+  // Get externally available model list (simulating vendor API)
   async refreshModels(_id: string): Promise<ExternalModel[]> {
     await delay(1500);
     return [
@@ -231,7 +231,7 @@ export const providerApi = {
     ];
   },
 
-  // 选择模型：为选中的模型创建记录
+  // Select model: create records for the selected models
   async selectModels(providerId: string, modelIds: string[]): Promise<ProviderModel[]> {
     await delay(300);
     const provider = mockProviders.find((p) => p.id === providerId);
@@ -246,7 +246,7 @@ export const providerApi = {
     return provider.models;
   },
 
-  // 获取使用统计
+  // Get usage statistics
   async getUsageStats(id: string): Promise<Provider['usage']> {
     await delay(200);
     const provider = mockProviders.find((p) => p.id === id);

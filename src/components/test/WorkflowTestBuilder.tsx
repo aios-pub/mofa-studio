@@ -1,6 +1,6 @@
 /**
- * Workflow测试构建器组件
- * 用于配置Workflow测试的输入参数映射和预期输出
+ * Workflow test builder component
+ * For configuring input mapping and expected output of workflow tests
  */
 
 import { useState, useEffect, useMemo } from "react";
@@ -69,14 +69,14 @@ export function WorkflowTestBuilder({
     }
   };
 
-  // 模拟的Workflow列表（实际应该从API获取）
+  // Simulated workflow list (should be fetched from API)
   const mockWorkflows = [
     { id: "wf-1", name: "数据处理工作流" },
     { id: "wf-2", name: "文档生成工作流" },
     { id: "wf-3", name: "邮件发送工作流" },
   ];
 
-  // 模拟的Workflow参数（实际应该从API获取）
+  // Simulated workflow parameters (should be fetched from API)
   const mockWorkflowParams: Record<string, Array<{ name: string; type: string; required: boolean }>> = {
     "wf-1": [
       { name: "input_data", type: "string", required: true },
@@ -116,7 +116,7 @@ export function WorkflowTestBuilder({
     newMappings[index] = { ...newMappings[index], [field]: value };
     setParamMappings(newMappings);
 
-    // 更新inputMapping
+    // Update input mapping
     const inputMapping = newMappings.reduce((acc, mapping) => {
       if (mapping.workflowParam && mapping.testValue) {
         let value: any = mapping.testValue;
@@ -128,7 +128,7 @@ export function WorkflowTestBuilder({
           try {
             value = JSON.parse(value);
           } catch {
-            // 保持原样
+            // Keep as-is
           }
         }
         acc[mapping.workflowParam] = value;
@@ -153,7 +153,7 @@ export function WorkflowTestBuilder({
           try {
             value = JSON.parse(value);
           } catch {
-            // 保持原样
+            // Keep as-is
           }
         }
         acc[mapping.workflowParam] = value;
@@ -172,7 +172,7 @@ export function WorkflowTestBuilder({
     newOutputs[index] = { ...newOutputs[index], [field]: value };
     setExpectedOutputs(newOutputs);
 
-    // 更新expectedOutput
+    // Update expected output
     const expectedOutput = newOutputs.reduce((acc, output) => {
       if (output.key && output.value) {
         try {
@@ -205,7 +205,7 @@ export function WorkflowTestBuilder({
 
   return (
     <div className="space-y-4">
-      {/* Workflow选择 */}
+      {/* Workflow selection */}
       <Card title="选择工作流" size="small">
         <div className="space-y-3">
           <div>
@@ -241,7 +241,7 @@ export function WorkflowTestBuilder({
         </div>
       </Card>
 
-      {/* 输入参数映射 */}
+      {/* Input parameter mapping */}
       <Card title="输入参数映射" size="small">
         <div className="space-y-3">
           <div className="text-sm text-gray-500">
@@ -332,7 +332,7 @@ export function WorkflowTestBuilder({
         </div>
       </Card>
 
-      {/* 预期输出配置 */}
+      {/* Expected output configuration */}
       <Card title="预期输出" size="small">
         <div className="space-y-3">
           <div className="text-sm text-gray-500">
@@ -388,7 +388,7 @@ export function WorkflowTestBuilder({
         </div>
       </Card>
 
-      {/* 测试执行 */}
+      {/* Test execution */}
       {selectedWorkflow && (
         <Card title="执行测试" size="small">
           <div className="flex items-center justify-between">

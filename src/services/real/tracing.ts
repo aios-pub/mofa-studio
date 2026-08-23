@@ -1,14 +1,14 @@
 /**
- * Tracing 真实 API
- * 后端端点: /api/tracing/...
+ * Tracing real API
+ * Backend endpoints: /api/tracing/...
  *
- * 注意: Trace 类型已按后端 snake_case 格式定义，无需转换
+ * Note: Trace types already follow backend snake_case; no conversion needed
  */
 
 import { apiClient } from "../api/apiClient";
 import type { Trace, TraceDetail, TracingStats, TracingFilter } from "@/types/tracing";
 
-// ==================== API 方法 ====================
+// ==================== API methods ====================
 
 const tracingRealApi = {
   async getTraces(params?: TracingFilter): Promise<{ data: Trace[] }> {
@@ -48,7 +48,7 @@ const tracingRealApi = {
     return response.blob();
   },
 
-  // 别名
+  // Alias
   getTracingStats: (): Promise<TracingStats> => tracingRealApi.getStats(),
 
   getSpans: (traceId: string): Promise<TraceDetail | null> => tracingRealApi.getTrace(traceId),

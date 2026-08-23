@@ -1,11 +1,11 @@
 /**
- * Analytics 真实 API
- * 后端端点: /api/analytics/...
+ * Analytics real API
+ * Backend endpoints: /api/analytics/...
  */
 
 import { apiClient } from "../api/apiClient";
 
-// 统一使用 snake_case 与后端保持一致
+// Use snake_case consistently to match the backend
 export interface UsageStats {
   total_conversations: number;
   total_tokens: number;
@@ -51,11 +51,11 @@ const analyticsRealApi = {
   export: (params?: { format?: string }) =>
     apiClient.get("/api/analytics/export", { params }),
 
-  // 别名方法
+  // Alias methods
   exportData: (format: string = "csv", params?: { start_date?: string; end_date?: string }) =>
     apiClient.get("/api/analytics/export", { params: { ...params, format } }),
 
-  // 兼容旧接口
+  // Legacy interface compatibility
   getUsageStats: (params?: { start_date?: string; end_date?: string }): Promise<UsageStats> =>
     apiClient.get("/api/analytics/overview", { params }),
 

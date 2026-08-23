@@ -1,6 +1,6 @@
 /**
- * Environment variable API 服务
- * 后端端点: /api/environment/...
+ * Environment variable API service
+ * Backend endpoints: /api/environment/...
  */
 
 import { apiClient } from "../api/apiClient";
@@ -10,7 +10,7 @@ import type {
   EnvironmentCreateData,
 } from "@/types/testset";
 
-// ==================== 数据映射 ====================
+// ==================== Data mapping ====================
 
 interface BackendEnvironment {
   id: string;
@@ -111,7 +111,7 @@ const environmentRealApi = {
     return true;
   },
 
-  // ==================== 获取当前活动环境 ====================
+  // ==================== Get active environment ====================
 
   getActive: async (): Promise<Environment | null> => {
     try {
@@ -122,7 +122,7 @@ const environmentRealApi = {
     }
   },
 
-  // ==================== 设置活动环境 ====================
+  // ==================== Set active environment ====================
 
   setActive: async (id: string): Promise<void> => {
     await apiClient.post(`/api/environment/active/set`, {

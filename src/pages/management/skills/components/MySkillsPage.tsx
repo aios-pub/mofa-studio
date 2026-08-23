@@ -1,6 +1,6 @@
 /**
  * My Skills Page
- * 显示当前用户拥有的技能
+ * Show skills owned by the current user
  */
 
 import { useEffect, useState } from "react";

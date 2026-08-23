@@ -1,5 +1,5 @@
 /**
- * 菜单管理页面
+ * Menu management page
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -230,7 +230,7 @@ export default function MenuManagementPage() {
     },
   ];
 
-  // 父菜单选项
+  // Parent menu options
   const parentMenuOptions = [
     {
       value: null,
@@ -284,7 +284,7 @@ export default function MenuManagementPage() {
         )}
       </div>
 
-      {/* 菜单编辑弹窗 */}
+      {/* Menu edit modal */}
       <Modal
         title={editingMenu ? "编辑菜单" : "新建菜单"}
         open={modalVisible}

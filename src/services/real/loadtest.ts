@@ -1,11 +1,11 @@
 /**
- * 压测 API 服务
- * 后端端点: /api/testset/load-test/...
+ * Load test API service
+ * Backend endpoints: /api/testset/load-test/...
  */
 
 import { apiClient } from "../api/apiClient";
 
-// ==================== 类型定义 ====================
+// ==================== Type definitions ====================
 
 interface LoadTestConfig {
   test_set_id: string;
@@ -44,7 +44,7 @@ interface LoadTest {
   start_time?: number;
 }
 
-// 后端实际返回的 LoadTestRuntimeStateDTO
+// LoadTestRuntimeStateDTO actually returned by the backend
 interface BackendLoadTestRuntimeState {
   load_test_id: string;
   test_set_id: string;
@@ -73,7 +73,7 @@ interface BackendLoadTestMetric {
   failed_requests: number;
 }
 
-// ==================== 数据映射 ====================
+// ==================== Data mapping ====================
 
 function mapLoadTest(raw: BackendLoadTestRuntimeState): LoadTest {
   return {
@@ -122,7 +122,7 @@ const loadTestRealApi = {
       target_rps: data.target_rps,
       target_url: targetUrl,
     });
-    // 后端创建后直接启动，构造本地状态
+    // Started right after backend creation; build local state
     return {
       id: raw.id,
       test_set_id: data.test_set_id,
@@ -161,7 +161,7 @@ const loadTestRealApi = {
     return rawList.map(mapLoadTestMetric);
   },
 
-  // ==================== 获取测试集的压测列表 ====================
+  // ==================== Get load tests for a test set ====================
 
   getByTestSet: async (_testSetId: string): Promise<LoadTest[]> => {
     const rawList = await apiClient.get<BackendLoadTestRuntimeState[]>(
@@ -170,7 +170,7 @@ const loadTestRealApi = {
     return rawList.map(mapLoadTest);
   },
 
-  // ==================== 获取所有压测任务 ====================
+  // ==================== Get all load test tasks ====================
 
   getAll: async (): Promise<LoadTest[]> => {
     const rawList = await apiClient.get<BackendLoadTestRuntimeState[]>(

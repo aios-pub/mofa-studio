@@ -1,13 +1,13 @@
 /**
- * 系统管理 Mock API
+ * System management mock API
  */
 
 import { BasicStatus, MenuType, type MenuItem, type SystemRole, type RoleFormData, type MenuFormData } from '../../types/system';
 
-// 模拟延迟
+// Simulated latency
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// ==================== 菜单数据 ====================
+// ==================== Menu data ====================
 const mockMenus: MenuItem[] = [
   {
     id: 'menu-1',
@@ -225,7 +225,7 @@ const mockMenus: MenuItem[] = [
   },
 ];
 
-// ==================== 角色数据 ====================
+// ==================== Role data ====================
 const mockRoles: SystemRole[] = [
   {
     id: 'role-1',
@@ -289,15 +289,15 @@ const mockRoles: SystemRole[] = [
   },
 ];
 
-// ==================== 菜单 API ====================
+// ==================== Menu API ====================
 export const menuApi = {
-  /** 获取所有菜单（树形结构） */
+  /** Get all menus (tree structure) */
   getAll: async (): Promise<MenuItem[]> => {
     await delay(300);
     return mockMenus;
   },
 
-  /** 获取扁平化菜单列表 */
+  /** Get the flattened menu list */
   getFlatList: async (): Promise<MenuItem[]> => {
     await delay(300);
     const flatten = (items: MenuItem[]): MenuItem[] => {
@@ -312,7 +312,7 @@ export const menuApi = {
     return flatten(mockMenus);
   },
 
-  /** 获取单个菜单 */
+  /** Get a single menu */
   getById: async (id: string): Promise<MenuItem | null> => {
     await delay(200);
     const findMenu = (items: MenuItem[]): MenuItem | null => {
@@ -328,7 +328,7 @@ export const menuApi = {
     return findMenu(mockMenus);
   },
 
-  /** 创建菜单 */
+  /** Create menu */
   create: async (data: MenuFormData): Promise<MenuItem> => {
     await delay(500);
     const newMenu: MenuItem = {
@@ -340,7 +340,7 @@ export const menuApi = {
     return newMenu;
   },
 
-  /** 更新菜单 */
+  /** Update menu */
   update: async (id: string, data: Partial<MenuFormData>): Promise<MenuItem | null> => {
     await delay(500);
     const menu = await menuApi.getById(id);
@@ -352,28 +352,28 @@ export const menuApi = {
     };
   },
 
-  /** 删除菜单 */
+  /** Delete menu */
   delete: async (_id: string): Promise<boolean> => {
     await delay(300);
     return true;
   },
 };
 
-// ==================== 角色 API ====================
+// ==================== Role API ====================
 export const roleApi = {
-  /** 获取所有角色 */
+  /** Get all roles */
   getAll: async (): Promise<SystemRole[]> => {
     await delay(300);
     return mockRoles;
   },
 
-  /** 获取单个角色 */
+  /** Get a single role */
   getById: async (id: string): Promise<SystemRole | null> => {
     await delay(200);
     return mockRoles.find(r => r.id === id) || null;
   },
 
-  /** 创建角色 */
+  /** Create role */
   create: async (data: RoleFormData): Promise<SystemRole> => {
     await delay(500);
     const newRole: SystemRole = {
@@ -385,7 +385,7 @@ export const roleApi = {
     return newRole;
   },
 
-  /** 更新角色 */
+  /** Update role */
   update: async (id: string, data: Partial<RoleFormData>): Promise<SystemRole | null> => {
     await delay(500);
     const role = mockRoles.find(r => r.id === id);
@@ -397,7 +397,7 @@ export const roleApi = {
     };
   },
 
-  /** 删除角色 */
+  /** Delete role */
   delete: async (_id: string): Promise<boolean> => {
     await delay(300);
     return true;

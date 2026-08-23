@@ -1,5 +1,5 @@
 /**
- * 管理面板组件 - 举报处理、技能隐藏、命名空间管理等管理操作
+ * Admin panel - report handling, skill hiding, namespace management, etc.
  */
 
 import { useEffect, useState } from "react";
@@ -267,7 +267,7 @@ export function AdminGovernancePanel() {
         )}
       </Card>
 
-      {/* 处理举报 Modal */}
+      {/* Report handling modal */}
       <Modal
         title={
           <Space>

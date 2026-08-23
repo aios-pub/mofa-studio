@@ -1,6 +1,6 @@
 /**
- * 用户管理页面
- * 使用 Ant Design 组件重构
+ * User management page
+ * Rebuilt with Ant Design components
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -96,10 +96,10 @@ export default function UsersPage() {
     loadUsers();
   }, [loadUsers]);
 
-  // 获取所有部门
+  // Get all departments
   const departments = [...new Set(users.map((u) => u.department))];
 
-  // 过滤用户
+  // Filter users
   const filteredUsers = users.filter((user) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
@@ -178,7 +178,7 @@ export default function UsersPage() {
     return num.toString();
   };
 
-  // 表格列配置
+  // Table column configuration
   const columns: ColumnsType<UserType> = [
     {
       title: t("user.userName", "用户"),
@@ -286,7 +286,7 @@ export default function UsersPage() {
     },
   ];
 
-  // 批量操作菜单
+  // Batch action menu
   const batchMenuItems = [
     {
       key: "active",
@@ -317,7 +317,7 @@ export default function UsersPage() {
         }
       />
 
-      {/* 筛选区域 */}
+      {/* Filter area */}
       <Card size="small">
         <Space wrap>
           <Input
@@ -369,7 +369,7 @@ export default function UsersPage() {
         </Space>
       </Card>
 
-      {/* 用户表格 */}
+      {/* Users table */}
       <Card>
         <Table
           columns={columns}
@@ -394,7 +394,7 @@ export default function UsersPage() {
         />
       </Card>
 
-      {/* 创建/编辑用户弹窗 */}
+      {/* Create/edit user modal */}
       <Modal
         title={
           editingUser

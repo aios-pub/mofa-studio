@@ -1,6 +1,6 @@
 /**
- * 登录Form component
- * 使用 AntDesign 组件保持风格一致
+ * Login form component
+ * Use Ant Design components for visual consistency
  */
 
 import { useState } from "react";
@@ -54,7 +54,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         refreshToken: res.refreshToken,
       });
       setUserInfo(res.user);
-      // 重定向到原始页面或首页
+      // Redirect to the original page or home
       const from = (location.state as any)?.from || "/";
       navigate(from, { replace: true });
     } catch (err) {
@@ -64,10 +64,10 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     }
   };
 
-  // 社交登录
+  // Social login
   const handleSocialLogin = (provider: string) => {
     console.log(`Login with ${provider}`);
-    // TODO: 实现社交登录
+    // TODO: implement social login
   };
 
   return (
@@ -90,10 +90,10 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         </p>
       </div>
 
-      {/* 错误提示 */}
+      {/* Error hint */}
       {error && <Alert title={error} type="error" showIcon className="mb-4" />}
 
-      {/* 表单 */}
+      {/* Form */}
       <Form
         form={form}
         onFinish={handleSubmit}
@@ -101,7 +101,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         requiredMark={false}
         initialValues={{ rememberMe: true }}
       >
-        {/* 用户名 */}
+        {/* Username */}
         <Form.Item
           name="username"
           label={t("auth.username", "用户名")}
@@ -121,7 +121,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
           />
         </Form.Item>
 
-        {/* 密码 */}
+        {/* Password */}
         <Form.Item
           name="password"
           label={t("auth.password", "密码")}
@@ -144,7 +144,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
           />
         </Form.Item>
 
-        {/* 记住我 & 忘记密码 */}
+        {/* Remember me & forgot password */}
         <div className="flex items-center justify-between mb-4">
           <Checkbox
             checked={rememberMe}
@@ -159,7 +159,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
           </Button>
         </div>
 
-        {/* 登录按钮 */}
+        {/* Login button */}
         <Form.Item>
           <Button
             type="primary"
@@ -177,14 +177,14 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         </Form.Item>
       </Form>
 
-      {/* 分隔线 */}
+      {/* Divider */}
       <Divider className="!my-6 !text-[var(--color-text-tertiary)]">
         <span className="text-xs">
           {t("auth.orContinueWith", "或使用其他方式")}
         </span>
       </Divider>
 
-      {/* 社交登录 */}
+      {/* Social login */}
       <div className="flex justify-center gap-4 mb-6">
         <Button
           shape="circle"
@@ -209,7 +209,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         />
       </div>
 
-      {/* 注册入口 */}
+      {/* Register entry */}
       <div className="text-center text-sm">
         <span className="text-[var(--color-text-secondary)]">
           {t("auth.noAccount", "还没有账户？")}
@@ -219,7 +219,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         </Button>
       </div>
 
-      {/* 测试账户提示 */}
+      {/* Test account notice */}
       <div className="mt-6 p-3 rounded-lg bg-[var(--color-bg-secondary)] border border-(--color-border)">
         <p className="text-xs font-medium text-[var(--color-text-secondary)] mb-2">
           {t("auth.testAccounts", "测试账户：")}

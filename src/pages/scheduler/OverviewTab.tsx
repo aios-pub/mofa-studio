@@ -1,6 +1,6 @@
 /**
- * 概览仪表盘 Tab
- * 参考 apalis-board Home 页面：统计卡片(含迷你Bar chart) + 任务类型卡片(活动图)
+ * Overview dashboard tab
+ * Modeled on apalis-board home: stats cards (with mini bar chart) + task type cards (activity chart)
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -18,7 +18,7 @@ import type {
 } from "@/services";
 import { scheduledTaskApi, taskTypeConfig } from "@/services";
 
-// 合并后端动态类型 + 前端静态 fallback
+// Merge backend dynamic types + frontend static fallback
 function getTaskTypeConfig(type: string, dynamicTypes: TaskTypeDescriptor[]) {
   const dynamic = dynamicTypes.find((t) => t.task_type === type);
   if (dynamic)
@@ -36,7 +36,7 @@ function getTaskTypeConfig(type: string, dynamicTypes: TaskTypeDescriptor[]) {
   );
 }
 
-// 按日期分组执行记录，返回最近 N 天的执行数量
+// Group execution records by date; return counts for the last N days
 function groupExecutionsByDay(
   executions: TaskExecution[],
   days: number,
@@ -58,7 +58,7 @@ function groupExecutionsByDay(
   return result;
 }
 
-// 迷你Bar chart组件（参考 apalis-board stats_card / queue_card 活动图）
+// Mini bar chart component (see apalis-board stats_card / queue_card activity chart)
 function MiniBarChart({
   data,
   height = "h-8",
@@ -85,7 +85,7 @@ function MiniBarChart({
   );
 }
 
-// 统计卡片（参考 apalis-board stats_card）
+// Stats card (see apalis-board stats_card)
 function StatCard({
   title,
   value,
@@ -135,7 +135,7 @@ function StatCard({
   );
 }
 
-// 任务类型卡片（参考 apalis-board queue_card）
+// Task type card (see apalis-board queue_card)
 function TypeCard({
   type,
   tasks,
@@ -272,16 +272,16 @@ export default function OverviewTab({ onNavigateToTasks }: Props) {
     return map;
   }, [tasks]);
 
-  // 真实活动数据：最近 10 天执行次数
+  // Real activity data: execution counts for the last 10 days
   const statsActivity = useMemo(
     () => groupExecutionsByDay(executions, 10),
     [executions],
   );
 
-  // 按任务类型分组的活动数据
+  // Activity data grouped by task type
   const activityByType = useMemo(() => {
     const map: Record<string, number[]> = {};
-    // 建立 task_id → type 的映射
+    // Build task_id -> type mapping
     const task_typeMap: Record<string, string> = {};
     tasks.forEach((t) => {
       task_typeMap[t.id] = t.type;
@@ -308,7 +308,7 @@ export default function OverviewTab({ onNavigateToTasks }: Props) {
 
   return (
     <div className="p-4 space-y-8 overflow-y-auto h-full">
-      {/* 统计概览 */}
+      {/* Statistics overview */}
       <section>
         <h2 className="text-base font-semibold text-[var(--color-text-primary)] mb-1">
           概览
@@ -352,7 +352,7 @@ export default function OverviewTab({ onNavigateToTasks }: Props) {
         </div>
       </section>
 
-      {/* 任务类型卡片 */}
+      {/* Task type cards */}
       <section>
         <h2 className="text-base font-semibold text-[var(--color-text-primary)] mb-1">
           任务类型

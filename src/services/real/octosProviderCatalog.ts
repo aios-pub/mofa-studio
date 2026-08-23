@@ -1,6 +1,6 @@
 /**
- * Octos Provider 静态目录
- * 从 Octos 项目同步的 providers.json，用于 Provider/Model 选择
+ * Octos provider static catalog
+ * providers.json synced from the Octos project, used for provider/model selection
  */
 
 import type { OctosProviderCatalogEntry } from "@/types/octos";

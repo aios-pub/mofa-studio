@@ -1,8 +1,8 @@
 /**
- * Monitoring Mock 数据和 API
+ * Monitoring mock data and API
  */
 
-// Agent status类型 - 使用 snake_case 与后端保持一致
+// Agent status types - snake_case to match the backend
 export interface AgentStatus {
   agent_id: string;
   agent_name: string;
@@ -17,7 +17,7 @@ export interface AgentStatus {
   };
 }
 
-// 活动事件类型
+// Activity event types
 export interface ActivityEvent {
   id: string;
   timestamp: Date;
@@ -36,7 +36,7 @@ export interface ActivityEvent {
   metadata?: Record<string, unknown>;
 }
 
-// 系统指标类型
+// System metric types
 export interface SystemMetrics {
   cpu: number;
   memory: number;
@@ -46,7 +46,7 @@ export interface SystemMetrics {
   timestamp: Date;
 }
 
-// 告警类型
+// Alert types
 export interface Alert {
   id: string;
   type: "error" | "warning" | "info";
@@ -58,7 +58,7 @@ export interface Alert {
   acknowledged: boolean;
 }
 
-// Mock 数据
+// Mock data
 const mockAgentStatuses: AgentStatus[] = [
   {
     agent_id: "agent-1",
@@ -226,7 +226,7 @@ const mockAlerts: Alert[] = [
   },
 ];
 
-// 生成随机系统指标
+// Generate random system metrics
 const generateSystemMetrics = (): SystemMetrics => ({
   cpu: 30 + Math.random() * 40,
   memory: 40 + Math.random() * 30,
@@ -236,36 +236,36 @@ const generateSystemMetrics = (): SystemMetrics => ({
   timestamp: new Date(),
 });
 
-// 模拟延迟
+// Simulated latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Monitoring API Mock
 export const monitoringApi = {
-  // 获取所有 Agent status
+  // Get all agent statuses
   async getAgentStatuses(): Promise<AgentStatus[]> {
     await delay(300);
     return mockAgentStatuses;
   },
 
-  // 获取单个 Agent status
+  // Get a single agent's status
   async getAgentStatus(agentId: string): Promise<AgentStatus | undefined> {
     await delay(200);
     return mockAgentStatuses.find((a) => a.agent_id === agentId);
   },
 
-  // 获取活动事件流
+  // Get activity event stream
   async getActivityEvents(limit = 50): Promise<ActivityEvent[]> {
     await delay(200);
     return mockActivityEvents.slice(0, limit);
   },
 
-  // 获取系统指标
+  // Get system metrics
   async getSystemMetrics(): Promise<SystemMetrics> {
     await delay(100);
     return generateSystemMetrics();
   },
 
-  // 获取告警列表
+  // Get alert list
   async getAlerts(acknowledged?: boolean): Promise<Alert[]> {
     await delay(200);
     let alerts = mockAlerts;
@@ -275,7 +275,7 @@ export const monitoringApi = {
     return alerts.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   },
 
-  // 确认告警
+  // Acknowledge alert
   async acknowledgeAlert(alertId: string): Promise<boolean> {
     await delay(200);
     const alert = mockAlerts.find((a) => a.id === alertId);
@@ -286,7 +286,7 @@ export const monitoringApi = {
     return false;
   },
 
-  // 订阅实时更新（模拟）
+  // Subscribe to real-time updates (simulated)
   subscribeToUpdates(callback: (event: ActivityEvent) => void): () => void {
     const eventTypes: ActivityEvent["type"][] = [
       "conversation_start",
@@ -325,7 +325,7 @@ export const monitoringApi = {
     return () => clearInterval(interval);
   },
 
-  // 订阅系统指标更新（模拟）
+  // Subscribe to system metric updates (simulated)
   subscribeToMetrics(callback: (metrics: SystemMetrics) => void): () => void {
     const interval = setInterval(() => {
       callback(generateSystemMetrics());
@@ -335,7 +335,7 @@ export const monitoringApi = {
   },
 };
 
-// 获取事件详情
+// Get event details
 function getEventDetails(type: ActivityEvent["type"]): string {
   switch (type) {
     case "conversation_start":

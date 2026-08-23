@@ -1,6 +1,6 @@
 /**
  * API Token Management Component
- * 管理个人 API Access token
+ * Manage personal API access tokens
  */
 
 import { useEffect, useState } from 'react';

@@ -1,6 +1,6 @@
 /**
- * Agent Evaluation页面
- * 使用 Ant Design 组件重构
+ * Agent evaluation page
+ * Rebuilt with Ant Design components
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -60,7 +60,7 @@ export default function EvaluationPage() {
   const [createLoading, setCreateLoading] = useState(false);
   const [createForm] = Form.useForm();
 
-  // 加载数据
+  // Load data
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
@@ -118,7 +118,7 @@ export default function EvaluationPage() {
     loadData();
   }, [loadData]);
 
-  // 创建Evaluation
+  // Create evaluation
   const handleCreateEvaluation = async () => {
     try {
       const values = await createForm.validateFields();
@@ -141,7 +141,7 @@ export default function EvaluationPage() {
     }
   };
 
-  // 删除Evaluation
+  // Delete evaluation
   const handleDeleteEvaluation = (record: EvaluationRecord) => {
     Modal.confirm({
       title: t("evaluation.confirmDelete", "确认删除"),
@@ -157,7 +157,7 @@ export default function EvaluationPage() {
     });
   };
 
-  // 获取趋势图标
+  // Get trend icon
   const getTrendIcon = (trend: "up" | "down" | "stable") => {
     switch (trend) {
       case "up":
@@ -169,14 +169,14 @@ export default function EvaluationPage() {
     }
   };
 
-  // 获取评分颜色
+  // Get rating color
   const getScoreColor = (score: number) => {
     if (score >= 8) return "#22c55e";
     if (score >= 6) return "#f59e0b";
     return "#ef4444";
   };
 
-  // 表格列配置
+  // Table column configuration
   const columns: ColumnsType<EvaluationRecord> = [
     {
       title: t("evaluation.agent", "Agent"),
@@ -269,7 +269,7 @@ export default function EvaluationPage() {
     },
   ];
 
-  // 展开行渲染
+  // Expanded row rendering
   const expandedRowRender = (record: EvaluationRecord) => {
     const metricScores = record.metrics || [];
 
@@ -313,7 +313,7 @@ export default function EvaluationPage() {
 
   return (
     <div className="space-y-4">
-      {/* 页面头部 */}
+      {/* Page header */}
       <Card>
         <div className="flex items-center justify-between">
           <Space>
@@ -345,7 +345,7 @@ export default function EvaluationPage() {
         </div>
       </Card>
 
-      {/* Agent 概览卡片 */}
+      {/* Agent overview cards */}
       <Row gutter={[16, 16]}>
         {summaries.slice(0, 4).map((summary) => (
           <Col key={summary.agentId} xs={24} sm={12} md={6}>
@@ -389,7 +389,7 @@ export default function EvaluationPage() {
         ))}
       </Row>
 
-      {/* 筛选工具栏 */}
+      {/* Filter toolbar */}
       <Card size="small">
         <Space>
           <FilterOutlined className="text-[var(--color-text-tertiary)]" />
@@ -409,7 +409,7 @@ export default function EvaluationPage() {
         </Space>
       </Card>
 
-      {/* Evaluation记录表格 */}
+      {/* Evaluation records table */}
       <Card>
         <Table
           columns={columns}
@@ -435,7 +435,7 @@ export default function EvaluationPage() {
         />
       </Card>
 
-      {/* 创建Evaluation Modal */}
+      {/* Create evaluation modal */}
       <Modal
         title={t("evaluation.createEvaluation", "新建评估")}
         open={showCreateModal}

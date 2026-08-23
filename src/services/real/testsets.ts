@@ -1,6 +1,6 @@
 /**
- * TestSets 真实 API
- * 后端端点: /api/testset/...
+ * Test sets real API
+ * Backend endpoints: /api/testset/...
  */
 
 import { apiClient } from "../api/apiClient";
@@ -24,7 +24,7 @@ import type {
   TestExecutionResult,
 } from "../../types/documentation";
 
-// ==================== 数据映射 ====================
+// ==================== Data mapping ====================
 
 interface BackendTestSet {
   id: string;
@@ -286,7 +286,7 @@ const testSetRealApi = {
     return mapTestReport(raw);
   },
 
-  // 别名
+  // Alias
   runTestSet: async (
     testSetId: string,
     agentId: string,

@@ -1,5 +1,5 @@
 /**
- * 部门管理页面
+ * Department management page
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -46,7 +46,7 @@ export default function DepartmentsPage() {
     loadDepartments();
   }, [loadDepartments]);
 
-  // 加载部门成员
+  // Load department members
   useEffect(() => {
     if (selectedDepartment) {
       organizationApi
@@ -55,7 +55,7 @@ export default function DepartmentsPage() {
     }
   }, [selectedDepartment]);
 
-  // 过滤部门
+  // Filter departments
   const filteredDepartments = departments.filter((dept) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
@@ -74,14 +74,14 @@ export default function DepartmentsPage() {
     loadDepartments();
   };
 
-  // 统计信息
+  // Statistics info
   const totalMembers = departments.reduce((sum, d) => sum + d.memberCount, 0);
 
   return (
     <div className="flex h-full">
-      {/* 左侧列表 */}
+      {/* Left list */}
       <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]" storageKey="sidebar:departments">
-        {/* 头部 */}
+        {/* Header */}
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
@@ -94,7 +94,7 @@ export default function DepartmentsPage() {
             />
           </div>
 
-          {/* 搜索 */}
+          {/* Search */}
           <Input
             placeholder="搜索部门..."
             prefix={<SearchOutlined />}
@@ -103,7 +103,7 @@ export default function DepartmentsPage() {
             allowClear
           />
 
-          {/* 统计 */}
+          {/* Statistics */}
           <div className="flex items-center gap-4 text-xs text-[var(--color-text-tertiary)]">
             <span>{departments.length} 个部门</span>
             <span>•</span>
@@ -111,7 +111,7 @@ export default function DepartmentsPage() {
           </div>
         </div>
 
-        {/* 列表 */}
+        {/* List */}
         <div className="flex-1 overflow-y-auto p-2">
           {loading ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">
@@ -164,7 +164,7 @@ export default function DepartmentsPage() {
         </div>
       </ResizableSidebar>
 
-      {/* 右侧详情 */}
+      {/* Right details */}
       <div className="flex-1 overflow-y-auto">
         {selectedDepartment ? (
           <div className="p-6">
@@ -194,7 +194,7 @@ export default function DepartmentsPage() {
               </div>
             </div>
 
-            {/* 部门信息 */}
+            {/* Department information */}
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
                 <span className="text-xs text-[var(--color-text-tertiary)]">
@@ -222,7 +222,7 @@ export default function DepartmentsPage() {
               </div>
             </div>
 
-            {/* 成员列表 */}
+            {/* Member list */}
             <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
               <div className="p-3 border-b border-(--color-border) flex items-center justify-between">
                 <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
@@ -293,7 +293,7 @@ export default function DepartmentsPage() {
         )}
       </div>
 
-      {/* 创建/编辑部门弹窗 */}
+      {/* Create/edit department modal */}
       {(showCreateModal || editingDepartment) && (
         <DepartmentModal
           department={editingDepartment}
@@ -320,7 +320,7 @@ export default function DepartmentsPage() {
   );
 }
 
-// 部门编辑弹窗
+// Department edit modal
 function DepartmentModal({
   department,
   onClose,

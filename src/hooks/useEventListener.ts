@@ -1,18 +1,18 @@
 /**
- * 事件监听 Hook
- * 提供通用的事件监听和常用事件状态
+ * Event listening hook
+ * Provides generic event listening and common event states
  */
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 
-// ==================== 通用事件监听 ====================
+// ==================== Generic event listening ====================
 
 /**
- * 通用事件监听 Hook
- * @param target 目标元素或 ref
- * @param eventName 事件名称
- * @param handler 事件处理函数
- * @param options 事件选项
+ * Generic event listening hook
+ * @param target Target element or ref
+ * @param eventName Event name
+ * @param handler Event handler
+ * @param options Event options
  */
 export function useEventListener<
   T extends HTMLElement | Window | Document | MediaQueryList,
@@ -54,7 +54,7 @@ export interface WindowSize {
 
 /**
  * Window dimensions Hook
- * @returns 窗口宽度和高度
+ * @returns Window width and height
  */
 export function useWindowSize(): WindowSize {
   const [windowSize, setWindowSize] = useState<WindowSize>({
@@ -74,7 +74,7 @@ export function useWindowSize(): WindowSize {
   return windowSize;
 }
 
-// ==================== 鼠标位置 ====================
+// ==================== Mouse position ====================
 
 export interface MousePosition {
   x: number;
@@ -95,8 +95,8 @@ const initialMousePosition: MousePosition = {
 };
 
 /**
- * 鼠标位置 Hook
- * @returns 鼠标位置信息
+ * Mouse position hook
+ * @returns Mouse position info
  */
 export function useMousePosition(): MousePosition {
   const [position, setPosition] = useState<MousePosition>(initialMousePosition);
@@ -118,9 +118,9 @@ export function useMousePosition(): MousePosition {
 }
 
 /**
- * 元素内鼠标位置 Hook
- * @param ref 元素 ref
- * @returns 相对于元素的鼠标位置
+ * Mouse position within element hook
+ * @param ref Element ref
+ * @returns Mouse position relative to element
  */
 export function useMousePositionInElement<T extends HTMLElement>(
   ref: React.RefObject<T | null>
@@ -144,7 +144,7 @@ export function useMousePositionInElement<T extends HTMLElement>(
   return state;
 }
 
-// ==================== 滚动位置 ====================
+// ==================== Scroll position ====================
 
 export interface ScrollPosition {
   x: number;
@@ -155,8 +155,8 @@ export interface ScrollPosition {
 }
 
 /**
- * 滚动位置 Hook
- * @returns 滚动位置信息
+ * Scroll position hook
+ * @returns Scroll position info
  */
 export function useScrollPosition(): ScrollPosition {
   const [scrollPosition, setScrollPosition] = useState<ScrollPosition>({
@@ -207,9 +207,9 @@ export function useScrollPosition(): ScrollPosition {
 }
 
 /**
- * 元素滚动位置 Hook
- * @param ref 元素 ref
- * @returns 元素滚动位置信息
+ * Element scroll position hook
+ * @param ref Element ref
+ * @returns Element scroll position info
  */
 export function useElementScrollPosition<T extends HTMLElement>(
   ref: React.RefObject<T | null>
@@ -237,7 +237,7 @@ export function useElementScrollPosition<T extends HTMLElement>(
   return scrollInfo;
 }
 
-// ==================== 网络状态 ====================
+// ==================== Network status ====================
 
 export interface NetworkState {
   isOnline: boolean;
@@ -247,8 +247,8 @@ export interface NetworkState {
 }
 
 /**
- * 网络状态 Hook
- * @returns 网络状态信息
+ * Network status hook
+ * @returns Network status info
  */
 export function useNetworkState(): NetworkState {
   const [networkState, setNetworkState] = useState<NetworkState>({
@@ -266,7 +266,7 @@ export function useNetworkState(): NetworkState {
   useEventListener(window as any, 'online', handleOnline);
   useEventListener(window as any, 'offline', handleOffline);
 
-  // 获取网络信息 (Network Information API)
+  // Get network info (Network Information API)
   useEffect(() => {
     if (typeof navigator === 'undefined') return;
 
@@ -291,12 +291,12 @@ export function useNetworkState(): NetworkState {
   return networkState;
 }
 
-// ==================== 点击外部 ====================
+// ==================== Click outside ====================
 
 /**
- * 点击外部 Hook
- * @param ref 元素 ref
- * @param handler 点击外部时的回调
+ * Click outside hook
+ * @param ref Element ref
+ * @param handler Callback on outside click
  */
 export function useClickOutside<T extends HTMLElement>(
   ref: React.RefObject<T | null>,

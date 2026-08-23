@@ -54,7 +54,7 @@ const MENU_HEIGHT = 380;
 const MENU_GAP = 12;
 const EDGE_PEEK = 32;
 
-// ✅ 闲置气泡的触发间隔范围（milliseconds）
+// Idle bubble trigger interval range (milliseconds)
 const IDLE_BUBBLE_MIN_INTERVAL = 15000;
 const IDLE_BUBBLE_MAX_INTERVAL = 45000;
 
@@ -170,13 +170,13 @@ export default function FloatingApp() {
   const stateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const idleBubbleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ✅ 用 ref Tracing expanded 状态，避免 showBubbleMessage 依赖 expanded 导致连锁重建
+  // Track expanded in a ref to avoid showBubbleMessage rebuilding on expanded changes
   const expandedRef = useRef(expanded);
   useEffect(() => {
     expandedRef.current = expanded;
   }, [expanded]);
 
-  // ========== 辅助函数 ==========
+  // ========== Helpers ==========
 
   const updateBubblePlacement = useCallback(async () => {
     if (!appWindow) return;
@@ -188,7 +188,7 @@ export default function FloatingApp() {
       const logX = pos.x / s;
       setBubbleOnLeft(logX > bounds.x + bounds.width / 2);
     } catch {
-      // 忽略错误
+      // Ignore errors
     }
   }, [appWindow]);
 
@@ -197,7 +197,7 @@ export default function FloatingApp() {
       if (bubbleTimeoutRef.current) {
         clearTimeout(bubbleTimeoutRef.current);
       }
-      // ✅ 仅在收起状态下根据屏幕位置更新方向；展开时由 menuPlacement 决定
+      // Only update direction by screen position when collapsed; menuPlacement decides when expanded
       if (!expandedRef.current) {
         void updateBubblePlacement();
       }
@@ -238,16 +238,16 @@ export default function FloatingApp() {
     }
   }, []);
 
-  // ========== ✅ 闲置气泡定时器 ==========
+  // ========== Idle bubble timer ==========
 
   useEffect(() => {
-    // 清理旧定时器
+    // Clear old timers
     if (idleBubbleTimerRef.current) {
       clearTimeout(idleBubbleTimerRef.current);
       idleBubbleTimerRef.current = null;
     }
 
-    // 仅在未展开菜单、且处于 idle 状态时，定期弹出闲置气泡
+    // Periodically show idle bubbles only when the menu is collapsed and state is idle
     if (expanded || petState !== "idle") return;
 
     const scheduleNextBubble = () => {
@@ -256,10 +256,10 @@ export default function FloatingApp() {
         Math.random() * (IDLE_BUBBLE_MAX_INTERVAL - IDLE_BUBBLE_MIN_INTERVAL);
 
       idleBubbleTimerRef.current = setTimeout(() => {
-        // ✅ 使用 getRandomMessage 触发闲置气泡
+        // Trigger idle bubbles with getRandomMessage
         const message = getRandomMessage("idle");
         showBubbleMessage(message, 4000);
-        // 递归调度下一次
+        // Schedule the next run recursively
         scheduleNextBubble();
       }, delay);
     };
@@ -274,7 +274,7 @@ export default function FloatingApp() {
     };
   }, [expanded, petState, showBubbleMessage]);
 
-  // ========== 窗口操作 ==========
+  // ========== Window operations ==========
 
   const snapToEdge = useCallback(async () => {
     if (!appWindow) return;
@@ -448,7 +448,7 @@ export default function FloatingApp() {
       return;
     }
 
-    // ✅ 收起时清除正在显示的气泡，防止切换到收起布局时位置突变
+    // Clear visible bubbles when collapsing to avoid position jumps
     setShowBubble(false);
     if (bubbleTimeoutRef.current) {
       clearTimeout(bubbleTimeoutRef.current);
@@ -472,7 +472,7 @@ export default function FloatingApp() {
     }
   }, [expanded, collapseMenu, expandMenu]);
 
-  // ========== 桌宠交互 ==========
+  // ========== Desktop pet interaction ==========
 
   const handlePlay = useCallback(() => {
     clearStateTimeout();
@@ -480,7 +480,7 @@ export default function FloatingApp() {
     setIsSpinning(true);
     spawnParticles("✨", 6);
     spawnParticles("💖", 4);
-    // ✅ 使用 getRandomMessage 而非硬编码
+    // Use getRandomMessage instead of hardcoding
     showBubbleMessage(getRandomMessage("happy"), 2500);
     setTimeout(() => setIsSpinning(false), 600);
     stateTimeoutRef.current = setTimeout(() => setPetState("idle"), 2500);
@@ -489,7 +489,7 @@ export default function FloatingApp() {
   const handleSleep = useCallback(() => {
     clearStateTimeout();
     setPetState("sleepy");
-    // ✅ 使用 getRandomMessage
+    // Use getRandomMessage
     showBubbleMessage(getRandomMessage("sleepy"), 4000);
     stateTimeoutRef.current = setTimeout(() => {
       setPetState("idle");
@@ -502,12 +502,12 @@ export default function FloatingApp() {
     spawnParticles("🍎", 4);
     spawnParticles("💕", 3);
     setPetState("happy");
-    // ✅ 使用 getRandomMessage
+    // Use getRandomMessage
     showBubbleMessage(getRandomMessage("happy"), 2500);
     stateTimeoutRef.current = setTimeout(() => setPetState("idle"), 2500);
   }, [spawnParticles, showBubbleMessage, clearStateTimeout]);
 
-  // ========== 事件处理 ==========
+  // ========== Event handling ==========
 
   const handlePointerDown = (event: ReactPointerEvent) => {
     if (!appWindow || expanded || event.button !== 0) return;
@@ -520,7 +520,7 @@ export default function FloatingApp() {
       if (isMouseDownRef.current && !isDraggingRef.current) {
         isDraggingRef.current = true;
         setPetState("dragging");
-        // ✅ 拖拽时显示 dragging Messages
+        // Show dragging message while dragging
         showBubbleMessage(getRandomMessage("dragging"), 3000);
         void appWindow.startDragging();
       }
@@ -544,7 +544,7 @@ export default function FloatingApp() {
       }
       isDraggingRef.current = true;
       setPetState("dragging");
-      // ✅ 拖拽时显示 dragging Messages
+      // Show dragging message while dragging
       showBubbleMessage(getRandomMessage("dragging"), 3000);
       void appWindow.startDragging();
     }
@@ -593,7 +593,7 @@ export default function FloatingApp() {
     setContextMenuVisible(true);
   };
 
-  // ========== 其他操作 ==========
+  // ========== Other actions ==========
 
   const toggleAlwaysOnTop = async () => {
     if (!appWindow) return;
@@ -713,7 +713,7 @@ export default function FloatingApp() {
     return () => unlisten?.();
   }, [appWindow]);
 
-  // ✅ 新增：首次加载时显示欢迎气泡
+  // Show a welcome bubble on first load
   useEffect(() => {
     const timer = setTimeout(() => {
       showBubbleMessage("你好呀! 👋", 3000);
@@ -721,7 +721,7 @@ export default function FloatingApp() {
     return () => clearTimeout(timer);
   }, [showBubbleMessage]);
 
-  // ✅ 清理所有定时器
+  // Clear all timers
   useEffect(() => {
     return () => {
       if (bubbleTimeoutRef.current) clearTimeout(bubbleTimeoutRef.current);
@@ -731,7 +731,7 @@ export default function FloatingApp() {
     };
   }, []);
 
-  // ========== 渲染 ==========
+  // ========== Rendering ==========
 
   const ballStyle = expanded
     ? getExpandedBallStyle(menuPlacement)
@@ -747,23 +747,23 @@ export default function FloatingApp() {
     return classes.join(" ");
   };
 
-  // ✅ 展开时根据菜单方位决定气泡方向；收起时用屏幕位置
-  // 气泡必须朝向菜单一侧（窗口内有空间的方向），否则超出窗口会被裁剪
+  // When expanded, bubble direction follows menu placement; screen position when collapsed
+  // The bubble must face the menu side (where there is space in the window), otherwise it gets clipped
   const effectiveBubbleOnLeft = expanded
     ? menuPlacement.horizontal === "left"
     : bubbleOnLeft;
 
-  // ✅ 展开时用内联样式精确定位气泡到球旁、菜单上方，避免遮挡菜单操作区
+  // When expanded, position the bubble inline next to the ball and above the menu to avoid covering menu actions
   const bubblePositionStyle: CSSProperties | undefined = expanded
     ? {
         position: "absolute",
         zIndex: 100,
         pointerEvents: "none",
-        // 垂直方向：与球对齐
+        // Vertical: aligned with the ball
         ...(menuPlacement.vertical === "down"
           ? { top: 14 }
           : { bottom: 14, top: "auto" }),
-        // 水平方向：紧贴球的菜单侧
+        // Horizontal: flush with the menu side of the ball
         ...(menuPlacement.horizontal === "right"
           ? { left: BALL_SIZE + 8, right: "auto" }
           : { right: BALL_SIZE + 8, left: "auto" }),
@@ -772,7 +772,7 @@ export default function FloatingApp() {
 
   return (
     <div className={`floating-root ${expanded ? "is-expanded" : ""}`}>
-      {/* ✅ 移除 !expanded 条件，展开时也能显示气泡 */}
+      {/* NOTE: removed the !expanded condition so bubbles also show when expanded */}
       {showBubble && (
         <div
           className={`pet-bubble ${effectiveBubbleOnLeft ? "is-left" : ""} ${

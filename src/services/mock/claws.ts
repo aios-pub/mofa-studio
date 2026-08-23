@@ -1,6 +1,6 @@
 /**
- * Claw Mock API（非 CRUD 部分）
- * CRUD 已统一到 agentApi，此处保留渠道代理、CLI 会话、测试等操作
+ * Claw mock API (non-CRUD part)
+ * CRUD is unified in agentApi; channel proxy, CLI sessions and test operations remain here
  */
 
 import type { ClawChannelMapping, CliToolSession, ChannelProxyInfo } from "@/types";

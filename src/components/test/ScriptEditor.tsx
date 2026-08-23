@@ -1,7 +1,7 @@
 /**
- * 脚本编辑器组件
- * 支持JavaScript语法高亮和代码提示
- * 类似Postman的脚本编辑功能
+ * Script editor component
+ * Supports JavaScript syntax highlighting and code completion
+ * Postman-like script editing
  */
 
 import { useState, useRef, useEffect } from "react";
@@ -26,16 +26,16 @@ interface ScriptEditorProps {
   readOnly?: boolean;
 }
 
-// 脚本示例代码
+// Sample script code
 const SCRIPT_EXAMPLES: Record<ScriptType, { label: string; code: string }[]> = {
   pre_request: [
     {
       label: "设置环境变量",
-      code: `// 设置Environment variable
+      code: `// Set environment variable
 pm.environment.set("baseUrl", "https://api.example.com");
 pm.environment.set("timestamp", Date.now().toString());
 
-// 从响应中提取数据
+// Extract data from the response
 const token = pm.environment.get("auth_token");
 if (token) {
   pm.request.headers["Authorization"] = \`Bearer \${token}\`;
@@ -43,21 +43,21 @@ if (token) {
     },
     {
       label: "生成随机数据",
-      code: `// 生成随机用户ID
+      code: `// Generate a random user ID
 const userId = Math.floor(Math.random() * 10000);
 pm.environment.set("user_id", userId);
 
-// 生成随机邮箱
+// Generate random email
 const email = \`user\${userId}@example.com\`;
 pm.environment.set("user_email", email);`,
     },
     {
       label: "数据处理",
-      code: `// Base64编码
+      code: `// Base64 encoding
 const encoded = pm.utils.base64Encode("hello world");
 pm.environment.set("encoded_data", encoded);
 
-// JSON解析
+// JSON parsing
 const data = pm.utils.jsonParse('{"name": "test"}');
 pm.environment.set("data_name", data.name);`,
     },
@@ -65,25 +65,25 @@ pm.environment.set("data_name", data.name);`,
   test: [
     {
       label: "状态码检查",
-      code: `// 检查响应状态码
+      code: `// Check the response status code
 pm.test("Status code is 200", function() {
   pm.response.statusCode === 200;
 });
 
-// 检查响应时间
+// Check response time
 pm.test("Response time is less than 500ms", function() {
   pm.response.responseTime < 500;
 });`,
     },
     {
       label: "响应内容验证",
-      code: `// 检查响应包含特定内容
+      code: `// Check that the response contains specific content
 pm.test("Response contains expected data", function() {
   const body = pm.response.body;
   body.includes("success");
 });
 
-// 解析JSON响应
+// Parse JSON response
 pm.test("Response has correct structure", function() {
   const data = pm.utils.jsonParse(pm.response.body);
   data && data.status === "ok";
@@ -91,12 +91,12 @@ pm.test("Response has correct structure", function() {
     },
     {
       label: "Header验证",
-      code: `// 检查响应头
+      code: `// Check response headers
 pm.test("Content-Type is present", function() {
   pm.response.headers["Content-Type"]?.includes("application/json");
 });
 
-// 检查Custom头
+// Check custom headers
 pm.test("Custom header exists", function() {
   pm.response.headers["X-Custom-Header"];
 });`,
@@ -159,7 +159,7 @@ export function ScriptEditor({
     const end = textarea.selectionEnd;
     const currentValue = script;
 
-    // 只在需要时添加换行符，避免产生多余空行
+    // Add newlines only when needed to avoid extra blank lines
     const prefix = start > 0 && currentValue[start - 1] !== "\n" ? "\n" : "";
     const suffix = end < currentValue.length && currentValue[end] !== "\n" ? "\n" : "";
 
@@ -172,7 +172,7 @@ export function ScriptEditor({
 
     handleChange(newValue);
 
-    // 重新聚焦并设置光标位置
+    // Refocus and set the cursor position
     if (focusTimeoutRef.current) {
       clearTimeout(focusTimeoutRef.current);
     }

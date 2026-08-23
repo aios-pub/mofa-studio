@@ -1,6 +1,6 @@
 /**
- * Data-driven test configuration组件
- * 支持CSV、JSON、Excel数据源配置
+ * Data-driven test configuration component
+ * Supports CSV, JSON and Excel data source configuration
  */
 
 import { useState, useEffect } from "react";
@@ -174,7 +174,7 @@ export function DataDrivenTestConfig({
       message.error(`文件读取失败: ${file.name}`);
     };
     reader.readAsText(file);
-    return false; // 阻止自动上传
+    return false; // prevent auto upload
   };
 
   const updateConfig = (updates: Partial<DataDrivenTestConfig>) => {

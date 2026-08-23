@@ -1,6 +1,6 @@
 /**
  * useWebSocket Hook
- * 提供统一的 WebSocket 连接管理
+ * Provides unified WebSocket connection management
  */
 
 import { useEffect, useState, useCallback, useRef } from 'react';
@@ -20,41 +20,41 @@ import { GLOBAL_CONFIG } from '@/config/global-config';
 
 /** WebSocket Hook configuration */
 interface UseWebSocketOptions {
-  /** 认证令牌 */
+  /** Auth token */
   authToken?: string;
-  /** 自动连接 */
+  /** Auto-connect */
   autoConnect?: boolean;
-  /** 命名空间 (仅 Socket.IO) */
+  /** Namespace (Socket.IO only) */
   namespace?: string;
-  /** 连接模式 */
+  /** Connection mode */
   mode?: ConnectionMode;
 }
 
-/** WebSocket Hook 返回值 */
+/** WebSocket hook return value */
 interface UseWebSocketReturn {
-  /** 连接状态 */
+  /** Connection state */
   state: ConnectionState;
-  /** 当前连接模式 */
+  /** Current connection mode */
   mode: ConnectionMode;
-  /** 是否已连接 */
+  /** Whether connected */
   isConnected: boolean;
-  /** 连接 */
+  /** Connection */
   connect: () => Promise<void>;
-  /** 断开连接 */
+  /** Disconnect */
   disconnect: () => void;
   /** Send message */
   emit: <T = unknown>(event: string, data: T) => void;
-  /** 订阅事件 */
+  /** Subscribe to events */
   on: <T = unknown>(event: string, handler: WebSocketEventHandler<T>) => () => void;
-  /** 切换连接模式 */
+  /** Switch connection mode */
   switchMode: (mode: ConnectionMode) => Promise<void>;
 }
 
-// 全局 WebSocket 管理器
+// Global WebSocket manager
 let wsManager: WebSocketManager | null = null;
 
 /**
- * 初始化 WebSocket 管理器
+ * Initialize WebSocket manager
  */
 function getManager(authToken?: string): WebSocketManager {
   if (!wsManager) {
@@ -80,17 +80,17 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
   const [mode, setMode] = useState<ConnectionMode>(initialMode ?? 'socketio');
   const managerRef = useRef<WebSocketManager | null>(null);
 
-  // 初始化管理器
+  // Initialize manager
   useEffect(() => {
     managerRef.current = getManager(authToken);
     setMode(managerRef.current.mode);
 
-    // 监听状态变化
+    // Watch state changes
     const unsubscribe = managerRef.current.on('state_change', (data: { newState: ConnectionState }) => {
       setState(data.newState);
     });
 
-    // 设置初始状态
+    // Set initial state
     setState(managerRef.current.state);
 
     return () => {
@@ -98,21 +98,21 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
     };
   }, [authToken]);
 
-  // 自动连接
+  // Auto-connect
   useEffect(() => {
     if (autoConnect && managerRef.current && !managerRef.current.isConnected()) {
       managerRef.current.connect().catch(console.error);
     }
   }, [autoConnect]);
 
-  // 连接
+  // Connection
   const connect = useCallback(async () => {
     if (managerRef.current) {
       await managerRef.current.connect();
     }
   }, []);
 
-  // 断开连接
+  // Disconnect
   const disconnect = useCallback(() => {
     managerRef.current?.disconnect();
   }, []);
@@ -122,13 +122,13 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
     managerRef.current?.emit(event, data);
   }, []);
 
-  // 订阅事件
+  // Subscribe to events
   const on = useCallback(<T = unknown,>(event: string, handler: WebSocketEventHandler<T>) => {
     if (!managerRef.current) return () => {};
     return managerRef.current.on(event, handler);
   }, []);
 
-  // 切换模式
+  // Switch mode
   const switchMode = useCallback(async (newMode: ConnectionMode) => {
     if (managerRef.current) {
       await managerRef.current.switchMode(newMode);
@@ -149,8 +149,8 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
 }
 
 /**
- * WebSocket 事件订阅 Hook
- * 用于订阅特定事件
+ * WebSocket event subscription hook
+ * For subscribing to specific events
  */
 export function useWebSocketEvent<T = unknown>(
   event: string,
@@ -166,8 +166,8 @@ export function useWebSocketEvent<T = unknown>(
 }
 
 /**
- * WebSocket 连接状态 Hook
- * 仅获取连接状态
+ * WebSocket connection state hook
+ * Get connection state only
  */
 export function useWebSocketState(): ConnectionState {
   const [state, setState] = useState<ConnectionState>('disconnected');

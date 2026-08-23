@@ -1,14 +1,14 @@
 /**
- * WebSocket 连接类型定义
+ * WebSocket connection type definitions
  */
 
-/** 连接模式 */
+/** Connection mode */
 export type ConnectionMode = 'socketio' | 'wss';
 
-/** 连接状态 */
+/** Connection state */
 export type ConnectionState = 'connecting' | 'connected' | 'disconnected' | 'error';
 
-/** WebSocket 事件类型 */
+/** WebSocket event types */
 export type WebSocketEventType =
   | 'connect'
   | 'disconnect'
@@ -17,72 +17,72 @@ export type WebSocketEventType =
   | 'reconnect'
   | 'reconnect_attempt';
 
-/** WebSocket 事件处理器 */
+/** WebSocket event handlers */
 export type WebSocketEventHandler<T = unknown> = (data: T) => void;
 
-/** WebSocket 配置 */
+/** WebSocket configuration */
 export interface WebSocketConfig {
-  /** 连接模式 */
+  /** Connection mode */
   mode: ConnectionMode;
-  /** 服务器 URL */
+  /** Server URL */
   url: string;
-  /** 命名空间 (仅 Socket.IO) */
+  /** Namespace (Socket.IO only) */
   namespace?: string;
-  /** 认证令牌 */
+  /** Auth token */
   authToken?: string;
-  /** 自动重连 */
+  /** Auto-reconnect */
   autoReconnect?: boolean;
-  /** 重连间隔 (ms) */
+  /** Reconnect interval (ms) */
   reconnectInterval?: number;
-  /** 最大重连次数 */
+  /** Maximum retry count */
   maxReconnectAttempts?: number;
-  /** 心跳间隔 (ms) */
+  /** Heartbeat interval (ms) */
   heartbeatInterval?: number;
 }
 
 /** WebSocket Messages */
 export interface WebSocketMessage<T = unknown> {
-  /** 事件名 */
+  /** Event name */
   event: string;
-  /** Messages数据 */
+  /** Message data */
   data: T;
-  /** 时间戳 */
+  /** Timestamp */
   timestamp: number;
 }
 
-/** WebSocket 连接器接口 */
+/** WebSocket connector interface */
 export interface WebSocketConnector {
-  /** 连接 */
+  /** Connection */
   connect(): Promise<void>;
-  /** 断开连接 */
+  /** Disconnect */
   disconnect(): void;
   /** Send message */
   emit<T = unknown>(event: string, data: T): void;
-  /** 订阅事件 */
+  /** Subscribe to events */
   on<T = unknown>(event: string, handler: WebSocketEventHandler<T>): () => void;
-  /** 取消订阅 */
+  /** Unsubscribe */
   off(event: string, handler?: WebSocketEventHandler): void;
-  /** 获取连接状态 */
+  /** Get connection state */
   getState(): ConnectionState;
-  /** 获取连接模式 */
+  /** Get connection mode */
   getMode(): ConnectionMode;
 }
 
-/** 连接状态变化事件 */
+/** Connection state change event */
 export interface ConnectionStateChangedEvent {
   state: ConnectionState;
   previousState?: ConnectionState;
   error?: Error;
 }
 
-/** 监控事件类型 */
+/** Monitoring event types */
 export interface MonitoringEvent {
   type: 'agent_status' | 'activity' | 'metrics' | 'alert';
   payload: unknown;
   timestamp: string;
 }
 
-/** 聊天事件类型 */
+/** Chat event types */
 export interface ChatEvent {
   type: 'message' | 'typing' | 'read' | 'error';
   conversationId: string;

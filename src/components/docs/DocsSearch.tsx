@@ -1,6 +1,6 @@
 /**
- * Document搜索组件
- * 支持按路径、方法、Label搜索API端点
+ * Documentation search component
+ * Supports searching API endpoints by path, method and tags
  */
 
 import { useState } from "react";

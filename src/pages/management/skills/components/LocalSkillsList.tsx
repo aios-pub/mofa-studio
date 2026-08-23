@@ -1,5 +1,5 @@
 /**
- * 本地 Skills 列表组件
+ * Local skills list component
  */
 
 import { useState, useEffect } from "react";
@@ -149,10 +149,10 @@ export function LocalSkillsList({
     });
   };
 
-  // 获取所有分类
+  // Get all categories
   const categories = ["all", ...new Set(skills.map((s) => s.category))];
 
-  // 过滤 Skills
+  // Filter skills
   const filteredSkills = skills.filter((s) => {
     const matchesSearch =
       s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -163,7 +163,7 @@ export function LocalSkillsList({
     return matchesSearch && matchesCategory && matchesType;
   });
 
-  // 按分类分组
+  // Group by category
   const groupedSkills = filteredSkills.reduce(
     (acc, skill) => {
       if (!acc[skill.category]) {
@@ -194,7 +194,7 @@ export function LocalSkillsList({
 
   return (
     <div className="flex flex-col h-full">
-      {/* 头部 */}
+      {/* Header */}
       <div className="p-4 space-y-3 border-b border-(--color-border)">
         <div className="flex items-center justify-between">
           <Title level={5} style={{ margin: 0 }}>
@@ -208,7 +208,7 @@ export function LocalSkillsList({
           />
         </div>
 
-        {/* 搜索 */}
+        {/* Search */}
         <Input
           placeholder="搜索 Skills..."
           prefix={<SearchOutlined />}
@@ -217,7 +217,7 @@ export function LocalSkillsList({
           allowClear
         />
 
-        {/* 筛选器 */}
+        {/* Filters */}
         <div className="flex gap-2">
           <Select
             value={selectedCategory}
@@ -244,7 +244,7 @@ export function LocalSkillsList({
         </div>
       </div>
 
-      {/* 列表 */}
+      {/* List */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="text-center py-8">

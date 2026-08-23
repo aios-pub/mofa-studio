@@ -1,6 +1,6 @@
 /**
- * Octos 渠道配置 — 复用渠道管理
- * 从已配置的 Channels 中选择，而不是重新配置
+ * Octos channel configuration - reuses channel management
+ * Select from configured channels instead of reconfiguring
  */
 
 import { useState, useEffect } from "react";
@@ -36,12 +36,12 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
   const [loading, setLoading] = useState(true);
   const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]);
 
-  // 加载 Channels 列表
+  // Load channels list
   useEffect(() => {
     loadChannels();
   }, []);
 
-  // 当 config.channel_ids 或 channels 变化时，同步更新 selectedChannels
+  // When config.channel_ids or channels changes, sync selectedChannels
   useEffect(() => {
     if (
       config.channel_ids &&
@@ -61,7 +61,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
     try {
       setLoading(true);
       const data = await channelApi.getAll();
-      // 只显示 Octos Supported Channel types
+      // Only show channel types supported by Octos
       const supportedChannels = data.filter((c: Channel) =>
         OCTOS_SUPPORTED_CHANNEL_TYPES.includes(c.type as any),
       );
@@ -77,7 +77,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
     onChange({ ...config, ...patch });
   };
 
-  // 选择/取消选择 Channel
+  // Select/deselect a channel
   const handleChannelToggle = (channelId: string) => {
     const currentIds = config.channel_ids || [];
     const isSelected = currentIds.includes(channelId);
@@ -89,7 +89,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
       newIds = [...currentIds, channelId];
     }
 
-    // 更新选中的 channels
+    // Update selected channels
     const newSelected = channels.filter((c) => newIds.includes(c.id));
     setSelectedChannels(newSelected);
 
@@ -116,7 +116,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
         className="text-xs"
       />
 
-      {/* 未选择渠道提示 */}
+      {/* No channel selected hint */}
       {(!config.channel_ids || config.channel_ids.length === 0) && (
         <Alert
           type="warning"
@@ -133,7 +133,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
         />
       )}
 
-      {/* 渠道选择 */}
+      {/* Channel selection */}
       <div>
         <Text type="secondary" className="block mb-3">
           选择可用渠道
@@ -224,7 +224,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
         )}
       </div>
 
-      {/* 已选渠道汇总 */}
+      {/* Selected channels summary */}
       {selectedChannels.length > 0 && (
         <div className="p-4 rounded-lg border border-(--color-border) bg-[var(--color-bg-secondary)]">
           <Text type="secondary" className="block mb-2">
@@ -252,7 +252,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
         </div>
       )}
 
-      {/* 说明 */}
+      {/* Description */}
       <Alert
         type="info"
         showIcon

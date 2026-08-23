@@ -1,5 +1,5 @@
 /**
- * Mock Tracing 服务
+ * Mock tracing service
  */
 
 import type {
@@ -9,13 +9,13 @@ import type {
   TracingStats,
 } from "../../types/tracing";
 
-// 生成随机 ID
+// Generate random ID
 const generateId = (length: number): string =>
   Array.from({ length }, () =>
     Math.floor(Math.random() * 16).toString(16),
   ).join("");
 
-// 生成 Mock Span
+// Generate mock spans
 const generateMockSpan = (
   trace_id: string,
   parent_span_id?: string,
@@ -78,14 +78,14 @@ const generateMockSpan = (
     },
   };
 };
-// 生成 Mock Trace
+// Generate mock traces
 const generateMockTrace = (): Trace => {
   const trace_id = generateId(32);
   const spans: Span[] = [];
-  // 生成根 Span
+  // Generate root span
   const rootSpan = generateMockSpan(trace_id);
   spans.push(rootSpan);
-  // 生成子 Spans
+  // Generate child spans
   const childCount = Math.floor(Math.random() * 5) + 1;
   for (let i = 0; i < childCount; i++) {
     spans.push(generateMockSpan(trace_id, rootSpan.span_id, 1));
@@ -106,14 +106,14 @@ const generateMockTrace = (): Trace => {
     spans,
   };
 };
-// 生成 Mock 数据
+// Generate mock data
 const MOCK_TRACES: Trace[] = Array.from({ length: 50 }, generateMockTrace);
-// 模拟延迟
+// Simulated latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 export const tracingApi = {
   /**
-   * 获取Tracing列表
-   * 返回格式与真实 API（apiClient 解包后）一致：直接返回数组
+   * Get tracing list
+   * Return format matches the real API (after apiClient unwrapping): a plain array
    */
   getTraces: async (filter?: TracingFilter): Promise<{ data: Trace[] }> => {
     await delay(300);
@@ -155,14 +155,14 @@ export const tracingApi = {
     };
   },
   /**
-   * 获取单个Tracing详情
+   * Get a single tracing record
    */
   getTraceById: async (trace_id: string): Promise<Trace | null> => {
     await delay(200);
     return MOCK_TRACES.find((t) => t.trace_id === trace_id) || null;
   },
   /**
-   * 获取Tracing统计
+   * Get tracing statistics
    */
   getTracingStats: async (): Promise<TracingStats> => {
     await delay(200);
@@ -193,7 +193,7 @@ export const tracingApi = {
   },
 
   /**
-   * 导出Tracing数据
+   * Export tracing data
    */
   exportTraces: async (
     filter?: TracingFilter,
@@ -203,7 +203,7 @@ export const tracingApi = {
     const { data } = await tracingApi.getTraces(filter);
 
     if (format === "csv") {
-      // 生成 CSV
+      // Generate CSV
       const headers = [
         "trace_id",
         "service_name",
@@ -228,14 +228,14 @@ export const tracingApi = {
       return new Blob([csv], { type: "text/csv" });
     }
 
-    // 生成 JSON
+    // Generate JSON
     return new Blob([JSON.stringify(data, null, 2)], {
       type: "application/json",
     });
   },
 
   /**
-   * 导出单个Tracing数据
+   * Export a single tracing record
    */
   exportTrace: async (
     traceId: string,

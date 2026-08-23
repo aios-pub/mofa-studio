@@ -1,14 +1,14 @@
 /**
- * 对话相关类型定义
+ * Conversation-related type definitions
  */
 
-/** Messages角色 */
+/** Message role */
 export type MessageRole = 'user' | 'assistant' | 'system';
 
 /** Message status */
 export type MessageStatus = 'pending' | 'streaming' | 'completed' | 'error';
 
-/** Tool call结果 */
+/** Tool call result */
 export interface ToolCall {
   id: string;
   name: string;
@@ -25,7 +25,7 @@ export interface ThinkingProcess {
   duration?: number;
 }
 
-/** Messages附件 */
+/** Message attachments */
 export interface MessageAttachment {
   id: string;
   name: string;
@@ -52,7 +52,7 @@ export interface Message {
   createdAt: Date;
 }
 
-/** 会话 */
+/** Conversation */
 export interface Conversation {
   id: string;
   agentId: string;
@@ -63,7 +63,7 @@ export interface Conversation {
   updatedAt: Date;
 }
 
-/** 会话分组 */
+/** Conversation groups */
 export interface ConversationGroup {
   id: string;
   name: string;

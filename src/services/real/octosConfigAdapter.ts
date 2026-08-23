@@ -1,6 +1,6 @@
 /**
- * Octos 配置适配器
- * 处理渠道配置（使用 channel_ids）与后端 channels 格式之间的转换
+ * Octos configuration adapter
+ * Convert between channel config (channel_ids) and the backend channels format
  */
 
 import type {
@@ -11,23 +11,23 @@ import type { Channel } from "@/types/channel";
 import { channelApi } from "@/services";
 
 /**
- * 渠道配置映射到 Octos 格式
- * 将渠道的 config 转换为扁平的 Octos 格式（字段直接在对象上）
- * 额外保存 channel_id 用于回显时的匹配
+ * Map channel configuration to Octos format
+ * Convert channel config to flat Octos format (fields directly on the object)
+ * Additionally save channel_id for echo matching
  */
 function channelToOctosFormat(channel: Channel): OctosChannelCredentials {
   const octosChannel: any = { type: channel.type };
 
-  // 保存 channel_id 用于回显时的精确匹配
+  // Save channel_id for exact match when echoing values
   octosChannel._channel_id = channel.id;
 
-  // 根据Channel type映射配置到 Octos 期望的格式
+  // Map configuration to the Octos-expected format by channel type
   switch (channel.type) {
     case "feishu":
-      // 飞书渠道：同时传递Environment variable名和实际凭据值
+      // Feishu channel: pass both the environment variable name and the actual credential value
       octosChannel.app_id_env = "FEISHU_APP_ID";
       octosChannel.app_secret_env = "FEISHU_APP_SECRET";
-      // 传递实际的 app_id 和 app_secret 值给后端
+      // Pass actual app_id and app_secret values to the backend
       octosChannel.app_id = channel.config.app_id;
       octosChannel.app_secret = channel.config.app_secret;
       if (channel.config.encrypt_key) {
@@ -113,7 +113,7 @@ function channelToOctosFormat(channel: Channel): OctosChannelCredentials {
       break;
 
     default:
-      // 通用处理：将所有 config 值转为 xxx_env 格式
+      // Generic handling: convert all config values to xxx_env format
       for (const [key, value] of Object.entries(channel.config || {})) {
         octosChannel[`${key}_env`] = value;
       }
@@ -123,14 +123,14 @@ function channelToOctosFormat(channel: Channel): OctosChannelCredentials {
 }
 
 /**
- * 将前端配置转换为后端格式
+ * Convert frontend config to backend format
  */
 export async function toBackendFormat(
   frontendConfig: OctosProfileConfig,
 ): Promise<OctosProfileConfig> {
   const backendConfig: OctosProfileConfig = { ...frontendConfig };
 
-  // 转换渠道配置：channel_ids → channels (带凭据)
+  // Convert channel config: channel_ids -> channels (with credentials)
   if (frontendConfig.channel_ids && frontendConfig.channel_ids.length > 0) {
     try {
       const channels = await channelApi.getAll();
@@ -139,7 +139,7 @@ export async function toBackendFormat(
       );
 
       backendConfig.channels = selectedChannels.map(channelToOctosFormat);
-      // 保留新版配置用于回显
+      // Keep the new config for echoing values
       backendConfig.channel_ids = frontendConfig.channel_ids;
     } catch (error) {
       console.error("Failed to resolve channels for backend format:", error);
@@ -150,7 +150,7 @@ export async function toBackendFormat(
 }
 
 /**
- * 将后端配置转换为前端格式
+ * Convert backend config to frontend format
  * - channels → channel_ids
  */
 export async function toFrontendFormat(
@@ -158,18 +158,18 @@ export async function toFrontendFormat(
 ): Promise<OctosProfileConfig> {
   const frontendConfig: OctosProfileConfig = { ...backendConfig };
 
-  // 转换渠道配置：channels → channel_ids
-  // e.g.果后端已经有 channel_ids，直接使用
+  // Convert channel config: channels -> channel_ids
+  // If the backend already has channel_ids, use it directly
   if (backendConfig.channel_ids && backendConfig.channel_ids.length > 0) {
     frontendConfig.channel_ids = backendConfig.channel_ids;
   } else if (backendConfig.channels && backendConfig.channels.length > 0) {
-    // 将后端的 channels 转换为 channel_ids
+    // Convert backend channels to channel_ids
     try {
       const channels = await channelApi.getAll();
       const matchedChannelIds: string[] = [];
 
       for (const backendChannel of backendConfig.channels) {
-        // 优先使用 _channel_id 进行精确匹配（e.g.果存在）
+        // Prefer exact match by _channel_id (if present)
         if (backendChannel._channel_id) {
           const channel = channels.find(
             (c: any) => c.id === backendChannel._channel_id,
@@ -180,14 +180,14 @@ export async function toFrontendFormat(
           }
         }
 
-        // 尝试精确匹配：通过Channel type和配置值匹配
+        // Try exact match: by channel type and configuration value
         let matchedChannel = channels.find((c: any) => {
           if (c.type !== backendChannel.type) return false;
 
-          // 根据Channel type进行更精确的匹配
+          // More precise matching by channel type
           switch (backendChannel.type) {
             case "feishu":
-              // 通过 app_id（实际值）进行匹配
+              // Match by app_id (actual value)
               return (
                 c.config.app_id &&
                 backendChannel.app_id &&
@@ -234,7 +234,7 @@ export async function toFrontendFormat(
           }
         });
 
-        // e.g.果精确匹配Failed，使用模糊匹配：通过Channel type匹配第一个启用的渠道
+        // If exact match fails, fall back to fuzzy matching: first enabled channel by channel type
         if (!matchedChannel) {
           matchedChannel = channels.find((c: any) => {
             return c.type === backendChannel.type && c.enabled;
@@ -258,7 +258,7 @@ export async function toFrontendFormat(
 }
 
 /**
- * 初始化配置：将后端数据转换为前端格式
+ * Initialize config: convert backend data to frontend format
  */
 export async function initConfig(
   config: OctosProfileConfig,
@@ -267,7 +267,7 @@ export async function initConfig(
 }
 
 /**
- * 准备保存配置：将前端数据转换为后端格式
+ * Prepare config for saving: convert frontend data to backend format
  */
 export async function prepareConfigForSave(
   config: OctosProfileConfig,

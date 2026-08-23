@@ -1,5 +1,5 @@
 /**
- * 分页 Hook
+ * Pagination hook
  */
 
 import { useState, useCallback, useEffect } from 'react';
@@ -28,10 +28,10 @@ export interface UsePaginationReturn<T> {
 }
 
 /**
- * 分页 Hook
- * @param fetchData 获取数据的函数
- * @param defaultPageSize 默认Items per page
- * @param deps 依赖项数组，当依赖变化时重新获取数据
+ * Pagination hook
+ * @param fetchData Data fetching function
+ * @param defaultPageSize Default items per page
+ * @param deps Dependency array; refetches when dependencies change
  */
 export function usePagination<T>(
   fetchData: (params: PaginationParams) => Promise<PaginationResult<T>>,
@@ -68,7 +68,7 @@ export function usePagination<T>(
 
   const onChange = useCallback((newPage: number, newPageSize: number) => {
     if (newPageSize !== pageSize) {
-      // e.g.果Items per page变化，重置到第一页
+      // If page size changes, reset to the first page
       setPage(1);
       setPageSize(newPageSize);
     } else {
@@ -102,8 +102,8 @@ export function usePagination<T>(
 }
 
 /**
- * 前端分页 Hook
- * 用于对已有数据进行前端分页
+ * Frontend pagination hook
+ * For client-side pagination of existing data
  */
 export function useFrontendPagination<T>(
   allData: T[],
@@ -124,7 +124,7 @@ export function useFrontendPagination<T>(
   const total = allData.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-  // 获取当前页数据
+  // Get current page data
   const startIndex = (page - 1) * pageSize;
   const endIndex = startIndex + pageSize;
   const data = allData.slice(startIndex, endIndex);
@@ -138,7 +138,7 @@ export function useFrontendPagination<T>(
     }
   };
 
-  // 当数据变化时，e.g.果当前页超出范围，重置到最后一页
+  // When data changes, if the current page is out of range, reset to the last page
   useEffect(() => {
     if (page > totalPages && totalPages > 0) {
       setPage(totalPages);

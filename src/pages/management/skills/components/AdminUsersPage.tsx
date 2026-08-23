@@ -1,6 +1,6 @@
 /**
  * Admin Users Page
- * 管理员用户管理页面
+ * Admin user management page
  */
 
 import { useEffect, useState } from 'react';

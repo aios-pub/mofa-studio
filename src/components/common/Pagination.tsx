@@ -1,5 +1,5 @@
 /**
- * Pagination component - 基于 Antd Pagination
+ * Pagination component - based on antd Pagination
  */
 
 import { Pagination as AntdPagination } from "antd";
@@ -28,7 +28,7 @@ export default function Pagination({
 }: PaginationProps) {
   const { t } = useTranslation();
 
-  // 处理空数据情况
+  // Handle empty data
   if (total === 0) return null;
 
   return (

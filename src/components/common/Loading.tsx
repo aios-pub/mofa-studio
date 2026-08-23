@@ -1,6 +1,6 @@
 /**
- * Loading Loading state组件
- * 提供多种加载指示器样式
+ * Loading state component
+ * Provides multiple loading indicator styles
  */
 
 import { LoadingOutlined } from "@ant-design/icons";
@@ -9,19 +9,19 @@ import { cn } from "../../utils";
 type LoadingSize = "small" | "default" | "large";
 
 interface LoadingProps {
-  /** 加载提示文字 */
+  /** Loading hint text */
   tip?: string;
-  /** 加载器大小 */
+  /** Loader size */
   size?: LoadingSize;
-  /** 是否全屏显示 */
+  /** Whether fullscreen */
   fullscreen?: boolean;
-  /** 是否显示为简单模式（只有图标） */
+  /** Whether to render in simple mode (icon only) */
   simple?: boolean;
-  /** Custom类名 */
+  /** Custom class name */
   className?: string;
-  /** 是否正在加载 */
+  /** Whether currently loading */
   loading?: boolean;
-  /** 子元素（包裹模式） */
+  /** Children (wrapper mode) */
   children?: React.ReactNode;
 }
 
@@ -32,7 +32,7 @@ const sizeMap: Record<LoadingSize, string> = {
 };
 
 /**
- * 基础加载指示器
+ * Base loading indicator
  */
 export function LoadingSpinner({
   size = "default",
@@ -50,7 +50,7 @@ export function LoadingSpinner({
 }
 
 /**
- * Loading state组件
+ * Loading state component
  */
 export default function Loading({
   tip = "加载中...",
@@ -100,7 +100,7 @@ export default function Loading({
 }
 
 /**
- * 页面加载指示器
+ * Page loading indicator
  */
 export function PageLoading({ tip = "页面加载中..." }: { tip?: string }) {
   return (
@@ -112,7 +112,7 @@ export function PageLoading({ tip = "页面加载中..." }: { tip?: string }) {
 }
 
 /**
- * 内联加载指示器
+ * Inline loading indicator
  */
 export function InlineLoading({
   tip,
@@ -132,14 +132,14 @@ export function InlineLoading({
 }
 
 /**
- * 按钮Loading state
+ * Button loading state
  */
 export function ButtonLoading({ className }: { className?: string }) {
   return <LoadingOutlined className={cn("text-current", className)} spin />;
 }
 
 /**
- * Skeleton screen组件
+ * Skeleton component
  */
 export function Skeleton({
   className,
@@ -157,7 +157,7 @@ export function Skeleton({
 }
 
 /**
- * Skeleton screen - 文本行
+ * Skeleton - text lines
  */
 export function SkeletonText({
   lines = 3,
@@ -179,7 +179,7 @@ export function SkeletonText({
 }
 
 /**
- * Skeleton screen - 头像
+ * Skeleton - avatar
  */
 export function SkeletonAvatar({
   size = 40,
@@ -197,7 +197,7 @@ export function SkeletonAvatar({
 }
 
 /**
- * Skeleton screen - 卡片
+ * Skeleton - card
  */
 export function SkeletonCard({ className }: { className?: string }) {
   return (

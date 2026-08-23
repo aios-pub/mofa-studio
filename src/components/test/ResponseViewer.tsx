@@ -1,6 +1,6 @@
 /**
- * HTTP response查看器组件
- * 用于展示HTTP请求的响应结果
+ * HTTP response viewer component
+ * For displaying HTTP response results
  */
 
 import { Card, Typography, Tag, Tabs, Button, Space, Empty } from "antd";

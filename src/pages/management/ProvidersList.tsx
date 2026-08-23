@@ -1,5 +1,5 @@
 /**
- * Provider 管理页面
+ * Provider management page
  */
 
 import { useState, useEffect } from "react";
@@ -54,7 +54,7 @@ export default function ProvidersListPage() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
 
-  // 刷新模型选择对话框状态
+  // Refresh model selection dialog state
   const [refreshModalOpen, setRefreshModalOpen] = useState(false);
   const [refreshingProviderId, setRefreshingProviderId] = useState<
     string | null
@@ -82,7 +82,7 @@ export default function ProvidersListPage() {
     }
   };
 
-  // 过滤 Providers
+  // Filter providers
   const filteredProviders = providers.filter((p) => {
     const matchesSearch =
       (p.name ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -137,7 +137,7 @@ export default function ProvidersListPage() {
       const models = await providerApi.refreshModels(id);
       setRefreshedModels(models);
       setRefreshingProviderId(id);
-      // 预选当前已启用的模型
+      // Preselect currently enabled models
       const provider = providers.find((p) => p.id === id);
       const enabledIds = new Set(provider?.models.map((m) => m.name) ?? []);
       setRefreshSelectedIds(enabledIds);
@@ -197,7 +197,7 @@ export default function ProvidersListPage() {
     }
   };
 
-  // 单独添加模型到 Provider
+  // Add a model to a provider individually
   const handleAddModel = async (providerId: string, modelId: string) => {
     const provider = providers.find((p) => p.id === providerId);
     if (!provider) return;
@@ -221,7 +221,7 @@ export default function ProvidersListPage() {
     }
   };
 
-  // 处理新增 Provider
+  // Handle provider creation
   const handleAddProvider = async (
     formData: CreateProviderFormData,
   ): Promise<ProviderWithModels | void> => {
@@ -238,7 +238,7 @@ export default function ProvidersListPage() {
     };
   };
 
-  // 处理编辑 Provider
+  // Handle provider editing
   const handleEditProvider = async (
     id: string,
     formData: CreateProviderFormData,
@@ -248,7 +248,7 @@ export default function ProvidersListPage() {
       baseUrl: formData.baseUrl,
       type: formData.type,
     };
-    // 只有 apiKey 被实际修改时才传递（未修改时 formData 中不包含 apiKey）
+    // Only pass apiKey when actually modified (omitted from formData otherwise)
     if (formData.apiKey !== undefined) {
       updateData.apiKey = formData.apiKey;
     }
@@ -260,9 +260,9 @@ export default function ProvidersListPage() {
 
   return (
     <div className="flex h-full">
-      {/* 左侧列表 */}
+      {/* Left list */}
       <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]" storageKey="sidebar:providers">
-        {/* 头部 */}
+        {/* Header */}
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
@@ -276,7 +276,7 @@ export default function ProvidersListPage() {
             />
           </div>
 
-          {/* 搜索 */}
+          {/* Search */}
           <Input
             placeholder="搜索 Providers..."
             prefix={<SearchOutlined />}
@@ -286,7 +286,7 @@ export default function ProvidersListPage() {
           />
         </div>
 
-        {/* 列表 */}
+        {/* List */}
         <div className="flex-1 overflow-y-auto p-2">
           {loading ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">
@@ -373,7 +373,7 @@ export default function ProvidersListPage() {
                   </div>
                 </div>
 
-                {/* 展开的模型列表 */}
+                {/* Expanded model list */}
                 {expandedProviders.has(provider.id) && (
                   <div className="ml-4 mt-1 space-y-1">
                     {(provider.models ?? []).map((model) => (
@@ -406,7 +406,7 @@ export default function ProvidersListPage() {
         </div>
       </ResizableSidebar>
 
-      {/* 右侧详情 */}
+      {/* Right details */}
       <div className="flex-1 overflow-hidden">
         {selectedProvider ? (
           <ProviderDetail
@@ -438,7 +438,7 @@ export default function ProvidersListPage() {
         )}
       </div>
 
-      {/* 新增 Provider 弹窗 */}
+      {/* Add provider modal */}
       <AddProviderModal
         open={addModalOpen}
         onClose={() => setAddModalOpen(false)}
@@ -448,7 +448,7 @@ export default function ProvidersListPage() {
         }}
       />
 
-      {/* 编辑 Provider 弹窗 */}
+      {/* Edit provider modal */}
       <AddProviderModal
         open={editModalOpen}
         onClose={() => {
@@ -460,7 +460,7 @@ export default function ProvidersListPage() {
         onEdit={handleEditProvider}
       />
 
-      {/* 刷新模型选择对话框 */}
+      {/* Refresh model selection dialog */}
       <Modal
         open={refreshModalOpen}
         title="选择要启用的模型"
@@ -501,7 +501,7 @@ export default function ProvidersListPage() {
   );
 }
 
-// Provider 详情组件
+// Provider detail component
 function ProviderDetail({
   provider,
   onDelete,
@@ -542,7 +542,7 @@ function ProviderDetail({
     return `$${amount.toFixed(4)}`;
   };
 
-  // 计算预估费用
+  // Estimate cost
   const estimatedCost =
     ((provider.usage?.totalTokens ?? 0) / 1000) *
     (provider.models?.[0]?.pricing.input || 0);
@@ -555,7 +555,7 @@ function ProviderDetail({
 
   return (
     <div className="flex flex-col h-full">
-      {/* 头部 */}
+      {/* Header */}
       <div className="flex items-start justify-between p-6 pb-4">
         <div>
           <div className="flex items-center gap-2">
@@ -593,7 +593,7 @@ function ProviderDetail({
         </div>
       </div>
 
-      {/* 元信息 */}
+      {/* Meta information */}
       <div className="grid grid-cols-4 gap-4 px-6 pb-4">
         <div className="p-3 bg-[var(--color-bg-secondary)] rounded-lg">
           <span className="text-xs text-[var(--color-text-tertiary)]">
@@ -636,7 +636,7 @@ function ProviderDetail({
         </div>
       </div>
 
-      {/* Label栏 */}
+      {/* Tabs bar */}
       <div className="flex gap-1 px-6 border-b border-(--color-border)">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -657,7 +657,7 @@ function ProviderDetail({
         })}
       </div>
 
-      {/* 内容区 */}
+      {/* Content area */}
       <div className="flex-1 overflow-hidden">
         {activeTab === "models" && (
           <div className="p-6 h-full overflow-y-auto">
@@ -751,7 +751,7 @@ function ProviderDetail({
                 ))}
             </div>
 
-            {/* 添加模型弹窗 */}
+            {/* Add model modal */}
             <Modal
               title="添加模型"
               open={addModelOpen}
@@ -924,7 +924,7 @@ function ProviderDetail({
                 </div>
               )}
 
-              {/* Provider 类型 */}
+              {/* Provider type */}
               <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
                 <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">
                   Provider 类型
@@ -937,7 +937,7 @@ function ProviderDetail({
                 </div>
               </div>
 
-              {/* 创建/更新时间 */}
+              {/* Created/updated time */}
               <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
                 <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">
                   时间信息

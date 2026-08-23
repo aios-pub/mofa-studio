@@ -1,12 +1,12 @@
 /**
- * 水平导航组件
+ * Horizontal navigation component
  */
 
 import { useNavigate, useLocation } from "react-router-dom";
 import { Menu } from "antd";
 import type { MenuProps } from "antd";
 
-// 水平菜单配置
+// Horizontal menu configuration
 const horizontalMenuItems: MenuProps["items"] = [
   {
     key: "/",
@@ -142,10 +142,10 @@ export default function HorizontalNav({ dark = false }: HorizontalNavProps) {
     navigate(key);
   };
 
-  // 获取当前选中的菜单键
+  // Get the currently selected menu key
   const getSelectedKeys = () => {
     const pathname = location.pathname;
-    // 直接匹配
+    // Direct match
     return [pathname];
   };
 

@@ -1,6 +1,6 @@
 /**
- * 版本列表组件
- * 支持版本生命周期操作：提交审核、确认发布、撤回审核、下架、重新发布、删除
+ * Version list component
+ * Supports version lifecycle actions: submit for review, confirm publish, withdraw, unpublish, republish, delete
  */
 
 import { Timeline, Tag, Button, Space, Tooltip, Popconfirm, Modal, Input } from 'antd';

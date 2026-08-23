@@ -1,5 +1,5 @@
 /**
- * 渠道列表页面
+ * Channel list page
  */
 
 import { useState, useEffect } from "react";
@@ -35,7 +35,7 @@ import ResizableSidebar from "@/components/layout/ResizableSidebar";
 import ChannelTypeSelector from "./components/ChannelTypeSelector";
 import type { Channel, ChannelStatus, Agent } from "../../types";
 
-// 状态配置
+// Status configuration
 const statusConfig: Record<
   ChannelStatus,
   { color: string; text: string; icon: React.ReactNode }
@@ -62,7 +62,7 @@ export default function ChannelsListPage() {
     message: string;
   } | null>(null);
 
-  // 加载数据
+  // Load data
   useEffect(() => {
     loadData();
   }, []);
@@ -84,7 +84,7 @@ export default function ChannelsListPage() {
     }
   };
 
-  // 删除渠道
+  // Delete channel
   const handleDelete = async (id: string) => {
     Modal.confirm({
       title: "确认删除",
@@ -108,7 +108,7 @@ export default function ChannelsListPage() {
     });
   };
 
-  // 测试连接
+  // Test connection
   const handleTestConnection = async (channel: Channel) => {
     setTestLoading(channel.id);
     setTestResult(null);
@@ -136,7 +136,7 @@ export default function ChannelsListPage() {
     }
   };
 
-  // 切换状态
+  // Toggle state
   const handleToggleStatus = async (channel: Channel) => {
     try {
       const updated = await channelApi.toggleStatus(channel.id);
@@ -155,7 +155,7 @@ export default function ChannelsListPage() {
     }
   };
 
-  // 获取操作菜单
+  // Get the action menu
   const getActionMenuItems = (channel: Channel) => [
     {
       key: "test",
@@ -181,7 +181,7 @@ export default function ChannelsListPage() {
     },
   ];
 
-  // 过滤渠道
+  // Filter channels
   const filteredChannels = channels.filter(
     (c) =>
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -191,7 +191,7 @@ export default function ChannelsListPage() {
         .includes(searchQuery.toLowerCase()),
   );
 
-  // 创建新渠道
+  // Create new channel
   const handleCreateChannel = async (data: Partial<Channel>) => {
     try {
       const newChannel = await channelApi.create(data);
@@ -206,7 +206,7 @@ export default function ChannelsListPage() {
     }
   };
 
-  // 更新渠道
+  // Update channel
   const handleUpdateChannel = async (id: string, data: Partial<Channel>) => {
     try {
       const updated = await channelApi.update(id, data);
@@ -225,9 +225,9 @@ export default function ChannelsListPage() {
 
   return (
     <div className="flex h-full">
-      {/* 左侧列表 */}
+      {/* Left list */}
       <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]" storageKey="sidebar:channels">
-        {/* 头部 */}
+        {/* Header */}
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
@@ -249,7 +249,7 @@ export default function ChannelsListPage() {
           />
         </div>
 
-        {/* 列表 */}
+        {/* List */}
         <div className="flex-1 overflow-y-auto p-2">
           {loading ? (
             <div className="flex justify-center py-8">
@@ -312,7 +312,7 @@ export default function ChannelsListPage() {
         </div>
       </ResizableSidebar>
 
-      {/* 右侧详情 */}
+      {/* Right details */}
       <div className="flex-1 overflow-y-auto">
         {selectedChannel ? (
           <ChannelDetail
@@ -342,7 +342,7 @@ export default function ChannelsListPage() {
         )}
       </div>
 
-      {/* Channel type选择器 */}
+      {/* Channel type selector */}
       <ChannelTypeSelector
         open={showTypeSelector}
         onClose={() => setShowTypeSelector(false)}
@@ -352,7 +352,7 @@ export default function ChannelsListPage() {
         }}
       />
 
-      {/* 创建渠道弹窗 */}
+      {/* Create channel modal */}
       <Modal
         title="创建渠道"
         open={showCreateModal}
@@ -370,7 +370,7 @@ export default function ChannelsListPage() {
   );
 }
 
-// 渠道详情组件
+// Channel detail component
 function ChannelDetail({
   channel,
   agents,
@@ -403,7 +403,7 @@ function ChannelDetail({
 
   return (
     <div className="p-6">
-      {/* 头部 */}
+      {/* Header */}
       <div className="flex items-start gap-4 mb-6">
         <div className="text-4xl">{channelTypeConfig[channel.type].icon}</div>
         <div className="flex-1">
@@ -433,7 +433,7 @@ function ChannelDetail({
         </div>
       </div>
 
-      {/* 快捷操作 */}
+      {/* Quick actions */}
       <div className="flex gap-2 mb-4">
         <Button
           type="primary"
@@ -448,7 +448,7 @@ function ChannelDetail({
         </Button>
       </div>
 
-      {/* 测试结果 */}
+      {/* Test results */}
       {testResult && (
         <Alert
           type={testResult.success ? "success" : "error"}
@@ -459,7 +459,7 @@ function ChannelDetail({
         />
       )}
 
-      {/* 统计卡片 */}
+      {/* Statistics cards */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         <StatCard
           title="总消息数"
@@ -486,7 +486,7 @@ function ChannelDetail({
         />
       </div>
 
-      {/* Label栏 */}
+      {/* Tabs bar */}
       <div className="flex gap-1 mb-6 border-b border-(--color-border)">
         {tabs.map((tab) => (
           <button
@@ -504,7 +504,7 @@ function ChannelDetail({
         ))}
       </div>
 
-      {/* 内容区 */}
+      {/* Content area */}
       <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
         {activeTab === "config" && (
           <ChannelConfigView
@@ -527,7 +527,7 @@ function ChannelDetail({
   );
 }
 
-// 统计卡片
+// Statistics cards
 function StatCard({
   title,
   value,
@@ -555,7 +555,7 @@ function StatCard({
   );
 }
 
-// 配置视图
+// Configuration view
 function ChannelConfigView({
   channel,
   editing,
@@ -649,7 +649,7 @@ function ChannelConfigView({
   );
 }
 
-// 统计视图
+// Statistics view
 function ChannelStatsView({ channel }: { channel: Channel }) {
   return (
     <div className="space-y-6">
@@ -733,7 +733,7 @@ function ChannelStatsView({ channel }: { channel: Channel }) {
   );
 }
 
-// Agents 关联视图
+// Agents association view
 function ChannelAgentsView({
   channel,
   agents,
@@ -814,7 +814,7 @@ function ChannelAgentsView({
 
   return (
     <div className="space-y-4">
-      {/* 已关联的 Agents */}
+      {/* Associated agents */}
       <div>
         <h4 className="text-sm font-medium text-[var(--color-text-secondary)] mb-3">
           已关联 Agents ({linkedAgents.length})
@@ -855,7 +855,7 @@ function ChannelAgentsView({
         )}
       </div>
 
-      {/* 可添加的 Agents */}
+      {/* Agents available to add */}
       {availableAgents.length > 0 && (
         <div>
           <h4 className="text-sm font-medium text-[var(--color-text-secondary)] mb-3">

@@ -1,6 +1,6 @@
 /**
  * Skill Hub V2 Mock API
- * 用于开发环境模拟后端数据
+ * For simulating backend data in development
  */
 
 import type {

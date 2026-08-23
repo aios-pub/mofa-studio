@@ -1,5 +1,5 @@
 /**
- * 测试集创建/编辑表单弹窗
+ * Test set create/edit form modal
  */
 
 import { useEffect, useMemo } from "react";
@@ -31,7 +31,7 @@ export function TestSetFormModal({
   const isEdit = !!testSet;
   const { error, handleError, clearError } = useFormError(open);
 
-  // 构建分类树选择数据
+  // Build category tree selection data
   const categoryTreeData = useMemo(() => {
     const flatNodes = categories.map((cat) => ({
       id: cat.id,

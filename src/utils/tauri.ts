@@ -5,16 +5,16 @@ export const isTauriApp = () => {
     return false;
   }
 
-  // Tauri v2 使用 __TAURI_INTERNALS__
+  // Tauri v2 uses __TAURI_INTERNALS__
   return "__TAURI__" in window || "__TAURI_INTERNALS__" in window;
 };
 
 /**
- * 从 Rust 端Get floating ball mode配置
+ * Get floating ball mode configuration from the Rust side
  */
 export async function getFloatingMode(): Promise<"floating" | "window"> {
   if (!isTauriApp()) {
-    // 非 Tauri 环境使用Environment variable
+    // Use environment variables in non-Tauri environments
     return import.meta.env.VITE_FLOATING_MODE || "floating";
   }
 

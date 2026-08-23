@@ -1,6 +1,6 @@
 /**
- * HTTP请求构建器组件
- * 用于配置HTTP测试请求的URL、方法、Headers、Body等
+ * HTTP request builder component
+ * For configuring URL, method, headers, body, etc. of HTTP test requests
  */
 
 import { useState, useEffect } from "react";
@@ -54,7 +54,7 @@ export function HttpRequestBuilder({
 
   return (
     <div className="space-y-4">
-      {/* URL和方法 */}
+      {/* URL and method */}
       <div className="flex gap-2 items-start">
         <Select
           value={config.method}
@@ -154,7 +154,7 @@ export function HttpRequestBuilder({
   );
 }
 
-// ==================== 子组件 ====================
+// ==================== Subcomponents ====================
 
 interface KeyValueListEditorProps {
   value?: KeyValue[];
@@ -257,7 +257,7 @@ function BodyEditor({
 }: BodyEditorProps) {
   const [selectedBodyType, setSelectedBodyType] = useState<BodyType>(bodyType);
 
-  // 同步父组件传递的 bodyType 变化（e.g.加载已有配置）
+  // Sync bodyType changes from the parent (e.g. loading an existing config)
   useEffect(() => {
     setSelectedBodyType(bodyType);
   }, [bodyType]);
@@ -265,9 +265,9 @@ function BodyEditor({
   const handleBodyTypeChange = (newType: BodyType) => {
     setSelectedBodyType(newType);
     if (onChange) {
-      // 切换到 none 时清空 body，保持数据清洁
+      // Clear the body when switching to none to keep data clean
       const newBody = newType === "none" ? undefined : body;
-      // 保留现有的 rawContentType，仅在切换到 raw 且无值时默认 application/json
+      // Keep existing rawContentType; default to application/json only when switching to raw with no value
       const newRawContentType = newType === "raw"
         ? (rawContentType || "application/json")
         : rawContentType;
@@ -364,7 +364,7 @@ function AuthEditor({
 }: AuthEditorProps) {
   const handleTypeChange = (newType: AuthType) => {
     if (onChange) {
-      // 切换Authentication type时清除旧配置，避免发送混合数据
+      // Clear old config when switching auth type to avoid sending mixed data
       const newAuthConfig =
         newType === "none"
           ? undefined
@@ -476,7 +476,7 @@ function AuthEditor({
   );
 }
 
-// ==================== 工具函数 ====================
+// ==================== Utilities ====================
 
 function getDefaultConfig(): HttpRequestConfig {
   return {

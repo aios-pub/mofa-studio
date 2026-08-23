@@ -1,6 +1,6 @@
 /**
- * 发布 Skill 视图组件
- * 支持 ZIP 上传、SKILL.md 预览、命名空间选择
+ * Publish skill view component
+ * Supports ZIP upload, SKILL.md preview and namespace selection
  */
 
 import { useState, useEffect } from "react";
@@ -243,7 +243,7 @@ export function PublishSkillView({
   return (
     <div className="flex flex-col h-full overflow-y-auto">
       <div className="p-6 max-w-4xl mx-auto w-full">
-        {/* 头部 */}
+        {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
             <CloudUploadOutlined style={{ fontSize: 24 }} />
@@ -265,7 +265,7 @@ export function PublishSkillView({
             visibility: "NAMESPACE_ONLY" as SkillVisibility,
           }}
         >
-          {/* 上传区域 */}
+          {/* Upload area */}
           <Card
             title="上传技能包"
             size="small"
@@ -346,7 +346,7 @@ export function PublishSkillView({
             )}
           </Card>
 
-          {/* 发布设置 */}
+          {/* Publish settings */}
           <Card title="发布设置" size="small" className="mb-4">
             {namespaces.length === 0 && (
               <Alert
@@ -403,7 +403,7 @@ export function PublishSkillView({
             </Paragraph>
           </Card>
 
-          {/* 发布说明 */}
+          {/* Release notes */}
           <Card title="发布流程" size="small" className="mb-4">
             <ol className="pl-4 space-y-1 text-sm text-gray-600">
               <li>上传 ZIP 包后，系统会自动解析 SKILL.md 文件</li>
@@ -415,7 +415,7 @@ export function PublishSkillView({
             </ol>
           </Card>
 
-          {/* 提交按钮 */}
+          {/* Submit button */}
           <div className="flex justify-end gap-2">
             <Button
               onClick={() => {
@@ -440,7 +440,7 @@ export function PublishSkillView({
           </div>
         </Form>
 
-        {/* 发布结果 */}
+        {/* Publish result */}
         {publishResult && (
           <Card
             title="发布结果"
@@ -474,7 +474,7 @@ export function PublishSkillView({
         )}
       </div>
 
-      {/* SKILL.md 格式说明Modal */}
+      {/* SKILL.md format help modal */}
       <Modal
         title="SKILL.md 格式说明"
         open={formatModalOpen}
@@ -487,7 +487,7 @@ export function PublishSkillView({
         width={700}
       >
         <div className="space-y-4">
-          {/* 技能包结构 */}
+          {/* Skill package structure */}
           <div>
             <Title level={5}>技能包结构</Title>
             <Paragraph type="secondary">一个标准的技能包结构如下：</Paragraph>
@@ -509,7 +509,7 @@ export function PublishSkillView({
 
           <Divider />
 
-          {/* SKILL.md 格式 */}
+          {/* SKILL.md format */}
           <div>
             <Title level={5}>SKILL.md 格式</Title>
             <Paragraph type="secondary">
@@ -531,7 +531,7 @@ export function PublishSkillView({
 
           <Divider />
 
-          {/* Frontmatter 字段说明 */}
+          {/* Frontmatter field descriptions */}
           <div>
             <Title level={5}>Frontmatter 字段说明</Title>
             <div className="overflow-x-auto">
@@ -608,7 +608,7 @@ export function PublishSkillView({
 
           <Divider />
 
-          {/* 文件限制 */}
+          {/* File restrictions */}
           <div>
             <Title level={5}>文件限制</Title>
             <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600">
@@ -633,7 +633,7 @@ export function PublishSkillView({
             </ul>
           </div>
 
-          {/* 示例 */}
+          {/* Example */}
           <div>
             <Title level={5}>完整示例</Title>
             <Paragraph type="secondary">

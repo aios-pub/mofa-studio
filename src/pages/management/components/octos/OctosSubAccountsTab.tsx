@@ -1,6 +1,6 @@
 /**
- * Octos 子账户管理
- * 展示、创建、启停子账户
+ * Octos sub-account management
+ * View, create, start/stop sub-accounts
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -190,7 +190,7 @@ export default function OctosSubAccountsTab({ profileId, apiClient }: Props) {
         </div>
       )}
 
-      {/* 创建子账户弹窗 */}
+      {/* Create sub-account modal */}
       <Modal
         title="新建子账户"
         open={createModalOpen}

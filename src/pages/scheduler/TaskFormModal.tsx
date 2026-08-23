@@ -1,6 +1,6 @@
 /**
- * 创建/编辑任务弹窗
- * 含三模式 Cron 编辑 + 根据任务类型动态渲染配置表单
+ * Create/edit task modal
+ * Three-mode cron editing + dynamically rendered config form by task type
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -88,7 +88,7 @@ const cronZhLocale = {
   ],
 };
 
-// ==================== Agent 测试配置表单 ====================
+// ==================== Agent test config form ====================
 function AgentTestConfigForm({
   config,
   onChange,
@@ -184,7 +184,7 @@ function AgentTestConfigForm({
   );
 }
 
-// ==================== Agent Loop 配置表单（调度单位 = Agent）====================
+// ==================== Agent loop config form (scheduling unit = agent) ====================
 function AgentLoopConfigForm({
   config,
   onChange,
@@ -295,7 +295,7 @@ function AgentLoopConfigForm({
   );
 }
 
-// ==================== 通用配置表单 fallback ====================
+// ==================== Generic config form fallback ====================
 function GenericConfigForm({
   config,
   onChange,
@@ -325,7 +325,7 @@ function GenericConfigForm({
   );
 }
 
-// ==================== 主弹窗 ====================
+// ==================== Main modal ====================
 export default function TaskFormModal({
   task,
   task_types,
@@ -337,7 +337,7 @@ export default function TaskFormModal({
   onClose: () => void;
   onSave: (data: Partial<ScheduledTask>) => Promise<void>;
 }) {
-  // 合并后端动态类型 + 前端静态 fallback
+  // Merge backend dynamic types + frontend static fallback
   const typeOptions =
     task_types && task_types.length > 0
       ? task_types
@@ -372,7 +372,7 @@ export default function TaskFormModal({
       message.warning("请修正 Cron 表达式");
       return;
     }
-    // agent_test 类型校验
+    // agent_test type validation
     if (formData.type === "agent_test") {
       if (!formData.config.test_set_id) {
         message.warning("请选择测试集");
@@ -386,7 +386,7 @@ export default function TaskFormModal({
         return;
       }
     }
-    // agent_loop 类型校验
+    // agent_loop type validation
     if (formData.type === "agent_loop") {
       if (!formData.config.agent_id) {
         message.warning("请选择 Agent");
@@ -467,7 +467,7 @@ export default function TaskFormModal({
           />
         </Form.Item>
 
-        {/* 根据任务类型渲染动态配置表单 */}
+        {/* Render dynamic config form by task type */}
         {formData.type === "agent_loop" && (
           <AgentLoopConfigForm
             config={formData.config}

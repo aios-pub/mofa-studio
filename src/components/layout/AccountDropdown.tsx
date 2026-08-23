@@ -1,5 +1,5 @@
 /**
- * 账户下拉菜单组件
+ * Account dropdown component
  */
 
 import { useTranslation } from "react-i18next";
@@ -76,7 +76,7 @@ export default function AccountDropdown({
         </div>
       </div>
 
-      {/* 角色Label */}
+      {/* Role tag */}
       {userInfo.roles && userInfo.roles.length > 0 && (
         <div className="px-3 py-2 border-b border-(--color-border)">
           <div className="flex flex-wrap gap-1">
@@ -89,7 +89,7 @@ export default function AccountDropdown({
         </div>
       )}
 
-      {/* 菜单项 */}
+      {/* Menu items */}
       {menu}
     </div>
   );

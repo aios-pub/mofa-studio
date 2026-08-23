@@ -1,6 +1,6 @@
 /**
- * 卡片组件
- * 提供一致的卡片样式，支持多种变体
+ * Card component
+ * Provides consistent card styling with multiple variants
  */
 
 import React from "react";
@@ -51,7 +51,7 @@ export const Card: React.FC<CardProps> = ({
   );
 };
 
-// 子组件
+// Subcomponents
 export const CardHeader: React.FC<{
   className?: string;
   children: React.ReactNode;

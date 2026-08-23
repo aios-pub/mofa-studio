@@ -1,5 +1,5 @@
 /**
- * API 服务入口
+ * API service entry
  */
 
 export * from './chat';

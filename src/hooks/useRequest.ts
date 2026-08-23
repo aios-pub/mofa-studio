@@ -1,11 +1,11 @@
 /**
- * 数据请求 Hook
- * 提供统一的数据请求状态管理
+ * Data request hook
+ * Provides unified data request state management
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 
-// ==================== 类型定义 ====================
+// ==================== Type definitions ====================
 
 export interface RequestState<T> {
   data: T | null;
@@ -14,27 +14,27 @@ export interface RequestState<T> {
 }
 
 export interface UseRequestOptions<T> {
-  /** 是否立即执行 */
+  /** Whether to execute immediately */
   immediate?: boolean;
-  /** 初始数据 */
+  /** Initial data */
   initialData?: T;
-  /** 成功回调 */
+  /** Success callback */
   onSuccess?: (data: T) => void;
-  /** Failed回调 */
+  /** Failure callback */
   onError?: (error: Error) => void;
-  /** 完成回调 */
+  /** Completion callback */
   onFinally?: () => void;
-  /** 重试次数 */
+  /** Retry count */
   retryCount?: number;
-  /** 重试延迟 */
+  /** Retry delay */
   retryDelay?: number;
-  /** 防抖延迟 */
+  /** Debounce delay */
   debounceWait?: number;
-  /** 条件执行，返回 false 时不执行 */
+  /** Conditional execution; skipped when it returns false */
   ready?: () => boolean;
-  /** 依赖数组，变化时重新执行 */
+  /** Dependency array; re-runs on change */
   deps?: unknown[];
-  /** 转换Response data */
+  /** Convert response data */
   transform?: (data: unknown) => T;
 }
 
@@ -82,7 +82,7 @@ export function useRequest<T, TArgs extends unknown[] = unknown[]>(
   const retryRef = useRef(0);
   const argsRef = useRef<TArgs | null>(null);
 
-  // 取消请求
+  // Cancel request
   const cancel = useCallback(() => {
     cancelRef.current = true;
     if (debounceTimerRef.current) {
@@ -91,7 +91,7 @@ export function useRequest<T, TArgs extends unknown[] = unknown[]>(
     setState((prev) => ({ ...prev, loading: false }));
   }, []);
 
-  // 更新数据
+  // Update data
   const mutate = useCallback((data: T | ((prev: T | null) => T)) => {
     setState((prev) => ({
       ...prev,
@@ -99,7 +99,7 @@ export function useRequest<T, TArgs extends unknown[] = unknown[]>(
     }));
   }, []);
 
-  // 重置状态
+  // Reset state
   const reset = useCallback(() => {
     cancel();
     setState({
@@ -111,10 +111,10 @@ export function useRequest<T, TArgs extends unknown[] = unknown[]>(
     argsRef.current = null;
   }, [initialData, cancel]);
 
-  // 执行请求
+  // Execute request
   const runAsync = useCallback(
     async (...args: TArgs): Promise<T> => {
-      // 检查是否准备好
+      // Check whether ready
       if (ready && !ready()) {
         return Promise.reject(new Error('Not ready'));
       }
@@ -130,12 +130,12 @@ export function useRequest<T, TArgs extends unknown[] = unknown[]>(
         try {
           let result: T = await service(...args);
 
-          // 转换数据
+          // Convert data
           if (transform) {
             result = transform(result) as T;
           }
 
-          // 检查是否已取消
+          // Check whether cancelled
           if (cancelRef.current) {
             throw new Error('Request cancelled');
           }
@@ -146,12 +146,12 @@ export function useRequest<T, TArgs extends unknown[] = unknown[]>(
 
           return result;
         } catch (error) {
-          // 检查是否已取消
+          // Check whether cancelled
           if (cancelRef.current) {
             throw new Error('Request cancelled');
           }
 
-          // 重试逻辑
+          // Retry logic
           attempts++;
           if (attempts < maxAttempts) {
             await new Promise((resolve) => setTimeout(resolve, retryDelay));
@@ -172,7 +172,7 @@ export function useRequest<T, TArgs extends unknown[] = unknown[]>(
     [service, ready, transform, retryCount, retryDelay, onSuccess, onError, onFinally]
   );
 
-  // 同步执行（不抛出错误）
+  // Execute synchronously (without throwing)
   const run = useCallback(
     async (...args: TArgs): Promise<T | null> => {
       try {
@@ -184,7 +184,7 @@ export function useRequest<T, TArgs extends unknown[] = unknown[]>(
     [runAsync]
   );
 
-  // 刷新（使用上次的参数）
+  // Refresh (with previous parameters)
   const refreshAsync = useCallback(async (): Promise<T> => {
     if (argsRef.current) {
       return runAsync(...argsRef.current);
@@ -200,7 +200,7 @@ export function useRequest<T, TArgs extends unknown[] = unknown[]>(
     }
   }, [refreshAsync]);
 
-  // 立即执行
+  // Execute immediately
   useEffect(() => {
     if (immediate) {
       if (debounceWait > 0) {
@@ -219,7 +219,7 @@ export function useRequest<T, TArgs extends unknown[] = unknown[]>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [immediate, debounceWait, ...deps]);
 
-  // 组件卸载时取消
+  // Cancel on unmount
   useEffect(() => {
     return () => {
       cancelRef.current = true;
@@ -243,13 +243,13 @@ export function useRequest<T, TArgs extends unknown[] = unknown[]>(
 // ==================== useQuery Hook ====================
 
 export interface UseQueryOptions<T> extends Omit<UseRequestOptions<T>, 'immediate'> {
-  /** 缓存 key */
+  /** Cache key */
   cacheKey?: string;
-  /** 缓存时间（milliseconds） */
+  /** Cache duration (milliseconds) */
   cacheTime?: number;
-  /** 窗口聚焦时重新请求 */
+  /** Refetch when the window regains focus */
   refetchOnWindowFocus?: boolean;
-  /** 依赖变化时重新请求 */
+  /** Refetch when dependencies change */
   refetchDeps?: unknown[];
 }
 
@@ -273,7 +273,7 @@ export function useQuery<T>(
     deps: refetchDeps,
   });
 
-  // 从缓存读取
+  // Read from cache
   useEffect(() => {
     if (cacheKey && queryCache.has(cacheKey)) {
       const cached = queryCache.get(cacheKey)!;
@@ -283,7 +283,7 @@ export function useQuery<T>(
     }
   }, [cacheKey, cacheTime, request]);
 
-  // 写入缓存
+  // Write to cache
   useEffect(() => {
     if (cacheKey && request.data !== null) {
       queryCache.set(cacheKey, {
@@ -293,7 +293,7 @@ export function useQuery<T>(
     }
   }, [cacheKey, request.data]);
 
-  // 窗口聚焦时重新请求
+  // Refetch when the window regains focus
   useEffect(() => {
     if (!refetchOnWindowFocus) return;
 

@@ -1,6 +1,6 @@
 /**
- * Auth 真实 API
- * 后端端点: /api/auth/...
+ * Auth real API
+ * Backend endpoints: /api/auth/...
  */
 
 import { apiClient } from "../api/apiClient";
@@ -12,7 +12,7 @@ import type {
   UserInfo,
 } from "../../types/user";
 
-// 后端返回的原始数据格式
+// Raw data format returned by the backend
 interface BackendSignInResponse {
   access_token: string;
   refresh_token: string;
@@ -24,7 +24,7 @@ interface BackendSignInResponse {
   };
 }
 
-// 转换后端数据为前端格式
+// Convert backend data to frontend format
 function transformSignInResponse(data: BackendSignInResponse): SignInRes {
   return {
     accessToken: data.access_token,
@@ -40,7 +40,7 @@ function transformSignInResponse(data: BackendSignInResponse): SignInRes {
 
 const authRealApi = {
   /**
-   * 登录
+   * Login
    */
   signin: async (data: SignInReq): Promise<SignInRes> => {
     const res = await apiClient.post<BackendSignInResponse>(
@@ -51,18 +51,18 @@ const authRealApi = {
   },
 
   /**
-   * 注册
+   * Register
    */
   signup: (data: SignUpReq): Promise<SignInRes> =>
     apiClient.post<SignInRes>("/api/auth/register", data),
 
   /**
-   * 登出
+   * Logout
    */
   logout: (): Promise<void> => apiClient.post("/api/auth/logout"),
 
   /**
-   * 刷新 Token
+   * Refresh token
    */
   refresh: (refreshToken: string): Promise<UserToken> =>
     apiClient.post<UserToken>("/api/auth/refresh_token", {
@@ -70,13 +70,13 @@ const authRealApi = {
     }),
 
   /**
-   * 获取当前User information
+   * Get current user information
    */
   getCurrentUser: (): Promise<UserInfo> =>
     apiClient.post<UserInfo>("/api/auth/current_user"),
 
   /**
-   * 重置密码
+   * Reset password
    */
   resetPassword: (newPassword: string, token?: string): Promise<void> =>
     apiClient.post("/api/auth/reset_password", {
@@ -85,7 +85,7 @@ const authRealApi = {
     }),
 
   /**
-   * 修改密码（需当前密码验证）
+   * Change password (requires current password verification)
    */
   changePassword: (currentPassword: string, newPassword: string): Promise<void> =>
     apiClient.post("/api/auth/reset_password", {

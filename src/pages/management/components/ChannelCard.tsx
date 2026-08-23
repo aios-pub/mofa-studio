@@ -1,5 +1,5 @@
 /**
- * 渠道卡片组件
+ * Channel card component
  */
 
 import { Tag, Dropdown, Button } from "antd";
@@ -12,7 +12,7 @@ import {
 import { channelTypeConfig } from "@/services";
 import type { Channel, ChannelStatus } from "../../../types";
 
-// 状态配置
+// Status configuration
 const statusConfig: Record<ChannelStatus, { color: string; text: string }> = {
   active: { color: "green", text: "正常" },
   inactive: { color: "default", text: "未激活" },

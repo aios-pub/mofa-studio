@@ -1,6 +1,6 @@
 /**
- * Hub Skill 卡片组件 (V2)
- * 支持新版 HubSkill 接口
+ * Hub skill card component (V2)
+ * Supports the new HubSkill interface
  */
 
 import { Card, Tag, Button, Rate, Typography, Tooltip } from 'antd';
@@ -67,7 +67,7 @@ export function HubSkillCard({
       onClick={onClick}
     >
       <div className="flex flex-col h-full">
-        {/* 头部 */}
+        {/* Header */}
         <div className="flex items-start justify-between mb-2">
           <div className="flex-1 min-w-0 mr-2">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -105,7 +105,7 @@ export function HubSkillCard({
           )}
         </div>
 
-        {/* 描述 */}
+        {/* Description */}
         <Paragraph
           ellipsis={{ rows: 2 }}
           type="secondary"
@@ -128,7 +128,7 @@ export function HubSkillCard({
           ))}
         </div>
 
-        {/* 统计 */}
+        {/* Statistics */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-4">
             <Tooltip title="下载量">
@@ -163,7 +163,7 @@ export function HubSkillCard({
           </Tooltip>
         </div>
 
-        {/* 安装按钮 */}
+        {/* Install button */}
         <Button
           type={isInstalled ? 'default' : 'primary'}
           size="small"

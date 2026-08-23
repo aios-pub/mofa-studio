@@ -1,5 +1,5 @@
 /**
- * 节点面板 - 左侧节点库面板
+ * Node panel - left node library panel
  */
 
 import { useState } from "react";
@@ -12,7 +12,7 @@ interface NodePanelProps {
   onAddNode: (type: NodeType) => void;
 }
 
-// 节点分类
+// Node categories
 const nodeCategories = [
   {
     key: "trigger",
@@ -39,7 +39,7 @@ const nodeCategories = [
 export default function NodePanel({ onAddNode }: NodePanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // 过滤Node type
+  // Filter node types
   const filteredCategories = nodeCategories
     .map((category) => ({
       ...category,
@@ -55,7 +55,7 @@ export default function NodePanel({ onAddNode }: NodePanelProps) {
 
   return (
     <div className="w-64 border-r border-(--color-border) bg-[var(--color-bg-secondary)] flex flex-col">
-      {/* 搜索 */}
+      {/* Search */}
       <div className="p-3 border-b border-(--color-border)">
         <Input
           placeholder="搜索节点..."
@@ -67,7 +67,7 @@ export default function NodePanel({ onAddNode }: NodePanelProps) {
         />
       </div>
 
-      {/* 节点列表 */}
+      {/* Node list */}
       <div className="flex-1 overflow-y-auto p-2">
         <Collapse
           defaultActiveKey={nodeCategories.map((c) => c.key)}

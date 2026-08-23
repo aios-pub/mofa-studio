@@ -1,9 +1,9 @@
 /**
- * Analytics Mock 数据和 API
- * 统一使用 snake_case 与后端保持一致
+ * Analytics mock data and API
+ * Use snake_case consistently to match the backend
  */
 
-// 统计数据类型
+// Statistics data types
 export interface UsageStats {
   total_conversations: number;
   total_tokens: number;
@@ -49,7 +49,7 @@ export interface HourlyDistribution {
   count: number;
 }
 
-// 筛选参数
+// Filter parameters
 export interface AnalyticsFilter {
   agent_ids?: string[];
   user_ids?: string[];
@@ -58,7 +58,7 @@ export interface AnalyticsFilter {
   provider_ids?: string[];
 }
 
-// 生成模拟数据
+// Generate simulated data
 const generateDailyStats = (days: number): DailyStats[] => {
   const stats: DailyStats[] = [];
   const today = new Date();
@@ -143,7 +143,7 @@ const generateHourlyDistribution = (): HourlyDistribution[] => {
   const distribution: HourlyDistribution[] = [];
 
   for (let hour = 0; hour < 24; hour++) {
-    // 工作时间使用更多
+    // More usage during work hours
     const baseCount = hour >= 9 && hour <= 18 ? 100 : 30;
     distribution.push({
       hour,
@@ -154,13 +154,13 @@ const generateHourlyDistribution = (): HourlyDistribution[] => {
   return distribution;
 };
 
-// Mock 数据存储
+// Mock data store
 let dailyStatsCache: DailyStats[] = [];
 let agentStatsCache: AgentStats[] = [];
 let userStatsCache: UserStats[] = [];
 let hourlyDistributionCache: HourlyDistribution[] = [];
 
-// 初始化缓存
+// Initialize cache
 const initCache = () => {
   if (dailyStatsCache.length === 0) {
     dailyStatsCache = generateDailyStats(30);
@@ -170,17 +170,17 @@ const initCache = () => {
   }
 };
 
-// 模拟延迟
+// Simulated latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Analytics API Mock
 export const analyticsApi = {
-  // 获取使用统计概览
+  // Get usage statistics overview
   async getOverviewStats(filter?: AnalyticsFilter): Promise<UsageStats> {
     await delay(300);
     initCache();
 
-    // 根据筛选条件过滤（模拟）
+    // Filter by conditions (simulated)
     let stats = dailyStatsCache;
     if (filter?.start_date) {
       stats = stats.filter((s) => s.date >= filter.start_date!);
@@ -225,7 +225,7 @@ export const analyticsApi = {
     };
   },
 
-  // 获取每日统计
+  // Get daily statistics
   async getDailyStats(filter?: AnalyticsFilter): Promise<DailyStats[]> {
     await delay(300);
     initCache();
@@ -241,7 +241,7 @@ export const analyticsApi = {
     return stats;
   },
 
-  // 获取 Agent 统计
+  // Get agent statistics
   async getAgentStats(filter?: AnalyticsFilter): Promise<AgentStats[]> {
     await delay(300);
     initCache();
@@ -251,11 +251,11 @@ export const analyticsApi = {
       stats = stats.filter((s) => filter.agent_ids!.includes(s.agent_id));
     }
 
-    // 按对话数排序
+    // Sort by conversation count
     return stats.sort((a, b) => b.conversations - a.conversations);
   },
 
-  // 获取用户统计
+  // Get user statistics
   async getUserStats(filter?: AnalyticsFilter): Promise<UserStats[]> {
     await delay(300);
     initCache();
@@ -265,18 +265,18 @@ export const analyticsApi = {
       stats = stats.filter((s) => filter.user_ids!.includes(s.user_id));
     }
 
-    // 按对话数排序
+    // Sort by conversation count
     return stats.sort((a, b) => b.conversations - a.conversations);
   },
 
-  // 获取小时分布
+  // Get hourly distribution
   async getHourlyDistribution(_filter?: AnalyticsFilter): Promise<HourlyDistribution[]> {
     await delay(200);
     initCache();
     return hourlyDistributionCache;
   },
 
-  // 获取趋势数据（用于图表）
+  // Get trend data (for charts)
   async getTrendData(
     metric: 'conversations' | 'tokens' | 'cost' | 'response_time',
     filter?: AnalyticsFilter
@@ -305,7 +305,7 @@ export const analyticsApi = {
     }));
   },
 
-  // 获取部门统计
+  // Get department statistics
   async getDepartmentStats(_filter?: AnalyticsFilter): Promise<{ department: string; conversations: number; tokens: number; users: number }[]> {
     await delay(300);
     initCache();
@@ -332,7 +332,7 @@ export const analyticsApi = {
     }));
   },
 
-  // 导出数据
+  // Export data
   async exportData(format: 'csv' | 'json', filter?: AnalyticsFilter): Promise<string> {
     await delay(500);
     initCache();
@@ -343,7 +343,7 @@ export const analyticsApi = {
       return JSON.stringify(stats, null, 2);
     }
 
-    // CSV 格式
+    // CSV format
     const headers = ['日期', '对话数', '总Tokens', '输入Tokens', '输出Tokens', '平均响应时间(ms)', '成功率(%)', '费用($)'];
     const rows = stats.map((s) => [
       s.date,

@@ -1,6 +1,6 @@
 /**
  * Namespace Manager Component
- * 管理命名空间和成员
+ * Manage namespaces and members
  */
 
 import { useState, useEffect } from "react";

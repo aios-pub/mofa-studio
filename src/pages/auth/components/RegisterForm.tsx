@@ -1,5 +1,5 @@
 /**
- * 注册Form component
+ * Register form component
  */
 
 import { useState } from "react";
@@ -40,7 +40,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
     e.preventDefault();
     setError("");
 
-    // 验证
+    // Validate
     if (password !== confirmPassword) {
       setError(t("auth.passwordMismatch", "两次输入的密码不一致"));
       return;
@@ -88,7 +88,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
         </p>
       </div>
 
-      {/* 错误提示 */}
+      {/* Error hint */}
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm flex items-center gap-2">
           <span className="i-ant-design:exclamation-circle-filled" />
@@ -96,9 +96,9 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
         </div>
       )}
 
-      {/* 表单 */}
+      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* 用户名 */}
+        {/* Username */}
         <div>
           <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
             {t("auth.username", "用户名")}
@@ -116,7 +116,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
           </div>
         </div>
 
-        {/* 邮箱 */}
+        {/* Email */}
         <div>
           <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
             {t("auth.email", "邮箱")}
@@ -134,7 +134,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
           </div>
         </div>
 
-        {/* 密码 */}
+        {/* Password */}
         <div>
           <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
             {t("auth.password", "密码")}
@@ -160,7 +160,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
           </div>
         </div>
 
-        {/* 确认密码 */}
+        {/* Confirm password */}
         <div>
           <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
             {t("auth.confirmPassword", "确认密码")}
@@ -181,7 +181,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
           </div>
         </div>
 
-        {/* 同意协议 */}
+        {/* Agree to terms */}
         <div className="flex items-start gap-2">
           <Checkbox
             checked={agreed}
@@ -200,7 +200,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
           </Checkbox>
         </div>
 
-        {/* 注册按钮 */}
+        {/* Register button */}
         <Button
           type="primary"
           htmlType="submit"
@@ -216,12 +216,12 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
         </Button>
       </form>
 
-      {/* 分隔线 */}
+      {/* Divider */}
       <Divider className="!my-6 !text-[var(--color-text-tertiary)]">
         <span className="text-xs">{t("auth.or", "或")}</span>
       </Divider>
 
-      {/* 登录入口 */}
+      {/* Login entry */}
       <div className="text-center text-sm">
         <span className="text-[var(--color-text-secondary)]">
           {t("auth.hasAccount", "已有账户？")}

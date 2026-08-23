@@ -1,6 +1,6 @@
 /**
- * 对话 Hook
- * 封装对话逻辑，支持流式响应
+ * Conversation hook
+ * Encapsulates conversation logic with streaming support
  */
 
 import { useState, useCallback, useRef } from 'react';
@@ -36,11 +36,11 @@ export function useChat({ conversation, onMessageAdded, onError }: UseChatOption
       setIsLoading(true);
       setError(null);
 
-      // 创建 AbortController 用于取消请求
+      // Create an AbortController for request cancellation
       abortControllerRef.current = new AbortController();
 
       try {
-        // 构建Messages历史
+        // Build message history
         const messages: ChatRequest['messages'] = [
           ...conversation.messages.map((m) => ({
             role: m.role as 'system' | 'user' | 'assistant',
@@ -49,7 +49,7 @@ export function useChat({ conversation, onMessageAdded, onError }: UseChatOption
           { role: 'user' as const, content },
         ];
 
-        // 创建User message
+        // Create user message
         const userMessage: Message = {
           id: `msg-${Date.now()}`,
           conversationId: conversation.id,
@@ -60,14 +60,14 @@ export function useChat({ conversation, onMessageAdded, onError }: UseChatOption
         };
         onMessageAdded?.(userMessage);
 
-        // 创建 AI Messages占位
+        // Create AI message placeholder
         const aiMessageId = `msg-${Date.now() + 1}`;
         let accumulatedContent = '';
 
-        // 流式响应回调
+        // Streaming response callback
         const onChunk: StreamCallback = (chunk, done) => {
           if (done) {
-            // 完成时创建完整的 AI Messages
+            // Create the full AI message on completion
             const aiMessage: Message = {
               id: aiMessageId,
               conversationId: conversation.id,
@@ -79,11 +79,11 @@ export function useChat({ conversation, onMessageAdded, onError }: UseChatOption
             onMessageAdded?.(aiMessage);
           } else {
             accumulatedContent += chunk;
-            // 可以在这里触发中间状态更新
+            // Intermediate state updates can be triggered here
           }
         };
 
-        // 发送请求
+        // Send request
         await chatService.chatStream(
           {
             messages,
@@ -105,7 +105,7 @@ export function useChat({ conversation, onMessageAdded, onError }: UseChatOption
     [conversation, isLoading, onMessageAdded, onError]
   );
 
-  // 停止生成
+  // Stop generating
   const stopGeneration = useCallback(() => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -113,7 +113,7 @@ export function useChat({ conversation, onMessageAdded, onError }: UseChatOption
     }
   }, []);
 
-  // 重试
+  // Retry
   const retry = useCallback(() => {
     if (lastUserMessageRef.current) {
       sendMessage(lastUserMessageRef.current);

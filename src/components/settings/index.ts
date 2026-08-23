@@ -1,5 +1,5 @@
 /**
- * 设置组件入口
+ * Settings component entry
  */
 
 export { default as SettingsDrawer } from './SettingsDrawer';

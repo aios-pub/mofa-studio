@@ -1,11 +1,11 @@
 /**
- * 导入导出 API 服务
- * 后端端点: /api/testset/import/... 和 /api/testset/export/...
+ * Import/export API service
+ * Backend endpoints: /api/testset/import/... and /api/testset/export/...
  */
 
 import { apiClient } from "../api/apiClient";
 
-// ==================== 类型定义 ====================
+// ==================== Type definitions ====================
 
 interface ImportResult {
   imported: number;
@@ -45,7 +45,7 @@ interface OpenAPISpec {
 // ==================== API ====================
 
 const importExportRealApi = {
-  // ==================== 导入 ====================
+  // ==================== Import ====================
 
   importPostman: async (
     content: PostmanCollection,
@@ -99,7 +99,7 @@ const importExportRealApi = {
     });
   },
 
-  // ==================== 导出 ====================
+  // ==================== Export ====================
 
   exportTestSet: async (
     testSetId: string,
@@ -141,7 +141,7 @@ const importExportRealApi = {
 
 };
 
-// ==================== 工具函数 ====================
+// ==================== Utilities ====================
 
 export function downloadAsFile(data: unknown, filename: string, mimeType: string) {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: mimeType });

@@ -1,8 +1,8 @@
 /**
- * Resources 真实 API
- * 后端端点: /api/resource/...
+ * Resources real API
+ * Backend endpoints: /api/resource/...
  *
- * 后端字段映射 (snake_case → camelCase):
+ * Backend field mapping (snake_case -> camelCase):
  *   key_prefix     → keyPrefix
  *   expires_at     → expiresAt
  *   last_used_at   → lastUsedAt
@@ -19,7 +19,7 @@
 import { apiClient } from "../api/apiClient";
 import { parseDate } from "./fieldMapper";
 
-// ==================== 前端类型 ====================
+// ==================== Frontend types ====================
 
 type ApiKeyStatus = 'active' | 'expired' | 'revoked';
 
@@ -28,8 +28,8 @@ interface ApiKey {
   name: string;
   provider_id: string;
   provider_name: string | null;
-  keyPrefix: string; // 打码前缀，用于显示
-  fullKey?: string; // 完整密钥，后端返回（Optional，兼容老数据）
+  keyPrefix: string; // masked prefix for display
+  fullKey?: string; // full key returned by backend (optional, for legacy data)
   status: ApiKeyStatus;
   createdAt: Date;
   expiresAt?: Date;
@@ -70,7 +70,7 @@ interface UsageStats {
   quotasUsage: Record<string, number>;
 }
 
-// ==================== 后端原始类型 ====================
+// ==================== Raw backend types ====================
 
 interface BackendApiKey {
   id: string;
@@ -79,7 +79,7 @@ interface BackendApiKey {
   provider_id?: string;
   provider_name?: string | null;
   key_prefix?: string;
-  key: string; // 完整密钥
+  key: string; // full key
   status: string;
   description?: string;
   expires_at?: string;
@@ -106,10 +106,10 @@ interface BackendResourceQuota {
   update_time: string;
 }
 
-// ==================== 字段映射 ====================
+// ==================== Field mapping ====================
 
 function mapApiKey(raw: BackendApiKey): ApiKey {
-  // 从完整密钥生成打码前缀
+  // Generate masked prefix from the full key
   const fullKey = raw.key || "";
   const keyPrefix = raw.key_prefix || (fullKey.length > 8
     ? `${fullKey.slice(0, 8)}...${fullKey.slice(-4)}`
@@ -121,7 +121,7 @@ function mapApiKey(raw: BackendApiKey): ApiKey {
     provider_id: raw.provider_id || raw.provider || "",
     provider_name: raw.provider_name ?? null,
     keyPrefix,
-    fullKey: raw.key, // 完整密钥（后端返回的明文）
+    fullKey: raw.key, // full key (plaintext returned by backend)
     status: raw.status as ApiKeyStatus,
     description: raw.description,
     expiresAt: parseDate(raw.expires_at),
@@ -135,11 +135,11 @@ function mapApiKey(raw: BackendApiKey): ApiKey {
 function mapApiKeyToBackend(data: Partial<ApiKey>): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   if (data.name !== undefined) result.name = data.name;
-  // 后端期望 provider 字段，从前端的 provider_id 映射
+  // Backend expects the provider field, mapped from frontend provider_id
   if (data.provider_id !== undefined) result.provider = data.provider_id;
   if (data.status !== undefined) result.status = data.status;
   if (data.description !== undefined) result.description = data.description;
-  // 优先使用 key（完整密钥），其次使用 keyPrefix
+  // Prefer key (full key), then keyPrefix
   if ((data as any).key !== undefined) result.key = (data as any).key;
   else if (data.keyPrefix !== undefined) result.key_prefix = data.keyPrefix;
   if (data.expiresAt !== undefined) result.expires_at = data.expiresAt.toISOString();
@@ -174,7 +174,7 @@ function mapResourceQuota(raw: BackendResourceQuota): ResourceQuota {
   };
 }
 
-// ==================== API 方法 ====================
+// ==================== API methods ====================
 
 const resourceRealApi = {
   // ==================== API Keys ====================
@@ -227,7 +227,7 @@ const resourceRealApi = {
     return { valid: true };
   },
 
-  // ==================== 资源配额 ====================
+  // ==================== Resource quotas ====================
 
   async getQuotas(): Promise<ResourceQuota[]> {
     const data = await apiClient.get<BackendResourceQuota[]>("/api/resource/quota/list");
@@ -284,7 +284,7 @@ const resourceRealApi = {
     return true;
   },
 
-  // ==================== 使用统计 ====================
+  // ==================== Usage statistics ====================
 
   async getUsageStats(): Promise<UsageStats> {
     const [apiKeys, quotas] = await Promise.all([
@@ -309,5 +309,5 @@ const resourceRealApi = {
 };
 
 export { resourceRealApi };
-// providerOptions 暂时从 mock 导入
+// providerOptions temporarily imported from mock
 export { providerOptions } from "../mock/resources";

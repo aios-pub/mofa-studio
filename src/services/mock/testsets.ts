@@ -1,5 +1,5 @@
 /**
- * 测试集 Mock 数据和 API
+ * Test set mock data and API
  */
 
 import type {
@@ -13,7 +13,7 @@ import type {
   TestCategoryFormData,
 } from "../../types/testset";
 
-// Mock 测试用例
+// Mock test cases
 const createMockTestCases = (testSetId: string): TestCase[] => [
   {
     id: `${testSetId}-case-1`,
@@ -60,7 +60,7 @@ const createMockTestCases = (testSetId: string): TestCase[] => [
   },
 ];
 
-// Mock 测试集列表
+// Mock test set list
 let mockTestSets: TestSet[] = [
   {
     id: "testset-1",
@@ -94,7 +94,7 @@ let mockTestSets: TestSet[] = [
   },
 ];
 
-// Mock 测试分类
+// Mock test categories
 let mockCategories: TestCategory[] = [
   {
     id: "cat-1",
@@ -116,20 +116,20 @@ let mockCategories: TestCategory[] = [
   },
 ];
 
-// Mock 测试用例存储
+// Mock test case store
 let mockTestCases: Map<string, TestCase[]> = new Map([
   ["testset-1", createMockTestCases("testset-1")],
   ["testset-2", createMockTestCases("testset-2")],
   ["testset-3", createMockTestCases("testset-3")],
 ]);
 
-// 测试报告存储
+// Test report store
 const testReports: TestReport[] = [];
 
-// 模拟延迟
+// Simulated latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// 测试集 API
+// Test set API
 export const testSetApi = {
   // ==================== TestSet CRUD ====================
 
@@ -308,7 +308,7 @@ export const testSetApi = {
 
     testReports.unshift(report);
 
-    // 更新测试集状态
+    // Update test set status
     const index = mockTestSets.findIndex((t) => t.id === testSetId);
     if (index !== -1) {
       mockTestSets[index] = {
@@ -378,12 +378,12 @@ export const testSetApi = {
 
   async deleteCategory(id: string): Promise<boolean> {
     await delay(200);
-    // 检查是否有子分类
+    // Check whether there are subcategories
     const hasChildren = mockCategories.some((c) => c.parentId === id);
     if (hasChildren) {
       throw new Error("该分类下有子分类，无法删除");
     }
-    // 检查是否有测试集
+    // Check whether there are test sets
     const hasTestSets = mockTestSets.some((t) => t.categoryId === id);
     if (hasTestSets) {
       throw new Error("该分类下有测试集，无法删除");

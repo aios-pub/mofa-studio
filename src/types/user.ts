@@ -1,5 +1,5 @@
 /**
- * 用户相关类型定义
+ * User-related type definitions
  */
 
 export interface Role {

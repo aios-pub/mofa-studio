@@ -1,6 +1,6 @@
 /**
- * 结果页面组件
- * 用于展示操作结果、错误页面等
+ * Result page component
+ * For displaying results, error pages, etc.
  */
 
 import React from 'react';
@@ -13,20 +13,20 @@ import {
   InfoCircleOutlined,
 } from '@ant-design/icons';
 
-// ==================== 基础结果页面 ====================
+// ==================== Base result page ====================
 
 export interface ResultPageProps {
-  /** 状态类型 */
+  /** Status types */
   status?: 'success' | 'error' | 'warning' | 'info' | '404' | '403' | '500';
   /** Title */
   title?: string;
-  /** 副Title */
+  /** Subtitle */
   subTitle?: string;
-  /** 额外内容 */
+  /** Extra content */
   extra?: React.ReactNode;
-  /** 图标 */
+  /** Icon */
   icon?: React.ReactNode;
-  /** 类名 */
+  /** Class name */
   className?: string;
 }
 
@@ -65,7 +65,7 @@ const statusConfig = {
 };
 
 /**
- * 结果页面组件
+ * Result page component
  */
 export const ResultPage: React.FC<ResultPageProps> = ({
   status = 'info',
@@ -90,29 +90,29 @@ export const ResultPage: React.FC<ResultPageProps> = ({
   );
 };
 
-// ==================== 成功页面 ====================
+// ==================== Success page ====================
 
 export interface SuccessPageProps {
   /** Title */
   title?: string;
-  /** 描述 */
+  /** Description */
   description?: string;
-  /** 返回按钮文字 */
+  /** Return button text */
   backText?: string;
-  /** 返回路径 */
+  /** Return path */
   backPath?: string;
-  /** 继续操作按钮文字 */
+  /** Continue button text */
   continueText?: string;
-  /** 继续操作回调 */
+  /** Continue callback */
   onContinue?: () => void;
-  /** 额外内容 */
+  /** Extra content */
   extra?: React.ReactNode;
-  /** 类名 */
+  /** Class name */
   className?: string;
 }
 
 /**
- * 成功页面
+ * Success page
  */
 export const SuccessPage: React.FC<SuccessPageProps> = ({
   title = '操作成功',
@@ -157,29 +157,29 @@ export const SuccessPage: React.FC<SuccessPageProps> = ({
   );
 };
 
-// ==================== 错误页面 ====================
+// ==================== Error page ====================
 
 export interface ErrorPageProps {
   /** Title */
   title?: string;
-  /** 描述 */
+  /** Description */
   description?: string;
-  /** 重试按钮文字 */
+  /** Retry button text */
   retryText?: string;
-  /** 重试回调 */
+  /** Retry callback */
   onRetry?: () => void;
-  /** 返回按钮文字 */
+  /** Return button text */
   backText?: string;
-  /** 返回路径 */
+  /** Return path */
   backPath?: string;
-  /** 额外内容 */
+  /** Extra content */
   extra?: React.ReactNode;
-  /** 类名 */
+  /** Class name */
   className?: string;
 }
 
 /**
- * 错误页面
+ * Error page
  */
 export const ErrorPage: React.FC<ErrorPageProps> = ({
   title = '操作失败',
@@ -224,21 +224,21 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({
   );
 };
 
-// ==================== 404 页面 ====================
+// ==================== 404 page ====================
 
 export interface NotFoundPageProps {
-  /** 返回首页按钮文字 */
+  /** Back home button text */
   homeText?: string;
-  /** 返回上一页按钮文字 */
+  /** Back button text */
   backText?: string;
-  /** 额外内容 */
+  /** Extra content */
   extra?: React.ReactNode;
-  /** 类名 */
+  /** Class name */
   className?: string;
 }
 
 /**
- * 404 页面
+ * 404 page
  */
 export const NotFoundPage: React.FC<NotFoundPageProps> = ({
   homeText = '返回首页',
@@ -263,19 +263,19 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({
   );
 };
 
-// ==================== 403 页面 ====================
+// ==================== 403 page ====================
 
 export interface ForbiddenPageProps {
-  /** 返回首页按钮文字 */
+  /** Back home button text */
   homeText?: string;
-  /** 额外内容 */
+  /** Extra content */
   extra?: React.ReactNode;
-  /** 类名 */
+  /** Class name */
   className?: string;
 }
 
 /**
- * 403 页面
+ * 403 page
  */
 export const ForbiddenPage: React.FC<ForbiddenPageProps> = ({
   homeText = '返回首页',
@@ -298,21 +298,21 @@ export const ForbiddenPage: React.FC<ForbiddenPageProps> = ({
   );
 };
 
-// ==================== 500 页面 ====================
+// ==================== 500 page ====================
 
 export interface ServerErrorPageProps {
-  /** 刷新按钮文字 */
+  /** Refresh button text */
   refreshText?: string;
-  /** 返回首页按钮文字 */
+  /** Back home button text */
   homeText?: string;
-  /** 额外内容 */
+  /** Extra content */
   extra?: React.ReactNode;
-  /** 类名 */
+  /** Class name */
   className?: string;
 }
 
 /**
- * 500 页面
+ * 500 page
  */
 export const ServerErrorPage: React.FC<ServerErrorPageProps> = ({
   refreshText = '刷新页面',

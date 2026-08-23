@@ -1,6 +1,6 @@
 /**
- * 滚动进度 Hook
- * 用于获取页面或容器的滚动进度
+ * Scroll progress hook
+ * For getting page or container scroll progress
  */
 
 import { useScroll, type MotionValue } from "framer-motion";
@@ -9,28 +9,28 @@ import { useMemo, useRef } from "react";
 export type UseScrollProgressTarget = "document" | "container";
 
 export interface UseScrollProgressReturn {
-  /** 水平滚动进度值 (0-1) */
+  /** Horizontal scroll progress (0-1) */
   scrollXProgress: MotionValue<number>;
-  /** 垂直滚动进度值 (0-1) */
+  /** Vertical scroll progress (0-1) */
   scrollYProgress: MotionValue<number>;
-  /** 容器元素的引用，用于容器滚动模式 */
+  /** Container element ref for container scroll mode */
   elementRef: React.RefObject<HTMLDivElement | null>;
 }
 
 /**
- * Custom Hook，用于获取滚动进度
+ * Custom hook for scroll progress
  *
- * @param target - 滚动目标类型，Optional值为 "document" 或 "container"，默认为 "document"
- * @returns 返回包含滚动进度值和元素引用的对象
+ * @param target - Scroll target type, either "document" or "container", defaults to "document"
+ * @returns Object containing scroll progress value and element ref
  *
  * @example
- * // 监听整个Document的滚动
+ * // Listen to document scrolling
  * const { scrollYProgress } = useScrollProgress();
  *
  * @example
- * // 监听容器的滚动
+ * // Listen to container scrolling
  * const { scrollYProgress, elementRef } = useScrollProgress("container");
- * // 将 elementRef 绑定到容器元素
+ * // Bind elementRef to the container element
  */
 export function useScrollProgress(
   target: UseScrollProgressTarget = "document",

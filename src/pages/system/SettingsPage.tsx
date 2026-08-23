@@ -1,5 +1,5 @@
 /**
- * 设置页面
+ * Settings page
  */
 
 import { useState } from "react";
@@ -76,7 +76,7 @@ export default function SettingsPage() {
 
   return (
     <div className="h-full flex">
-      {/* 左侧导航 */}
+      {/* Left navigation */}
       <div className="w-64 border-r border-(--color-border) bg-[var(--color-bg-secondary)]">
         <div className="p-4">
           <Title level={5} style={{ marginBottom: 16 }}>
@@ -92,7 +92,7 @@ export default function SettingsPage() {
         />
       </div>
 
-      {/* 右侧内容 */}
+      {/* Right content */}
       <div className="flex-1 overflow-y-auto p-6">
         {activeTab === "general" && <GeneralSettings />}
         {activeTab === "appearance" && <AppearanceSettings />}
@@ -104,7 +104,7 @@ export default function SettingsPage() {
   );
 }
 
-// 通用设置
+// General settings
 function GeneralSettings() {
   const { t } = useTranslation();
   const { language, setLanguage } = useAppStore();
@@ -119,7 +119,7 @@ function GeneralSettings() {
     <div className="space-y-6">
       <Title level={4}>{t("settings.general")}</Title>
 
-      {/* Language设置 */}
+      {/* Language settings */}
       <Card
         title={
           <Space>
@@ -155,7 +155,7 @@ function GeneralSettings() {
         </Radio.Group>
       </Card>
 
-      {/* 通知设置 */}
+      {/* Notification settings */}
       <Card
         title={
           <Space>
@@ -193,7 +193,7 @@ function GeneralSettings() {
   );
 }
 
-// 外观设置
+// Appearance settings
 function AppearanceSettings() {
   const { t } = useTranslation();
   const { theme, setTheme } = useAppStore();
@@ -267,7 +267,7 @@ function AppearanceSettings() {
   );
 }
 
-// 快捷键设置
+// Shortcut settings
 function ShortcutsSettings() {
   const { t } = useTranslation();
   const shortcuts = getShortcutDefinitions();
@@ -315,7 +315,7 @@ function ShortcutsSettings() {
   );
 }
 
-// 数据设置
+// Data settings
 function DataSettings() {
   const { t } = useTranslation();
   const [exporting, setExporting] = useState(false);
@@ -368,7 +368,7 @@ function DataSettings() {
       reader.onload = (event) => {
         try {
           const data = JSON.parse(event.target?.result as string);
-          // 导入操作仅恢复客户端设置，后端数据需通过后端 API 导入
+          // Import only restores client settings; backend data must be imported via backend API
           if (data.settings) {
             localStorage.setItem(
               "mofa-studio-app-store",
@@ -390,7 +390,7 @@ function DataSettings() {
       <Title level={4}>{t("settings.data")}</Title>
 
       <Space orientation="vertical" style={{ width: "100%" }} size="middle">
-        {/* 备份数据 */}
+        {/* Backup data */}
         <Card
           title={
             <Space>
@@ -422,7 +422,7 @@ function DataSettings() {
           </Space>
         </Card>
 
-        {/* 恢复数据 */}
+        {/* Restore data */}
         <Card
           title={
             <Space>
@@ -457,7 +457,7 @@ function DataSettings() {
   );
 }
 
-// 关于页面
+// About page
 function AboutSettings() {
   const { t } = useTranslation();
 
@@ -525,7 +525,7 @@ function AboutSettings() {
   );
 }
 
-// 通知开关组件
+// Notification toggle component
 function NotificationToggle({
   label,
   description,

@@ -1,11 +1,11 @@
 /**
- * 树形数据处理工具
+ * Tree data utilities
  */
 
 /**
- * 扁平化树结构
- * @param trees 树结构数组
- * @returns 扁平化后的数组
+ * Flatten tree structure
+ * @param trees Array of tree structures
+ * @returns Flattened array
  */
 export function flattenTrees<T extends { children?: T[] }>(
   trees: T[] = [],
@@ -23,9 +23,9 @@ export function flattenTrees<T extends { children?: T[] }>(
 }
 
 /**
- * 转换数组为树结构（深拷贝）
- * @param items 带有 children 的数组
- * @returns 树结构
+ * Convert an array to a tree (deep copy)
+ * @param items Array with children
+ * @returns Tree structure
  */
 export function convertToTree<T extends { children?: T[] }>(items: T[]): T[] {
   return items.map((item) => ({
@@ -35,9 +35,9 @@ export function convertToTree<T extends { children?: T[] }>(items: T[]): T[] {
 }
 
 /**
- * 扁平数组转树结构
- * @param items 带有 id 和 parentId 的扁平数组
- * @returns 树结构（包含 children 属性）
+ * Flat array to tree
+ * @param items Flat array with id and parentId
+ * @returns Tree structure (with children property)
  */
 export function convertFlatToTree<T extends { id: string; parentId: string }>(
   items: T[],
@@ -48,21 +48,21 @@ export function convertFlatToTree<T extends { id: string; parentId: string }>(
   >();
   const result: (T & { children: (T & { children: T[] })[] })[] = [];
 
-  // 第一遍：创建所有节点的映射
+  // First pass: build a map of all nodes
   for (const item of items) {
     itemMap.set(item.id, { ...item, children: [] });
   }
 
-  // 第二遍：构建树结构
+  // Second pass: build the tree structure
   for (const item of items) {
     const node = itemMap.get(item.id);
     if (!node) continue;
 
     if (!item.parentId || item.parentId === "") {
-      // 根节点
+      // Root node
       result.push(node);
     } else {
-      // 子节点
+      // Child nodes
       const parent = itemMap.get(item.parentId);
       if (parent) {
         parent.children.push(node as any);
@@ -74,10 +74,10 @@ export function convertFlatToTree<T extends { id: string; parentId: string }>(
 }
 
 /**
- * 在树中查找节点
- * @param trees 树结构数组
- * @param predicate 查找条件
- * @returns 找到的节点或 undefined
+ * Find a node in a tree
+ * @param trees Array of tree structures
+ * @param predicate Find condition
+ * @returns Found node or undefined
  */
 export function findInTree<T extends { children?: T[] }>(
   trees: T[],
@@ -96,10 +96,10 @@ export function findInTree<T extends { children?: T[] }>(
 }
 
 /**
- * 在树中查找所有匹配的节点
- * @param trees 树结构数组
- * @param predicate 查找条件
- * @returns 所有匹配的节点
+ * Find all matching nodes in a tree
+ * @param trees Array of tree structures
+ * @param predicate Find condition
+ * @returns All matching nodes
  */
 export function findAllInTree<T extends { children?: T[] }>(
   trees: T[],
@@ -120,9 +120,9 @@ export function findAllInTree<T extends { children?: T[] }>(
 }
 
 /**
- * 遍历树
- * @param trees 树结构数组
- * @param callback 回调函数
+ * Traverse a tree
+ * @param trees Array of tree structures
+ * @param callback Callback function
  */
 export function traverseTree<T extends { children?: T[] }>(
   trees: T[],
@@ -139,10 +139,10 @@ export function traverseTree<T extends { children?: T[] }>(
 }
 
 /**
- * 过滤树（保留匹配的节点及其父节点路径）
- * @param trees 树结构数组
- * @param predicate 过滤条件
- * @returns 过滤后的树
+ * Filter a tree (keep matching nodes and their ancestor paths)
+ * @param trees Array of tree structures
+ * @param predicate Filter condition
+ * @returns Filtered tree
  */
 export function filterTree<T extends { children?: T[] }>(
   trees: T[],
@@ -173,11 +173,11 @@ export function filterTree<T extends { children?: T[] }>(
 }
 
 /**
- * 获取节点的路径
- * @param trees 树结构数组
- * @param targetId 目标节点 ID
- * @param idKey ID 属性名
- * @returns 从根到目标节点的路径
+ * Get the node's path
+ * @param trees Array of tree structures
+ * @param targetId Target node ID
+ * @param idKey ID property name
+ * @returns Path from root to target node
  */
 export function getTreePath<T extends { children?: T[] }>(
   trees: T[],

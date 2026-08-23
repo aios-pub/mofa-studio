@@ -1,6 +1,6 @@
 /**
- * 系统日志页面
- * 显示系统操作日志、错误日志等
+ * System logs page
+ * Show system operation logs, error logs, etc.
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -24,10 +24,10 @@ import { auditLogApi } from '@/services';
 
 const { RangePicker } = DatePicker;
 
-// 日志级别类型
+// Log level types
 type LogLevel = 'info' | 'warning' | 'error' | 'debug' | 'success';
 
-// 日志数据类型
+// Log data types
 interface LogItem {
   id: string;
   level: LogLevel;
@@ -41,7 +41,7 @@ interface LogItem {
   details?: Record<string, any>;
 }
 
-// 从 AuditLog 映射到 LogItem
+// Map AuditLog to LogItem
 function auditToLog(raw: any): LogItem {
   return {
     id: raw.id,
@@ -59,7 +59,7 @@ function auditToLog(raw: any): LogItem {
   };
 }
 
-// 日志级别配置
+// Log level configuration
 const levelConfig: Record<LogLevel, { color: string; icon: React.ReactNode; label: string }> = {
   info: { color: 'blue', icon: <InfoCircleOutlined />, label: '信息' },
   warning: { color: 'orange', icon: <WarningOutlined />, label: '警告' },
@@ -68,7 +68,7 @@ const levelConfig: Record<LogLevel, { color: string; icon: React.ReactNode; labe
   success: { color: 'green', icon: <CheckCircleOutlined />, label: '成功' },
 };
 
-// 模块配置
+// Module configuration
 const moduleOptions = [
   { label: '全部模块', value: '' },
   { label: 'Agent', value: 'Agent' },
@@ -103,7 +103,7 @@ export default function LogsPage() {
 
   useEffect(() => { loadLogs(); }, [loadLogs]);
 
-  // 过滤日志
+  // Filter logs
   const filteredLogs = logs.filter((log) => {
     const matchSearch = !searchText ||
       log.message.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -114,12 +114,12 @@ export default function LogsPage() {
     return matchSearch && matchLevel && matchModule;
   });
 
-  // 刷新日志
+  // Refresh logs
   const handleRefresh = () => {
     loadLogs();
   };
 
-  // 表格列配置
+  // Table column configuration
   const columns: ColumnsType<LogItem> = [
     {
       title: t('logs.level', '级别'),
@@ -245,7 +245,7 @@ export default function LogsPage() {
         }
       />
 
-      {/* 统计卡片 */}
+      {/* Statistics cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {Object.entries(levelConfig).map(([level, config]) => {
           const count = logs.filter(l => l.level === level).length;
@@ -266,7 +266,7 @@ export default function LogsPage() {
         })}
       </div>
 
-      {/* 筛选区域 */}
+      {/* Filter area */}
       <Card size="small">
         <Space wrap>
           <Input
@@ -304,7 +304,7 @@ export default function LogsPage() {
         </Space>
       </Card>
 
-      {/* 日志表格 */}
+      {/* Logs table */}
       <Card>
         <Table
           columns={columns}

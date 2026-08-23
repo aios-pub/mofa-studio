@@ -1,17 +1,17 @@
 /**
- * Scheduled Tasks Mock 数据和 API
+ * Scheduled tasks mock data and API
  */
 
-// 任务类型（动态，由后端注册的 handler 决定）
+// Task types (dynamic, determined by handlers registered on the backend)
 export type TaskType = string;
 
-// 任务状态
+// Task status
 export type TaskStatus = "enabled" | "disabled";
 
 // Execution status
 export type ExecutionStatus = "success" | "failure" | "running" | "pending";
 
-// Cron 表达式预设
+// Cron expression presets
 export const cronPresets = [
   { label: "每小时", value: "0 * * * *" },
   { label: "每天 0:00", value: "0 0 * * *" },
@@ -23,7 +23,7 @@ export const cronPresets = [
   { label: "每月 1 日 0:00", value: "0 0 1 * *" },
 ];
 
-// 定时任务
+// Scheduled tasks
 export interface ScheduledTask {
   id: string;
   name: string;
@@ -42,23 +42,23 @@ export interface ScheduledTask {
   created_by: string;
 }
 
-// 任务配置
+// Task configuration
 export interface TaskConfig {
-  // Agent Loop 调度任务（调度单位 = Agent）
+  // Agent loop scheduled task (scheduling unit = agent)
   agent_id?: string;
   prompt?: string;
   max_iterations?: number;
   timeout_seconds?: number;
 
-  // Agent 测试任务
+  // Agent test task
   agent_ids?: string[];
   test_set_id?: string;
 
-  // 通用扩展字段
+  // Common extension fields
   [key: string]: unknown;
 }
 
-// 任务类型描述符 — 由后端注册 handler 时提供
+// Task type descriptor - provided when the backend registers a handler
 export interface TaskTypeDescriptor {
   task_type: string;
   label: string;
@@ -67,7 +67,7 @@ export interface TaskTypeDescriptor {
   config_schema?: Record<string, unknown>;
 }
 
-// 执行记录
+// Execution records
 export interface TaskExecution {
   id: string;
   task_id: string;
@@ -81,7 +81,7 @@ export interface TaskExecution {
   details?: Record<string, unknown>;
 }
 
-// 任务类型配置
+// Task type configuration
 export const taskTypeConfig: Record<
   TaskType,
   { label: string; description: string; icon: string }
@@ -98,7 +98,7 @@ export const taskTypeConfig: Record<
   },
 };
 
-// Mock 任务数据
+// Mock task data
 const generateMockTasks = (): ScheduledTask[] => {
   const tasks: ScheduledTask[] = [
     {
@@ -224,7 +224,7 @@ const generateMockTasks = (): ScheduledTask[] => {
   return tasks;
 };
 
-// Mock 执行记录
+// Mock execution records
 const generateMockExecutions = (): TaskExecution[] => {
   const executions: TaskExecution[] = [];
   const tasks = generateMockTasks();
@@ -237,13 +237,13 @@ const generateMockExecutions = (): TaskExecution[] => {
   ];
 
   tasks.forEach((task) => {
-    // 为每个任务生成最近 10 条执行记录
+    // Generate the last 10 execution records for each task
     for (let i = 0; i < 10; i++) {
       const started_at = new Date(
         Date.now() - i * 24 * 60 * 60 * 1000 - Math.random() * 60 * 60 * 1000,
       );
       const status = statuses[Math.floor(Math.random() * statuses.length)];
-      const duration = Math.floor(Math.random() * 300000) + 1000; // 1-301 秒
+      const duration = Math.floor(Math.random() * 300000) + 1000; // 1-301 seconds
 
       executions.push({
         id: `exec-${task.id}-${i}`,
@@ -272,7 +272,7 @@ const generateMockExecutions = (): TaskExecution[] => {
 let mockTasks: ScheduledTask[] = [];
 let mockExecutions: TaskExecution[] = [];
 
-// 初始化
+// Initialization
 const initTasks = () => {
   if (mockTasks.length === 0) {
     mockTasks = generateMockTasks();
@@ -280,10 +280,10 @@ const initTasks = () => {
   }
 };
 
-// 模拟延迟
+// Simulated latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// 解析 Cron 表达式为可读文本
+// Parse a cron expression into readable text
 export function parseCronToText(cron: string): string {
   const preset = cronPresets.find((p) => p.value === cron);
   if (preset) return preset.label;
@@ -308,7 +308,7 @@ export function parseCronToText(cron: string): string {
   return "自定义";
 }
 
-// 计算下次运行时间（简化版，实际应使用 cron 库）
+// Compute the next run time (simplified; should use a cron library)
 export function calculateNextRun(cron: string): Date {
   const now = new Date();
   const parts = cron.split(" ");
@@ -335,7 +335,7 @@ export function calculateNextRun(cron: string): Date {
 
 // Scheduled Tasks API Mock
 export const scheduledTaskApi = {
-  // 获取任务列表
+  // Get task list
   async getTasks(filter?: {
     type?: TaskType;
     status?: TaskStatus;
@@ -364,14 +364,14 @@ export const scheduledTaskApi = {
     return tasks;
   },
 
-  // 获取单个任务
+  // Get a single task
   async getTask(id: string): Promise<ScheduledTask | undefined> {
     await delay(200);
     initTasks();
     return mockTasks.find((t) => t.id === id);
   },
 
-  // 创建任务
+  // Create task
   async createTask(
     data: Omit<
       ScheduledTask,
@@ -405,7 +405,7 @@ export const scheduledTaskApi = {
     return task;
   },
 
-  // 更新任务
+  // Update task
   async updateTask(
     id: string,
     data: Partial<ScheduledTask>,
@@ -432,7 +432,7 @@ export const scheduledTaskApi = {
     return mockTasks[index];
   },
 
-  // 删除任务
+  // Delete task
   async deleteTask(id: string): Promise<boolean> {
     await delay(200);
     initTasks();
@@ -444,7 +444,7 @@ export const scheduledTaskApi = {
     return true;
   },
 
-  // 切换任务状态
+  // Toggle task status
   async toggleTask(id: string): Promise<ScheduledTask | undefined> {
     await delay(200);
     initTasks();
@@ -462,7 +462,7 @@ export const scheduledTaskApi = {
     return task;
   },
 
-  // 立即执行任务
+  // Run the task immediately
   async executeTask(id: string): Promise<TaskExecution> {
     await delay(500);
     initTasks();
@@ -486,7 +486,7 @@ export const scheduledTaskApi = {
 
     mockExecutions.unshift(execution);
 
-    // 更新任务统计
+    // Update task statistics
     task.last_run_at = execution.started_at;
     task.last_run_status = "success";
     task.success_count++;
@@ -495,7 +495,7 @@ export const scheduledTaskApi = {
     return execution;
   },
 
-  // 获取执行记录
+  // Get execution records
   async getExecutions(filter?: {
     task_id?: string;
     status?: ExecutionStatus;
@@ -520,14 +520,14 @@ export const scheduledTaskApi = {
     return executions;
   },
 
-  // 获取单个执行记录
+  // Get a single execution record
   async getExecution(id: string): Promise<TaskExecution | undefined> {
     await delay(200);
     initTasks();
     return mockExecutions.find((e) => e.id === id);
   },
 
-  // 获取任务统计
+  // Get task statistics
   async getStats(): Promise<{
     total: number;
     enabled: number;
@@ -560,7 +560,7 @@ export const scheduledTaskApi = {
     };
   },
 
-  // 获取任务类型列表
+  // Get task type list
   async getTaskTypes(): Promise<TaskTypeDescriptor[]> {
     await delay(100);
     return Object.entries(taskTypeConfig).map(([type, config]) => ({

@@ -1,6 +1,6 @@
 /**
- * API端点卡片组件
- * 展示单个API端点的详细信息
+ * API endpoint card component
+ * Show details of a single API endpoint
  */
 
 import { Card, Typography, Collapse, Table, Tag, Space, Button, Divider } from "antd";
@@ -52,7 +52,7 @@ export function ApiEndpointCard({ endpoint }: ApiEndpointCardProps) {
     PATCH: "purple",
   };
 
-  // 参数表格列定义
+  // Parameter table column definitions
   const paramColumns: ColumnsType<Parameter> = [
     {
       title: "名称",
@@ -125,7 +125,7 @@ export function ApiEndpointCard({ endpoint }: ApiEndpointCardProps) {
 
   return (
     <Card>
-      {/* 基本信息 */}
+      {/* Basic information */}
       <div className="flex items-start justify-between mb-4">
         <div>
           <Space>

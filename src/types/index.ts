@@ -2,31 +2,31 @@
  * mofa-studio Type definition entry
  */
 
-// Agent 相关类型
+// Agent-related types
 export * from "./agent";
 
-// 对话相关类型
+// Conversation-related types
 export * from "./conversation";
 
-// 权限相关类型
+// Permission-related types
 export * from "./permission";
 
-// 测试集相关类型
+// Test set related types
 export * from "./testset";
 
-// 用户相关类型
+// User-related types
 export * from "./user";
 
-// Tracing 相关类型
+// Tracing-related types
 export * from "./tracing";
 
-// Evaluation相关类型
+// Evaluation-related types
 export * from "./evaluation";
 
-// 系统管理相关类型
+// System management types
 export * from "./system";
 
-// 通用类型
+// Common types
 export * from "./common";
 
 // Claw type
@@ -35,8 +35,8 @@ export * from "./claw";
 // Channel Channel type
 export * from "./channel";
 
-// Octos 类型
+// Octos types
 export * from "./octos";
 
-// Workflow Workflow类型
+// Workflow types
 export * from "./workflow";

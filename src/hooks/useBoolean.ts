@@ -1,27 +1,27 @@
 /**
- * 布尔值状态管理 Hook
- * 提供便捷的布尔值操作方法
+ * Boolean state management hook
+ * Provides convenient boolean operation methods
  */
 
 import { useCallback, useState } from 'react';
 
 export interface UseBooleanReturn {
-  /** 当前值 */
+  /** Current value */
   value: boolean;
-  /** 设置为 true */
+  /** Set to true */
   setTrue: () => void;
-  /** 设置为 false */
+  /** Set to false */
   setFalse: () => void;
-  /** 切换值 */
+  /** Toggle value */
   toggle: () => void;
-  /** 设置指定值 */
+  /** Set the given value */
   setValue: (value: boolean) => void;
 }
 
 /**
- * 布尔值状态管理 Hook
- * @param defaultValue 默认值，默认为 false
- * @returns 布尔值状态和操作方法
+ * Boolean state management hook
+ * @param defaultValue Default value, defaults to false
+ * @returns Boolean state and operation methods
  */
 export function useBoolean(defaultValue = false): UseBooleanReturn {
   const [value, setValue] = useState(defaultValue);
@@ -43,7 +43,7 @@ export default useBoolean;
 
 /**
  * useToggle Hook
- * 支持在多个值之间切换
+ * Supports toggling between multiple values
  */
 export function useToggle<T>(options: [T, T]): [T, () => void];
 export function useToggle<T>(options: T[]): [T, (value?: T) => void];
@@ -69,27 +69,27 @@ export function useToggle<T>(options: T[]): [T, (value?: T) => void] {
 
 /**
  * useCounter Hook
- * 计数器状态管理
+ * Counter state management
  */
 export interface UseCounterOptions {
-  /** 最小值 */
+  /** Minimum */
   min?: number;
-  /** 最大值 */
+  /** Maximum */
   max?: number;
-  /** 步长 */
+  /** Step size */
   step?: number;
 }
 
 export interface UseCounterReturn {
-  /** 当前值 */
+  /** Current value */
   count: number;
-  /** 增加计数 */
+  /** Increment count */
   increment: () => void;
-  /** 减少计数 */
+  /** Decrement count */
   decrement: () => void;
-  /** 重置计数 */
+  /** Reset count */
   reset: () => void;
-  /** 设置计数 */
+  /** Set count */
   setCount: (value: number) => void;
 }
 

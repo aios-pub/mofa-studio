@@ -1,5 +1,5 @@
 /**
- * 知识搜索面板组件
+ * Knowledge search panel component
  */
 
 import { useState } from "react";
@@ -64,7 +64,7 @@ export default function SearchPanel({ knowledgeBaseId }: SearchPanelProps) {
 
   return (
     <div className="space-y-4">
-      {/* 搜索输入 */}
+      {/* Search input */}
       <div className="flex gap-2">
         <Input
           placeholder="输入问题进行知识检索..."
@@ -85,7 +85,7 @@ export default function SearchPanel({ knowledgeBaseId }: SearchPanelProps) {
         </Button>
       </div>
 
-      {/* 搜索配置 */}
+      {/* Search configuration */}
       <div className="flex items-center gap-4">
         <span className="text-sm text-[var(--color-text-tertiary)]">
           返回结果数:
@@ -100,20 +100,20 @@ export default function SearchPanel({ knowledgeBaseId }: SearchPanelProps) {
         <span className="text-sm font-medium">{topK}</span>
       </div>
 
-      {/* 搜索结果 */}
+      {/* Search results */}
       {loading ? (
         <div className="flex justify-center py-8">
           <Spin size="large" />
         </div>
       ) : results.length > 0 ? (
         <div className="space-y-3">
-          {/* 搜索统计 */}
+          {/* Search statistics */}
           <div className="flex items-center gap-4 text-sm text-[var(--color-text-tertiary)]">
             <span>找到 {results.length} 条结果</span>
             <span>耗时 {searchTime}ms</span>
           </div>
 
-          {/* 结果列表 */}
+          {/* Result list */}
           {results.map((item) => (
             <div
               key={item.id}

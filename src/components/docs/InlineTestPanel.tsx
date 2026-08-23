@@ -1,6 +1,6 @@
 /**
- * 内联测试面板组件
- * 支持在Document页面直接发送请求并展示响应
+ * Inline test panel component
+ * Supports sending requests directly from the documentation page and showing responses
  */
 
 import { useState, useEffect, useRef } from "react";
@@ -51,13 +51,13 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
   const [result, setResult] = useState<RequestResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // 表单状态
+  // Form state
   const [pathParams, setPathParams] = useState<Record<string, string>>({});
   const [queryParams, setQueryParams] = useState<Record<string, string>>({});
   const [headers, setHeaders] = useState<Record<string, string>>({});
   const [body, setBody] = useState<string>("");
 
-  // 认证配置状态
+  // Auth configuration state
   const [authType, setAuthType] = useState<"none" | "bearer" | "apiKey" | "basic">("none");
   const [authToken, setAuthToken] = useState("");
   const [authUsername, setAuthUsername] = useState("");
@@ -66,7 +66,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
   const [authKeyValue, setAuthKeyValue] = useState("");
   const [authKeyLocation, setAuthKeyLocation] = useState<"header" | "query">("header");
 
-  // Environment variable状态
+  // Environment variable state
   const [selectedEnvironment, setSelectedEnvironment] = useState<string>("");
   const [environmentVariables, setEnvironmentVariables] = useState<EnvironmentVariable[]>([]);
 
@@ -81,7 +81,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
     };
   }, []);
 
-  // 填充示例值，endpoint变化时重置所有状态
+  // Fill sample values; reset all state when the endpoint changes
   useEffect(() => {
     setPathParams({});
     setQueryParams({});
@@ -117,15 +117,15 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
   const constructUrl = () => {
     let url = endpoint.path;
 
-    // 应用Environment variable替换
+    // Apply environment variable substitution
     url = replaceVariables(url, environmentVariables);
 
-    // 替换路径参数
+    // Replace path parameters
     Object.entries(pathParams).forEach(([key, value]) => {
       url = url.replace(`{${key}}`, value);
     });
 
-    // 添加查询参数
+    // Add query parameters
     const queryParamsObj = new URLSearchParams();
     Object.entries(queryParams).forEach(([key, value]) => {
       if (value) {
@@ -133,7 +133,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
       }
     });
 
-    // API Key 作为查询参数
+    // API key as query parameter
     if (authType === "apiKey" && authKeyLocation === "query" && authKeyName && authKeyValue) {
       queryParamsObj.append(authKeyName, authKeyValue);
     }
@@ -168,11 +168,11 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
     setError(null);
 
     try {
-      // 合并认证headers（除了API Key在query中的情况）
+      // Merge auth headers (except when the API key is in the query)
       const authHeaders = constructAuthHeaders();
       const mergedHeaders = { ...headers, ...authHeaders };
 
-      // 准备认证配置
+      // Prepare auth configuration
       let authConfig: { authType?: string; authConfig?: Record<string, unknown> } = {};
 
       if (authType === "bearer" && authToken) {
@@ -199,7 +199,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
         };
       }
 
-      // 使用 HTTP 测试执行 API
+      // Use the HTTP test execution API
       const response = await testSetRealApi.executeHttpRequest({
         url: constructUrl(),
         method: endpoint.method,
@@ -207,11 +207,11 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
         body: endpoint.request_body && body ? (() => {
           try {
             let parsedBody = JSON.parse(body);
-            // 应用Environment variable替换到请求体
+            // Apply environment variable substitution to the request body
             parsedBody = replaceVariablesInObject(parsedBody, environmentVariables);
             return parsedBody;
           } catch {
-            // e.g.果不是有效的JSON，直接应用字符串替换
+            // If not valid JSON, apply string replacement directly
             return replaceVariables(body, environmentVariables);
           }
         })() : undefined,
@@ -283,7 +283,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
         </Space>
       }
          >
-      {/* Environment variable选择器 */}
+      {/* Environment variable selector */}
       <div className="mb-4">
         <Space className="w-full">
           <EnvironmentOutlined />
@@ -313,7 +313,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
             label: "参数",
             children: (
               <div className="space-y-4">
-                {/* 路径参数 */}
+                {/* Path parameters */}
                 {(endpoint.parameters?.filter((p) => p.in === "path").length ?? 0) > 0 ? (
                   <div>
                     <Text strong>路径参数</Text>
@@ -341,7 +341,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                   </div>
                 ) : null}
 
-                {/* 查询参数 */}
+                {/* Query parameters */}
                 {(endpoint.parameters?.filter((p) => p.in === "query").length ?? 0) > 0 ? (
                   <div>
                     <Text strong>查询参数</Text>
@@ -437,7 +437,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                   </div>
                 ) : null}
 
-                {/* 认证配置 */}
+                {/* Auth configuration */}
                 <div>
                   <Text strong>认证</Text>
                   <div className="mt-2 space-y-2">
@@ -517,7 +517,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                   </div>
                 </div>
 
-                {/* 请求体 */}
+                {/* Request body */}
                 {endpoint.request_body && (
                   <div>
                     <Text strong>请求体</Text>
@@ -532,7 +532,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                   </div>
                 )}
 
-                {/* URL预览 */}
+                {/* URL preview */}
                 <Alert
                   message="请求URL"
                   description={<code className="text-xs break-all">{constructUrl()}</code>}
@@ -546,7 +546,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
             label: "响应",
             children: (
               <div className="space-y-4">
-                {/* 响应状态 */}
+                {/* Response status */}
                 <div className="flex items-center justify-between">
                   <Space>
                     <Text strong>响应状态</Text>
@@ -565,7 +565,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                   )}
                 </div>
 
-                {/* 响应头 */}
+                {/* Response headers */}
                 {result?.headers && result.headers.length > 0 && (
                   <div>
                     <Text strong>响应头</Text>
@@ -580,7 +580,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                   </div>
                 )}
 
-                {/* 响应体 */}
+                {/* Response body */}
                 {result?.body && (
                   <div>
                     <Text strong>响应体</Text>
@@ -599,7 +599,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
         ]}
       />
 
-      {/* 操作按钮 */}
+      {/* Action buttons */}
       <div className="mt-4 pt-4 border-t border-gray-200">
         <Space>
           <Button

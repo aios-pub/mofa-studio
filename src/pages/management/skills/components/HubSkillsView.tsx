@@ -1,6 +1,6 @@
 /**
- * Skill Hub 浏览页
- * 带搜索、筛选、排序功能
+ * Skill hub browse page
+ * With search, filtering and sorting
  */
 
 import { useEffect, useState } from 'react';

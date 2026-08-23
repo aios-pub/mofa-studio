@@ -1,5 +1,5 @@
 /**
- * Skill SourceLabel组件
+ * Skill source tag component
  */
 
 import { Tag } from 'antd';

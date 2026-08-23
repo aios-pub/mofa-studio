@@ -1,5 +1,5 @@
 /**
- * Agent 权限配置组件
+ * Agent permission configuration component
  */
 
 import { useState, useEffect } from "react";
@@ -174,7 +174,7 @@ export default function PermissionConfig({
 
   return (
     <div className="space-y-6">
-      {/* 头部 - 权限模板 */}
+      {/* Header - permission templates */}
       <div className="p-4 bg-(--color-bg-tertiary) rounded-lg">
         <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">
           快速应用权限模板
@@ -202,7 +202,7 @@ export default function PermissionConfig({
         </div>
       </div>
 
-      {/* 功能权限 */}
+      {/* Function permissions */}
       <div className="space-y-3">
         <h3 className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-primary)]">
           <SafetyOutlined />
@@ -244,7 +244,7 @@ export default function PermissionConfig({
         </div>
       </div>
 
-      {/* Skills 访问权限 */}
+      {/* Skills access permissions */}
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
           Skills 访问权限
@@ -273,7 +273,7 @@ export default function PermissionConfig({
         </div>
       </div>
 
-      {/* 提示词访问权限 */}
+      {/* Prompt access permissions */}
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
           提示词访问权限
@@ -302,7 +302,7 @@ export default function PermissionConfig({
         </div>
       </div>
 
-      {/* 数据权限 */}
+      {/* Data permissions */}
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
           数据权限
@@ -368,7 +368,7 @@ export default function PermissionConfig({
         </div>
       </div>
 
-      {/* 操作按钮 */}
+      {/* Action buttons */}
       <div className="flex items-center justify-between pt-4 border-t border-(--color-border)">
         <div className="flex items-center gap-2 text-sm text-[var(--color-text-tertiary)]">
           {hasChanges && (

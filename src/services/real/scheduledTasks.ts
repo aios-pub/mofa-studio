@@ -1,6 +1,6 @@
 /**
- * ScheduledTasks 真实 API
- * 后端端点: /api/task/...
+ * Scheduled tasks real API
+ * Backend endpoints: /api/task/...
  */
 
 import { apiClient } from "../api/apiClient";
@@ -15,7 +15,7 @@ import type {
   TaskTypeDescriptor,
 } from "../mock/scheduledTasks";
 
-// ==================== 后端原始类型 ====================
+// ==================== Raw backend types ====================
 
 interface BackendTask {
   id: string;
@@ -51,9 +51,9 @@ interface BackendExecution {
   update_time: string;
 }
 
-// ==================== 字段映射 ====================
+// ==================== Field mapping ====================
 
-/** 后端 icon 标识 → 前端 emoji */
+/** Backend icon identifier -> frontend emoji */
 const ICON_MAP: Record<string, string> = {
   loop: '🔁',
   test_tube: '🧪',
@@ -70,7 +70,7 @@ const ICON_MAP: Record<string, string> = {
 };
 
 function mapIcon(icon: string): string {
-  // e.g.果已经是 emoji（非 ASCII 或常见 emoji 范围），直接返回
+  // If already an emoji (non-ASCII or common emoji range), return directly
   if (icon && /[\u{1F000}-\u{1FFFF}]/u.test(icon)) return icon;
   return ICON_MAP[icon] || icon;
 }
@@ -147,9 +147,9 @@ function mapExecutionFromBackend(raw: BackendExecution): TaskExecution {
   };
 }
 
-// ==================== API 接口 ====================
+// ==================== API interfaces ====================
 
-// 任务类型缓存（仅在页面生命周期内有效，类型随服务器注册而定）
+// Task type cache (page lifetime only; types depend on server registration)
 let cachedTaskTypes: TaskTypeDescriptor[] | null = null;
 
 const scheduledTaskRealApi = {
@@ -206,7 +206,7 @@ const scheduledTaskRealApi = {
     id: string,
     data: Partial<ScheduledTask>,
   ): Promise<ScheduledTask | undefined> {
-    // 后端 update 要求必传字段（e.g. task_type），先获取现有数据合并
+    // Backend update requires mandatory fields (e.g. task_type); fetch existing data and merge first
     const existing = await apiClient.get<BackendTask>(`/api/task/${id}`);
     const merged = { ...mapTaskFromBackend(existing), ...data };
     const body = { id, ...mapTaskToBackend(merged) };
@@ -227,7 +227,7 @@ const scheduledTaskRealApi = {
     } else {
       await apiClient.post(`/api/task/enable/${id}`);
     }
-    // 重新获取更新后的任务
+    // Refetch the updated task
     const updated = await apiClient.get<BackendTask>(`/api/task/${id}`);
     return mapTaskFromBackend(updated);
   },

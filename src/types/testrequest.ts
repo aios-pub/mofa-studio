@@ -1,9 +1,9 @@
 /**
- * HTTP请求相关类型定义
- * 从testset.ts中分离出来的专用类型
+ * HTTP request type definitions
+ * Dedicated types split out of testset.ts
  */
 
-// 重新导出testset中的HTTP相关类型
+// Re-export HTTP-related types from testset
 export type {
   HttpMethod,
   AuthType,
@@ -18,7 +18,7 @@ export type {
   WorkflowRequestConfig,
 } from "./testset";
 
-// ==================== Environment variable相关类型 ====================
+// ==================== Environment variable types ====================
 
 /** Environment variable */
 export interface EnvironmentVariable {
@@ -28,7 +28,7 @@ export interface EnvironmentVariable {
   enabled?: boolean;
 }
 
-/** 环境 */
+/** Environments */
 export interface Environment {
   id: string;
   name: string;
@@ -39,7 +39,7 @@ export interface Environment {
   updateTime: string;
 }
 
-// ==================== 脚本相关类型 ====================
+// ==================== Script types ====================
 
 /** Script type */
 export type ScriptType = "pre_request" | "test";
@@ -51,14 +51,14 @@ export interface ScriptConfig {
   enabled?: boolean;
 }
 
-// ==================== 测试执行相关类型 ====================
+// ==================== Test execution types ====================
 
-/** 测试执行参数 */
+/** Test execution parameters */
 export interface TestExecutionParams {
   environmentId?: string;
   timeout?: number;
   retryCount?: number;
 }
 
-// 注意: TestExecutionResult 在 documentation.ts 中定义
-// 此文件仅定义 HTTP 请求相关的配置类型
+// Note: TestExecutionResult is defined in documentation.ts
+// This file only defines HTTP request configuration types

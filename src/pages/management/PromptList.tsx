@@ -1,5 +1,5 @@
 /**
- * 提示词列表页面
+ * Prompt list page
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -40,7 +40,7 @@ import PromptVersionHistory from "../../components/prompt/PromptVersionHistory";
 import ResizableSidebar from "@/components/layout/ResizableSidebar";
 import PromptTestPanel from "../../components/prompt/PromptTestPanel";
 
-// 变量类型选项
+// Variable type options
 const variableTypeOptions = [
   { value: "string", label: "字符串" },
   { value: "number", label: "数字" },
@@ -48,7 +48,7 @@ const variableTypeOptions = [
   { value: "date", label: "日期" },
 ];
 
-// 预设模板
+// Preset templates
 const presetTemplates = [
   {
     key: "translation",
@@ -171,7 +171,7 @@ export default function PromptListPage() {
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
-  // 编辑器 Drawer 状态
+  // Editor drawer state
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
   const [saving, setSaving] = useState(false);
@@ -194,7 +194,7 @@ export default function PromptListPage() {
     }
   }, []);
 
-  // 更新 selectedPrompt 使其与列表数据同步
+  // Sync selectedPrompt with the list data
   useEffect(() => {
     if (selectedPrompt) {
       const updated = prompts.find((p) => p.id === selectedPrompt.id);
@@ -204,7 +204,7 @@ export default function PromptListPage() {
     }
   }, [prompts, selectedPrompt]);
 
-  // 打开新建
+  // Open create
   const handleCreate = () => {
     setEditingPrompt(null);
     form.resetFields();
@@ -212,7 +212,7 @@ export default function PromptListPage() {
     setEditorOpen(true);
   };
 
-  // 打开编辑
+  // Open edit
   const handleEdit = (prompt: Prompt) => {
     setEditingPrompt(prompt);
     form.setFieldsValue({
@@ -232,7 +232,7 @@ export default function PromptListPage() {
     setEditorOpen(true);
   };
 
-  // 应用模板
+  // Apply template
   const applyTemplate = (template: (typeof presetTemplates)[number]) => {
     form.setFieldsValue({
       name: template.name,
@@ -250,7 +250,7 @@ export default function PromptListPage() {
     message.info(`已应用「${template.name}」模板`);
   };
 
-  // 保存
+  // Save
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
@@ -306,13 +306,13 @@ export default function PromptListPage() {
     }
   };
 
-  // 取消编辑
+  // Cancel editing
   const handleEditorCancel = () => {
     setEditorOpen(false);
     setEditingPrompt(null);
   };
 
-  // 删除（带确认）
+  // Delete (with confirmation)
   const handleDelete = (prompt: Prompt) => {
     Modal.confirm({
       title: "确认删除",
@@ -354,10 +354,10 @@ export default function PromptListPage() {
     }
   };
 
-  // 获取所有分类
+  // Get all categories
   const categories = ["all", ...new Set(prompts.map((p) => p.category))];
 
-  // 过滤提示词
+  // Filter prompts
   const filteredPrompts = prompts.filter((p) => {
     const matchesSearch =
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -367,7 +367,7 @@ export default function PromptListPage() {
     return matchesSearch && matchesCategory;
   });
 
-  // 获取操作菜单
+  // Get the action menu
   const getActionMenuItems = (prompt: Prompt) => [
     {
       key: "edit",
@@ -393,7 +393,7 @@ export default function PromptListPage() {
     },
   ];
 
-  // 预览内容（替换变量）
+  // Preview content (variables substituted)
   const getPreviewContent = () => {
     const content = form.getFieldValue("content") || "";
     const variables: { name: string; defaultValue?: string }[] =
@@ -410,9 +410,9 @@ export default function PromptListPage() {
 
   return (
     <div className="flex h-full">
-      {/* 左侧列表 */}
+      {/* Left list */}
       <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]" storageKey="sidebar:prompts">
-        {/* 头部 */}
+        {/* Header */}
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
@@ -428,7 +428,7 @@ export default function PromptListPage() {
             </Button>
           </div>
 
-          {/* 搜索 */}
+          {/* Search */}
           <Input
             placeholder="搜索提示词..."
             prefix={<SearchOutlined />}
@@ -437,7 +437,7 @@ export default function PromptListPage() {
             allowClear
           />
 
-          {/* 分类筛选 */}
+          {/* Category filter */}
           <div className="flex gap-1 flex-wrap">
             {categories.map((cat) => (
               <Tag
@@ -452,7 +452,7 @@ export default function PromptListPage() {
           </div>
         </div>
 
-        {/* 列表 */}
+        {/* List */}
         <div className="flex-1 overflow-y-auto p-2">
           {loading ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">
@@ -519,7 +519,7 @@ export default function PromptListPage() {
         </div>
       </ResizableSidebar>
 
-      {/* 右侧详情 */}
+      {/* Right details */}
       <div className="flex-1 overflow-y-auto">
         {selectedPrompt ? (
           <PromptDetail
@@ -543,7 +543,7 @@ export default function PromptListPage() {
         )}
       </div>
 
-      {/* 新建/编辑 Drawer */}
+      {/* Create/edit drawer */}
       <Drawer
         title={editingPrompt ? "编辑提示词" : "新建提示词"}
         placement="right"
@@ -565,7 +565,7 @@ export default function PromptListPage() {
           </div>
         }
       >
-        {/* 预设模板（仅新建时显示） */}
+        {/* Preset templates (shown only when creating) */}
         {!editingPrompt && (
           <div style={{ marginBottom: 16 }}>
             <div
@@ -776,7 +776,7 @@ export default function PromptListPage() {
   );
 }
 
-// 提示词详情组件
+// Prompt detail component
 function PromptDetail({
   prompt,
   onUpdate,
@@ -814,7 +814,7 @@ function PromptDetail({
 
   return (
     <div className="flex flex-col h-full">
-      {/* 头部 */}
+      {/* Header */}
       <div className="flex items-start justify-between p-6 pb-4">
         <div>
           <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
@@ -834,7 +834,7 @@ function PromptDetail({
         </Space>
       </div>
 
-      {/* 元信息 */}
+      {/* Meta information */}
       <div className="grid grid-cols-3 gap-4 px-6 pb-4">
         <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg">
           <span className="text-xs text-[var(--color-text-tertiary)]">
@@ -862,7 +862,7 @@ function PromptDetail({
         </div>
       </div>
 
-      {/* Label栏 */}
+      {/* Tabs bar */}
       <div className="flex gap-1 px-6 border-b border-(--color-border)">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -883,7 +883,7 @@ function PromptDetail({
         })}
       </div>
 
-      {/* 内容区 */}
+      {/* Content area */}
       <div className="flex-1 overflow-hidden">
         {activeTab === "content" && (
           <div className="p-6 h-full overflow-y-auto">

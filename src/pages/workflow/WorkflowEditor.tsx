@@ -1,5 +1,5 @@
 /**
- * Workflow编辑器页面
+ * Workflow editor page
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -41,7 +41,7 @@ import ConfigPanel from "./panels/ConfigPanel";
 import { useWorkflowStore } from "../../stores/useWorkflowStore";
 import type { Workflow, NodeType, NodeConfig } from "../../types/workflow";
 
-// Custom节点组件
+// Custom node component
 import StartNode from "./nodes/StartNode";
 import EndNode from "./nodes/EndNode";
 import AgentNode from "./nodes/AgentNode";
@@ -53,7 +53,7 @@ import TransformNode from "./nodes/TransformNode";
 import VariableNode from "./nodes/VariableNode";
 import DelayNode from "./nodes/DelayNode";
 
-// Node type映射
+// Node type mapping
 const nodeTypes = {
   start: StartNode,
   end: EndNode,
@@ -87,7 +87,7 @@ export default function WorkflowEditorPage() {
     canRedo,
   } = useWorkflowStore();
 
-  // 加载Workflow
+  // Load workflow
   useEffect(() => {
     if (id) {
       loadWorkflow(id);
@@ -100,7 +100,7 @@ export default function WorkflowEditorPage() {
       const data = await workflowApi.getById(workflowId);
       if (data) {
         setWorkflow(data);
-        // 转换节点格式
+        // Convert node format
         const rfNodes = data.nodes.map(
           (n: {
             id: string;
@@ -117,7 +117,7 @@ export default function WorkflowEditorPage() {
             },
           }),
         );
-        // 转换边格式
+        // Convert edge format
         const rfEdges = data.edges.map(
           (e: {
             id: string;
@@ -150,12 +150,12 @@ export default function WorkflowEditorPage() {
     }
   };
 
-  // 保存Workflow
+  // Save workflow
   const handleSave = async () => {
     if (!workflow) return;
     try {
       setSaving(true);
-      // 转换回Workflow格式
+      // Convert back to workflow format
       const wfNodes = nodes.map((n) => ({
         id: n.id,
         type: n.type as NodeType,
@@ -183,7 +183,7 @@ export default function WorkflowEditorPage() {
     }
   };
 
-  // 发布Workflow
+  // Publish workflow
   const handlePublish = async () => {
     if (!workflow) return;
     try {
@@ -197,7 +197,7 @@ export default function WorkflowEditorPage() {
     }
   };
 
-  // 执行Workflow
+  // Execute workflow
   const handleExecute = async () => {
     if (!workflow || workflow.status !== "published") {
       message.warning("请先发布工作流");
@@ -213,7 +213,7 @@ export default function WorkflowEditorPage() {
     }
   };
 
-  // 节点变化处理
+  // Node change handling
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
       setNodes(applyNodeChanges(changes, nodes));
@@ -221,7 +221,7 @@ export default function WorkflowEditorPage() {
     [nodes, setNodes],
   );
 
-  // 边变化处理
+  // Edge change handling
   const onEdgesChange = useCallback(
     (changes: EdgeChange[]) => {
       setEdges(applyEdgeChanges(changes, edges));
@@ -229,7 +229,7 @@ export default function WorkflowEditorPage() {
     [edges, setEdges],
   );
 
-  // 连接处理
+  // Connection handling
   const onConnect = useCallback(
     (connection: Connection) => {
       setEdges(addEdge({ ...connection, animated: true }, edges));
@@ -237,7 +237,7 @@ export default function WorkflowEditorPage() {
     [edges, setEdges],
   );
 
-  // 节点点击处理
+  // Node click handling
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
       setSelectedNodeId(node.id);
@@ -245,12 +245,12 @@ export default function WorkflowEditorPage() {
     [setSelectedNodeId],
   );
 
-  // 画布点击处理
+  // Canvas click handling
   const onPaneClick = useCallback(() => {
     setSelectedNodeId(null);
   }, [setSelectedNodeId]);
 
-  // 添加节点
+  // Add node
   const handleAddNode = useCallback(
     (type: NodeType) => {
       const newNode = {
@@ -270,13 +270,13 @@ export default function WorkflowEditorPage() {
     [nodes, setNodes],
   );
 
-  // 选中的节点
+  // Selected nodes
   const selectedNode = useMemo(
     () => nodes.find((n) => n.id === selectedNodeId),
     [nodes, selectedNodeId],
   );
 
-  // 更新节点配置
+  // Update node configuration
   const handleUpdateNodeConfig = useCallback(
     (nodeId: string, config: any) => {
       setNodes(
@@ -288,7 +288,7 @@ export default function WorkflowEditorPage() {
     [nodes, setNodes],
   );
 
-  // 删除节点
+  // Delete node
   const handleDeleteNode = useCallback(
     (nodeId: string) => {
       setNodes(nodes.filter((n) => n.id !== nodeId));
@@ -313,7 +313,7 @@ export default function WorkflowEditorPage() {
 
   return (
     <div className="h-full flex flex-col">
-      {/* 顶部工具栏 */}
+      {/* Top toolbar */}
       <div className="h-14 border-b border-(--color-border) bg-[var(--color-bg-secondary)] flex items-center justify-between px-4">
         <div className="flex items-center gap-4">
           <Button
@@ -381,12 +381,12 @@ export default function WorkflowEditorPage() {
         </div>
       </div>
 
-      {/* 主内容区 */}
+      {/* Main content area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* 左侧节点面板 */}
+        {/* Left node panel */}
         <NodePanel onAddNode={handleAddNode} />
 
-        {/* 中间画布 */}
+        {/* Center canvas */}
         <div className="flex-1">
           <ReactFlow
             nodes={nodes}
@@ -420,7 +420,7 @@ export default function WorkflowEditorPage() {
           </ReactFlow>
         </div>
 
-        {/* 右侧配置面板 */}
+        {/* Right configuration panel */}
         {selectedNode && (
           <ConfigPanel
             node={selectedNode}

@@ -1,7 +1,7 @@
 /**
- * 模型选择步骤组件
- * 用于创建 Provider 后选择要启用的模型
- * 支持模糊搜索、全选/取消全选、添加Custom模型
+ * Model selection step component
+ * For selecting models to enable after creating a provider
+ * Supports fuzzy search, select/deselect all and adding custom models
  */
 
 import React, { useState, useMemo } from "react";
@@ -27,7 +27,7 @@ interface ModelSelectionStepProps {
   onToggle: (modelId: string) => void;
   onToggleAll: (selectAll: boolean) => void;
   onAddCustomModel?: (model: SelectableModel) => void;
-  /** 刷新外部模型列表回调（编辑模式下可用） */
+  /** Callback to refresh external model list (available in edit mode) */
   onRefreshModels?: () => Promise<void>;
 }
 
@@ -82,7 +82,7 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
 
   return (
     <div className="flex flex-col h-full">
-      {/* 搜索栏 */}
+      {/* Search bar */}
       <div className="flex items-center gap-3 mb-3">
         <Input
           placeholder="搜索模型名称或 ID..."
@@ -115,7 +115,7 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
         </span>
       </div>
 
-      {/* 全选控制 */}
+      {/* Select-all control */}
       <div className="flex items-center gap-2 mb-2 pb-2 border-b border-(--color-border)">
         <Checkbox
           checked={allFilteredSelected}
@@ -145,7 +145,7 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
         )}
       </div>
 
-      {/* 模型列表 */}
+      {/* Model list */}
       <div className="flex-1 overflow-y-auto space-y-1">
         {filteredModels.length === 0 ? (
           <div className="text-center py-8 text-[var(--color-text-tertiary)]">
@@ -191,7 +191,7 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
         )}
       </div>
 
-      {/* 添加Custom模型弹窗 */}
+      {/* Add custom model modal */}
       <Modal
         title="添加自定义模型"
         open={showAddCustom}

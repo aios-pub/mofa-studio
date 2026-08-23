@@ -1,5 +1,5 @@
 /**
- * Personal center页面
+ * Personal center page
  */
 
 import { useState } from "react";
@@ -24,21 +24,21 @@ export default function ProfilePage() {
   const { setUserInfo } = useUserActions();
   const [activeTab, setActiveTab] = useState<TabKey>("profile");
 
-  // 个人信息表单
+  // Personal info form
   const [profileForm, setProfileForm] = useState({
     username: userInfo.username || "",
     email: userInfo.email || "",
     avatar: userInfo.avatar || "",
   });
 
-  // 安全设置表单
+  // Security settings form
   const [securityForm, setSecurityForm] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
 
-  // 通知设置
+  // Notification settings
   const [notifications, setNotifications] = useState({
     email: true,
     browser: false,
@@ -112,13 +112,13 @@ export default function ProfilePage() {
   return (
     <div className="h-full overflow-auto p-6 bg-[var(--color-bg-base)]">
       <div className="max-w-4xl mx-auto">
-        {/* 页面Title */}
+        {/* Page title */}
         <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-6">
           {t("profile.title", "个人中心")}
         </h1>
 
         <div className="flex gap-6">
-          {/* 左侧Tabs */}
+          {/* Left tabs */}
           <div className="w-48 flex-shrink-0">
             <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-2">
               {tabs.map((tab) => {
@@ -141,17 +141,17 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* 右侧内容区 */}
+          {/* Right content area */}
           <div className="flex-1">
             <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-6">
-              {/* 基本信息 */}
+              {/* Basic information */}
               {activeTab === "profile" && (
                 <div className="space-y-6">
                   <h2 className="text-lg font-medium text-[var(--color-text-primary)]">
                     {t("profile.basicInfo", "基本信息")}
                   </h2>
 
-                  {/* 头像 */}
+                  {/* Avatar */}
                   <div className="flex items-center gap-4">
                     <img
                       src={
@@ -174,7 +174,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* 用户名 */}
+                  {/* Username */}
                   <div>
                     <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
                       {t("auth.username", "用户名")}
@@ -192,7 +192,7 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  {/* 邮箱 */}
+                  {/* Email */}
                   <div>
                     <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
                       {t("auth.email", "邮箱")}
@@ -210,7 +210,7 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  {/* 角色信息 */}
+                  {/* Role information */}
                   <div>
                     <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
                       {t("profile.roles", "角色")}
@@ -227,7 +227,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* 保存按钮 */}
+                  {/* Save button */}
                   <div className="pt-4">
                     <button
                       onClick={handleSaveProfile}
@@ -243,7 +243,7 @@ export default function ProfilePage() {
                 </div>
               )}
 
-              {/* 安全设置 */}
+              {/* Security settings */}
               {activeTab === "security" && (
                 <div className="space-y-6">
                   <h2 className="text-lg font-medium text-[var(--color-text-primary)]">
@@ -260,7 +260,7 @@ export default function ProfilePage() {
                     </span>
                   </div>
 
-                  {/* 当前密码 */}
+                  {/* Current password */}
                   <div>
                     <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
                       {t("profile.currentPassword", "当前密码")}
@@ -278,7 +278,7 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  {/* 新密码 */}
+                  {/* New password */}
                   <div>
                     <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
                       {t("profile.newPassword", "新密码")}
@@ -296,7 +296,7 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  {/* 确认新密码 */}
+                  {/* Confirm new password */}
                   <div>
                     <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
                       {t("profile.confirmNewPassword", "确认新密码")}
@@ -314,7 +314,7 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  {/* 修改密码按钮 */}
+                  {/* Change password button */}
                   <div className="pt-4">
                     <button
                       onClick={handleChangePassword}
@@ -330,14 +330,14 @@ export default function ProfilePage() {
                 </div>
               )}
 
-              {/* 通知设置 */}
+              {/* Notification settings */}
               {activeTab === "notifications" && (
                 <div className="space-y-6">
                   <h2 className="text-lg font-medium text-[var(--color-text-primary)]">
                     {t("profile.notifications", "通知设置")}
                   </h2>
 
-                  {/* 邮件通知 */}
+                  {/* Email notifications */}
                   <div className="flex items-center justify-between py-3 border-b border-(--color-border)">
                     <div>
                       <div className="text-sm font-medium text-[var(--color-text-primary)]">
@@ -366,7 +366,7 @@ export default function ProfilePage() {
                     </label>
                   </div>
 
-                  {/* 浏览器通知 */}
+                  {/* Browser notifications */}
                   <div className="flex items-center justify-between py-3 border-b border-(--color-border)">
                     <div>
                       <div className="text-sm font-medium text-[var(--color-text-primary)]">
@@ -395,7 +395,7 @@ export default function ProfilePage() {
                     </label>
                   </div>
 
-                  {/* 营销通知 */}
+                  {/* Marketing notifications */}
                   <div className="flex items-center justify-between py-3">
                     <div>
                       <div className="text-sm font-medium text-[var(--color-text-primary)]">

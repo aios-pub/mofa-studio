@@ -1,14 +1,14 @@
 /**
- * Claw 相关 API（非 CRUD 部分）
- * CRUD 已统一到 agentApi，此处保留渠道代理、CLI 会话、测试等操作
+ * Claw-related API (non-CRUD part)
+ * CRUD is unified in agentApi; channel proxy, CLI sessions and test operations remain here
  *
- * 所有 claw_instance_id 参数已替换为 agent_id（agent.id）
+ * All claw_instance_id parameters replaced with agent_id (agent.id)
  */
 
 import { apiClient } from "../api/apiClient";
 import type { ClawChannelMapping, CliToolSession, ChannelProxyInfo } from "@/types";
 
-// ==================== 后端响应类型 ====================
+// ==================== Backend response types ====================
 
 interface BackendChannelMapping {
   id: string;
@@ -55,7 +55,7 @@ interface BackendCliSession {
   update_time: string;
 }
 
-// ==================== 转换函数 ====================
+// ==================== Conversion functions ====================
 
 function fromBackendMapping(vo: BackendChannelMapping): ClawChannelMapping {
   const proxyInfo: ChannelProxyInfo | undefined =
@@ -113,15 +113,15 @@ function fromBackendSession(vo: BackendCliSession): CliToolSession {
   };
 }
 
-// ==================== API 方法 ====================
+// ==================== API methods ====================
 
 export const clawRealApi = {
-  /** 测试连通性（id 为 agent.id） */
+  /** Test connectivity (id is agent.id) */
   async test(agentId: string): Promise<boolean> {
     return apiClient.post<boolean>(`/api/claw/test/${agentId}`);
   },
 
-  /** 分配渠道（agentId 为 agent.id） */
+  /** Assign channels (agentId is agent.id) */
   async assignChannel(
     agentId: string,
     channelId: string,
@@ -139,12 +139,12 @@ export const clawRealApi = {
     return fromBackendMapping(vo);
   },
 
-  /** 取消分配渠道 */
+  /** Unassign channel */
   async unassignChannel(mappingId: string): Promise<void> {
     await apiClient.delete(`/api/claw/channel/unassign/${mappingId}`);
   },
 
-  /** 列出 CLI 会话（agentId 为 agent.id） */
+  /** List CLI sessions (agentId is agent.id) */
   async listCliSessions(agentId: string): Promise<CliToolSession[]> {
     const data = await apiClient.get<BackendCliSession[]>(
       `/api/claw/cli/sessions?agent_id=${agentId}`,
@@ -153,7 +153,7 @@ export const clawRealApi = {
     return data.map(fromBackendSession);
   },
 
-  /** 获取Channel mapping的代理配置 */
+  /** Get the proxy configuration of a channel mapping */
   async getChannelProxyConfig(mappingId: string): Promise<ChannelProxyInfo> {
     const data = await apiClient.get<{
       proxy_send_url: string;
@@ -169,12 +169,12 @@ export const clawRealApi = {
     };
   },
 
-  /** 测试渠道代理连通性 */
+  /** Test channel proxy connectivity */
   async testChannelProxy(mappingId: string): Promise<boolean> {
     return apiClient.post<boolean>(`/api/claw/channel-proxy/test/${mappingId}`);
   },
 
-  /** 重新生成渠道代理 Token */
+  /** Regenerate the channel proxy token */
   async regenerateProxyToken(mappingId: string): Promise<ChannelProxyInfo> {
     const data = await apiClient.post<{
       proxy_send_url: string;

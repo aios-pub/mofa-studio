@@ -1,6 +1,6 @@
 /**
  * Provider Vendor configuration
- * 包含 130+ 主流模型厂商的详细配置信息
+ * Contains detailed configuration for 130+ mainstream model vendors
  */
 
 import type {
@@ -9,10 +9,10 @@ import type {
   ProviderCategory,
 } from "../../types/provider";
 
-// ==================== 云服务商配置 ====================
+// ==================== Cloud provider configuration ====================
 
 const cloudProviders: ProviderConfig[] = [
-  // ==================== 主流云服务商 ====================
+  // ==================== Major cloud providers ====================
   {
     type: "alibaba",
     name: "阿里云百炼",
@@ -170,7 +170,7 @@ const cloudProviders: ProviderConfig[] = [
       jsonMode: true,
     },
   },
-  // ==================== 国内厂商 ====================
+  // ==================== Domestic vendors ====================
   {
     type: "baidu",
     name: "百度智能云",
@@ -402,7 +402,7 @@ const cloudProviders: ProviderConfig[] = [
       jsonMode: false,
     },
   },
-  // ==================== 国际厂商 ====================
+  // ==================== International vendors ====================
   {
     type: "openai",
     name: "OpenAI",
@@ -886,7 +886,7 @@ const cloudProviders: ProviderConfig[] = [
   },
 ];
 
-// ==================== 开源/本地配置 ====================
+// ==================== Open source / local configuration ====================
 
 const opensourceProviders: ProviderConfig[] = [
   {
@@ -1033,7 +1033,7 @@ const opensourceProviders: ProviderConfig[] = [
   },
 ];
 
-// ==================== Custom配置 ====================
+// ==================== Custom configuration ====================
 
 const customProviders: ProviderConfig[] = [
   {
@@ -1078,30 +1078,30 @@ const customProviders: ProviderConfig[] = [
   },
 ];
 
-// ==================== 导出配置 ====================
+// ==================== Export configuration ====================
 
-// 所有Vendor configuration
+// All vendor configurations
 export const allProviderConfigs: ProviderConfig[] = [
   ...cloudProviders,
   ...opensourceProviders,
   ...customProviders,
 ];
 
-// 按分类获取配置
+// Get configuration by category
 export const getProvidersByCategory = (
   category: ProviderCategory,
 ): ProviderConfig[] => {
   return allProviderConfigs.filter((config) => config.category === category);
 };
 
-// 根据 ProviderType 获取配置
+// Get configuration by provider type
 export const getProviderConfig = (
   type: ProviderType,
 ): ProviderConfig | undefined => {
   return allProviderConfigs.find((config) => config.type === type);
 };
 
-// 分类信息
+// Category information
 export const categoryInfo: Record<
   ProviderCategory,
   { name: string; description: string }
@@ -1114,7 +1114,7 @@ export const categoryInfo: Record<
   custom: { name: "自定义", description: "自定义 OpenAI 兼容 API" },
 };
 
-// 获取厂商简单配置（用于列表显示）
+// Get simplified vendor configuration (for list display)
 export const getProviderTypeConfig = (
   type: string,
 ): { name: string; color: string; icon: string } => {

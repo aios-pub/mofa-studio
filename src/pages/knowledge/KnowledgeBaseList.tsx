@@ -1,5 +1,5 @@
 /**
- * Knowledge base列表页面
+ * Knowledge base list page
  */
 
 import { useState, useEffect } from "react";

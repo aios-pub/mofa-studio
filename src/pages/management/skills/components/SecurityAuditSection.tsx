@@ -1,6 +1,6 @@
 /**
  * Security Audit Section Component
- * 显示技能包的安全扫描结果
+ * Show the skill package security scan results
  */
 
 import { ShieldAlert, Shield, ChevronDown, ChevronUp } from "lucide-react";

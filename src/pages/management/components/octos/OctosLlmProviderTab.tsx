@@ -1,6 +1,6 @@
 /**
- * Octos LLM Provider 配置 — 复用 Provider 管理
- * 从已配置的 Providers 中选择，而不是重新配置
+ * Octos LLM provider configuration - reuses provider management
+ * Select from configured providers instead of reconfiguring
  */
 
 import { useState, useEffect } from "react";
@@ -34,10 +34,10 @@ import { providerApi } from "@/services";
 
 const { Text } = Typography;
 
-// ==================== 辅助函数：处理新旧结构 ====================
+// ==================== Helpers: handle old/new structures ====================
 
 /**
- * 获取Primary model configuration，优先从 llm.primary.route.route_id 获取
+ * Get primary model configuration, preferring llm.primary.route.route_id
  */
 function getPrimaryProviderId(config: OctosProfileConfig): string | null {
   if (config.llm?.primary?.route?.route_id) {
@@ -47,7 +47,7 @@ function getPrimaryProviderId(config: OctosProfileConfig): string | null {
 }
 
 /**
- * 获取主模型 ID，优先从 llm.primary.model_id 获取
+ * Get primary model ID, preferring llm.primary.model_id
  */
 function getPrimaryModelId(config: OctosProfileConfig): string | null {
   if (config.llm?.primary?.model_id) {
@@ -57,8 +57,8 @@ function getPrimaryModelId(config: OctosProfileConfig): string | null {
 }
 
 /**
- * 获取主模型的数据库 ID（用于 Select 的 value）
- * 需要通过 model_id (name) 在 providers 中查找对应的 id
+ * Get the primary model's database ID (for the Select value)
+ * Need to look up the id in providers by model_id (name)
  */
 function getPrimaryModelDbId(
   config: OctosProfileConfig,
@@ -76,7 +76,7 @@ function getPrimaryModelDbId(
 }
 
 /**
- * 获取回退配置列表，优先从 llm.fallbacks 获取
+ * Get fallback configuration list, preferring llm.fallbacks
  */
 function getFallbackConfigs(
   config: OctosProfileConfig,
@@ -84,7 +84,7 @@ function getFallbackConfigs(
   if (config.llm?.fallbacks) {
     return config.llm.fallbacks;
   }
-  // 从旧结构转换
+  // Convert from the old structure
   if (config.fallback_configs) {
     return config.fallback_configs.map((fb) => ({
       route: {
@@ -97,7 +97,7 @@ function getFallbackConfigs(
 }
 
 /**
- * 从 provider 对象获取 family_id (即 provider.type)
+ * Get family_id from the provider object (i.e. provider.type)
  */
 function getFamilyId(provider: ProviderWithModels): string {
   return provider.type;
@@ -131,7 +131,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
   const [selectedProvider, setSelectedProvider] =
     useState<ProviderWithModels | null>(null);
 
-  // 加载 Providers 列表
+  // Load providers list
   useEffect(() => {
     loadProviders();
   }, []);
@@ -156,14 +156,14 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
       // Get current configuration
       const currentProviderId = getPrimaryProviderId(config);
 
-      // e.g.果当前配置了 provider_id，则设置选中的 provider
+      // If provider_id is configured, set the selected provider
       if (currentProviderId) {
         const current = providersWithModels.find(
           (p) => p.id === currentProviderId,
         );
         setSelectedProvider(current || null);
       } else if (config.provider && config.base_url) {
-        // 尝试从旧版配置匹配到 Provider
+        // Try matching a provider from legacy configuration
         const matched = providersWithModels.find(
           (p) =>
             p.type === config.provider &&
@@ -174,7 +174,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
             (m) => m.name === config.model,
           );
           if (matchedModel) {
-            // 自动迁移到新版配置（使用 llm 对象）
+            // Auto-migrate to the new config (using the llm object)
             onChange({
               ...config,
               llm: {
@@ -193,7 +193,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
         }
       }
 
-      // 尝试迁移回退模型配置
+      // Try migrating fallback model configuration
       if (
         config.fallback_models &&
         config.fallback_models.length > 0 &&
@@ -237,11 +237,11 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
     }
   };
 
-  // 选择 Provider
+  // Select provider
   const handleProviderChange = (providerId: string | null) => {
     if (!providerId) {
       setSelectedProvider(null);
-      // 清除配置
+      // Clear configuration
       onChange({
         ...config,
         llm: {
@@ -257,10 +257,10 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
 
     setSelectedProvider(provider);
 
-    // 默认选择第一个启用的模型
+    // Select the first enabled model by default
     const firstEnabledModel = provider.models.find((m) => m.enabled);
 
-    // 直接构建新的 llm 配置
+    // Build the new llm config directly
     onChange({
       ...config,
       llm: {
@@ -276,14 +276,14 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
     });
   };
 
-  // 选择模型
+  // Select model
   const handleModelChange = (modelId: string | null) => {
     const providerId = getPrimaryProviderId(config);
     const provider = providerId
       ? providers.find((p) => p.id === providerId)
       : null;
 
-    // 根据 modelId (id) 找到对应的 model，然后保存 model.name
+    // Find the model by modelId (id), then save model.name
     const model = provider?.models.find((m) => m.id === modelId);
 
     onChange({
@@ -303,7 +303,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
     });
   };
 
-  // 测试连接
+  // Test connection
   const handleTest = async () => {
     const providerId = getPrimaryProviderId(config);
     const modelId = getPrimaryModelId(config);
@@ -364,7 +364,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
         className="text-xs"
       />
 
-      {/* Provider 选择 */}
+      {/* Provider selection */}
       <Card size="small" className="bg-[var(--color-bg-secondary)]">
         <div className="space-y-4">
           <div>
@@ -402,7 +402,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
             />
           </div>
 
-          {/* 模型选择 */}
+          {/* Model selection */}
           {selectedProvider && (
             <div>
               <Text type="secondary" className="block mb-2">
@@ -433,7 +433,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
             </div>
           )}
 
-          {/* 测试连接 */}
+          {/* Test connection */}
           {getPrimaryProviderId(config) && (
             <div className="flex items-start gap-4 pt-2 border-t border-(--color-border)">
               <Space orientation="vertical" size={4} className="flex-1">
@@ -475,7 +475,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
         </div>
       </Card>
 
-      {/* 回退模型 */}
+      {/* Fallback models */}
       <Divider titlePlacement="left" className="text-xs">
         回退模型
       </Divider>
@@ -581,7 +581,7 @@ export default function OctosLlmProviderTab({ config, onChange }: Props) {
                       }
                       placeholder="选择模型..."
                       onChange={(modelDbId) => {
-                        // 根据 modelDbId 找到对应的 model，然后保存 model.name
+                        // Find the model by modelDbId, then save model.name
                         const model = fbProvider.models.find(
                           (m) => m.id === modelDbId,
                         );

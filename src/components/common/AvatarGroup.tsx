@@ -1,6 +1,6 @@
 /**
- * AvatarGroup 头像组组件
- * 用于显示多个头像，支持最大显示数量和折叠
+ * AvatarGroup component
+ * For displaying multiple avatars with max count and folding
  */
 
 import { Avatar, Badge, Tooltip } from 'antd';
@@ -8,13 +8,13 @@ import type { AvatarProps, BadgeProps } from 'antd';
 import { cn } from '../../utils';
 
 export interface AvatarGroupItem {
-  /** 唯一标识 */
+  /** Unique identifier */
   id: string;
-  /** 头像地址 */
+  /** Avatar URL */
   src?: string;
-  /** 显示名称 */
+  /** Display name */
   name: string;
-  /** 徽标配置 */
+  /** Badge configuration */
   badge?: {
     status?: BadgeProps['status'];
     text?: React.ReactNode;
@@ -24,25 +24,25 @@ export interface AvatarGroupItem {
 }
 
 export interface AvatarGroupProps {
-  /** 头像数据列表 */
+  /** Avatar data list */
   avatars: AvatarGroupItem[];
-  /** 最大显示数量 */
+  /** Maximum display count */
   max?: number;
-  /** 头像大小 */
+  /** Avatar size */
   size?: AvatarProps['size'];
-  /** 间距（负值用于重叠效果） */
+  /** Spacing (negative for overlap effect) */
   spacing?: number;
-  /** 重叠边框宽度 */
+  /** Overlap border width */
   borderWidth?: number;
-  /** 重叠边框颜色 */
+  /** Overlap border color */
   borderColor?: string;
-  /** 布局方向 */
+  /** Layout direction */
   direction?: 'ltr' | 'rtl';
-  /** Custom类名 */
+  /** Custom class name */
   className?: string;
-  /** 点击头像回调 */
+  /** Avatar click callback */
   onAvatarClick?: (avatar: AvatarGroupItem) => void;
-  /** 点击更多回调 */
+  /** More click callback */
   onMoreClick?: () => void;
 }
 
@@ -150,7 +150,7 @@ export default function AvatarGroup({
 }
 
 /**
- * 简单头像组 - 不带折叠
+ * Simple avatar group - no folding
  */
 export function SimpleAvatarGroup({
   avatars,
@@ -177,7 +177,7 @@ export function SimpleAvatarGroup({
 }
 
 /**
- * 带状态的在线头像组
+ * Online avatar group with status
  */
 export function OnlineAvatarGroup({
   avatars,

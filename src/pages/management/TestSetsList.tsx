@@ -1,5 +1,5 @@
 /**
- * 测试集管理页面
+ * Test set management page
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -63,7 +63,7 @@ import { TestCaseReportDetail } from "@/components/test/TestCaseReportDetail";
 
 const { Text, Title } = Typography;
 
-// 简单的文件下载工具函数
+// Simple file download utility
 const downloadAsFile = (data: unknown, filename: string, mimeType: string) => {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: mimeType });
   const url = URL.createObjectURL(blob);
@@ -266,9 +266,9 @@ export default function TestSetsListPage() {
 
   return (
     <div className="flex h-full">
-      {/* 左侧树形列表 */}
+      {/* Left tree list */}
       <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]" storageKey="sidebar:test-sets">
-        {/* 头部 */}
+        {/* Header */}
         <div className="p-4 flex items-center justify-between border-b border-(--color-border)">
           <Title level={5} style={{ margin: 0 }}>
             测试集管理
@@ -296,7 +296,7 @@ export default function TestSetsListPage() {
           </div>
         </div>
 
-        {/* 树形列表 */}
+        {/* Tree list */}
         {loading ? (
           <div className="text-center py-8">
             <Text type="secondary">加载中...</Text>
@@ -317,7 +317,7 @@ export default function TestSetsListPage() {
         )}
       </ResizableSidebar>
 
-      {/* 右侧详情 */}
+      {/* Right details */}
       <div className="flex-1 overflow-hidden">
         {selectedTestSet ? (
           <TestSetDetail
@@ -347,7 +347,7 @@ export default function TestSetsListPage() {
         )}
       </div>
 
-      {/* 测试集创建/编辑弹窗 */}
+      {/* Test set create/edit modal */}
       <TestSetFormModal
         open={testSetModalOpen}
         onClose={() => {
@@ -362,7 +362,7 @@ export default function TestSetsListPage() {
         loading={testSetModalLoading}
       />
 
-      {/* 分类创建/编辑弹窗 */}
+      {/* Category create/edit modal */}
       <CategoryFormModal
         open={categoryModalOpen}
         onClose={() => {
@@ -377,7 +377,7 @@ export default function TestSetsListPage() {
         loading={categoryModalLoading}
       />
 
-      {/* 导入弹窗 */}
+      {/* Import modal */}
       <ImportModal
         open={importModalOpen}
         onClose={() => setImportModalOpen(false)}
@@ -402,7 +402,7 @@ export default function TestSetsListPage() {
               `导入成功！创建了 ${result.imported} 个测试集，跳过 ${result.skipped} 个`
             );
 
-            // 重新加载测试集列表
+            // Reload the test set list
             await loadTestSets();
             setImportModalOpen(false);
           } catch (error: any) {
@@ -412,7 +412,7 @@ export default function TestSetsListPage() {
         }}
       />
 
-      {/* 导出弹窗 */}
+      {/* Export modal */}
       <ExportModal
         open={exportModalOpen}
         onClose={() => setExportModalOpen(false)}
@@ -429,7 +429,7 @@ export default function TestSetsListPage() {
               options
             );
 
-            // 下载为文件
+            // Download as file
             const filename = `test-sets-${format}-${Date.now()}.json`;
             const mimeType = "application/json";
             downloadAsFile(data, filename, mimeType);
@@ -446,7 +446,7 @@ export default function TestSetsListPage() {
   );
 }
 
-// 测试集详情组件
+// Test set detail component
 function TestSetDetail({
   testSet,
   categories,
@@ -476,13 +476,13 @@ function TestSetDetail({
   const [runningCaseId, setRunningCaseId] = useState<string | null>(null);
   const [caseSearchQuery, setCaseSearchQuery] = useState("");
 
-  // 报告详情
+  // Report details
   const [reportDetailModalOpen, setReportDetailModalOpen] = useState(false);
   const [selectedReportDetail, setSelectedReportDetail] = useState<any>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const reportDetailRequestIdRef = useRef(0);
 
-  // 测试用例弹窗
+  // Test case modal
   const [caseModalOpen, setCaseModalOpen] = useState(false);
   const [editingCase, setEditingCase] = useState<TestCase | null>(null);
   const [caseModalLoading, setCaseModalLoading] = useState(false);
@@ -545,7 +545,7 @@ function TestSetDetail({
     loadReports();
   }, [loadCases, loadReports]);
 
-  // 切换测试集时重置相关状态，避免显示旧测试集的数据
+  // Reset related state when switching test sets to avoid showing the old set's data
   useEffect(() => {
     setCurrentReport(null);
     setActiveTab("cases");
@@ -584,7 +584,7 @@ function TestSetDetail({
       setCurrentReport(report);
       onUpdate();
       loadReports();
-      loadCases(); // 刷新Test case status
+      loadCases(); // refresh test case status
     } catch (error) {
       console.error("Failed to run test set:", error);
       message.error("测试运行失败");
@@ -606,8 +606,8 @@ function TestSetDetail({
           ? `测试用例 "${testCase.name}" 通过`
           : `测试用例 "${testCase.name}" 失败`,
       );
-      loadCases(); // 刷新Test case status
-      loadReports(); // 刷新报告列表
+      loadCases(); // refresh test case status
+      loadReports(); // refresh report list
     } catch (error) {
       console.error("Failed to run test case:", error);
       message.error("测试用例执行失败");
@@ -683,12 +683,12 @@ function TestSetDetail({
     { key: "report", label: "测试报告", icon: BarChartOutlined },
   ];
 
-  // 最新报告
+  // Latest report
   const latestReport = currentReport || reports[0];
 
   return (
     <div className="flex flex-col h-full">
-      {/* 头部 */}
+      {/* Header */}
       <div className="flex items-start justify-between p-6 pb-4">
         <div>
           <Title level={4} style={{ margin: 0 }}>
@@ -742,7 +742,7 @@ function TestSetDetail({
         </div>
       </div>
 
-      {/* 元信息 */}
+      {/* Meta information */}
       <div className="grid grid-cols-4 gap-4 px-6 pb-4">
         <Card
           size="small"
@@ -816,7 +816,7 @@ function TestSetDetail({
         </Card>
       </div>
 
-      {/* Label栏 */}
+      {/* Tabs bar */}
       <Tabs
         activeKey={activeTab}
         onChange={(key) => setActiveTab(key as typeof activeTab)}
@@ -832,9 +832,9 @@ function TestSetDetail({
         className="px-6"
       />
 
-      {/* 内容区 */}
+      {/* Content area */}
       <div className="flex-1 overflow-hidden">
-        {/* 测试用例 Tab */}
+        {/* Test cases tab */}
         {activeTab === "cases" && (
           <div className="p-6 h-full overflow-y-auto">
             <div className="flex items-center justify-between mb-4 gap-3">
@@ -1067,7 +1067,7 @@ function TestSetDetail({
                           </div>
                         )}
 
-                        {/* 高级功能指示器 */}
+                        {/* Advanced feature indicator */}
                         {(testCase.preRequestScript ||
                           testCase.testScript ||
                           testCase.environmentId ||
@@ -1109,7 +1109,7 @@ function TestSetDetail({
           </div>
         )}
 
-        {/* 执行详情 Tab */}
+        {/* Execution details tab */}
         {activeTab === "run" && (
           <div className="p-6 h-full overflow-y-auto">
             {isRunning ? (
@@ -1203,7 +1203,7 @@ function TestSetDetail({
                   </Button>
                 </div>
 
-                {/* 用例执行结果 */}
+                {/* Case execution results */}
                 <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
                   <div className="p-3 border-b border-(--color-border)">
                     <span className="text-sm font-medium text-[var(--color-text-primary)]">
@@ -1257,7 +1257,7 @@ function TestSetDetail({
           </div>
         )}
 
-        {/* 测试报告 Tab */}
+        {/* Test report tab */}
         {activeTab === "report" && (
           <div className="p-6 h-full overflow-y-auto">
             {reports.length > 0 ? (
@@ -1354,7 +1354,7 @@ function TestSetDetail({
         )}
       </div>
 
-      {/* 测试用例创建/编辑弹窗 */}
+      {/* Test case create/edit modal */}
       <TestCaseFormModal
         open={caseModalOpen}
         onClose={() => {
@@ -1366,7 +1366,7 @@ function TestSetDetail({
         loading={caseModalLoading}
       />
 
-      {/* 测试报告详情弹窗 */}
+      {/* Test report detail modal */}
       <Modal
         title={
           <div className="flex items-center gap-2">

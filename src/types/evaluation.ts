@@ -1,5 +1,5 @@
 /**
- * Evaluation相关类型定义
+ * Evaluation-related type definitions
  */
 
 export interface EvaluationMetric {

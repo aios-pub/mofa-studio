@@ -1,5 +1,5 @@
 /**
- * Knowledge Knowledge base类型定义
+ * Knowledge base type definitions
  */
 
 /** Vector database type */
@@ -99,7 +99,7 @@ export interface KnowledgeBase {
 export interface KnowledgeBaseStats {
   documentCount: number;       // Document count
   chunkCount: number;          // Chunk count
-  totalSize: number;           // Total size（字节）
+  totalSize: number;           // total size in bytes
   vectorCount: number;         // Vector count
   lastIndexedAt?: Date;        // Last indexed at
 }
@@ -121,7 +121,7 @@ export interface Document {
   name: string;
   type: 'pdf' | 'txt' | 'md' | 'html' | 'docx' | 'json' | 'csv' | 'url';
   status: DocumentStatus;
-  size: number;                // File size（字节）
+  size: number;                // file size in bytes
   content?: string;            // Document content（Optional）
   metadata: DocumentMetadata;
   chunkCount: number;

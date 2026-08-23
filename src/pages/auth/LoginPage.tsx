@@ -1,5 +1,5 @@
 /**
- * 登录/注册页面
+ * Login/register page
  */
 
 import { useState, useEffect } from "react";
@@ -25,7 +25,7 @@ export default function LoginPage() {
   const isAuthenticated = useIsAuthenticated();
   const [mode, setMode] = useState<AuthMode>("login");
 
-  // e.g.果已登录，重定向到首页
+  // If already logged in, redirect to the home page
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/", { replace: true });
@@ -34,11 +34,11 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* 左侧 - 表单区域 */}
+      {/* Left - form area */}
       <div className="flex-1 flex flex-col">
-        {/* 顶部工具栏 */}
+        {/* Top toolbar */}
         <div className="flex items-center justify-end gap-2 p-4">
-          {/* Language切换 */}
+          {/* Language switching */}
           <div className="relative group">
             <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-(--color-bg-tertiary) transition-colors">
               <GlobalOutlined />
@@ -67,7 +67,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Theme切换 */}
+          {/* Theme switching */}
           <div className="relative group">
             <button className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-(--color-bg-tertiary) transition-colors">
               {theme === "light" ? (
@@ -116,7 +116,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* 表单内容 */}
+        {/* Form content */}
         <div className="flex-1 flex items-center justify-center p-8">
           {mode === "login" ? (
             <LoginForm onSwitchToRegister={() => setMode("register")} />
@@ -125,14 +125,14 @@ export default function LoginPage() {
           )}
         </div>
 
-        {/* 底部版权 */}
+        {/* Bottom copyright */}
         <div className="p-4 text-center text-sm text-[var(--color-text-tertiary)]">
           © {new Date().getFullYear()} mofa-studio.{" "}
           {t("common.allRightsReserved", "保留所有权利")}
         </div>
       </div>
 
-      {/* 右侧 - 装饰区域 */}
+      {/* Right side - decorative area */}
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-[var(--color-primary)] to-purple-600 items-center justify-center p-12">
         <div className="max-w-lg text-white">
           <h2 className="text-4xl font-bold mb-6">

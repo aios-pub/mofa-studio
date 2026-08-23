@@ -50,17 +50,17 @@ export const useAppStore = create<AppState>()(
       windowMode: "full",
       setWindowMode: (windowMode) => set({ windowMode }),
 
-      // 侧边栏
+      // Sidebar
       sidebarCollapsed: false,
       toggleSidebar: () =>
         set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
       setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
 
-      // 当前 Agent
+      // Current agent
       currentAgentId: null,
       setCurrentAgentId: (currentAgentId) => set({ currentAgentId }),
 
-      // 当前会话
+      // Current conversation
       currentConversationId: null,
       setCurrentConversationId: (currentConversationId) =>
         set({ currentConversationId }),

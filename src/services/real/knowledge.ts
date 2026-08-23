@@ -1,8 +1,8 @@
 /**
- * Knowledge 真实 API
- * 后端端点: /api/knowledge/...
+ * Knowledge real API
+ * Backend endpoints: /api/knowledge/...
  *
- * 后端字段映射 (snake_case → camelCase):
+ * Backend field mapping (snake_case -> camelCase):
  *   knowledge_base_id → knowledgeBaseId
  *   doc_type          → type
  *   chunk_count       → chunkCount
@@ -20,7 +20,7 @@ import type {
   Document,
 } from "@/types/knowledge";
 
-// ==================== 后端原始类型 ====================
+// ==================== Raw backend types ====================
 
 interface BackendKnowledgeBase {
   id: string;
@@ -50,7 +50,7 @@ interface BackendDocument {
   update_time: string;
 }
 
-// ==================== 默认值 ====================
+// ==================== Default values ====================
 
 const DEFAULT_CONFIG: KnowledgeBaseConfig = {
   embeddingModel: { type: 'openai_text_embedding_ada_002' },
@@ -59,7 +59,7 @@ const DEFAULT_CONFIG: KnowledgeBaseConfig = {
   retrievalConfig: { topK: 5, scoreThreshold: 0.7, rerankingEnabled: false, hybridSearchEnabled: false },
 };
 
-// ==================== 字段映射 ====================
+// ==================== Field mapping ====================
 
 function mapKnowledgeBase(raw: BackendKnowledgeBase): KnowledgeBase {
   const rawStats = raw.stats ?? {};
@@ -118,7 +118,7 @@ function mapDocumentToBackend(data: Partial<Document>): Record<string, unknown> 
   return result;
 }
 
-// ==================== API 方法 ====================
+// ==================== API methods ====================
 
 interface SearchResponse {
   results: Array<{
@@ -134,7 +134,7 @@ interface SearchResponse {
 }
 
 const knowledgeRealApi = {
-  /** 获取所有Knowledge base */
+  /** Get all knowledge bases */
   async getAll(): Promise<KnowledgeBase[]> {
     const data = await apiClient.get<BackendKnowledgeBase[]>("/api/knowledge/list");
     if (!Array.isArray(data)) return [];
@@ -192,7 +192,7 @@ const knowledgeRealApi = {
     return apiClient.get<SearchResponse>("/api/knowledge/search", { params });
   },
 
-  // ==================== Document管理 ====================
+  // ==================== Documentation management ====================
 
   async getDocuments(kbId?: string): Promise<Document[]> {
     const url = kbId

@@ -1,8 +1,8 @@
 /**
- * System 真实 API
- * 后端端点: /api/role/... 和 /api/menu/...
+ * System real API
+ * Backend endpoints: /api/role/... and /api/menu/...
  *
- * 后端字段映射 (snake_case → camelCase):
+ * Backend field mapping (snake_case -> camelCase):
  *   parent_id      → parentId
  *   create_time    → createdAt
  *   update_time    → updatedAt
@@ -11,7 +11,7 @@
 import { apiClient } from "../api/apiClient";
 import { parseDate } from "./fieldMapper";
 
-// ==================== 前端类型 ====================
+// ==================== Frontend types ====================
 
 interface Role {
   id: string;
@@ -34,7 +34,7 @@ interface Menu {
   createdAt?: Date;
 }
 
-// ==================== 后端原始类型 ====================
+// ==================== Raw backend types ====================
 
 interface BackendRole {
   id: string;
@@ -61,7 +61,7 @@ interface BackendMenu {
   update_time?: string;
 }
 
-// ==================== 字段映射 ====================
+// ==================== Field mapping ====================
 
 function mapRole(raw: BackendRole): Role {
   return {
@@ -219,14 +219,14 @@ const menuRealApi = {
     await apiClient.delete(`/api/menu/${id}`);
   },
 
-  /** 扁平列表 */
+  /** Flat list */
   async getFlatList(): Promise<Menu[]> {
     const menus = await apiClient.get<BackendMenu[]>("/api/menu");
     if (!Array.isArray(menus)) return [];
     return menus.map(mapMenu);
   },
 
-  /** 树形结构 */
+  /** Tree structure */
   getTree: (): Promise<Menu[]> => menuRealApi.getAll(),
 };
 

@@ -1,5 +1,5 @@
 /**
- * 角色管理页面
+ * Role management page
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -215,7 +215,7 @@ export default function RoleManagementPage() {
     },
   ];
 
-  // 预设权限选项
+  // Preset permission options
   const permissionOptions = [
     { value: "all", label: "全部权限" },
     { value: "manage_users", label: "用户管理" },
@@ -270,7 +270,7 @@ export default function RoleManagementPage() {
         )}
       </div>
 
-      {/* 角色编辑弹窗 */}
+      {/* Role edit modal */}
       <Modal
         title={editingRole ? "编辑角色" : "新建角色"}
         open={modalVisible}

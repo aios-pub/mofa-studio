@@ -1,11 +1,11 @@
 /**
- * Skill Hub Mock 服务
- * 模拟 https://skillhub.tencent.com/ 的 API
+ * Skill hub mock service
+ * Simulates the API of https://skillhub.tencent.com/
  */
 
 import type { HubSkill, HubCategory, HubSearchResult, HubStats, PublishSkillRequest } from '../../types/skill';
 
-// Mock Hub Skills 列表
+// Mock hub skills list
 export const mockHubSkills: HubSkill[] = [
   {
     hubId: 'hub-1',
@@ -172,7 +172,7 @@ export const mockHubSkills: HubSkill[] = [
   },
 ];
 
-// Mock 分类列表
+// Mock category list
 export const mockHubCategories: HubCategory[] = [
   { id: 'dev-tools', name: '开发工具', icon: 'code', count: 45 },
   { id: 'notification', name: '通知', icon: 'bell', count: 23 },
@@ -185,12 +185,12 @@ export const mockHubCategories: HubCategory[] = [
   { id: 'file', name: '文件操作', icon: 'folder', count: 26 },
 ];
 
-// 模拟延迟
+// Simulated latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Skill Hub API Mock
 export const skillHubApi = {
-  // 获取热门 Skills
+  // Get popular skills
   async getPopular(limit: number = 10): Promise<HubSkill[]> {
     await delay(400);
     return [...mockHubSkills]
@@ -198,7 +198,7 @@ export const skillHubApi = {
       .slice(0, limit);
   },
 
-  // 获取最新 Skills
+  // Get latest skills
   async getLatest(limit: number = 10): Promise<HubSkill[]> {
     await delay(400);
     return [...mockHubSkills]
@@ -207,19 +207,19 @@ export const skillHubApi = {
       .slice(0, limit);
   },
 
-  // 获取所有分类
+  // Get all categories
   async getCategories(): Promise<HubCategory[]> {
     await delay(200);
     return mockHubCategories;
   },
 
-  // 搜索 Skills
+  // Search skills
   async search(query: string, category?: string, page: number = 1, pageSize: number = 20): Promise<HubSearchResult> {
     await delay(500);
 
     let filtered = mockHubSkills;
 
-    // 搜索过滤
+    // Search filtering
     if (query) {
       const lowerQuery = query.toLowerCase();
       filtered = filtered.filter(
@@ -230,7 +230,7 @@ export const skillHubApi = {
       );
     }
 
-    // 分类过滤
+    // Category filtering
     if (category && category !== 'all') {
       filtered = filtered.filter((s) => s.category === category);
     }
@@ -247,13 +247,13 @@ export const skillHubApi = {
     };
   },
 
-  // 获取单个 Skill 详情
+  // Get a single skill's details
   async getById(hubId: string): Promise<HubSkill | undefined> {
     await delay(300);
     return mockHubSkills.find((s) => s.hubId === hubId);
   },
 
-  // 获取 Hub 统计
+  // Get hub statistics
   async getStats(): Promise<HubStats> {
     await delay(200);
     return {
@@ -263,7 +263,7 @@ export const skillHubApi = {
     };
   },
 
-  // 发布 Skill 到 Hub
+  // Publish a skill to the hub
   async publish(request: PublishSkillRequest): Promise<HubSkill> {
     await delay(800);
 
@@ -289,7 +289,7 @@ export const skillHubApi = {
     return newSkill;
   },
 
-  // 检查更新
+  // Check for updates
   async checkUpdates(installedSkills: Array<{ hubId: string; version: string }>): Promise<Array<{ hubId: string; latestVersion: string }>> {
     await delay(300);
 

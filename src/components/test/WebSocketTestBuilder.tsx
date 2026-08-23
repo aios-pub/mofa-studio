@@ -1,6 +1,6 @@
 /**
- * WebSocket测试构建器组件
- * 用于配置和测试WebSocket连接
+ * WebSocket test builder component
+ * For configuring and testing WebSocket connections
  */
 
 import { useState, useEffect, useRef } from "react";
@@ -56,7 +56,7 @@ export function WebSocketTestBuilder({
     scrollToBottom();
   }, [messages]);
 
-  // 组件卸载时关闭WebSocket连接并清除超时，防止内存泄漏
+  // Close the WebSocket and clear timeouts on unmount to avoid memory leaks
   useEffect(() => {
     return () => {
       if (connectTimeoutRef.current) {
@@ -90,7 +90,7 @@ export function WebSocketTestBuilder({
       const ws = new WebSocket(config.url, protocols.length > 0 ? protocols : undefined);
       wsRef.current = ws;
 
-      // 连接超时处理（10秒）
+      // Connection timeout handling (10s)
       connectTimeoutRef.current = setTimeout(() => {
         if (ws.readyState !== WebSocket.OPEN) {
           setConnectionState("error");
@@ -188,7 +188,7 @@ export function WebSocketTestBuilder({
 
   return (
     <div className="space-y-4">
-      {/* 连接配置 */}
+      {/* Connection configuration */}
       <Card title="连接配置" size="small">
         <div className="space-y-3">
           <div>
@@ -274,7 +274,7 @@ export function WebSocketTestBuilder({
         </div>
       </Card>
 
-      {/* Messages区域 */}
+      {/* Messages area */}
       <Card
         title="消息"
         size="small"
@@ -290,7 +290,7 @@ export function WebSocketTestBuilder({
         }
       >
         <div className="space-y-3">
-          {/* Messages历史 */}
+          {/* Messages history */}
           <div className="bg-gray-50 rounded p-3 h-64 overflow-y-auto font-mono text-sm">
             {messages.length === 0 ? (
               <div className="text-center text-gray-400 py-8">
@@ -344,7 +344,7 @@ export function WebSocketTestBuilder({
         </div>
       </Card>
 
-      {/* 预期事件配置 */}
+      {/* Expected events configuration */}
       <Card title="预期事件" size="small">
         <div className="text-sm text-gray-500">
           配置预期收到的事件用于断言验证（开发中...）

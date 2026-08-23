@@ -1,6 +1,6 @@
 /**
- * 任务详情面板
- * 参考 apalis-board SingleTaskView：左右分栏（参数+上下文 | 执行时间线）
+ * Task detail panel
+ * Modeled on apalis-board SingleTaskView: split view (params+context | execution timeline)
  */
 
 import { useMemo } from "react";
@@ -88,7 +88,7 @@ export default function TaskDetail({
       ? (task.success_count / (task.success_count + task.failure_count)) * 100
       : null;
 
-  // 上下文元数据（参考 apalis-board MetaKey）
+  // Context metadata (see apalis-board MetaKey)
   const contextItems = [
     {
       key: "任务类型",
@@ -127,9 +127,9 @@ export default function TaskDetail({
 
   return (
     <div className="lg:grid lg:grid-cols-5 flex-1 overflow-y-auto">
-      {/* 左侧：参数 + 上下文 */}
+      {/* Left: parameters + context */}
       <div className="lg:col-span-2 flex flex-col overflow-y-auto border-r border-(--color-border)">
-        {/* 参数 JSON */}
+        {/* Parameters JSON */}
         <div className="bg-[var(--color-bg-secondary)]">
           <h3 className="p-3 text-sm font-medium text-[var(--color-text-primary)] border-b border-(--color-border)">
             参数 (Arguments)
@@ -139,7 +139,7 @@ export default function TaskDetail({
           </pre>
         </div>
 
-        {/* 上下文元数据 */}
+        {/* Context metadata */}
         <div className="bg-[var(--color-bg-secondary)] flex-1 overflow-y-auto">
           <h3 className="p-3 text-sm font-medium text-[var(--color-text-primary)] border-b border-(--color-border)">
             上下文 (Context)
@@ -170,9 +170,9 @@ export default function TaskDetail({
         </div>
       </div>
 
-      {/* 右侧：执行时间线 + 操作 */}
+      {/* Right: execution timeline + actions */}
       <div className="lg:col-span-3 flex flex-col overflow-y-auto">
-        {/* 头部操作栏 */}
+        {/* Header action bar */}
         <div className="p-3 border-b border-(--color-border) flex items-center justify-between bg-[var(--color-bg-secondary)]">
           <div className="flex items-center gap-2">
             <Tag color={task.status === "enabled" ? "green" : "default"}>
@@ -222,7 +222,7 @@ export default function TaskDetail({
           </div>
         </div>
 
-        {/* 最近执行 */}
+        {/* Recent executions */}
         <div className="flex-1 overflow-y-auto">
           <div className="flex items-center justify-between px-3 pt-3 pb-1">
             <h3 className="text-sm font-medium text-[var(--color-text-primary)] flex items-center gap-1.5">

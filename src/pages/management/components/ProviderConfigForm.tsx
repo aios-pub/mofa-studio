@@ -1,6 +1,6 @@
 /**
- * Provider 配置Form component
- * 根据厂商类型动态生成Configuration fields
+ * Provider configuration form component
+ * Dynamically generate configuration fields by vendor type
  */
 
 import React, { useState, useEffect } from "react";
@@ -31,15 +31,15 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
 }) => {
   const [showApiKey, setShowApiKey] = useState(false);
 
-  // 初始化默认值（仅在字段为空时设置）
+  // Initialize defaults (only when fields are empty)
   useEffect(() => {
     const initialData: Partial<CreateProviderFormData> = {};
 
-    // 仅在 name 为空时设置默认值
+    // Set default only when name is empty
     if (!formData.name) {
       initialData.name = config.name;
     }
-    // 仅在 baseUrl 为空时设置默认值
+    // Set default only when baseUrl is empty
     if (!formData.baseUrl) {
       initialData.baseUrl = config.api.defaultBaseUrl;
     }
@@ -47,7 +47,7 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
       initialData.selectedModels = [];
     }
 
-    // 设置Configuration fields默认值
+    // Set configuration field defaults
     config.configFields.forEach((field) => {
       if (
         field.defaultValue !== undefined &&
@@ -65,7 +65,7 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
     }
   }, [config.type]);
 
-  // 渲染Configuration fields
+  // Render configuration fields
   const renderConfigField = (field: ConfigField) => {
     const value = formData.config?.[field.key] ?? field.defaultValue ?? "";
 
@@ -131,14 +131,14 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* 基本信息 */}
+      {/* Basic information */}
       <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
         <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-3 flex items-center gap-2">
           <span className="text-lg">{config.icon}</span>
           {config.name}
         </h4>
 
-        {/* Provider 名称 */}
+        {/* Provider name */}
         <div className="mb-3">
           <label className="block text-xs text-[var(--color-text-secondary)] mb-1">
             名称 <span className="text-red-500">*</span>
@@ -150,7 +150,7 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
           />
         </div>
 
-        {/* 描述信息 */}
+        {/* Description */}
         <Alert
           title={config.description}
           type="info"
@@ -158,7 +158,7 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
           className="mb-3"
         />
 
-        {/* 链接 */}
+        {/* Link */}
         {(config.website || config.docs) && (
           <div className="flex gap-3 text-xs">
             {config.website && (
@@ -244,7 +244,7 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
           )}
         </div>
 
-        {/* 厂商特定Configuration fields */}
+        {/* Vendor-specific configuration fields */}
         {config.configFields.map((field) => (
           <div key={field.key} className="mb-3">
             <label className="block text-xs text-[var(--color-text-secondary)] mb-1">
@@ -261,7 +261,7 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
         ))}
       </div>
 
-      {/* 高级配置（可折叠） */}
+      {/* Advanced configuration (collapsible) */}
       <Collapse
         ghost
         items={[

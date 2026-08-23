@@ -1,6 +1,6 @@
 /**
- * WebSocket 适配器接口
- * 定义所有 WebSocket 实现必须遵循的接口
+ * WebSocket adapter interface
+ * Define the interface all WebSocket implementations must follow
  */
 
 import type {
@@ -10,37 +10,37 @@ import type {
   ConnectionMode,
 } from './types';
 
-/** WebSocket 适配器接口 */
+/** WebSocket adapter interface */
 export interface WebSocketAdapter {
-  /** 获取连接模式 */
+  /** Get connection mode */
   readonly mode: ConnectionMode;
 
-  /** 获取当前连接状态 */
+  /** Get the current connection state */
   readonly state: ConnectionState;
 
-  /** 连接到服务器 */
+  /** Connect to the server */
   connect(): Promise<void>;
 
-  /** 断开连接 */
+  /** Disconnect */
   disconnect(): void;
 
   /** Send message */
   emit<T = unknown>(event: string, data: T): void;
 
-  /** 订阅事件 */
+  /** Subscribe to events */
   on<T = unknown>(event: string, handler: WebSocketEventHandler<T>): () => void;
 
-  /** 取消订阅事件 */
+  /** Unsubscribe from event */
   off<T = unknown>(event: string, handler?: WebSocketEventHandler<T>): void;
 
-  /** 一次性订阅事件 */
+  /** Subscribe once */
   once<T = unknown>(event: string, handler: WebSocketEventHandler<T>): void;
 
-  /** 检查是否已连接 */
+  /** Check whether connected */
   isConnected(): boolean;
 }
 
-/** WebSocket 适配器基类 */
+/** WebSocket adapter base class */
 export abstract class BaseWebSocketAdapter implements WebSocketAdapter {
   abstract readonly mode: ConnectionMode;
   protected _state: ConnectionState = 'disconnected';
@@ -90,7 +90,7 @@ export abstract class BaseWebSocketAdapter implements WebSocketAdapter {
     }
     this.eventHandlers.get(event)!.add(handler as WebSocketEventHandler);
 
-    // 返回取消订阅函数
+    // Return the unsubscribe function
     return () => this.off(event, handler);
   }
 

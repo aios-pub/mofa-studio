@@ -1,6 +1,6 @@
 /**
- * Octos Gateway settings — 移植自 Octos GatewayTab
- * 包含 Gateway、Hooks、Sandbox 配置
+ * Octos gateway settings - ported from Octos GatewayTab
+ * Includes gateway, hooks and sandbox configuration
  */
 
 import { useState } from "react";
@@ -135,7 +135,7 @@ export default function OctosGatewaySettingsTab({ config, onChange }: Props) {
         <div><Text type="secondary" className="text-xs">此网关实例的自定义系统提示词</Text></div>
       </div>
 
-      {/* Hooks 配置 */}
+      {/* Hooks configuration */}
       <Collapse
         items={[
           {
@@ -151,7 +151,7 @@ export default function OctosGatewaySettingsTab({ config, onChange }: Props) {
                   className="text-xs"
                 />
 
-                {/* 添加 Hook 表单 */}
+                {/* Add hook form */}
                 <Form form={hooksForm} layout="inline" className="mb-4">
                   <Form.Item name="event" label="事件" initialValue="tool_call">
                     <Select
@@ -180,7 +180,7 @@ export default function OctosGatewaySettingsTab({ config, onChange }: Props) {
                   </Form.Item>
                 </Form>
 
-                {/* 已有 Hooks 列表 */}
+                {/* Existing hooks list */}
                 {config.hooks && config.hooks.length > 0 && (
                   <Space orientation="vertical" size={8} className="w-full">
                     {config.hooks.map((hook, index) => (

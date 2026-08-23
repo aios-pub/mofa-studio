@@ -4,7 +4,7 @@
 
 import pkg from "../../package.json";
 
-/** Floating ball mode类型 */
+/** Floating ball mode types */
 export type FloatingMode = "floating" | "window";
 
 /**
@@ -49,11 +49,11 @@ export function getWebSocketURL(): string {
  */
 export function isMockEnabled(): boolean {
   const mockEnv = import.meta.env.VITE_APP_ENABLE_MOCK;
-  // e.g.果Environment variable有设置，使用Environment variable的值
+  // If the environment variable is set, use its value
   if (mockEnv !== undefined) {
     return mockEnv === "true" || mockEnv === "1";
   }
-  // 默认：开发环境开启mock，Production environment关闭
+  // Default: mock enabled in development, disabled in production
   return import.meta.env.DEV;
 }
 
@@ -119,12 +119,12 @@ function getFloatingMode(): FloatingMode {
   if (mode === "floating" || mode === "window") {
     return mode;
   }
-  return "window"; // 默认使用Window mode
+  return "window"; // default to window mode
 }
 
 /**
  * Global configuration constants
- * 从Environment variable和 package.json 读取配置
+ * Read configuration from environment variables and package.json
  */
 export const GLOBAL_CONFIG: GlobalConfig = {
   appName: "mofa-studio",

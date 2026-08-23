@@ -1,5 +1,5 @@
 /**
- * 通用类型定义
+ * Common type definitions
  */
 
 /** Pagination parameters */

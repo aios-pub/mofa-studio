@@ -1,5 +1,5 @@
 /**
- * 测试用例创建/编辑表单弹窗
+ * Test case create/edit form modal
  */
 
 import { useEffect, useState, useMemo } from "react";
@@ -65,7 +65,7 @@ export function TestCaseFormModal({
   const [socketIOConfig, setSocketIOConfig] = useState<SocketIORequestConfig>();
   const [workflowConfig, setWorkflowConfig] = useState<WorkflowRequestConfig>();
 
-  // 高级功能状态
+  // Advanced feature state
   const [preRequestScript, setPreRequestScript] = useState<string>("");
   const [testScript, setTestScript] = useState<string>("");
   const [selectedEnvironment, setSelectedEnvironment] = useState<string>("");
@@ -74,7 +74,7 @@ export function TestCaseFormModal({
   const [dataDrivenConfig, setDataDrivenConfig] = useState<any>(undefined);
   const [advancedActiveKey, setAdvancedActiveKey] = useState<string | string[]>([]);
 
-  // 缓存数据驱动测试Default configuration，避免每次渲染创建新对象导致子组件状态重置
+  // Cache data-driven test default config to avoid new objects resetting child state on each render
   const defaultDataDrivenConfig = useMemo(
     () => ({
       id: `ddt-${testCase?.id || "new"}`,
@@ -91,7 +91,7 @@ export function TestCaseFormModal({
   const isEdit = !!testCase;
   const { error, handleError, clearError } = useFormError(open);
 
-  // HTTP 快速测试状态
+  // HTTP quick test state
   const [httpTestLoading, setHttpTestLoading] = useState(false);
   const [httpTestResult, setHttpTestResult] = useState<{
     statusCode: number;
@@ -104,7 +104,7 @@ export function TestCaseFormModal({
 
   useEffect(() => {
     if (open) {
-      // 先重置所有状态，避免不同测试用例之间的状态残留
+      // Reset all states first to avoid leftovers between test cases
       setPreRequestScript("");
       setTestScript("");
       setSelectedEnvironment("");
@@ -137,14 +137,14 @@ export function TestCaseFormModal({
           assertions,
         });
 
-        // 加载脚本
+        // Load script
         setPreRequestScript(testCase.preRequestScript || "");
         setTestScript(testCase.testScript || "");
 
-        // 加载Environment variable
+        // Load environment variables
         setSelectedEnvironment(testCase.environmentId || "");
 
-        // 加载Data-driven test configuration
+        // Load data-driven test configuration
         if (testCase.requestConfig) {
           const config = testCase.requestConfig as any;
           if (config.dataDrivenConfig) {
@@ -153,32 +153,32 @@ export function TestCaseFormModal({
           }
         }
 
-        // e.g.果是HTTP请求类型，设置HTTP配置
+        // If the request type is HTTP, set HTTP config
         if (reqType === "http" && testCase.requestConfig) {
           setHttpConfig(testCase.requestConfig as unknown as HttpRequestConfig);
         }
 
-        // e.g.果是WebSocket请求类型，设置WebSocket配置
+        // If the request type is WebSocket, set WebSocket config
         if (reqType === "websocket" && testCase.requestConfig) {
           setWebSocketConfig(testCase.requestConfig as unknown as WebSocketRequestConfig);
         }
 
-        // e.g.果是SSE请求类型，设置SSE配置
+        // If the request type is SSE, set SSE config
         if (reqType === "sse" && testCase.requestConfig) {
           setSSEConfig(testCase.requestConfig as unknown as SSERequestConfig);
         }
 
-        // e.g.果是Socket.IO请求类型，设置Socket.IO配置
+        // If the request type is Socket.IO, set Socket.IO config
         if (reqType === "socketio" && testCase.requestConfig) {
           setSocketIOConfig(testCase.requestConfig as unknown as SocketIORequestConfig);
         }
 
-        // e.g.果是Workflow请求类型，设置Workflow配置
+        // If the request type is workflow, set workflow config
         if (reqType === "workflow" && testCase.requestConfig) {
           setWorkflowConfig(testCase.requestConfig as unknown as WorkflowRequestConfig);
         }
 
-        // e.g.果有高级配置，自动展开高级功能面板
+        // If advanced configuration exists, expand the advanced panel
         const hasAdvancedConfig =
           !!testCase.preRequestScript ||
           !!testCase.testScript ||
@@ -196,7 +196,7 @@ export function TestCaseFormModal({
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
-      // 转换断言数据，添加 id
+      // Convert assertion data and add ids
       const assertions: Assertion[] = (values.assertions || []).map((a, i) => ({
         id: `a-${Date.now()}-${i}`,
         type: a.type,
@@ -204,24 +204,24 @@ export function TestCaseFormModal({
         description: a.description,
       }));
 
-      // 准备提交数据
+      // Prepare submission data
       const submitData: TestCaseFormData = {
         ...values,
         assertions,
         requestType,
       };
 
-      // 非 Agent type不保留 expectedOutput，避免数据污染
+      // Non-agent types do not keep expectedOutput to avoid data pollution
       if (requestType !== "agent") {
         submitData.expectedOutput = "";
       }
 
-      // 添加高级功能数据（无条件提交，支持清除操作）
+      // Add advanced feature data (always submitted, supports clearing)
       submitData.preRequestScript = preRequestScript;
       submitData.testScript = testScript;
       submitData.environmentId = selectedEnvironment;
 
-      // 根据请求类型设置requestConfig（包含Data-driven test configuration）
+      // Set requestConfig by request type (including data-driven test configuration)
       if (requestType === "http" && httpConfig) {
         const configWithDdt = { ...httpConfig };
         if (dataDrivenEnabled && dataDrivenConfig) {
@@ -288,7 +288,7 @@ export function TestCaseFormModal({
       setHttpTestLoading(true);
       setHttpTestResult(null);
 
-      // 应用Environment variable替换
+      // Apply environment variable substitution
       const resolvedUrl = replaceVariables(config.url, environmentVariables);
       const resolvedHeaders = config.headers?.reduce((acc, h) => {
         if (h.enabled !== false && h.key) {
@@ -351,7 +351,7 @@ export function TestCaseFormModal({
     setRequestType(newType);
     setHttpTestResult(null);
     if (newType === "http" && !httpConfig) {
-      // 初始化默认 HTTP 配置
+      // Initialize default HTTP config
       setHttpConfig({
         url: "",
         method: "GET",
@@ -362,7 +362,7 @@ export function TestCaseFormModal({
       });
     }
     if (newType === "websocket" && !webSocketConfig) {
-      // 初始化默认 WebSocket 配置
+      // Initialize default WebSocket config
       setWebSocketConfig({
         url: "",
         protocols: [],
@@ -372,7 +372,7 @@ export function TestCaseFormModal({
       });
     }
     if (newType === "sse" && !sseConfig) {
-      // 初始化默认 SSE 配置
+      // Initialize default SSE config
       setSSEConfig({
         url: "",
         headers: [],
@@ -381,7 +381,7 @@ export function TestCaseFormModal({
       });
     }
     if (newType === "socketio" && !socketIOConfig) {
-      // 初始化默认 Socket.IO 配置
+      // Initialize default Socket.IO config
       setSocketIOConfig({
         url: "",
         namespace: "/",
@@ -391,7 +391,7 @@ export function TestCaseFormModal({
       });
     }
     if (newType === "workflow" && !workflowConfig) {
-      // 初始化默认Workflow配置
+      // Initialize default workflow config
       setWorkflowConfig({
         workflowId: "",
         inputMapping: {},
@@ -595,7 +595,7 @@ export function TestCaseFormModal({
           </Form.List>
         </Form.Item>
 
-        {/* 高级功能 */}
+        {/* Advanced features */}
         <Collapse
           activeKey={advancedActiveKey}
           onChange={(keys) => setAdvancedActiveKey(keys)}
@@ -605,7 +605,7 @@ export function TestCaseFormModal({
               label: "高级功能",
               children: (
                 <div className="space-y-4">
-                  {/* Environment variable选择 */}
+                  {/* Environment variable selection */}
                   <div>
                     <div className="text-sm font-medium mb-2">环境变量</div>
                     <EnvironmentManager
@@ -616,7 +616,7 @@ export function TestCaseFormModal({
                     />
                   </div>
 
-                  {/* 脚本编辑 */}
+                  {/* Script editing */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <div className="text-sm font-medium mb-2">前置脚本</div>
@@ -638,7 +638,7 @@ export function TestCaseFormModal({
                     </div>
                   </div>
 
-                  {/* 数据驱动测试 - 所有测试类型均支持 */}
+                  {/* Data-driven testing - supported by all test types */}
                   <div>
                     <div className="text-sm font-medium mb-2">数据驱动测试</div>
                     <DataDrivenTestConfig

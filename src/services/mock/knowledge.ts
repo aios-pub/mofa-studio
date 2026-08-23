@@ -1,5 +1,5 @@
 /**
- * Knowledge Knowledge base Mock 数据
+ * Knowledge base mock data
  */
 
 import type {
@@ -138,7 +138,7 @@ export const embeddingModelTypeConfig: Record<EmbeddingModelType, EmbeddingModel
   },
 };
 
-// Mock Knowledge base数据
+// Mock knowledge base data
 export const mockKnowledgeBases: KnowledgeBase[] = [
   {
     id: 'kb-1',
@@ -290,7 +290,7 @@ export const mockKnowledgeBases: KnowledgeBase[] = [
   },
 ];
 
-// Mock Document数据
+// Mock documentation data
 export const mockDocuments: Document[] = [
   {
     id: 'doc-1',
@@ -375,7 +375,7 @@ export const mockDocuments: Document[] = [
   },
 ];
 
-// Mock 分片数据
+// Mock chunk data
 export const mockChunks: Chunk[] = [
   {
     id: 'chunk-1',
@@ -397,7 +397,7 @@ export const mockChunks: Chunk[] = [
   },
 ];
 
-// Mock Agent-Knowledge base关联
+// Mock agent-knowledge base association
 export const mockAgentKnowledgeBases: AgentKnowledgeBase[] = [
   {
     id: 'akb-1',
@@ -428,24 +428,24 @@ export const mockAgentKnowledgeBases: AgentKnowledgeBase[] = [
   },
 ];
 
-// 模拟 API 延迟
+// Mock API latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Knowledge API Mock
 export const knowledgeApi = {
-  // 获取所有Knowledge base
+  // Get all knowledge bases
   async getAllKnowledgeBases(): Promise<KnowledgeBase[]> {
     await delay(300);
     return mockKnowledgeBases;
   },
 
-  // 获取单个Knowledge base
+  // Get a single knowledge base
   async getKnowledgeBaseById(id: string): Promise<KnowledgeBase | undefined> {
     await delay(200);
     return mockKnowledgeBases.find((kb) => kb.id === id);
   },
 
-  // 创建Knowledge base
+  // Create knowledge base
   async createKnowledgeBase(data: Partial<KnowledgeBase>): Promise<KnowledgeBase> {
     await delay(500);
     const newKB: KnowledgeBase = {
@@ -472,7 +472,7 @@ export const knowledgeApi = {
     return newKB;
   },
 
-  // 更新Knowledge base
+  // Update knowledge base
   async updateKnowledgeBase(id: string, data: Partial<KnowledgeBase>): Promise<KnowledgeBase | undefined> {
     await delay(300);
     const index = mockKnowledgeBases.findIndex((kb) => kb.id === id);
@@ -481,25 +481,25 @@ export const knowledgeApi = {
     return mockKnowledgeBases[index];
   },
 
-  // 删除Knowledge base
+  // Delete knowledge base
   async deleteKnowledgeBase(id: string): Promise<boolean> {
     await delay(300);
     const index = mockKnowledgeBases.findIndex((kb) => kb.id === id);
     if (index === -1) return false;
     mockKnowledgeBases.splice(index, 1);
-    // 删除相关Document
+    // Delete related documentation
     const docIndices = mockDocuments.map((d, i) => (d.knowledgeBaseId === id ? i : -1)).filter((i) => i !== -1).reverse();
     docIndices.forEach((i) => mockDocuments.splice(i, 1));
     return true;
   },
 
-  // 获取Knowledge baseDocument
+  // Get knowledge base documentation
   async getDocuments(knowledgeBaseId: string): Promise<Document[]> {
     await delay(200);
     return mockDocuments.filter((d) => d.knowledgeBaseId === knowledgeBaseId);
   },
 
-  // 上传Document
+  // Upload documentation
   async uploadDocument(knowledgeBaseId: string, file: { name: string; type: Document['type']; size: number }): Promise<Document> {
     await delay(500);
     const newDoc: Document = {
@@ -516,7 +516,7 @@ export const knowledgeApi = {
     };
     mockDocuments.push(newDoc);
 
-    // 模拟处理
+    // Simulated processing
     setTimeout(() => {
       const doc = mockDocuments.find((d) => d.id === newDoc.id);
       if (doc) {
@@ -532,7 +532,7 @@ export const knowledgeApi = {
     return newDoc;
   },
 
-  // 删除Document
+  // Delete documentation
   async deleteDocument(documentId: string): Promise<boolean> {
     await delay(300);
     const index = mockDocuments.findIndex((d) => d.id === documentId);
@@ -541,12 +541,12 @@ export const knowledgeApi = {
     return true;
   },
 
-  // 搜索
+  // Search
   async search(request: SearchRequest): Promise<SearchResponse> {
     await delay(300 + Math.random() * 200);
     const startTime = Date.now();
 
-    // 模拟搜索结果
+    // Simulated search results
     const results: SearchResultItem[] = [
       {
         id: 'result-1',
@@ -583,10 +583,10 @@ export const knowledgeApi = {
     };
   },
 
-  // 相似搜索
+  // Similarity search
   async searchSimilar(_chunkId: string, topK: number = 5): Promise<SearchResultItem[]> {
     await delay(200);
-    // 模拟返回相似分片
+    // Return similar chunks (simulated)
     return [
       {
         id: 'similar-1',
@@ -605,7 +605,7 @@ export const knowledgeApi = {
     ].slice(0, topK);
   },
 
-  // 获取Knowledge base统计
+  // Get knowledge base statistics
   async getStats(knowledgeBaseId: string): Promise<KnowledgeBaseStats> {
     await delay(100);
     const kb = mockKnowledgeBases.find((k) => k.id === knowledgeBaseId);
@@ -617,7 +617,7 @@ export const knowledgeApi = {
     };
   },
 
-  // Agent Knowledge base关联
+  // Agent knowledge base association
   async getAgentKnowledgeBases(agentId: string): Promise<AgentKnowledgeBase[]> {
     await delay(200);
     return mockAgentKnowledgeBases.filter((akb) => akb.agentId === agentId);
@@ -648,12 +648,12 @@ export const knowledgeApi = {
     return true;
   },
 
-  // 获取向量库类型配置
+  // Get vector store type configuration
   getVectorStoreTypeConfig(type: VectorStoreType) {
     return vectorStoreTypeConfig[type];
   },
 
-  // 获取所有向量库类型
+  // Get all vector store types
   getAllVectorStoreTypes() {
     return Object.entries(vectorStoreTypeConfig).map(([key, config]) => ({
       ...config,
@@ -661,12 +661,12 @@ export const knowledgeApi = {
     }));
   },
 
-  // 获取Embedding model type配置
+  // Get embedding model type configuration
   getEmbeddingModelTypeConfig(type: EmbeddingModelType) {
     return embeddingModelTypeConfig[type];
   },
 
-  // 获取所有Embedding model type
+  // Get all embedding model types
   getAllEmbeddingModelTypes() {
     return Object.entries(embeddingModelTypeConfig).map(([key, config]) => ({
       ...config,

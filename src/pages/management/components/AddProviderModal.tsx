@@ -1,6 +1,6 @@
 /**
- * 新增 Provider 弹窗组件
- * 步骤式流程：选择厂商 -> 配置信息 -> 模型选择 -> 完成确认
+ * Add provider modal component
+ * Stepped flow: choose vendor -> configure -> select models -> confirm
  */
 
 import React, { useState, useCallback, useEffect } from 'react';
@@ -17,7 +17,7 @@ interface AddProviderModalProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: CreateProviderFormData) => Promise<ProviderWithModels | void>;
-  /** 传入 Provider 时进入编辑模式 */
+  /** Enter edit mode when a provider is passed in */
   provider?: {
     id: string;
     name: string;
@@ -29,7 +29,7 @@ interface AddProviderModalProps {
   onEdit?: (id: string, data: CreateProviderFormData) => Promise<void>;
 }
 
-/** 创建 Provider 后返回的结构（含可用模型列表） */
+/** Structure returned after creating a provider (with available model list) */
 export interface ProviderWithModels {
   id: string;
   name: string;
@@ -40,7 +40,7 @@ export interface ProviderWithModels {
   models: { id: string; name: string; enabled: boolean; pricing: { input: number; output: number }; maxTokens: number }[];
 }
 
-// 步骤定义
+// Step definitions
 type StepKey = 'select' | 'config' | 'select_models' | 'complete';
 
 const steps: { key: StepKey; title: string; description: string }[] = [
@@ -60,7 +60,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
   const isEditMode = !!provider;
   const [currentStep, setCurrentStep] = useState<number>(isEditMode ? 1 : 0);
   const [selectedConfig, setSelectedConfig] = useState<ProviderConfig | null>(null);
-  // 编辑模式下记录原始 apiKey（后端返回的 masked 值），用于判断是否修改
+  // Record the original apiKey in edit mode (masked value from backend) to detect changes
   const [originalApiKey] = useState<string | undefined>(provider?.apiKey ?? '');
   const [formData, setFormData] = useState<CreateProviderFormData>({
     type: (provider?.type ?? 'custom') as ProviderType,
@@ -74,13 +74,13 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 模型选择相关状态
+  // Model selection state
   const [createdProviderId, setCreatedProviderId] = useState<string | null>(null);
   const [availableModels, setAvailableModels] = useState<ExternalModel[]>([]);
   const [customModelIds, setCustomModelIds] = useState<string[]>([]);
   const [selectedModelIds, setSelectedModelIds] = useState<Set<string>>(new Set());
 
-  // 编辑模式：初始化 selectedConfig
+  // Edit mode: initialize selectedConfig
   useEffect(() => {
     if (provider) {
       const config = getProviderConfig(provider.type as ProviderType);
@@ -100,13 +100,13 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
     }
   }, [provider]);
 
-  // 更新表单数据
+  // Update form data
   const handleFormDataChange = useCallback((data: Partial<CreateProviderFormData>) => {
     setFormData(prev => ({ ...prev, ...data }));
     setError(null);
   }, []);
 
-  // 选择厂商
+  // Select vendor
   const handleSelectProvider = useCallback((config: ProviderConfig) => {
     setSelectedConfig(config);
     setFormData(prev => ({
@@ -118,7 +118,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
     }));
   }, []);
 
-  // 验证当前步骤
+  // Validate the current step
   const validateCurrentStep = (): boolean => {
     switch (currentStep) {
       case 0:
@@ -136,7 +136,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
           setError('请输入 API Key');
           return false;
         }
-        // 验证必填Configuration fields
+        // Validate required configuration fields
         for (const field of selectedConfig?.configFields || []) {
           if (field.required && !formData.config?.[field.key]) {
             setError(`请填写 ${field.label}`);
@@ -149,7 +149,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
     }
   };
 
-  // 下一步
+  // Next step
   const handleNext = () => {
     if (!validateCurrentStep()) return;
 
@@ -162,13 +162,13 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
     }
   };
 
-  // 上一步
+  // Previous step
   const handlePrev = () => {
     setCurrentStep(prev => Math.max(0, prev - 1));
     setError(null);
   };
 
-  // 创建/更新 Provider（步骤 1 -> 2）
+  // Create/update provider (step 1 -> 2)
   const handleCreate = async () => {
     setLoading(true);
     setError(null);
@@ -180,7 +180,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
         }
         await onEdit(provider.id, submitData);
         setCreatedProviderId(provider.id);
-        // 编辑模式：获取外部模型，预选已有模型
+        // Edit mode: fetch external models and preselect existing ones
         try {
           const models = await providerApi.refreshModels(provider.id);
           setAvailableModels(models);
@@ -190,7 +190,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
         const existingIds = new Set(provider.models.map(m => m.name));
         setSelectedModelIds(existingIds);
         setCustomModelIds([]);
-        setCurrentStep(2); // 进入模型选择步骤
+        setCurrentStep(2); // go to model selection step
       } else {
         const result = await onSubmit(formData);
         if (result?.id) {
@@ -211,7 +211,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
     }
   };
 
-  // 确认模型选择（步骤 2 -> 3）
+  // Confirm model selection (step 2 -> 3)
   const handleSelectModels = async () => {
     if (!createdProviderId) {
       setCurrentStep(3);
@@ -231,7 +231,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
     }
   };
 
-  // 模型选择操作
+  // Model selection operations
   const handleToggleModel = (modelId: string) => {
     setSelectedModelIds(prev => {
       const next = new Set(prev);
@@ -255,7 +255,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
     }
   };
 
-  // 关闭并重置
+  // Close and reset
   const handleClose = () => {
     setCurrentStep(isEditMode ? 1 : 0);
     setSelectedConfig(null);
@@ -276,7 +276,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
     onClose();
   };
 
-  // 渲染步骤内容
+  // Render step content
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
@@ -370,7 +370,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
     }
   };
 
-  // 底部按钮
+  // Bottom buttons
   const renderFooter = () => {
     if (currentStep === 3) return null;
 
@@ -432,10 +432,10 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
         />
       </div>
 
-      {/* 步骤内容 */}
+      {/* Step content */}
       {renderStepContent()}
 
-      {/* 错误提示 */}
+      {/* Error hint */}
       {error && currentStep !== 3 && (
         <Alert
           type="error"

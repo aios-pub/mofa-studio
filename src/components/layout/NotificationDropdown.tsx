@@ -1,5 +1,5 @@
 /**
- * 通知下拉面板组件
+ * Notification dropdown panel component
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -20,7 +20,7 @@ import type { NotificationItem, NotificationType } from "@/types/notification";
 import { notificationApi, getUnreadCount } from "@/services";
 import { formatRelativeTime } from "@/utils";
 
-// 通知类型图标和颜色
+// Notification type icon and color
 const notificationTypeConfig: Record<
   NotificationType,
   { icon: React.ReactNode; color: string }
@@ -39,7 +39,7 @@ export default function NotificationDropdown() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "unread">("all");
 
-  // 加载通知
+  // Load notifications
   const loadNotifications = useCallback(async () => {
     setLoading(true);
     try {
@@ -52,21 +52,21 @@ export default function NotificationDropdown() {
     }
   }, []);
 
-  // 初始加载
+  // Initial load
   useEffect(() => {
     loadNotifications();
   }, [loadNotifications]);
 
-  // 未读数量
+  // Unread count
   const unreadCount = getUnreadCount(notifications);
 
-  // 过滤后的通知
+  // Filtered notifications
   const filteredNotifications =
     activeTab === "unread"
       ? notifications.filter((n) => !n.read)
       : notifications;
 
-  // 标记已读
+  // Mark as read
   const handleMarkAsRead = async (id: string) => {
     await notificationApi.markNotificationAsRead(id);
     setNotifications((prev) =>
@@ -74,20 +74,20 @@ export default function NotificationDropdown() {
     );
   };
 
-  // 全部标记已读
+  // Mark all as read
   const handleMarkAllAsRead = async () => {
     await notificationApi.markAllNotificationsAsRead();
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
-  // 删除通知
+  // Delete notification
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     await notificationApi.deleteNotification(id);
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
-  // 点击通知
+  // Click notification
   const handleClickNotification = (notification: NotificationItem) => {
     if (!notification.read) {
       handleMarkAsRead(notification.id);
@@ -98,10 +98,10 @@ export default function NotificationDropdown() {
     }
   };
 
-  // 下拉菜单内容
+  // Dropdown content
   const dropdownContent = (
     <div className="w-[380px] max-h-[500px] bg-[var(--color-bg-paper)] border border-(--color-border) rounded-lg shadow-lg overflow-hidden">
-      {/* 头部 */}
+      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-(--color-border)">
         <span className="font-medium text-[var(--color-text-primary)]">
           {t("notifications.title", "通知")}
@@ -153,7 +153,7 @@ export default function NotificationDropdown() {
         ]}
       />
 
-      {/* 通知列表 */}
+      {/* Notification list */}
       <div className="max-h-[340px] overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center py-12">
@@ -180,7 +180,7 @@ export default function NotificationDropdown() {
                   onClick={() => handleClickNotification(item)}
                 >
                   <div className="flex gap-3 w-full">
-                    {/* 图标/头像 */}
+                    {/* Icon/avatar */}
                     <div className="flex-shrink-0">
                       {item.avatar ? (
                         <Avatar src={item.avatar} size={40} />
@@ -197,7 +197,7 @@ export default function NotificationDropdown() {
                       )}
                     </div>
 
-                    {/* 内容 */}
+                    {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span
@@ -226,7 +226,7 @@ export default function NotificationDropdown() {
                       </span>
                     </div>
 
-                    {/* 操作 */}
+                    {/* Actions */}
                     <div className="flex-shrink-0 flex flex-col items-end gap-1">
                       {!item.read && (
                         <div className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />
@@ -248,7 +248,7 @@ export default function NotificationDropdown() {
         )}
       </div>
 
-      {/* 底部 */}
+      {/* Bottom */}
       {notifications.length > 0 && (
         <div className="flex items-center justify-center py-3 border-t border-(--color-border)">
           <Button

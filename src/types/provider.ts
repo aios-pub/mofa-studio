@@ -1,6 +1,6 @@
 /**
- * Provider 类型定义
- * 支持主流模型厂商
+ * Provider type definitions
+ * Supports mainstream model vendors
  */
 
 // Provider vendor type
@@ -99,7 +99,7 @@ export type ProviderType =
   // Custom
   | 'custom';
 
-// Provider vendor classification（按服务类型分类）
+// Provider vendor classification (by service type)
 export type ProviderCategory = 'cloud' | 'opensource' | 'custom';
 
 // Authentication method

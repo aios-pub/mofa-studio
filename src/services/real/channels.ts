@@ -1,8 +1,8 @@
 /**
- * Channels 真实 API
- * 后端端点: /api/channel/...
+ * Channels real API
+ * Backend endpoints: /api/channel/...
  *
- * 后端字段映射 (snake_case → camelCase):
+ * Backend field mapping (snake_case -> camelCase):
  *   channel_type   → type
  *   create_time    → createdAt
  *   update_time    → updatedAt
@@ -14,7 +14,7 @@ import { apiClient } from "../api/apiClient";
 import { parseDate } from "./fieldMapper";
 import type { Channel, ChannelType, ChannelStats, AgentChannel } from "@/types/channel";
 
-// ==================== 后端原始类型 ====================
+// ==================== Raw backend types ====================
 
 interface BackendChannel {
   id: string;
@@ -36,7 +36,7 @@ interface BackendChannelAgent {
   [key: string]: unknown;
 }
 
-// ==================== 默认值 ====================
+// ==================== Default values ====================
 
 const DEFAULT_STATS: ChannelStats = {
   totalMessages: 0,
@@ -46,7 +46,7 @@ const DEFAULT_STATS: ChannelStats = {
   avgResponseTime: 0,
 };
 
-// ==================== 字段映射 ====================
+// ==================== Field mapping ====================
 
 function mapChannel(raw: BackendChannel): Channel {
   return {
@@ -85,7 +85,7 @@ function mapChannelAgent(raw: BackendChannelAgent): AgentChannel {
   };
 }
 
-// ==================== API 方法 ====================
+// ==================== API methods ====================
 
 const baseApi = {
   getAll: async (): Promise<Channel[]> => {
@@ -134,7 +134,7 @@ const channelRealApi = {
     return data.map(mapChannel);
   },
 
-  // ==================== Agent-Channel 关联 ====================
+  // ==================== Agent-channel association ====================
 
   async getAgentChannels(): Promise<AgentChannel[]> {
     const data = await apiClient.get<BackendChannelAgent[]>("/api/channel/agent-channels");
@@ -162,7 +162,7 @@ const channelRealApi = {
     apiClient.delete(`/api/channel/unassign/${id}`),
 
   removeAgentFromChannel: (agentIdOrId: string, channelId?: string): Promise<void> => {
-    // 页面传 agentId + channelId，后端只需 agentId 做反查
+    // Page passes agentId + channelId; the backend only needs agentId for reverse lookup
     if (channelId) {
       return channelRealApi.unassign(agentIdOrId);
     }
@@ -188,5 +188,5 @@ const channelRealApi = {
 
 export { channelRealApi };
 export type { Channel, AgentChannel };
-// channelTypeConfig 暂时从 mock 导入
+// channelTypeConfig temporarily imported from mock
 export { channelTypeConfig } from "../mock/channels";

@@ -1,13 +1,13 @@
 /**
- * 生命周期管理 Hook
- * 提供组件挂载/卸载状态检测
+ * Lifecycle management hook
+ * Provides component mount/unmount detection
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
- * 获取组件挂载状态的函数
- * @returns 返回一个函数，调用后返回组件是否已挂载
+ * Function that gets the component's mounted state
+ * @returns A function that returns whether the component is mounted
  */
 export function useMountedState(): () => boolean {
   const mountedRef = useRef(false);
@@ -24,8 +24,8 @@ export function useMountedState(): () => boolean {
 }
 
 /**
- * 组件是否已挂载
- * @returns 是否已挂载
+ * Whether the component is mounted
+ * @returns Whether mounted
  */
 export function useMounted(): boolean {
   const isMounted = useRef(false);
@@ -42,8 +42,8 @@ export function useMounted(): boolean {
 }
 
 /**
- * 组件卸载时的回调
- * @param callback 卸载时执行的回调函数
+ * Callback on unmount
+ * @param callback Callback executed on unmount
  */
 export function useUnmount(callback: () => void): void {
   const callbackRef = useRef(callback);
@@ -57,8 +57,8 @@ export function useUnmount(callback: () => void): void {
 }
 
 /**
- * 组件首次渲染后的回调
- * @param callback 首次渲染后执行的回调函数
+ * Callback after first render
+ * @param callback Callback executed after first render
  */
 export function useMount(callback: () => void): void {
   useEffect(() => {
@@ -68,9 +68,9 @@ export function useMount(callback: () => void): void {
 }
 
 /**
- * 上一轮渲染的值
- * @param value 当前值
- * @returns 上一轮渲染的值
+ * Value from the previous render
+ * @param value Current value
+ * @returns Value from the previous render
  */
 export function usePrevious<T>(value: T): T | undefined {
   const ref = useRef<T | undefined>(undefined);
@@ -83,10 +83,10 @@ export function usePrevious<T>(value: T): T | undefined {
 }
 
 /**
- * 上一轮渲染的值（带初始值）
- * @param value 当前值
- * @param initialValue 初始值
- * @returns 上一轮渲染的值
+ * Value from the previous render (with initial value)
+ * @param value Current value
+ * @param initialValue Initial value
+ * @returns Value from the previous render
  */
 export function usePreviousWithInitial<T>(value: T, initialValue: T): T {
   const ref = useRef<T>(initialValue);
@@ -99,9 +99,9 @@ export function usePreviousWithInitial<T>(value: T, initialValue: T): T {
 }
 
 /**
- * 组件更新时的回调
- * @param callback 更新时执行的回调函数
- * @param deps 依赖数组
+ * Callback on update
+ * @param callback Callback executed on update
+ * @param deps Dependency array
  */
 export function useUpdateEffect(
   callback: () => void | (() => void),
@@ -121,8 +121,8 @@ export function useUpdateEffect(
 }
 
 /**
- * 强制组件重新渲染
- * @returns 强制更新的函数
+ * Force component re-render
+ * @returns Force update function
  */
 export function useForceUpdate(): () => void {
   const [, setState] = useState(0);
@@ -133,9 +133,9 @@ export function useForceUpdate(): () => void {
 }
 
 /**
- * 只在依赖变化时执行回调（跳过首次渲染）
- * @param callback 执行的回调
- * @param deps 依赖数组
+ * Run callback only when dependencies change (skip first render)
+ * @param callback Callback to execute
+ * @param deps Dependency array
  */
 export function useDidChange(
   callback: () => void,

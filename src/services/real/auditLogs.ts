@@ -1,8 +1,8 @@
 /**
- * AuditLogs 真实 API
- * 后端端点: /api/audit-logs/...
+ * Audit logs real API
+ * Backend endpoints: /api/audit-logs/...
  *
- * 后端字段映射 (snake_case → camelCase):
+ * Backend field mapping (snake_case -> camelCase):
  *   user_id       → userId
  *   user_name     → userName
  *   resource_id   → resourceId
@@ -13,7 +13,7 @@
 
 import { apiClient } from "../api/apiClient";
 
-// ==================== 前端类型 ====================
+// ==================== Frontend types ====================
 
 interface AuditLog {
   id: string;
@@ -28,7 +28,7 @@ interface AuditLog {
   createdAt: string | Date;
 }
 
-// ==================== 后端原始类型 ====================
+// ==================== Raw backend types ====================
 
 interface BackendAuditLog {
   id: string;
@@ -44,7 +44,7 @@ interface BackendAuditLog {
   create_time?: string;
 }
 
-// ==================== 字段映射 ====================
+// ==================== Field mapping ====================
 
 function mapAuditLog(raw: BackendAuditLog): AuditLog {
   return {
@@ -61,7 +61,7 @@ function mapAuditLog(raw: BackendAuditLog): AuditLog {
   };
 }
 
-// ==================== API 方法 ====================
+// ==================== API methods ====================
 
 const auditLogRealApi = {
   async getAll(params?: { user_id?: string; action?: string; start_date?: string; end_date?: string }): Promise<AuditLog[]> {
@@ -81,7 +81,7 @@ const auditLogRealApi = {
   export: (params?: { start_date?: string; end_date?: string; format?: string }) =>
     apiClient.get("/api/audit-logs/export", { params }),
 
-  /** 别名 */
+  /** Alias */
   getLogs: (params?: { user_id?: string; action?: string; start_date?: string; end_date?: string; page?: number; size?: number }) =>
     auditLogRealApi.getAll(params),
 

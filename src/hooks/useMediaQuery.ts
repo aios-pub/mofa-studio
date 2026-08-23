@@ -1,6 +1,6 @@
 /**
- * 媒体查询 Hook
- * 支持 SSR 安全的媒体查询
+ * Media query hook
+ * Supports SSR-safe media queries
  */
 
 import { useState, useEffect } from "react";
@@ -20,25 +20,25 @@ export type MediaQueryValues = {
 };
 
 /**
- * 基础媒体查询 Hook
- * @param query 媒体查询字符串
- * @returns 是否匹配
+ * Base media query hook
+ * @param query Media query string
+ * @returns Whether matched
  */
 export function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState<boolean>(false);
 
   useEffect(() => {
-    // SSR 检查
+    // SSR check
     if (typeof window === "undefined") {
       return;
     }
 
     const mediaQuery = window.matchMedia(query);
 
-    // 初始值
+    // Initial value
     setMatches(mediaQuery.matches);
 
-    // 监听变化
+    // Watch changes
     const handler = (event: MediaQueryListEvent) => {
       setMatches(event.matches);
     };
@@ -54,7 +54,7 @@ export function useMediaQuery(query: string): boolean {
 }
 
 /**
- * 断点尺寸
+ * Breakpoint sizes
  */
 export const breakpoints = {
   xs: 480,
@@ -66,28 +66,28 @@ export const breakpoints = {
 } as const;
 
 /**
- * 断点向上检测
- * @param breakpoint 断点尺寸
- * @returns 是否大于等于该断点
+ * Breakpoint and above detection
+ * @param breakpoint Breakpoint size
+ * @returns Whether greater than or equal to the breakpoint
  */
 export function useBreakpointUp(breakpoint: number): boolean {
   return useMediaQuery(`(min-width: ${breakpoint}px)`);
 }
 
 /**
- * 断点向下检测
- * @param breakpoint 断点尺寸
- * @returns 是否小于该断点
+ * Breakpoint and below detection
+ * @param breakpoint Breakpoint size
+ * @returns Whether less than the breakpoint
  */
 export function useBreakpointDown(breakpoint: number): boolean {
   return useMediaQuery(`(max-width: ${breakpoint - 1}px)`);
 }
 
 /**
- * 断点之间检测
- * @param minBreakpoint 最小断点
- * @param maxBreakpoint 最大断点
- * @returns 是否在两个断点之间
+ * Between breakpoints detection
+ * @param minBreakpoint Minimum breakpoint
+ * @param maxBreakpoint Maximum breakpoint
+ * @returns Whether between two breakpoints
  */
 export function useBreakpointBetween(
   minBreakpoint: number,
@@ -99,8 +99,8 @@ export function useBreakpointBetween(
 }
 
 /**
- * 完整的媒体查询 Hook
- * 返回所有媒体查询状态
+ * Full media query hook
+ * Return all media query states
  */
 export function useMediaQueries(): MediaQueryValues {
   const isMobile = useMediaQuery(`(max-width: ${breakpoints.md - 1}px)`);
@@ -116,7 +116,7 @@ export function useMediaQueries(): MediaQueryValues {
   const isPortrait = useMediaQuery("(orientation: portrait)");
   const isLandscape = useMediaQuery("(orientation: landscape)");
 
-  // 触摸设备检测
+  // Touch device detection
   const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   useEffect(() => {
@@ -136,7 +136,7 @@ export function useMediaQueries(): MediaQueryValues {
     };
   }, []);
 
-  // 高 DPI 检测
+  // High DPI detection
   const [isHighDPI, setIsHighDPI] = useState(false);
 
   useEffect(() => {
@@ -171,40 +171,40 @@ export function useMediaQueries(): MediaQueryValues {
 }
 
 /**
- * 移动端检测 Hook
- * @returns 是否为移动端
+ * Mobile detection hook
+ * @returns Whether mobile
  */
 export function useIsMobile(): boolean {
   return useBreakpointDown(breakpoints.md);
 }
 
 /**
- * 桌面端检测 Hook
- * @returns 是否为桌面端
+ * Desktop detection hook
+ * @returns Whether desktop
  */
 export function useIsDesktop(): boolean {
   return useBreakpointUp(breakpoints.lg);
 }
 
 /**
- * 暗黑模式偏好检测 Hook
- * @returns 系统是否偏好暗黑模式
+ * Dark mode preference hook
+ * @returns Whether system prefers dark mode
  */
 export function usePrefersDarkMode(): boolean {
   return useMediaQuery("(prefers-color-scheme: dark)");
 }
 
 /**
- * 减少动画偏好检测 Hook
- * @returns 系统是否偏好减少动画
+ * Reduced motion preference hook
+ * @returns Whether system prefers reduced motion
  */
 export function usePrefersReducedMotion(): boolean {
   return useMediaQuery("(prefers-reduced-motion: reduce)");
 }
 
 /**
- * 设备方向检测 Hook
- * @returns 设备方向
+ * Device orientation detection hook
+ * @returns Device orientation
  */
 export function useOrientation(): "portrait" | "landscape" {
   const isPortrait = useMediaQuery("(orientation: portrait)");

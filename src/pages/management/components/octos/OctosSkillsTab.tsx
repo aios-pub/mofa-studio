@@ -1,6 +1,6 @@
 /**
- * Octos Profile Skills 管理
- * 整合系统 Skills 管理，提供推荐安装功能
+ * Octos profile skills management
+ * Integrates system skills management with recommended installation
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -40,7 +40,7 @@ interface Props {
   apiClient: OctosApiClient | any;
 }
 
-// 系统 Skill 到 Octos Skill 仓库的映射
+// Mapping from system skills to Octos skill repositories
 const SKILL_TO_OCTOS_REPO: Record<
   string,
   { repo: string; branch?: string; name: string }
@@ -111,7 +111,7 @@ export default function OctosSkillsTab({ profileId, apiClient }: Props) {
   const fetchSystemSkills = useCallback(async () => {
     try {
       const data = await skillApi.getAll();
-      setSystemSkills(data.filter((s) => s.enabled)); // 只显示已启用的 Skills
+      setSystemSkills(data.filter((s) => s.enabled)); // only show enabled skills
     } catch (e: any) {
       console.error("Failed to load system skills:", e);
     }
@@ -162,11 +162,11 @@ export default function OctosSkillsTab({ profileId, apiClient }: Props) {
     }
   };
 
-  // 获取推荐的 Skills（系统中已启用但 Octos 未安装的）
+  // Get recommended skills (enabled in system but not installed in Octos)
   const recommendedSkills = systemSkills.filter((skill) => {
     const repoInfo = SKILL_TO_OCTOS_REPO[skill.id];
     if (!repoInfo) return false;
-    // 检查是否已安装
+    // Check whether installed
     return !installedSkills.some((s) => s.name === repoInfo.name);
   });
 
@@ -216,7 +216,7 @@ export default function OctosSkillsTab({ profileId, apiClient }: Props) {
   );
 }
 
-// 已安装 Skills 视图
+// Installed skills view
 function InstalledSkillsView({
   skills,
   loading,
@@ -292,7 +292,7 @@ function InstalledSkillsView({
   );
 }
 
-// 推荐安装 Skills 视图
+// Recommended skills view
 function RecommendSkillsView({
   systemSkills,
   recommendedSkills,
@@ -306,7 +306,7 @@ function RecommendSkillsView({
   installing: string | null;
   onInstall: (skillKey: string) => void;
 }) {
-  // 已安装的 Skill 名称列表
+  // List of installed skill names
   const installedNames = new Set(
     installedSkills
       .map((s) => {
@@ -363,7 +363,7 @@ function RecommendSkillsView({
           );
 
           if (!repoInfo) {
-            return null; // 没有对应仓库的 Skill 不显示
+            return null; // hide skills without a matching repository
           }
 
           return (
@@ -441,7 +441,7 @@ function RecommendSkillsView({
         })}
       </div>
 
-      {/* 安装说明 */}
+      {/* Installation instructions */}
       <Alert
         type="info"
         showIcon

@@ -1,5 +1,5 @@
 /**
- * 测试分类创建/编辑弹窗
+ * Test category create/edit modal
  */
 
 import { useEffect } from "react";
@@ -51,7 +51,7 @@ export function CategoryFormModal({
     }
   };
 
-  // 排除当前分类本身作为父选项（防止选择自己作为父分类）
+  // Exclude the current category as a parent option (prevent selecting itself)
   const parentOptions = categories
     .filter((c) => !category || c.id !== category.id)
     .map((c) => ({ label: c.name, value: c.id }));

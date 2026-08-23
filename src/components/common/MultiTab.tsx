@@ -1,5 +1,5 @@
 /**
- * Multi-tab管理组件
+ * Multi-tab management component
  */
 
 import React, {
@@ -20,41 +20,41 @@ import {
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 
-// ==================== 类型定义 ====================
+// ==================== Type definitions ====================
 
 export interface TabItem {
-  /** 唯一标识 */
+  /** Unique identifier */
   key: string;
   /** LabelTitle */
   label: React.ReactNode;
-  /** 是否可关闭 */
+  /** Closable */
   closable?: boolean;
-  /** 图标 */
+  /** Icon */
   icon?: React.ReactNode;
-  /** 是否固定 */
+  /** Whether fixed */
   fixed?: boolean;
 }
 
 export interface MultiTabContextType {
-  /** 当前Tabs列表 */
+  /** Current tab list */
   tabs: TabItem[];
-  /** 当前激活的Label */
+  /** Currently active tab */
   activeKey: string;
-  /** 添加Label */
+  /** Add tab */
   addTab: (tab: TabItem) => void;
-  /** 关闭Label */
+  /** Close tab */
   closeTab: (key: string) => void;
-  /** 关闭其他Label */
+  /** Close other tabs */
   closeOthersTab: (key: string) => void;
-  /** 关闭所有Label */
+  /** Close all tabs */
   closeAll: () => void;
-  /** 关闭左侧Label */
+  /** Close tabs to the left */
   closeLeft: (key: string) => void;
-  /** 关闭右侧Label */
+  /** Close tabs to the right */
   closeRight: (key: string) => void;
-  /** 刷新Label */
+  /** Refresh tab */
   refreshTab: (key: string) => void;
-  /** 设置激活Label */
+  /** Set the active tab */
   setActiveKey: (key: string) => void;
 }
 
@@ -74,17 +74,17 @@ export const useMultiTab = () => {
 
 export interface MultiTabProviderProps {
   children: React.ReactNode;
-  /** 初始Tabs */
+  /** Initial tabs */
   initialTabs?: TabItem[];
-  /** 默认激活的Label */
+  /** Default active tab */
   defaultActiveKey?: string;
-  /** 最大Label数量 */
+  /** Maximum tab count */
   maxTabs?: number;
-  /** Label变化回调 */
+  /** Tab change callback */
   onTabsChange?: (tabs: TabItem[], activeKey: string) => void;
-  /** Label关闭回调 */
+  /** Tab close callback */
   onClose?: (key: string) => void;
-  /** Label刷新回调 */
+  /** Tab refresh callback */
   onRefresh?: (key: string) => void;
 }
 
@@ -103,15 +103,15 @@ export const MultiTabProvider: React.FC<MultiTabProviderProps> = ({
   const addTab = useCallback(
     (tab: TabItem) => {
       setTabs((prev) => {
-        // 检查是否已存在
+        // Check whether it already exists
         const exists = prev.some((t) => t.key === tab.key);
         if (exists) {
           return prev;
         }
 
-        // 检查是否超过最大数量
+        // Check whether the maximum count is exceeded
         if (prev.length >= maxTabs) {
-          // 移除第一个可关闭的Label
+          // Remove the first closable tab
           const closableIndex = prev.findIndex(
             (t) => t.closable !== false && !t.fixed,
           );
@@ -136,14 +136,14 @@ export const MultiTabProvider: React.FC<MultiTabProviderProps> = ({
         const index = prev.findIndex((t) => t.key === key);
         const tab = prev[index];
 
-        // 检查是否可关闭
+        // Check whether closable
         if (tab && tab.closable === false) {
           return prev;
         }
 
         const newTabs = prev.filter((t) => t.key !== key);
 
-        // e.g.果关闭的是当前激活的Label，激活相邻Label
+        // If the closed tab is the active one, activate an adjacent tab
         if (activeKey === key && newTabs.length > 0) {
           const newIndex = Math.min(index, newTabs.length - 1);
           setActiveKey(newTabs[newIndex].key);
@@ -221,7 +221,7 @@ export const MultiTabProvider: React.FC<MultiTabProviderProps> = ({
     ],
   );
 
-  // 触发变化回调
+  // Trigger change callback
   React.useEffect(() => {
     onTabsChange?.(tabs, activeKey);
   }, [tabs, activeKey, onTabsChange]);
@@ -233,18 +233,18 @@ export const MultiTabProvider: React.FC<MultiTabProviderProps> = ({
   );
 };
 
-// ==================== Multi-tab视图组件 ====================
+// ==================== Multi-tab view component ====================
 
 export interface MultiTabViewProps {
-  /** Tabs样式 */
+  /** Tabs styling */
   tabStyle?: "card" | "line";
-  /** 是否显示刷新按钮 */
+  /** Whether to show the refresh button */
   showRefresh?: boolean;
-  /** 是否显示关闭按钮 */
+  /** Whether to show the close button */
   showClose?: boolean;
-  /** 额外操作 */
+  /** Extra actions */
   extra?: React.ReactNode;
-  /** 类名 */
+  /** Class name */
   className?: string;
 }
 
@@ -266,7 +266,7 @@ export const MultiTabView: React.FC<MultiTabViewProps> = ({
     closeRight,
   } = useMultiTab();
 
-  // 右键菜单
+  // Context menu
   const getContextMenu = (key: string): MenuProps["items"] => {
     return [
       {
@@ -312,7 +312,7 @@ export const MultiTabView: React.FC<MultiTabViewProps> = ({
     ];
   };
 
-  // 渲染Label
+  // Render tab
   const renderTab: TabsProps["renderTabBar"] = () => (
     <div
       className={`flex items-center gap-1 px-4 py-2 bg-[var(--color-bg-secondary)] border-b border-(--color-border) ${className}`}
@@ -354,10 +354,10 @@ export const MultiTabView: React.FC<MultiTabViewProps> = ({
         </div>
       </div>
 
-      {/* 额外操作 */}
+      {/* Extra actions */}
       {extra && <div className="flex items-center gap-2">{extra}</div>}
 
-      {/* 刷新按钮 */}
+      {/* Refresh button */}
       {showRefresh && activeKey && (
         <Button
           type="text"

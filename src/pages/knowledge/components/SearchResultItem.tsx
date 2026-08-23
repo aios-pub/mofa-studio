@@ -1,5 +1,5 @@
 /**
- * Search result item组件
+ * Search result item component
  */
 
 import {
@@ -58,7 +58,7 @@ export default function SearchResultItemComponent({
 
   return (
     <div className="p-4 bg-(--color-bg-tertiary) rounded-lg border border-(--color-border) hover:border-(--color-primary)/50 transition-colors">
-      {/* 头部 */}
+      {/* Header */}
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">
           <FileTextOutlined className="text-[var(--color-text-tertiary)]" />
@@ -85,7 +85,7 @@ export default function SearchResultItemComponent({
         </div>
       </div>
 
-      {/* 内容 */}
+      {/* Content */}
       <div
         className="text-sm text-[var(--color-text-secondary)] line-clamp-4 leading-relaxed"
         dangerouslySetInnerHTML={{
@@ -93,7 +93,7 @@ export default function SearchResultItemComponent({
         }}
       />
 
-      {/* 元数据 */}
+      {/* Metadata */}
       {item.metadata && (
         <div className="mt-3 pt-3 border-t border-(--color-border) flex flex-wrap gap-2 text-xs text-[var(--color-text-tertiary)]">
           {item.metadata.source && <span>来源: {item.metadata.source}</span>}

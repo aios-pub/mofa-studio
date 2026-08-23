@@ -1,5 +1,5 @@
 /**
- * 提示词版本历史组件
+ * Prompt version history component
  */
 
 import { useState, useEffect } from "react";
@@ -98,7 +98,7 @@ export default function PromptVersionHistory({
 
   return (
     <div className="flex h-full">
-      {/* 版本列表 */}
+      {/* Version list */}
       <div className="w-64 border-r border-(--color-border) overflow-y-auto">
         <div className="p-3 border-b border-(--color-border)">
           <div className="flex items-center justify-between">
@@ -192,7 +192,7 @@ export default function PromptVersionHistory({
         </div>
       </div>
 
-      {/* 版本详情/对比 */}
+      {/* Version details/diff */}
       <div className="flex-1 overflow-y-auto">
         {compareMode ? (
           <div className="p-4">

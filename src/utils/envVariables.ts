@@ -1,20 +1,20 @@
 /**
- * Environment variable工具函数
- * 处理Environment variable的替换和管理
+ * Environment variable utilities
+ * Handle environment variable substitution and management
  */
 
 import type { Environment, EnvironmentVariable } from "@/types/testset";
 
 /**
- * 转义正则表达式特殊字符
+ * Escape regex special characters
  */
 function escapeRegExp(string: string): string {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /**
- * 替换字符串中的变量占位符
- * 支持 {{variable_name}} 格式
+ * Replace variable placeholders in a string
+ * Supports the {{variable_name}} format
  */
 export function replaceVariables(
   text: string,
@@ -35,8 +35,8 @@ export function replaceVariables(
 }
 
 /**
- * 替换对象中的所有变量占位符
- * 支持嵌套对象和数组
+ * Replace all variable placeholders in an object
+ * Supports nested objects and arrays
  */
 export function replaceVariablesInObject(
   obj: unknown,
@@ -62,8 +62,8 @@ export function replaceVariablesInObject(
 }
 
 /**
- * 从字符串中提取所有变量占位符
- * 返回变量名数组
+ * Extract all variable placeholders from a string
+ * Return the variable name array
  */
 export function extractVariables(text: string): string[] {
   const regex = /\{\{([^}]+)\}\}/g;
@@ -78,8 +78,8 @@ export function extractVariables(text: string): string[] {
 }
 
 /**
- * 验证Environment variable配置
- * 检查是否有循环引用或其他问题
+ * Validate environment variable configuration
+ * Check for circular references or other issues
  */
 export function validateEnvironment(env: Environment): {
   valid: boolean;
@@ -123,8 +123,8 @@ export function validateEnvironment(env: Environment): {
 }
 
 /**
- * 获取Environment variable的预览值
- * 返回替换后的结果，用于预览
+ * Get the preview value of environment variables
+ * Return the substituted result for preview
  */
 export function getPreviewValue(
   text: string,
@@ -138,8 +138,8 @@ export function getPreviewValue(
 }
 
 /**
- * 创建变量解析器
- * 用于在请求构建过程中动态替换变量
+ * Create variable resolver
+ * For dynamic variable substitution while building requests
  */
 export function createVariableResolver(variables: EnvironmentVariable[]) {
   return {

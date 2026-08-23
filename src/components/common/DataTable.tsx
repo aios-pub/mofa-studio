@@ -1,6 +1,6 @@
 /**
- * 数据Table component
- * 基于 Ant Design Table 封装，提供统一的样式和功能
+ * Data table component
+ * Wrapper over Ant Design Table providing unified styling and features
  */
 
 import { forwardRef, useMemo } from "react";
@@ -10,41 +10,41 @@ import type { ColumnsType } from "antd/es/table";
 import { LoadingOutlined } from "@ant-design/icons";
 import { EmptyState } from "./EmptyState";
 
-// 扩展的表格属性
+// Extended table props
 export interface DataTableProps<T = any> extends Omit<
   TableProps<T>,
   "loading" | "pagination"
 > {
-  /** 列配置 */
+  /** Column configuration */
   columns: ColumnsType<T>;
-  /** 数据源 */
+  /** Data source */
   dataSource: T[];
   /** Loading state */
   loading?: boolean;
-  /** 加载提示文字 */
+  /** Loading hint text */
   loadingTip?: string;
-  /** 分页配置 */
+  /** Pagination configuration */
   pagination?: TablePaginationConfig | false;
-  /** Empty state配置 */
+  /** Empty state configuration */
   emptyConfig?: {
     type?: "default" | "search" | "data";
     title?: string;
     description?: string;
   };
-  /** 是否显示边框 */
+  /** Whether to show borders */
   variant?: boolean;
-  /** 表格大小 */
+  /** Table size */
   size?: "small" | "middle" | "large";
-  /** 行 key 字段 */
+  /** Row key field */
   rowKey?: string | ((record: T) => string);
-  /** 是否显示斑马纹 */
+  /** Whether to show zebra stripes */
   striped?: boolean;
-  /** 是否可悬停 */
+  /** Hoverable */
   hoverable?: boolean;
 }
 
 /**
- * 数据Table component
+ * Data table component
  */
 export const DataTable = forwardRef<any, DataTableProps<any>>(
   (
@@ -65,7 +65,7 @@ export const DataTable = forwardRef<any, DataTableProps<any>>(
     },
     ref,
   ) => {
-    // 分页配置
+    // Pagination configuration
     const paginationConfig: TablePaginationConfig | false = useMemo(() => {
       if (pagination === false) return false;
 
@@ -79,7 +79,7 @@ export const DataTable = forwardRef<any, DataTableProps<any>>(
       };
     }, [pagination]);
 
-    // 表格类名
+    // Table class name
     const tableClassName = useMemo(() => {
       const classes = ["data-table"];
 
@@ -101,7 +101,7 @@ export const DataTable = forwardRef<any, DataTableProps<any>>(
       ),
     };
 
-    // 加载指示器
+    // Loading indicator
     const loadingConfig = {
       spinning: loading,
       indicator: <LoadingOutlined style={{ fontSize: 24 }} spin />,

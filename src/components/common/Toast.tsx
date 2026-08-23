@@ -1,6 +1,6 @@
 /**
- * Toast 通知组件
- * 基于 sonner 实现
+ * Toast notification component
+ * Implemented with sonner
  */
 
 import { Toaster, toast as sonnerToast } from "sonner";
@@ -22,11 +22,11 @@ type ToastPosition =
   | "bottom-center";
 
 /**
- * Toast 通知系统
+ * Toast notification system
  */
 export const toast = {
   /**
-   * 成功通知
+   * Success notification
    */
   success: (message: string, options?: ExternalToast) => {
     return sonnerToast.success(message, {
@@ -36,7 +36,7 @@ export const toast = {
   },
 
   /**
-   * 错误通知
+   * Error notification
    */
   error: (message: string, options?: ExternalToast) => {
     return sonnerToast.error(message, {
@@ -46,7 +46,7 @@ export const toast = {
   },
 
   /**
-   * 信息通知
+   * Info notification
    */
   info: (message: string, options?: ExternalToast) => {
     return sonnerToast.info(message, {
@@ -56,7 +56,7 @@ export const toast = {
   },
 
   /**
-   * 警告通知
+   * Warning notification
    */
   warning: (message: string, options?: ExternalToast) => {
     return sonnerToast.warning(message, {
@@ -66,14 +66,14 @@ export const toast = {
   },
 
   /**
-   * 基础通知
+   * Base notification
    */
   message: (message: string, options?: ExternalToast) => {
     return sonnerToast(message, options);
   },
 
   /**
-   * 加载通知
+   * Load notifications
    */
   loading: (message: string, options?: ExternalToast) => {
     return sonnerToast.loading(message, {
@@ -83,7 +83,7 @@ export const toast = {
   },
 
   /**
-   * 承诺通知（异步操作完成时自动更新状态）
+   * Promise notifications (state auto-updates when the async op completes)
    */
   promise: <T,>(
     promise: Promise<T>,
@@ -101,7 +101,7 @@ export const toast = {
   },
 
   /**
-   * Custom通知
+   * Custom notification
    */
   custom: (
     jsx: (id: string | number) => React.ReactElement,
@@ -111,14 +111,14 @@ export const toast = {
   },
 
   /**
-   * 关闭指定通知
+   * Close a specific notification
    */
   dismiss: (toastId?: string | number) => {
     return sonnerToast.dismiss(toastId);
   },
 
   /**
-   * 关闭所有通知
+   * Close all notifications
    */
   dismissAll: () => {
     sonnerToast.dismiss();
@@ -126,8 +126,8 @@ export const toast = {
 };
 
 /**
- * Toast 提供者组件
- * 需要在应用根组件中使用
+ * Toast provider component
+ * Must be used in the app root component
  */
 export function ToastProvider({
   position = "top-right",

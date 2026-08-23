@@ -1,5 +1,5 @@
 /**
- * Theme模块导出
+ * Theme module exports
  */
 
 export { ThemeProvider } from './theme-provider';

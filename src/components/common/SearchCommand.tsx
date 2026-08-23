@@ -1,6 +1,6 @@
 /**
- * 搜索命令面板组件
- * 支持全局搜索和快捷导航 (Cmd/Ctrl + K)
+ * Search command palette component
+ * Supports global search and quick navigation (Cmd/Ctrl + K)
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
@@ -20,7 +20,7 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
-// 搜索项目配置
+// Search item configuration
 const searchItems = [
   // Workbench
   {
@@ -39,7 +39,7 @@ const searchItems = [
     category: "工作台",
     keywords: ["chat", "conversation"],
   },
-  // 管理
+  // Management
   {
     id: "agents",
     title: "Agent 管理",
@@ -88,7 +88,7 @@ const searchItems = [
     category: "管理",
     keywords: ["task", "schedule"],
   },
-  // 监控
+  // Monitoring
   {
     id: "analytics",
     title: "统计分析",
@@ -105,7 +105,7 @@ const searchItems = [
     category: "监控",
     keywords: ["monitoring", "realtime"],
   },
-  // Tracing与Evaluation
+  // Tracing and evaluation
   {
     id: "tracing",
     title: "追踪分析",
@@ -122,7 +122,7 @@ const searchItems = [
     category: "追踪与评估",
     keywords: ["evaluation", "score"],
   },
-  // 组织
+  // Organization
   {
     id: "users",
     title: "用户管理",
@@ -139,7 +139,7 @@ const searchItems = [
     category: "组织",
     keywords: ["department", "team"],
   },
-  // 系统
+  // System
   {
     id: "resources",
     title: "资源管理",
@@ -197,7 +197,7 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const navigate = useNavigate();
 
-  // 使用受控或非受控模式
+  // Use controlled or uncontrolled mode
   const isOpen = controlledOpen ?? internalOpen;
   const setIsOpen = useCallback(
     (value: boolean) => {
@@ -210,15 +210,15 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
     [onOpenChange],
   );
 
-  // 快捷键监听
+  // Shortcut listening
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd/Ctrl + K 打开
+      // Open with Cmd/Ctrl + K
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         setIsOpen(true);
       }
-      // ESC 关闭
+      // ESC to close
       if (e.key === "Escape" && isOpen) {
         setIsOpen(false);
       }
@@ -228,14 +228,14 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, setIsOpen]);
 
-  // 重置搜索值
+  // Reset the search value
   useEffect(() => {
     if (!isOpen) {
       setSearchValue("");
     }
   }, [isOpen]);
 
-  // 过滤搜索结果
+  // Filter search results
   const filteredItems = useMemo(() => {
     if (!searchValue.trim()) return searchItems;
 
@@ -248,7 +248,7 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
     );
   }, [searchValue]);
 
-  // 按类别分组
+  // Group by type
   const groupedItems = useMemo(() => {
     const groups: Record<string, SearchItem[]> = {};
     filteredItems.forEach((item: SearchItem) => {
@@ -260,10 +260,10 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
     return groups;
   }, [filteredItems]);
 
-  // 选择项目
+  // Select item
   const handleSelect = useCallback(
     (item: SearchItem) => {
-      // 添加到最近搜索
+      // Add to recent searches
       setRecentSearches((prev) => {
         const newSearches = [
           item.id,
@@ -280,7 +280,7 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
     [navigate, setIsOpen],
   );
 
-  // 获取最近搜索的项目
+  // Get recently searched items
   const recentItems = useMemo(() => {
     return recentSearches
       .map((id) => searchItems.find((item: SearchItem) => item.id === id))
@@ -300,7 +300,7 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
         body: { padding: 0 },
       }}
     >
-      {/* 搜索输入框 */}
+      {/* Search input box */}
       <div className="p-3 border-b border-(--color-border)">
         <Input
           prefix={
@@ -315,7 +315,7 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
         />
       </div>
 
-      {/* 搜索结果或最近搜索 */}
+      {/* Search results or recent searches */}
       <div className="max-h-80 overflow-y-auto">
         {!searchValue.trim() && recentItems.length > 0 ? (
           <>
@@ -378,7 +378,7 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
           ))
         )}
 
-        {/* 无结果 */}
+        {/* No results */}
         {searchValue.trim() && filteredItems.length === 0 && (
           <div className="py-12 text-center text-[var(--color-text-tertiary)]">
             <SearchOutlined className="text-4xl mb-2" />
@@ -387,7 +387,7 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
         )}
       </div>
 
-      {/* 底部提示 */}
+      {/* Bottom hint */}
       <div className="px-4 py-2 border-t border-(--color-border) flex items-center justify-between text-xs text-[var(--color-text-tertiary)]">
         <Space>
           <kbd className="px-1.5 py-0.5 rounded bg-(--color-bg-tertiary)">

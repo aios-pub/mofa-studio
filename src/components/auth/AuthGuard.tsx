@@ -1,5 +1,5 @@
 /**
- * 权限守卫组件
+ * Permission guard component
  */
 
 import type { ReactNode } from 'react';

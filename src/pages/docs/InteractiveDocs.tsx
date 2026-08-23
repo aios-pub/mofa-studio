@@ -1,6 +1,6 @@
 /**
- * 可视化APIDocument页面
- * 类似Swagger UI的交互界面，支持浏览APIDocument和在线测试
+ * Visual API documentation page
+ * Swagger UI-like interface for browsing API docs and testing online
  */
 
 import { useState, useEffect } from "react";
@@ -34,7 +34,7 @@ export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsPro
   useEffect(() => {
     if (!testSetId) return;
 
-    // 切换测试集时重置相关状态，避免显示旧数据
+    // Reset related state when switching test sets to avoid stale data
     setSelectedEndpoint(null);
     setSearchQuery("");
     setSelectedTag("all");
@@ -96,10 +96,10 @@ export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsPro
 
   return (
     <div className="flex h-full bg-gray-50">
-      {/* 侧边栏 */}
+      {/* Sidebar */}
       {!sidebarCollapsed && (
         <div className="w-72 border-r border-gray-200 bg-white flex flex-col">
-          {/* 头部 */}
+          {/* Header */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <Space>
@@ -120,7 +120,7 @@ export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsPro
             />
           </div>
 
-          {/* Label筛选 */}
+          {/* Tab filtering */}
           <div className="px-4 py-2 border-b border-gray-200">
             <div className="flex flex-wrap gap-1">
               <Tag
@@ -143,7 +143,7 @@ export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsPro
             </div>
           </div>
 
-          {/* API列表 */}
+          {/* API list */}
           <div className="flex-1 overflow-y-auto p-2">
             {groupedEndpoints ? (
               Object.entries(groupedEndpoints).map(([tag, endpoints]) => (
@@ -183,9 +183,9 @@ export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsPro
         </div>
       )}
 
-      {/* 主内容区 */}
+      {/* Main content area */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* 头部导航 */}
+        {/* Header navigation */}
         <div className="bg-white border-b border-gray-200 px-6 py-3">
           <div className="flex items-center justify-between">
             <Space>
@@ -220,10 +220,10 @@ export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsPro
           </div>
         </div>
 
-        {/* 内容区域 */}
+        {/* Content area */}
         <div className="flex-1 overflow-y-auto p-6">
           {!selectedEndpoint ? (
-            // 概览页面
+            // Overview page
             docs && (
               <div className="max-w-4xl mx-auto">
                 <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
@@ -239,7 +239,7 @@ export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsPro
                   </div>
                 </div>
 
-                {/* 服务器信息 */}
+                {/* Server information */}
                 {docs.servers && docs.servers.length > 0 && (
                   <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                     <h2 className="text-lg font-semibold mb-4">服务器</h2>
@@ -256,7 +256,7 @@ export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsPro
                   </div>
                 )}
 
-                {/* API列表 */}
+                {/* API list */}
                 <div className="bg-white rounded-lg shadow-sm p-6">
                   <h2 className="text-lg font-semibold mb-4">API列表</h2>
                   <div className="space-y-3">
@@ -283,13 +283,13 @@ export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsPro
               </div>
             )
           ) : (
-            // 端点详情页面
+            // Endpoint detail page
             <div className="max-w-5xl mx-auto">
               <ApiEndpointCard
                 endpoint={selectedEndpoint}
               />
 
-              {/* 测试面板 */}
+              {/* Test panel */}
               <div className="mt-6">
                 <InlineTestPanel
                   endpoint={selectedEndpoint}
@@ -304,7 +304,7 @@ export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsPro
   );
 }
 
-// HTTP methodLabel组件
+// HTTP method tag component
 function MethodTag({ method }: { method: string }) {
   const colors: Record<string, string> = {
     GET: "blue",

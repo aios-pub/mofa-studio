@@ -1,5 +1,5 @@
 /**
- * Workflow Mock 数据
+ * Workflow mock data
  */
 
 import type {
@@ -13,7 +13,7 @@ import type {
   ExecutionStatus,
 } from '../../types/workflow';
 
-// Node type配置
+// Node type configuration
 export const nodeTypeConfig: Record<NodeType, { name: string; icon: string; category: string; description: string; color: string }> = {
   start: { name: '开始', icon: '▶️', category: 'trigger', description: '工作流开始节点', color: '#52c41a' },
   end: { name: '结束', icon: '⏹️', category: 'trigger', description: '工作流结束节点', color: '#ff4d4f' },
@@ -31,7 +31,7 @@ export const nodeTypeConfig: Record<NodeType, { name: string; icon: string; cate
   schedule: { name: '定时', icon: '📅', category: 'trigger', description: '定时触发', color: '#ff7a45' },
 };
 
-// 状态颜色
+// Status colors
 export const executionStatusConfig: Record<ExecutionStatus, { color: string; text: string }> = {
   pending: { color: 'default', text: '等待中' },
   running: { color: 'blue', text: '运行中' },
@@ -40,7 +40,7 @@ export const executionStatusConfig: Record<ExecutionStatus, { color: string; tex
   cancelled: { color: 'default', text: '已取消' },
 };
 
-// 创建示例节点
+// Create sample nodes
 const createSampleNodes = (): WorkflowNode[] => [
   {
     id: 'node-start',
@@ -157,7 +157,7 @@ const createSampleNodes = (): WorkflowNode[] => [
   },
 ];
 
-// 创建示例边
+// Create sample edges
 const createSampleEdges = (): WorkflowEdge[] => [
   { id: 'edge-1', sourceNodeId: 'node-start', targetNodeId: 'node-agent-1' },
   { id: 'edge-2', sourceNodeId: 'node-agent-1', targetNodeId: 'node-condition-1' },
@@ -165,7 +165,7 @@ const createSampleEdges = (): WorkflowEdge[] => [
   { id: 'edge-4', sourceNodeId: 'node-condition-1', sourcePortId: 'out-no', targetNodeId: 'node-end-failure', label: '失败' },
 ];
 
-// Mock Workflow数据
+// Mock workflow data
 export const mockWorkflows: Workflow[] = [
   {
     id: 'workflow-1',
@@ -259,7 +259,7 @@ export const mockWorkflows: Workflow[] = [
   },
 ];
 
-// Mock 执行记录
+// Mock execution records
 export const mockExecutions: WorkflowExecution[] = [
   {
     id: 'exec-1',
@@ -313,7 +313,7 @@ export const mockExecutions: WorkflowExecution[] = [
   },
 ];
 
-// Mock 版本历史
+// Mock version history
 export const mockVersions: WorkflowVersion[] = [
   {
     id: 'version-1',
@@ -341,24 +341,24 @@ export const mockVersions: WorkflowVersion[] = [
   },
 ];
 
-// 模拟 API 延迟
+// Mock API latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Workflow API Mock
 export const workflowApi = {
-  // 获取所有Workflow
+  // Get all workflows
   async getAll(): Promise<Workflow[]> {
     await delay(300);
     return mockWorkflows;
   },
 
-  // 获取单个Workflow
+  // Get a single workflow
   async getById(id: string): Promise<Workflow | undefined> {
     await delay(200);
     return mockWorkflows.find((w) => w.id === id);
   },
 
-  // 创建Workflow
+  // Create workflow
   async create(data: Partial<Workflow>): Promise<Workflow> {
     await delay(500);
     const newWorkflow: Workflow = {
@@ -379,7 +379,7 @@ export const workflowApi = {
     return newWorkflow;
   },
 
-  // 更新Workflow
+  // Update workflow
   async update(id: string, data: Partial<Workflow>): Promise<Workflow | undefined> {
     await delay(300);
     const index = mockWorkflows.findIndex((w) => w.id === id);
@@ -388,7 +388,7 @@ export const workflowApi = {
     return mockWorkflows[index];
   },
 
-  // 删除Workflow
+  // Delete workflow
   async delete(id: string): Promise<boolean> {
     await delay(300);
     const index = mockWorkflows.findIndex((w) => w.id === id);
@@ -397,7 +397,7 @@ export const workflowApi = {
     return true;
   },
 
-  // 复制Workflow
+  // Copy workflow
   async duplicate(id: string): Promise<Workflow | undefined> {
     await delay(500);
     const workflow = mockWorkflows.find((w) => w.id === id);
@@ -416,7 +416,7 @@ export const workflowApi = {
     return newWorkflow;
   },
 
-  // 发布Workflow
+  // Publish workflow
   async publish(id: string): Promise<Workflow | undefined> {
     await delay(300);
     const workflow = mockWorkflows.find((w) => w.id === id);
@@ -427,13 +427,13 @@ export const workflowApi = {
     return workflow;
   },
 
-  // 获取版本列表
+  // Get version list
   async getVersions(workflowId: string): Promise<WorkflowVersion[]> {
     await delay(200);
     return mockVersions.filter((v) => v.workflowId === workflowId);
   },
 
-  // 创建版本
+  // Create version
   async createVersion(workflowId: string, changelog?: string): Promise<WorkflowVersion | undefined> {
     await delay(300);
     const workflow = mockWorkflows.find((w) => w.id === workflowId);
@@ -460,7 +460,7 @@ export const workflowApi = {
     return newVersion;
   },
 
-  // 回滚到指定版本
+  // Roll back to a specific version
   async rollback(workflowId: string, versionId: string): Promise<Workflow | undefined> {
     await delay(300);
     const version = mockVersions.find((v) => v.id === versionId);
@@ -473,7 +473,7 @@ export const workflowApi = {
     return workflow;
   },
 
-  // 执行Workflow
+  // Execute workflow
   async execute(workflowId: string, payload?: Record<string, unknown>): Promise<WorkflowExecution> {
     await delay(500);
     const workflow = mockWorkflows.find((w) => w.id === workflowId);
@@ -492,7 +492,7 @@ export const workflowApi = {
 
     mockExecutions.push(execution);
 
-    // 模拟异步执行完成
+    // Simulate async completion
     setTimeout(() => {
       execution.status = 'completed';
       execution.endTime = new Date();
@@ -502,19 +502,19 @@ export const workflowApi = {
     return execution;
   },
 
-  // 获取执行记录
+  // Get execution records
   async getExecutions(workflowId: string): Promise<WorkflowExecution[]> {
     await delay(200);
     return mockExecutions.filter((e) => e.workflowId === workflowId);
   },
 
-  // 获取单个执行记录
+  // Get a single execution record
   async getExecution(executionId: string): Promise<WorkflowExecution | undefined> {
     await delay(200);
     return mockExecutions.find((e) => e.id === executionId);
   },
 
-  // 取消执行
+  // Cancel execution
   async cancelExecution(executionId: string): Promise<boolean> {
     await delay(200);
     const execution = mockExecutions.find((e) => e.id === executionId);
@@ -524,7 +524,7 @@ export const workflowApi = {
     return true;
   },
 
-  // 验证Workflow
+  // Validate workflow
   async validate(workflowId: string): Promise<{ valid: boolean; errors: string[] }> {
     await delay(300);
     const workflow = mockWorkflows.find((w) => w.id === workflowId);
@@ -534,17 +534,17 @@ export const workflowApi = {
 
     const errors: string[] = [];
 
-    // 检查是否有Start node
+    // Check whether there is a start node
     if (!workflow.nodes.some((n) => n.type === 'start')) {
       errors.push('缺少开始节点');
     }
 
-    // 检查是否有End node
+    // Check whether there is an end node
     if (!workflow.nodes.some((n) => n.type === 'end')) {
       errors.push('缺少结束节点');
     }
 
-    // 检查边是否有效
+    // Check whether edges are valid
     for (const edge of workflow.edges) {
       if (!workflow.nodes.some((n) => n.id === edge.sourceNodeId)) {
         errors.push(`边 ${edge.id} 的源节点不存在`);
@@ -557,7 +557,7 @@ export const workflowApi = {
     return { valid: errors.length === 0, errors };
   },
 
-  // 获取统计信息
+  // Get statistics info
   async getStats(workflowId: string): Promise<WorkflowStats> {
     await delay(200);
     const executions = mockExecutions.filter((e) => e.workflowId === workflowId);
@@ -575,12 +575,12 @@ export const workflowApi = {
     };
   },
 
-  // 获取Node type配置
+  // Get node type configuration
   getNodeTypeConfig(type: NodeType) {
     return nodeTypeConfig[type];
   },
 
-  // 获取所有Node type
+  // Get all node types
   getAllNodeTypes() {
     return Object.entries(nodeTypeConfig).map(([type, config]) => ({
       type: type as NodeType,

@@ -1,5 +1,5 @@
 /**
- * 原生 WebSocket (WSS) 适配器
+ * Native WebSocket (WSS) adapter
  */
 
 import type {
@@ -31,7 +31,7 @@ export class NativeWebSocketAdapter extends BaseWebSocketAdapter {
       try {
         let url = this.config.url;
 
-        // 添加认证令牌到 URL
+        // Add auth token to the URL
         if (this.config.authToken) {
           const separator = url.includes('?') ? '&' : '?';
           url = `${url}${separator}token=${encodeURIComponent(this.config.authToken)}`;
@@ -122,10 +122,10 @@ export class NativeWebSocketAdapter extends BaseWebSocketAdapter {
     this.socket = null;
 
     if (event.code === 1000) {
-      // 正常关闭
+      // Closed normally
       this.setState('disconnected');
     } else {
-      // 异常关闭，尝试重连
+      // Abnormally closed; try to reconnect
       this.setState('disconnected');
       this.scheduleReconnect();
     }
@@ -146,7 +146,7 @@ export class NativeWebSocketAdapter extends BaseWebSocketAdapter {
     try {
       const message: WebSocketMessage = JSON.parse(event.data);
       this.emitInternal(message.event, message.data);
-      // 同时触发通用的 message 事件
+      // Also emit the generic message event
       this.emitInternal('message', message);
     } catch (error) {
       console.error('Failed to parse WebSocket message:', error);

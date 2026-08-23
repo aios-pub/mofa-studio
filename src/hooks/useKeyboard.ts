@@ -1,11 +1,11 @@
 /**
- * 键盘快捷键 Hook
- * 提供按键检测和快捷键管理
+ * Keyboard shortcut hook
+ * Provides key detection and shortcut management
  */
 
 import { useEffect, useCallback, useRef, useState } from 'react';
 
-// ==================== 类型定义 ====================
+// ==================== Type definitions ====================
 
 export type KeyModifier = 'ctrl' | 'alt' | 'shift' | 'meta';
 export type KeyHandler = (event: KeyboardEvent) => void;
@@ -25,12 +25,12 @@ export interface UseKeyPressOptions {
   preventDefault?: boolean;
 }
 
-// ==================== 工具函数 ====================
+// ==================== Utilities ====================
 
 const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
 
 /**
- * 解析快捷键字符串
+ * Parse a shortcut string
  * @example parseKeyString('ctrl+s') => { key: 's', modifiers: ['ctrl'] }
  */
 function parseKeyString(keyString: string): { key: string; modifiers: KeyModifier[] } {
@@ -65,7 +65,7 @@ function parseKeyString(keyString: string): { key: string; modifiers: KeyModifie
 }
 
 /**
- * 检查修饰键是否匹配
+ * Check whether modifier keys match
  */
 function checkModifiers(event: KeyboardEvent, modifiers: KeyModifier[]): boolean {
   return modifiers.every((mod) => {
@@ -87,10 +87,10 @@ function checkModifiers(event: KeyboardEvent, modifiers: KeyModifier[]): boolean
 // ==================== useKeyPress Hook ====================
 
 /**
- * 检测单个按键是否被按下
- * @param targetKey 目标按键
+ * Detect whether a single key is pressed
+ * @param targetKey Target key
  * @param options Configuration options
- * @returns 是否按下
+ * @returns Whether pressed
  */
 export function useKeyPress(
   targetKey: string,
@@ -138,9 +138,9 @@ export function useKeyPress(
 // ==================== useKeyBinding Hook ====================
 
 /**
- * 绑定单个快捷键
- * @param keyString 快捷键字符串，e.g. 'ctrl+s'
- * @param callback 回调函数
+ * Bind a single shortcut
+ * @param keyString Shortcut string, e.g. 'ctrl+s'
+ * @param callback Callback function
  * @param options Configuration options
  */
 export function useKeyBinding(
@@ -166,7 +166,7 @@ export function useKeyBinding(
     const { key, modifiers } = parseKeyString(keyString);
 
     const handler = (event: KeyboardEvent) => {
-      // 检查按键和修饰键
+      // Check key and modifiers
       if (
         event.key.toLowerCase() === key &&
         checkModifiers(event, modifiers)
@@ -192,8 +192,8 @@ export function useKeyBinding(
 // ==================== useHotkeys Hook ====================
 
 /**
- * 管理多个快捷键
- * @param bindings 快捷键绑定数组
+ * Manage multiple shortcuts
+ * @param bindings Shortcut binding array
  * @param options Configuration options
  */
 export function useHotkeys(
@@ -225,7 +225,7 @@ export function useHotkeys(
             event.stopPropagation();
           }
           bindingHandler(event);
-          break; // 只触发第一个匹配的快捷键
+          break; // only trigger the first matching shortcut
         }
       }
     };
@@ -241,21 +241,21 @@ export function useHotkeys(
 // ==================== useKeyboardState Hook ====================
 
 export interface KeyboardState {
-  /** 当前按下的键 */
+  /** Currently pressed keys */
   pressedKeys: Set<string>;
-  /** 是否按下 Ctrl */
+  /** Whether Ctrl is pressed */
   ctrlKey: boolean;
-  /** 是否按下 Alt */
+  /** Whether Alt is pressed */
   altKey: boolean;
-  /** 是否按下 Shift */
+  /** Whether Shift is pressed */
   shiftKey: boolean;
-  /** 是否按下 Meta/Cmd */
+  /** Whether Meta/Cmd is pressed */
   metaKey: boolean;
 }
 
 /**
- * 获取键盘状态
- * @returns 键盘状态
+ * Get keyboard state
+ * @returns Keyboard state
  */
 export function useKeyboardState(): KeyboardState {
   const [state, setState] = useState<KeyboardState>({
@@ -315,13 +315,13 @@ export function useKeyboardState(): KeyboardState {
   return state;
 }
 
-// ==================== 预设快捷键 ====================
+// ==================== Preset shortcuts ====================
 
 /**
- * 常用快捷键预设
+ * Common shortcut presets
  */
 export const HOTKEY_PRESETS = {
-  // 通用
+  // General
   SAVE: isMac ? 'meta+s' : 'ctrl+s',
   COPY: isMac ? 'meta+c' : 'ctrl+c',
   PASTE: isMac ? 'meta+v' : 'ctrl+v',
@@ -330,12 +330,12 @@ export const HOTKEY_PRESETS = {
   REDO: isMac ? 'meta+shift+z' : 'ctrl+shift+z',
   SELECT_ALL: isMac ? 'meta+a' : 'ctrl+a',
 
-  // 导航
+  // Navigation
   SEARCH: isMac ? 'meta+k' : 'ctrl+k',
   GO_HOME: isMac ? 'meta+Home' : 'ctrl+Home',
   GO_END: isMac ? 'meta+End' : 'ctrl+End',
 
-  // 其他
+  // Others
   ESCAPE: 'escape',
   ENTER: 'enter',
   TAB: 'tab',

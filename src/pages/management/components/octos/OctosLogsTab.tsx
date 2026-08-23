@@ -1,6 +1,6 @@
 /**
- * Octos 实时日志 Tab
- * 使用 SSE 接收 Profile 实时日志流
+ * Octos live logs tab
+ * Receive profile live logs via SSE
  */
 
 import { useState, useCallback, useEffect, useRef } from "react";
@@ -55,7 +55,7 @@ export default function OctosLogsTab({ profileId, apiClient }: Props) {
   const [filterLevel, setFilterLevel] = useState<LogLevel | 'all'>('all');
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // SSE 连接
+  // SSE connection
   const url = apiClient.getLogStreamUrl?.(profileId) || '';
   const { state, isConnected, reconnect, lastMessage } = useSSE(url, {
     autoConnect: true,
@@ -64,21 +64,21 @@ export default function OctosLogsTab({ profileId, apiClient }: Props) {
       try {
         return JSON.parse(data) as OctosLogEntry;
       } catch {
-        // e.g.果不是 JSON，直接返回字符串
+        // If not JSON, return the string directly
         return data;
       }
     },
   });
 
-  // 处理新日志：监听 lastMessage 变化
+  // Handle new logs: watch lastMessage changes
   useEffect(() => {
     if (lastMessage === null) return;
 
-    if (paused) return; // 暂停时不添加新日志
+    if (paused) return; // do not append logs while paused
 
-    // 判断Message type
+    // Determine message type
     if (typeof lastMessage === 'string') {
-      // 纯文本日志
+      // Plain text logs
       const log: OctosLogEntry = {
         timestamp: new Date().toISOString(),
         level: lastMessage.startsWith('[stderr]') ? 'error' : 'info',
@@ -89,7 +89,7 @@ export default function OctosLogsTab({ profileId, apiClient }: Props) {
         return newLogs.length > 1000 ? newLogs.slice(-1000) : newLogs;
       });
     } else if (typeof lastMessage === 'object' && 'message' in lastMessage) {
-      // 结构化日志
+      // Structured logs
       setLogs((prev) => {
         const newLogs = [...prev, lastMessage as OctosLogEntry];
         return newLogs.length > 1000 ? newLogs.slice(-1000) : newLogs;
@@ -97,7 +97,7 @@ export default function OctosLogsTab({ profileId, apiClient }: Props) {
     }
   }, [lastMessage, paused]);
 
-  // 自动滚动到底部
+  // Auto-scroll to bottom
   useEffect(() => {
     if (!paused && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -120,7 +120,7 @@ export default function OctosLogsTab({ profileId, apiClient }: Props) {
 
   return (
     <div className="space-y-4">
-      {/* 控制栏 */}
+      {/* Control bar */}
       <Space>
         <Tag color={isConnected ? 'success' : 'error'}>
           {isConnected ? '已连接' : '未连接'}
@@ -162,7 +162,7 @@ export default function OctosLogsTab({ profileId, apiClient }: Props) {
         </Text>
       </Space>
 
-      {/* 日志显示区 */}
+      {/* Log display area */}
       <Card
         styles={{ body: { padding: 0 } }}
         style={{
@@ -226,7 +226,7 @@ export default function OctosLogsTab({ profileId, apiClient }: Props) {
         )}
       </Card>
 
-      {/* 提示信息 */}
+      {/* Hint */}
       {!isConnected && (
         <Alert
           type="warning"

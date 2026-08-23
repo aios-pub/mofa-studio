@@ -1,6 +1,6 @@
 /**
- * Skills 管理页面
- * 横向菜单布局：按技能使用流程分组
+ * Skills management page
+ * Horizontal menu layout: grouped by skill workflow
  */
 
 import { useState } from "react";
@@ -82,7 +82,7 @@ export default function SkillsListPage() {
     }
   };
 
-  // 菜单分组定义：按技能使用流程排序
+  // Menu group definitions: ordered by skill workflow
   const menuGroups: MenuGroup[] = [
     {
       key: "browse",
@@ -117,7 +117,7 @@ export default function SkillsListPage() {
     },
   ];
 
-  // 创建下拉菜单
+  // Create dropdown menu
   const createDropdownMenu = (items: MenuItem[]): MenuProps => ({
     items: items.map((item) => ({
       key: item.key,
@@ -136,14 +136,14 @@ export default function SkillsListPage() {
     if (activeTab === "local") {
       return (
         <div className="flex h-full">
-          {/* 本地技能列表 */}
+          {/* Local skills list */}
           <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]" storageKey="sidebar:skills">
             <LocalSkillsList
               selectedSkill={selectedSkill}
               onSelectSkill={setSelectedSkill}
             />
           </ResizableSidebar>
-          {/* 技能详情 */}
+          {/* Skill details */}
           <div className="flex-1 overflow-y-auto">
             {selectedSkill ? (
               <SkillDetail
@@ -202,7 +202,7 @@ export default function SkillsListPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* 顶部横向菜单 */}
+      {/* Top horizontal menu */}
       <div className="border-b border-(--color-border) bg-[var(--color-bg-secondary)]">
         <div className="flex items-center gap-1 px-4 py-2">
           <div className="flex gap-2">
@@ -233,7 +233,7 @@ export default function SkillsListPage() {
         </div>
       </div>
 
-      {/* 内容区 */}
+      {/* Content area */}
       <div className="flex-1 overflow-hidden">{renderContent()}</div>
     </div>
   );

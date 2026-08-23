@@ -1,5 +1,5 @@
 /**
- * 实时监控页面
+ * Real-time monitoring page
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -40,7 +40,7 @@ export default function MonitoringPage() {
     "agents",
   );
 
-  // 加载初始数据
+  // Load initial data
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
@@ -64,7 +64,7 @@ export default function MonitoringPage() {
   useEffect(() => {
     loadData();
 
-    // 订阅实时更新
+    // Subscribe to real-time updates
     const unsubscribeEvents = monitoringApi.subscribeToUpdates(
       (event: ActivityEvent) => {
         setActivityEvents((prev) => [event, ...prev].slice(0, 50));
@@ -96,7 +96,7 @@ export default function MonitoringPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* 头部 */}
+      {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-(--color-border)">
         <div>
           <h1 className="text-xl font-semibold text-[var(--color-text-primary)]">
@@ -124,7 +124,7 @@ export default function MonitoringPage() {
         </div>
       </div>
 
-      {/* 系统指标栏 */}
+      {/* System metrics bar */}
       {systemMetrics && (
         <div className="grid grid-cols-5 gap-4 p-4 bg-[var(--color-bg-secondary)] border-b border-(--color-border)">
           <MetricCard
@@ -172,7 +172,7 @@ export default function MonitoringPage() {
         </div>
       )}
 
-      {/* Label栏 */}
+      {/* Tabs bar */}
       <div className="flex gap-1 px-6 border-b border-(--color-border)">
         {[
           {
@@ -223,7 +223,7 @@ export default function MonitoringPage() {
         })}
       </div>
 
-      {/* 内容区 */}
+      {/* Content area */}
       <div className="flex-1 overflow-y-auto p-6">
         {loading ? (
           <div className="flex items-center justify-center h-64">
@@ -356,7 +356,7 @@ function AgentsTab({ statuses }: { statuses: AgentStatus[] }) {
   );
 }
 
-// 活动流Tabs
+// Activity stream tabs
 function ActivityTab({ events }: { events: ActivityEvent[] }) {
   const getEventIcon = (type: ActivityEvent["type"]) => {
     switch (type) {
@@ -441,7 +441,7 @@ function ActivityTab({ events }: { events: ActivityEvent[] }) {
   );
 }
 
-// 告警Tabs
+// Alerts tabs
 function AlertsTab({
   alerts,
   onAcknowledge,
@@ -523,7 +523,7 @@ function AlertsTab({
   );
 }
 
-// 系统指标卡片
+// System metrics cards
 function MetricCard({
   icon: Icon,
   label,
@@ -557,7 +557,7 @@ function MetricCard({
   );
 }
 
-// 格式化时间
+// Format time
 function formatTime(date: Date) {
   const now = new Date();
   const diff = now.getTime() - new Date(date).getTime();

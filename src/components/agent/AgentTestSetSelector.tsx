@@ -1,5 +1,5 @@
 /**
- * Agent 关联测试集选择器
+ * Agent associated test sets selector
  */
 
 import { useState, useEffect } from "react";
@@ -75,7 +75,7 @@ export default function AgentTestSetSelector({
       (t.category || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  // 按分类分组
+  // Group by category
   const groupedTestSets = filteredTestSets.reduce(
     (acc, testSet) => {
       const cat = testSet.category || "未分类";
@@ -88,12 +88,12 @@ export default function AgentTestSetSelector({
     {} as Record<string, TestSet[]>,
   );
 
-  // 已选择的测试集
+  // Selected test sets
   const selectedTestSetObjects = testSets.filter((t) =>
     selectedTestSets.includes(t.id),
   );
 
-  // 状态图标
+  // Status icon
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "running":
@@ -109,7 +109,7 @@ export default function AgentTestSetSelector({
 
   return (
     <div className="space-y-4">
-      {/* 已选择的测试集 */}
+      {/* Selected test sets */}
       {selectedTestSetObjects.length > 0 && (
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-[var(--color-text-primary)]">
@@ -137,7 +137,7 @@ export default function AgentTestSetSelector({
         </div>
       )}
 
-      {/* 搜索框 */}
+      {/* Search box */}
       <Input
         placeholder="搜索测试集..."
         prefix={<SearchOutlined />}
@@ -146,7 +146,7 @@ export default function AgentTestSetSelector({
         allowClear
       />
 
-      {/* 测试集列表 */}
+      {/* Test set list */}
       {loading ? (
         <div className="text-center py-4 text-[var(--color-text-tertiary)]">
           加载中...

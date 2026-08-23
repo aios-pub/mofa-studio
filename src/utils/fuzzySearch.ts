@@ -1,13 +1,13 @@
 /**
- * 模糊搜索工具
- * 支持Substring match和字符级模糊匹配
+ * Fuzzy search utilities
+ * Supports substring match and character-level fuzzy matching
  */
 
 /**
- * 模糊匹配：判断 text 是否匹配 query
- * 支持两种匹配方式：
- * 1. Substring match（不区分大小写）
- * 2. Character order match（query 中的字符按顺序出现在 text 中）
+ * Fuzzy match: whether text matches query
+ * Supports two matching modes:
+ * 1. Substring match (case-insensitive)
+ * 2. Character order match (characters of query appear in order within text)
  */
 export function fuzzyMatch(query: string, text: string): boolean {
   if (!query) return true;

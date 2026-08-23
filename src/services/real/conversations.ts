@@ -1,8 +1,8 @@
 /**
- * Conversation 真实 API
- * 后端端点: /api/conversation/...
+ * Conversation real API
+ * Backend endpoints: /api/conversation/...
  *
- * 后端字段映射 (snake_case → camelCase):
+ * Backend field mapping (snake_case -> camelCase):
  *   agent_id       → agentId
  *   user_id        → userId
  *   total_tokens   → totalTokens
@@ -14,7 +14,7 @@ import { apiClient } from "../api/apiClient";
 import { parseDate } from "./fieldMapper";
 import type { Conversation, Message } from "@/types";
 
-// ==================== 后端原始类型 ====================
+// ==================== Raw backend types ====================
 
 interface BackendConversation {
   id: string;
@@ -28,7 +28,7 @@ interface BackendConversation {
   update_time: string;
 }
 
-// ==================== 字段映射 ====================
+// ==================== Field mapping ====================
 
 function mapConversation(raw: BackendConversation): Conversation {
   return {
@@ -42,30 +42,30 @@ function mapConversation(raw: BackendConversation): Conversation {
   };
 }
 
-// ==================== API 方法 ====================
+// ==================== API methods ====================
 
 export const conversationRealApi = {
-  /** 获取所有会话 */
+  /** Get all conversations */
   async getAll(): Promise<Conversation[]> {
     const data = await apiClient.get<BackendConversation[]>("/api/conversation/list");
     if (!Array.isArray(data)) return [];
     return data.map(mapConversation);
   },
 
-  /** 获取单个会话 */
+  /** Get a single conversation */
   async getById(id: string): Promise<Conversation | undefined> {
     const raw = await apiClient.get<BackendConversation>(`/api/conversation/${id}`);
     return mapConversation(raw);
   },
 
-  /** 按 user_id Get conversation */
+  /** Get conversations by user_id */
   async getByUser(userId: string): Promise<Conversation[]> {
     const data = await apiClient.get<BackendConversation[]>(`/api/conversation/by-user?user_id=${userId}`);
     if (!Array.isArray(data)) return [];
     return data.map(mapConversation);
   },
 
-  /** 按 agent_id Get conversation */
+  /** Get conversations by agent_id */
   async getByAgent(agentId: string): Promise<Conversation[]> {
     const data = await apiClient.get<BackendConversation[]>(`/api/conversation/by-agent?agent_id=${agentId}`);
     if (!Array.isArray(data)) return [];
@@ -99,7 +99,7 @@ export const conversationRealApi = {
     return true;
   },
 
-  /** Get conversationMessages - 后端暂无单独Messages列表端点 */
+  /** Get conversation messages - backend has no dedicated message list endpoint yet */
   async getMessages(_conversationId: string): Promise<Message[]> {
     return [];
   },

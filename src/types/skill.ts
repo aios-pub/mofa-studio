@@ -1,8 +1,8 @@
 /**
- * Skill Hub 类型定义
+ * Skill hub type definitions
  */
 
-// ===== 基础类型 =====
+// ===== Base types =====
 
 export interface SkillParameter {
   name: string;
@@ -13,7 +13,7 @@ export interface SkillParameter {
   default_value?: unknown;
 }
 
-// ===== 本地技能 =====
+// ===== Local skills =====
 
 export interface Skill {
   id: string;
@@ -33,11 +33,11 @@ export interface Skill {
   updated_at: Date;
 }
 
-// ===== Skill Source类型 =====
+// ===== Skill source types =====
 
 export type SkillSource = "local" | "hub" | "installed";
 
-// ===== Hub 枚举类型 =====
+// ===== Hub enum types =====
 
 export type SkillVersionStatus =
   | "DRAFT"
@@ -61,7 +61,7 @@ export type LabelType = "RECOMMENDED" | "PRIVILEGED";
 export type NamespaceType = "GLOBAL" | "TEAM";
 export type NamespaceRole = "OWNER" | "ADMIN" | "MEMBER";
 
-// ===== 命名空间 =====
+// ===== Namespaces =====
 
 export interface HubNamespace {
   id: string;
@@ -87,7 +87,7 @@ export interface NamespaceMember {
   created_at: Date;
 }
 
-// ===== 租户用户 =====
+// ===== Tenant users =====
 
 export interface TenantUser {
   id: string;
@@ -97,7 +97,7 @@ export interface TenantUser {
   avatar?: string;
 }
 
-// ===== Hub 技能版本 =====
+// ===== Hub skill versions =====
 
 export interface HubSkillVersion {
   id: string;
@@ -120,7 +120,7 @@ export interface HubSkillVersion {
   created_at: Date;
 }
 
-// ===== Hub 技能文件 =====
+// ===== Hub skill files =====
 
 export interface HubSkillFile {
   id: string;
@@ -160,7 +160,7 @@ export interface LabelTranslation {
   display_name: string;
 }
 
-// ===== 社交 =====
+// ===== Social =====
 
 export interface SkillRating {
   skill_id: string;
@@ -174,7 +174,7 @@ export interface SkillRatingStatus {
   has_rated: boolean;
 }
 
-// ===== 审核 =====
+// ===== Review =====
 
 export interface ReviewTask {
   id: string;
@@ -189,7 +189,7 @@ export interface ReviewTask {
   reviewed_at?: Date;
 }
 
-// ===== 跨命名空间推广 =====
+// ===== Cross-namespace promotion =====
 
 export type PromotionTaskStatus = "PENDING" | "APPROVED" | "REJECTED";
 
@@ -226,7 +226,7 @@ export interface PromotionResult {
   target_version: string;
 }
 
-// ===== 安全审计 =====
+// ===== Security audit =====
 
 export type SecurityVerdict = "SAFE" | "SUSPICIOUS" | "DANGEROUS" | "BLOCKED";
 export type SecurityAuditDisplayState =
@@ -275,7 +275,7 @@ export interface ApiToken {
   created_at: string;
 }
 
-// ===== 举报 =====
+// ===== Reports =====
 
 export interface SkillReport {
   id: string;
@@ -291,7 +291,7 @@ export interface SkillReport {
   handled_at?: Date;
 }
 
-// ===== Hub 技能（完整） =====
+// ===== Hub skills (full) =====
 
 export interface HubSkill {
   id: string;
@@ -313,7 +313,7 @@ export interface HubSkill {
   hidden: boolean;
   tags: string[];
   labels: HubLabel[];
-  // 权限标志
+  // Permission flags
   can_manage_lifecycle: boolean;
   can_submit_promotion: boolean;
   can_interact: boolean;
@@ -323,7 +323,7 @@ export interface HubSkill {
   updated_at: Date;
 }
 
-// ===== 兼容旧版 HubSkill =====
+// ===== Legacy HubSkill compatibility =====
 
 export interface HubSkillLegacy {
   hub_id: string;
@@ -343,7 +343,7 @@ export interface HubSkillLegacy {
   updated_at: Date;
 }
 
-// ===== 本地安装的技能（扩展） =====
+// ===== Locally installed skills (extended) =====
 
 export interface InstalledSkill extends Skill {
   source: SkillSource;
@@ -353,7 +353,7 @@ export interface InstalledSkill extends Skill {
   has_update?: boolean;
 }
 
-// ===== 发布请求 =====
+// ===== Publish requests =====
 
 export interface PublishSkillRequest {
   name: string;
@@ -366,7 +366,7 @@ export interface PublishSkillRequest {
   readme?: string;
 }
 
-// ===== 发布结果 =====
+// ===== Publish results =====
 
 export interface PublishSkillResult {
   skill_id: string;
@@ -378,7 +378,7 @@ export interface PublishSkillResult {
   total_size: number;
 }
 
-// ===== Hub 分类 =====
+// ===== Hub categories =====
 
 export interface HubCategory {
   id: string;
@@ -387,7 +387,7 @@ export interface HubCategory {
   count: number;
 }
 
-// ===== Hub 搜索结果 =====
+// ===== Hub search results =====
 
 export interface HubSearchResult {
   skills: HubSkill[];
@@ -405,7 +405,7 @@ export interface HubSearchResult {
   };
 }
 
-// ===== Hub 统计 =====
+// ===== Hub statistics =====
 
 export interface HubStats {
   total_skills: number;
@@ -424,7 +424,7 @@ export interface PageResponse<T> {
   total_pages: number;
 }
 
-// ===== 生命周期响应 =====
+// ===== Lifecycle responses =====
 
 export interface SkillLifecycleResponse {
   skill_id: string;
@@ -433,7 +433,7 @@ export interface SkillLifecycleResponse {
   new_status: string;
 }
 
-// ===== 兼容旧版搜索结果 =====
+// ===== Legacy search result compatibility =====
 
 export interface HubSearchResultLegacy {
   skills: HubSkillLegacy[];

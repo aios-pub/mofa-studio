@@ -1,8 +1,8 @@
 /**
- * Skills 真实 API
- * 后端端点: /api/skill/...
+ * Skills real API
+ * Backend endpoints: /api/skill/...
  *
- * 后端字段映射 (snake_case → camelCase):
+ * Backend field mapping (snake_case -> camelCase):
  *   skill_type     → type
  *   create_time    → createdAt
  *   update_time    → updatedAt
@@ -13,7 +13,7 @@
 import { apiClient } from "../api/apiClient";
 import { parseDate } from "./fieldMapper";
 
-// ==================== 类型定义 ====================
+// ==================== Type definitions ====================
 
 interface SkillParameter {
   name: string;
@@ -44,7 +44,7 @@ interface Skill {
   updatedAt: Date;
 }
 
-// ==================== 后端原始类型 ====================
+// ==================== Raw backend types ====================
 
 interface BackendSkill {
   id: string;
@@ -63,7 +63,7 @@ interface BackendSkill {
   source?: string;
 }
 
-// ==================== 字段映射 ====================
+// ==================== Field mapping ====================
 
 function mapSkill(raw: BackendSkill): Skill {
   let parameters: SkillParameter[] = [];
@@ -107,30 +107,30 @@ function mapSkillToBackend(skill: Partial<Skill>): Record<string, unknown> {
   return result;
 }
 
-// ==================== API 方法 ====================
+// ==================== API methods ====================
 
 const skillRealApi = {
-  /** 获取所有技能 */
+  /** Get all skills */
   async getAll(): Promise<Skill[]> {
     const data = await apiClient.get<BackendSkill[]>("/api/skill/list");
     if (!Array.isArray(data)) return [];
     return data.map(mapSkill);
   },
 
-  /** 获取单个技能 */
+  /** Get a single skill */
   async getById(id: string): Promise<Skill> {
     const raw = await apiClient.get<BackendSkill>(`/api/skill/${id}`);
     return mapSkill(raw);
   },
 
-  /** 创建技能 */
+  /** Create skill */
   async create(data: Partial<Skill>): Promise<Skill> {
     const body = mapSkillToBackend(data);
     const raw = await apiClient.post<BackendSkill>("/api/skill/create", body);
     return mapSkill(raw);
   },
 
-  /** 更新技能 */
+  /** Update skill */
   async update(id: string, data: Partial<Skill>): Promise<Skill> {
     const existing = await skillRealApi.getById(id);
     const merged = { ...existing, ...data };
@@ -139,51 +139,51 @@ const skillRealApi = {
     return mapSkill(raw);
   },
 
-  /** 删除技能 */
+  /** Delete skill */
   async delete(id: string): Promise<boolean> {
     await apiClient.delete(`/api/skill/delete/${id}`);
     return true;
   },
 
-  /** 按分类获取 */
+  /** Get by category */
   async getByCategory(category: string): Promise<Skill[]> {
     const data = await apiClient.get<BackendSkill[]>(`/api/skill/by-category?category=${category}`);
     if (!Array.isArray(data)) return [];
     return data.map(mapSkill);
   },
 
-  /** 按类型获取 */
+  /** Get by type */
   async getByType(type: string): Promise<Skill[]> {
     const data = await apiClient.get<BackendSkill[]>(`/api/skill/by-type?type=${type}`);
     if (!Array.isArray(data)) return [];
     return data.map(mapSkill);
   },
 
-  /** 获取已启用的技能 */
+  /** Get enabled skills */
   async getEnabled(): Promise<Skill[]> {
     const data = await apiClient.get<BackendSkill[]>("/api/skill/enabled");
     if (!Array.isArray(data)) return [];
     return data.map(mapSkill);
   },
 
-  /** 获取 Agent 关联的技能 */
+  /** Get skills associated with an agent */
   async getAgentSkills(agentId: string): Promise<Skill[]> {
     const data = await apiClient.get<BackendSkill[]>(`/api/skill/agent-skills?agent_id=${agentId}`);
     if (!Array.isArray(data)) return [];
     return data.map(mapSkill);
   },
 
-  /** 分配技能给 Agent */
+  /** Assign skills to an agent */
   async assign(agentId: string, skillId: string): Promise<void> {
     await apiClient.post("/api/skill/assign", { agent_id: agentId, skill_id: skillId });
   },
 
-  /** 取消分配 */
+  /** Unassign */
   async unassign(id: string): Promise<void> {
     await apiClient.delete(`/api/skill/unassign/${id}`);
   },
 
-  /** 执行技能 */
+  /** Execute skill */
   async execute(id: string, params: Record<string, unknown>): Promise<{ success: boolean; result: unknown }> {
     return apiClient.post(`/api/skill/execute/${id}`, params);
   },

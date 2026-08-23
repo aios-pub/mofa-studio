@@ -1,21 +1,21 @@
 /**
- * 描述列表组件
- * 用于展示信息的Key-value pair
+ * Description list component
+ * Key-value pair for displaying information
  */
 
 import React from "react";
 import { Descriptions as AntDescriptions, Empty, Skeleton } from "antd";
 import type { DescriptionsProps } from "antd";
 
-// 描述项类型
+// Description item type
 export interface DescriptionItem {
   /** Label */
   label: React.ReactNode;
-  /** 值 */
+  /** Value */
   value: React.ReactNode;
-  /** 占用列数 */
+  /** Column span */
   span?: number;
-  /** 是否显示 */
+  /** Whether to show */
   show?: boolean;
 }
 
@@ -23,28 +23,28 @@ export interface DataDescriptionsProps extends Omit<
   DescriptionsProps,
   "items"
 > {
-  /** 描述项列表 */
+  /** Description item list */
   items: DescriptionItem[];
-  /** 是否加载中 */
+  /** Whether loading */
   loading?: boolean;
-  /** 是否为空 */
+  /** Whether empty */
   empty?: boolean;
-  /** Empty state文字 */
+  /** Empty state text */
   emptyText?: string;
-  /** 列数 */
+  /** Column count */
   columns?: number;
-  /** Label宽度 */
+  /** Tab width */
   labelWidth?: number | string;
-  /** 是否显示边框 */
+  /** Whether to show borders */
   variant?: boolean;
-  /** 尺寸 */
+  /** Size */
   size?: "small" | "default" | "middle";
-  /** 是否显示冒号 */
+  /** Whether to show colons */
   colon?: boolean;
 }
 
 /**
- * 数据描述列表组件
+ * Data description list component
  */
 export const DataDescriptions: React.FC<DataDescriptionsProps> = ({
   items,
@@ -80,10 +80,10 @@ export const DataDescriptions: React.FC<DataDescriptionsProps> = ({
     );
   }
 
-  // 过滤显示的项目
+  // Filter displayed items
   const visibleItems = items.filter((item) => item.show !== false);
 
-  // 转换为 Ant Design 格式
+  // Convert to Ant Design format
   const antdItems = visibleItems.map((item, index) => ({
     key: index,
     label: item.label,
@@ -105,34 +105,34 @@ export const DataDescriptions: React.FC<DataDescriptionsProps> = ({
   );
 };
 
-// 简化版描述列表
+// Simplified description list
 export interface SimpleDescriptionsProps {
-  /** 数据对象 */
+  /** Data object */
   data?: Record<string, any>;
-  /** 字段映射 */
+  /** Field mapping */
   fields: Array<{
     key: string;
     label: string;
     render?: (value: any, data: Record<string, any>) => React.ReactNode;
     span?: number;
   }>;
-  /** 是否加载中 */
+  /** Whether loading */
   loading?: boolean;
-  /** 列数 */
+  /** Column count */
   columns?: number;
-  /** Label宽度 */
+  /** Tab width */
   labelWidth?: number | string;
-  /** 是否显示边框 */
+  /** Whether to show borders */
   variant?: boolean;
-  /** 尺寸 */
+  /** Size */
   size?: "small" | "default" | "middle";
-  /** 类名 */
+  /** Class name */
   className?: string;
 }
 
 /**
- * 简化版描述列表
- * 直接传入数据和字段配置
+ * Simplified description list
+ * Pass data and field configuration directly
  */
 export const SimpleDescriptions: React.FC<SimpleDescriptionsProps> = ({
   data,
@@ -166,25 +166,25 @@ export const SimpleDescriptions: React.FC<SimpleDescriptionsProps> = ({
   );
 };
 
-// 垂直描述列表
+// Vertical descriptions
 export interface VerticalDescriptionsProps {
-  /** 描述项 */
+  /** Description item */
   items: DescriptionItem[];
-  /** 是否加载中 */
+  /** Whether loading */
   loading?: boolean;
-  /** Label宽度 */
+  /** Tab width */
   labelWidth?: number | string;
-  /** Label对齐 */
+  /** Tab alignment */
   labelAlign?: "left" | "right";
-  /** 间隙大小 */
+  /** Gap size */
   gutter?: number;
-  /** 类名 */
+  /** Class name */
   className?: string;
 }
 
 /**
- * 垂直描述列表
- * 每行显示一个Key-value pair
+ * Vertical descriptions
+ * One key-value pair per row
  */
 export const VerticalDescriptions: React.FC<VerticalDescriptionsProps> = ({
   items,

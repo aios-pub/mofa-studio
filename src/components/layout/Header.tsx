@@ -1,5 +1,5 @@
 /**
- * 头部组件
+ * Header component
  */
 
 import { useState, type ReactNode } from "react";
@@ -26,7 +26,7 @@ import ConnectionSwitcher from "../websocket/ConnectionSwitcher";
 
 interface HeaderProps {
   showBreadcrumb?: boolean;
-  /** 左侧插槽 - 用于放置 Logo 或移动端导航按钮 */
+  /** Left slot - for logo or mobile nav button */
   leftSlot?: ReactNode;
 }
 
@@ -42,7 +42,7 @@ export default function Header({
   const { setSettingsOpen } = useSettingsDrawer();
   const [searchOpen, setSearchOpen] = useState(false);
 
-  // 路径映射
+  // Path mapping
   const pathMap: Record<string, string> = {
     conversation: t("nav.conversation"),
     management: t("nav.management"),
@@ -68,7 +68,7 @@ export default function Header({
     role: t("nav.role", "角色管理"),
   };
 
-  // 根据路径生成Breadcrumb
+  // Generate breadcrumbs from the path
   const getBreadcrumbs = () => {
     const paths = location.pathname.split("/").filter(Boolean);
     const breadcrumbs: BreadcrumbProps["items"] = [
@@ -97,7 +97,7 @@ export default function Header({
     return breadcrumbs;
   };
 
-  // Language切换菜单
+  // Language switch menu
   const languageMenu: MenuProps["items"] = [
     {
       key: "zh-CN",
@@ -111,7 +111,7 @@ export default function Header({
     },
   ];
 
-  // Theme切换菜单
+  // Theme switch menu
   const themeMenu: MenuProps["items"] = [
     {
       key: "light",
@@ -169,12 +169,12 @@ export default function Header({
         transition-all duration-200
       "
     >
-      {/* 左侧 */}
+      {/* Left side */}
       <div className="flex items-center gap-4">
-        {/* 左侧插槽 - 用于放置 Logo 或其他内容 */}
+        {/* Left slot - for logo or other content */}
         {leftSlot}
 
-        {/* 移动端菜单按钮 */}
+        {/* Mobile menu button */}
         <Button
           type="text"
           icon={<MenuOutlined />}
@@ -188,9 +188,9 @@ export default function Header({
         )}
       </div>
 
-      {/* 右侧工具栏 */}
+      {/* Right toolbar */}
       <div className="flex items-center gap-1 pr-1">
-        {/* 搜索按钮 */}
+        {/* Search button */}
         <Tooltip title={`${t("common.search", "搜索")} (Ctrl+K)`}>
           <Button
             type="text"
@@ -200,16 +200,16 @@ export default function Header({
           />
         </Tooltip>
 
-        {/* 通知按钮 */}
+        {/* Notification button */}
         <NotificationDropdown />
 
-        {/* WebSocket 连接状态切换 */}
+        {/* WebSocket connection status switching */}
         <ConnectionSwitcher showStatusText={false} />
 
-        {/* 分隔线 */}
+        {/* Divider */}
         <div className="w-px h-5 bg-[var(--color-border)] mx-1" />
 
-        {/* Language切换 */}
+        {/* Language switching */}
         <Dropdown
           menu={{ items: languageMenu, selectedKeys: [language] }}
           trigger={["click"]}
@@ -221,7 +221,7 @@ export default function Header({
           />
         </Dropdown>
 
-        {/* Theme切换 */}
+        {/* Theme switching */}
         <Dropdown
           menu={{ items: themeMenu, selectedKeys: [theme] }}
           trigger={["click"]}
@@ -233,7 +233,7 @@ export default function Header({
           />
         </Dropdown>
 
-        {/* 设置按钮 */}
+        {/* Settings button */}
         <Tooltip title={t("common.settings", "设置")}>
           <Button
             type="text"
@@ -243,14 +243,14 @@ export default function Header({
           />
         </Tooltip>
 
-        {/* 分隔线 */}
+        {/* Divider */}
         <div className="w-px h-5 bg-[var(--color-border)] mx-1" />
 
-        {/* 账户下拉 */}
+        {/* Account dropdown */}
         <AccountDropdown />
       </div>
 
-      {/* 搜索命令面板 */}
+      {/* Search command palette */}
       <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} />
     </header>
   );

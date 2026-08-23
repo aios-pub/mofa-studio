@@ -1,6 +1,6 @@
 /**
- * Octos 管理面板 — 嵌入 AgentList 的 Octos 类型详情视图
- * 通过 Octos API 直接管理 Profile、Provider、Channel 等
+ * Octos management panel - Octos detail view embedded in AgentList
+ * Manage profiles, providers, channels, etc. directly via the Octos API
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -109,7 +109,7 @@ export default function OctosManagementPanel({ agent }: Props) {
     try {
       setLoading(true);
       const list = await callApi((c) => c.listProfiles());
-      // 将后端配置转换为前端格式
+      // Convert backend config to frontend format
       const convertedList = await Promise.all(
         list.map(async (p) => ({
           ...p,
@@ -150,17 +150,17 @@ export default function OctosManagementPanel({ agent }: Props) {
     if (!selectedProfile) return;
     try {
       setSaving(true);
-      // 将前端配置转换为后端格式
+      // Convert frontend config to backend format
       const backendConfig = await prepareConfigForSave(selectedProfile.config);
       const updated = await callApi((c) =>
         c.updateProfile(selectedProfile.id, {
           name: selectedProfile.name,
           config: backendConfig,
-          email: userEmail, // 使用当前登录用户的邮箱
+          email: userEmail, // use the logged-in user's email
           agent_code: profileAgentCodes[selectedProfile.id] ?? agent.agent_code, // Agent unique code
         }),
       );
-      // 将返回的配置转换回前端格式
+      // Convert the returned config back to frontend format
       const frontendUpdated = {
         ...updated,
         config: await initConfig(updated.config),
@@ -534,7 +534,7 @@ export default function OctosManagementPanel({ agent }: Props) {
                     apiClient={api || (octosMockApi as any)}
                   />
                 ),
-                // 仅当 Profile 无 parent_id 时显示（非子账户）
+                // Only shown when the profile has no parent_id (not a sub-account)
                 style: {
                   display: selectedProfile.parent_id ? "none" : undefined,
                 },

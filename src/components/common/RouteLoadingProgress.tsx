@@ -1,6 +1,6 @@
 /**
- * 路由加载Progress bar组件
- * 在路由切换时显示顶部Progress bar
+ * Route loading progress bar component
+ * Show a top progress bar during route changes
  */
 
 import { useEffect, useState } from "react";
@@ -30,7 +30,7 @@ export function RouteLoadingProgress() {
       }, 500);
     };
 
-    // 监听 href 变化
+    // Watch href changes
     const observer = new MutationObserver(() => {
       const currentHref = window.location.href;
       if (currentHref !== lastHref) {
@@ -39,19 +39,19 @@ export function RouteLoadingProgress() {
       }
     });
 
-    // 观察整个Document的变化
+    // Observe changes to the whole document
     observer.observe(document, {
       subtree: true,
       childList: true,
     });
 
-    // 监听 popstate 事件（处理浏览器前进后退）
+    // Listen to popstate (browser back/forward)
     window.addEventListener("popstate", handleRouteChange);
 
-    // 初始加载时触发一次
+    // Trigger once on initial load
     handleRouteChange();
 
-    // 清理监听器
+    // Clean up listeners
     return () => {
       observer.disconnect();
       window.removeEventListener("popstate", handleRouteChange);

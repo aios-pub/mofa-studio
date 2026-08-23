@@ -1,11 +1,11 @@
 /**
- * 数字格式化工具
+ * Number formatting utilities
  */
 
 type InputValue = string | number | null | undefined;
 
 /**
- * 转换输入为数字
+ * Convert input to a number
  */
 function toNumber(value: InputValue): number | null {
   if (value === null || value === undefined || value === "") {
@@ -16,10 +16,10 @@ function toNumber(value: InputValue): number | null {
 }
 
 /**
- * 格式化数字（添加千分位）
- * @param value 数字或字符串
- * @param options Intl.NumberFormat 选项
- * @returns 格式化后的字符串
+ * Format number (with thousands separator)
+ * @param value Number or string
+ * @param options Intl.NumberFormat options
+ * @returns Formatted string
  */
 export function fNumber(
   value: InputValue,
@@ -35,10 +35,10 @@ export function fNumber(
 }
 
 /**
- * 格式化货币
- * @param value 数字或字符串
- * @param currency 货币代码，默认 CNY
- * @returns 格式化后的字符串
+ * Format currency
+ * @param value Number or string
+ * @param currency Currency code, defaults to CNY
+ * @returns Formatted string
  */
 export function fCurrency(value: InputValue, currency: string = "CNY"): string {
   const num = toNumber(value);
@@ -53,10 +53,10 @@ export function fCurrency(value: InputValue, currency: string = "CNY"): string {
 }
 
 /**
- * 格式化百分比
- * @param value 数字或字符串（原始值，非百分比）
- * @param decimals 小数位数
- * @returns 格式化后的字符串
+ * Format percentage
+ * @param value Number or string (raw value, not a percentage)
+ * @param decimals Decimal places
+ * @returns Formatted string
  */
 export function fPercent(value: InputValue, decimals: number = 1): string {
   const num = toNumber(value);
@@ -70,10 +70,10 @@ export function fPercent(value: InputValue, decimals: number = 1): string {
 }
 
 /**
- * 缩写数字（e.g. 1K, 1M, 1B）
- * @param value 数字或字符串
- * @param decimals 小数位数
- * @returns 格式化后的字符串
+ * Abbreviate numbers (e.g. 1K, 1M, 1B)
+ * @param value Number or string
+ * @param decimals Decimal places
+ * @returns Formatted string
  */
 export function fShortenNumber(
   value: InputValue,
@@ -98,10 +98,10 @@ export function fShortenNumber(
 }
 
 /**
- * 格式化字节数
- * @param value 字节数
- * @param decimals 小数位数
- * @returns 格式化后的字符串
+ * Format bytes
+ * @param value Number of bytes
+ * @param decimals Decimal places
+ * @returns Formatted string
  */
 export function fBytes(value: InputValue, decimals: number = 1): string {
   const num = toNumber(value);
@@ -116,21 +116,21 @@ export function fBytes(value: InputValue, decimals: number = 1): string {
   const index = Math.min(i, sizes.length - 1);
   const size = (num / Math.pow(k, index)).toFixed(decimals);
 
-  // 移除尾部多余的零
+  // Remove trailing zeros
   const trimmedSize = size.replace(/\.?0+$/, "");
 
   return `${trimmedSize} ${sizes[index]}`;
 }
 
 /**
- * 格式化File size（fBytes 的别名）
+ * Format file size (alias of fBytes)
  */
 export const fFileSize = fBytes;
 
 /**
- * 格式化为紧凑数字（用于图表等场景）
- * @param value 数字
- * @returns 紧凑格式字符串
+ * Format as compact number (for charts, etc.)
+ * @param value Number
+ * @returns Compact format string
  */
 export function fCompactNumber(value: InputValue): string {
   const num = toNumber(value);
@@ -144,11 +144,11 @@ export function fCompactNumber(value: InputValue): string {
 }
 
 /**
- * 格式化比率
- * @param numerator 分子
- * @param denominator 分母
- * @param decimals 小数位数
- * @returns 格式化后的比率字符串
+ * Format ratio
+ * @param numerator Numerator
+ * @param denominator Denominator
+ * @param decimals Decimal places
+ * @returns Formatted ratio string
  */
 export function fRatio(
   numerator: InputValue,

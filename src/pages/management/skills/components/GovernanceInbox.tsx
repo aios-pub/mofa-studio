@@ -1,6 +1,6 @@
 /**
  * Governance Inbox Component
- * 统一的治理收件箱：审核队列、推广请求、举报
+ * Unified governance inbox: review queue, promotion requests, reports
  */
 
 import { useEffect, useState } from 'react';

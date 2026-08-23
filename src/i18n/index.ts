@@ -6,7 +6,7 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
-// 导入Language文件
+// Import locale files
 import zhCN from "./locales/zh-CN.json";
 import enUS from "./locales/en-US.json";
 
@@ -38,7 +38,7 @@ i18n
     debug: import.meta.env.DEV,
 
     interpolation: {
-      escapeValue: false, // React 已经处理了 XSS
+      escapeValue: false, // React already handles XSS
     },
 
     detection: {

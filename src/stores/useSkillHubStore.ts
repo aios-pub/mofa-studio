@@ -1,5 +1,5 @@
 /**
- * Skill Hub 状态管理 (V2)
+ * Skill hub state management (V2)
  */
 
 import { create } from 'zustand';
@@ -222,7 +222,7 @@ export const useSkillHubStore = create<SkillHubState>((set, get) => ({
   loadVersions: async (namespace, slug, page = 0) => {
     try {
       const versions = await skillHubV2Api.listVersions(namespace, slug, page);
-      // 兼容后端返回数组格式和分页格式
+      // Support both array and paginated response formats from the backend
       const pageResponse = Array.isArray(versions)
         ? { items: versions, total: versions.length, page: 0, pageSize: versions.length, totalPages: 1 }
         : versions;

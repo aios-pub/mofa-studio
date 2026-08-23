@@ -1,6 +1,6 @@
 /**
- * 压测配置页面
- * 用于配置和执行负载测试
+ * Load test configuration page
+ * For configuring and running load tests
  */
 
 import { useState, useEffect, useRef } from "react";
@@ -75,7 +75,7 @@ export default function LoadTestPage() {
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const taskPollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // 当前时间定时器（用于计算已运行时间）
+  // Current time timer (for computing elapsed time)
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(Date.now());
@@ -83,10 +83,10 @@ export default function LoadTestPage() {
     return () => clearInterval(timer);
   }, []);
 
-  // 实时指标轮询（替代Socket.IO，后端暂未实现广播）
+  // Real-time metric polling (replaces Socket.IO; backend broadcast not yet implemented)
   useEffect(() => {
     if (monitoringTaskId) {
-      // 立即获取一次
+      // Fetch once immediately
       loadTestRealApi.getMetrics(monitoringTaskId).then((metrics) => {
         setCurrentMetrics(metrics);
         setTasks((prev) =>
@@ -94,7 +94,7 @@ export default function LoadTestPage() {
         );
       }).catch(() => {});
 
-      // 每1秒轮询一次
+      // Poll every second
       pollIntervalRef.current = setInterval(() => {
         loadTestRealApi.getMetrics(monitoringTaskId).then((metrics) => {
           setCurrentMetrics(metrics);
@@ -115,13 +115,13 @@ export default function LoadTestPage() {
     }
   }, [monitoringTaskId]);
 
-  // 加载压测任务列表
+  // Load load-test task list
   useEffect(() => {
     loadTasks();
     loadTestSets();
   }, []);
 
-  // 轮询Running任务的状态
+  // Poll the status of running tasks
   useEffect(() => {
     const hasRunningTask = tasks.some((t) => t.status === "running");
     if (hasRunningTask) {
@@ -160,7 +160,7 @@ export default function LoadTestPage() {
     try {
       const rawTasks = await loadTestRealApi.getAll();
       if (requestId !== tasksRequestIdRef.current) return;
-      // 保留现有任务的运行时数据，从后端name获取testSetName
+      // Keep runtime data of existing tasks; get testSetName from backend name
       setTasks((prevTasks) =>
         rawTasks.map((task) => {
           const prev = prevTasks.find((p) => p.id === task.id);
@@ -323,13 +323,13 @@ export default function LoadTestPage() {
     }
   };
 
-  // 计算当前指标
+  // Compute the current metric
   const getCurrentMetrics = () => {
     if (currentMetrics.length === 0) return null;
     return currentMetrics[currentMetrics.length - 1];
   };
 
-  // 从指标数据计算结果汇总
+  // Compute result summary from metrics
   const computeResultsFromMetrics = (metrics: LoadTestMetric[]): LoadTestResult | null => {
     if (metrics.length === 0) return null;
     const totalRequests = metrics[metrics.length - 1].total_requests;
@@ -352,7 +352,7 @@ export default function LoadTestPage() {
     };
   };
 
-  // 格式化运行时长
+  // Format duration
   const formatElapsed = (startedAt?: string) => {
     if (!startedAt) return "-";
     const elapsed = Math.floor((currentTime - new Date(startedAt).getTime()) / 1000);
@@ -486,7 +486,7 @@ export default function LoadTestPage() {
     <div className="flex h-full">
       <ResizableSidebar storageKey="sidebar:load-test">
         <div className="p-4">
-          {/* 创建压测任务 */}
+          {/* Create load test task */}
           <Card title="创建压测任务" size="small">
             <Form
               form={form}
@@ -522,7 +522,7 @@ export default function LoadTestPage() {
                 label="目标 URL"
                 rules={[{ required: true, message: "请输入目标 URL" }]}
               >
-                <Input placeholder="例e.g.：https://api.example.com/v1/users" />
+                <Input placeholder="例如：https://api.example.com/v1/users" />
               </Form.Item>
 
               <Row gutter={16}>
@@ -591,7 +591,7 @@ export default function LoadTestPage() {
           </Title>
         </div>
 
-        {/* 压测任务列表 */}
+        {/* Load test task list */}
         <Card
           title="压测任务列表"
           size="small"
@@ -620,7 +620,7 @@ export default function LoadTestPage() {
         </Card>
       </div>
 
-      {/* 结果详情弹窗 */}
+      {/* Result detail modal */}
       <Modal
         title="压测结果详情"
         open={resultModalOpen}
@@ -705,7 +705,7 @@ export default function LoadTestPage() {
         )}
       </Modal>
 
-      {/* 实时监控弹窗 */}
+      {/* Real-time monitoring modal */}
       <Modal
         title="压测实时监控"
         open={monitorModalOpen}

@@ -1,16 +1,16 @@
 /**
- * 统一服务入口 - 自动根据配置切换 Mock/Real API
+ * Unified service entry - auto-switches mock/real API by configuration
  *
- * 使用方式：
+ * Usage:
  * import { agentApi, conversationApi } from "@/services";
  *
- * // 自动根据 VITE_APP_ENABLE_MOCK 配置选择 mock 或真实 API
+ * // Automatically choose mock or real API based on VITE_APP_ENABLE_MOCK
  * const agents = await agentApi.getAll();
  */
 
 import { isMockEnabled } from "@/config";
 
-// Mock 服务
+// Mock service
 import { agentApi as agentMockApi } from "./mock/agents";
 import { conversationApi as conversationMockApi } from "./mock/conversations";
 import authMockApi from "./mock/auth";
@@ -34,7 +34,7 @@ import { scheduledTaskApi as scheduledTaskMockApi } from "./mock/scheduledTasks"
 import { skillHubApi as skillHubMockApi } from "./mock/skillHub";
 import { skillHubV2MockApi } from "./mock/skillHubV2";
 
-// 真实 API 服务
+// Real API services
 import { agentRealApi } from "./real/agents";
 import { conversationRealApi } from "./real/conversations";
 import authRealApi from "./real/auth";
@@ -65,8 +65,8 @@ import { loadTestRealApi } from "./real/loadtest";
 import { importExportRealApi } from "./real/importExport";
 
 /**
- * 创建动态代理服务
- * 每次调用时动态判断是否使用 mock
+ * Create dynamic proxy service
+ * Determine mock usage dynamically on each call
  */
 function createProxyService<T extends object>(mockService: T, realService: T): T {
   return new Proxy(mockService, {
@@ -86,7 +86,7 @@ function createProxyService<T extends object>(mockService: T, realService: T): T
   }) as T;
 }
 
-// ==================== 导出服务 ====================
+// ==================== Export services ====================
 
 // Agent
 export const agentApi = createProxyService(agentMockApi, agentRealApi);
@@ -121,7 +121,7 @@ export const organizationApi = createProxyService(organizationMockApi, organizat
 
 // Workflows
 export const workflowApi = createProxyService(workflowMockApi, workflowRealApi as any);
-// nodeTypeConfig 是 UI 常量，始终使用 real 版本
+// nodeTypeConfig is a UI constant; always use the real version
 export const nodeTypeConfig = realNodeTypeConfig;
 
 // Knowledge
@@ -166,22 +166,22 @@ export const permissionApi = createProxyService(permissionMockApi, permissionRea
 // Claws
 export const clawApi = createProxyService(clawMockApi, clawRealApi);
 
-// Environments - 暂时不使用代理，直接使用真实API
+// Environments - use real API directly for now, no proxy
 export const environmentApi = environmentRealApi;
 
-// LoadTest - 直接使用真实API
+// LoadTest - use real API directly
 export const loadTestApi = loadTestRealApi;
 
-// Import/Export - 直接使用真实API
+// Import/Export - use real API directly
 export const importExportApi = importExportRealApi;
 
-// Octos — 工厂函数，不使用代理模式
+// Octos - factory function, no proxy pattern
 export { createOctosApiClient } from "./real/octos";
 export { octosMockApi } from "./mock/octos";
 export { OCTOS_PROVIDER_CATALOG, OCTOS_PROVIDER_NAMES } from "./real/octosProviderCatalog";
 export { initConfig, prepareConfigForSave } from "./real/octosConfigAdapter";
 
-// 导出 mock 数据和类型
+// Export mock data and types
 export { mockPrompts, type Prompt, type PromptVariable, type PromptVersion, type VersionDiff } from "./mock/prompts";
 export { mockSkills, type Skill, type SkillParameter } from "./mock/skills";
 export { type TestSet, type TestCase, type TestReport, type TestSetFormData, type TestCaseFormData, type TestSetDetail, type TestCategory, type TestCategoryFormData, type Assertion, type AssertionType, type TestCaseStatus } from "../types/testset";
@@ -194,5 +194,5 @@ export { defaultFeaturePermissions, featurePermissionDefinitions, type Permissio
 export { type ScheduledTask, type TaskExecution, type TaskType, type TaskStatus, type ExecutionStatus, type TaskConfig, type TaskTypeDescriptor, taskTypeConfig, cronPresets, parseCronToText } from "./mock/scheduledTasks";
 export { type ApiKey, type ApiKeyStatus, type ResourceQuota, type ResourceUsageStats, type QuotaLimits } from "./mock/resources";
 
-// 重新导出 isMockEnabled 供外部使用
+// Re-export isMockEnabled for external use
 export { isMockEnabled };

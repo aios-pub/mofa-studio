@@ -1,6 +1,6 @@
 /**
- * 对话页面
- * 支持智能体选择、文件上传、清空上下文
+ * Conversation page
+ * Supports agent selection, file upload and context clearing
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -24,12 +24,12 @@ export default function ConversationPage() {
     string | undefined
   >();
 
-  // 加载智能体列表
+  // Load agent list
   useEffect(() => {
     loadAgents();
   }, []);
 
-  // 加载Conversation list
+  // Load conversation list
   useEffect(() => {
     loadConversations();
   }, []);
@@ -50,7 +50,7 @@ export default function ConversationPage() {
     try {
       const data = await conversationApi.getAll();
       setConversations(data);
-      // 默认选中第一个会话
+      // Select the first conversation by default
       if (data.length > 0 && !selectedConversation) {
         setSelectedConversation(data[0]);
         setSelectedAgentId(data[0].agentId);
@@ -60,17 +60,17 @@ export default function ConversationPage() {
     }
   };
 
-  // 选择会话
+  // Select conversation
   const handleSelectConversation = useCallback((conversation: Conversation) => {
     setSelectedConversation(conversation);
     setSelectedAgentId(conversation.agentId);
   }, []);
 
-  // 选择智能体
+  // Select agent
   const handleSelectAgent = useCallback(
     (agentId: string) => {
       setSelectedAgentId(agentId);
-      // e.g.果当前会话存在，Update conversation的agentId
+      // If the conversation exists, update its agentId
       if (selectedConversation) {
         setSelectedConversation((prev) => (prev ? { ...prev, agentId } : null));
       }
@@ -78,7 +78,7 @@ export default function ConversationPage() {
     [selectedConversation],
   );
 
-  // 创建新会话
+  // Create new conversation
   const handleCreateConversation = useCallback(() => {
     setCreateModalOpen(true);
     setNewConversationTitle("");
@@ -109,7 +109,7 @@ export default function ConversationPage() {
     }
   };
 
-  // 清空上下文
+  // Clear context
   const handleClearContext = useCallback(() => {
     if (selectedConversation) {
       setSelectedConversation((prev) =>
@@ -139,7 +139,7 @@ export default function ConversationPage() {
         const { userMessage, assistantMessage } =
           await conversationApi.sendMessage(selectedConversation.id, content);
 
-        // 更新当前会话
+        // Update the current conversation
         setSelectedConversation((prev) => {
           if (!prev) return null;
           const newMessages = [...prev.messages, userMessage, assistantMessage];
@@ -155,7 +155,7 @@ export default function ConversationPage() {
           };
         });
 
-        // 更新Conversation list
+        // Update conversation list
         setConversations((prev) =>
           prev.map((c) =>
             c.id === selectedConversation.id
@@ -179,7 +179,7 @@ export default function ConversationPage() {
 
   return (
     <div className="flex h-full">
-      {/* 左侧Conversation list */}
+      {/* Left conversation list */}
       <ResizableSidebar
         defaultWidth={288}
         className="border-r border-(--color-border)"
@@ -192,7 +192,7 @@ export default function ConversationPage() {
         />
       </ResizableSidebar>
 
-      {/* 右侧对话区域 */}
+      {/* Right conversation area */}
       <div className="flex-1">
         <ChatContainer
           conversation={selectedConversation}
@@ -205,7 +205,7 @@ export default function ConversationPage() {
         />
       </div>
 
-      {/* 创建新会话弹窗 */}
+      {/* Create conversation modal */}
       <Modal
         title="新建对话"
         open={createModalOpen}

@@ -1,5 +1,5 @@
 /**
- * 主布局组件
+ * Main layout component
  */
 
 import {
@@ -21,7 +21,7 @@ import { RouteLoadingProgress } from "../common";
 
 const { Content } = Layout;
 
-// 设置Drawer上下文
+// Settings drawer context
 interface SettingsContextType {
   settingsOpen: boolean;
   setSettingsOpen: (open: boolean) => void;
@@ -34,7 +34,7 @@ const SettingsContext = createContext<SettingsContextType>({
 
 export const useSettingsDrawer = () => useContext(SettingsContext);
 
-// 移动端断点
+// Mobile breakpoint
 const MOBILE_BREAKPOINT = 1024;
 
 interface MainLayoutProps {
@@ -47,10 +47,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const settings = useSettings();
   const { sidebarCollapsed, setSidebarCollapsed } = useAppStore();
 
-  // 初始化全局快捷键
+  // Initialize global shortcuts
   useKeyboardShortcuts();
 
-  // 检测屏幕尺寸
+  // Detect screen size
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth < MOBILE_BREAKPOINT;
@@ -73,22 +73,22 @@ export default function MainLayout({ children }: MainLayoutProps) {
     setSettingsOpen,
   };
 
-  // 移动端布局
+  // Mobile layout
   if (isMobile) {
     return (
       <SettingsContext.Provider value={contextValue}>
-        {/* 路由加载Progress bar */}
+        {/* Route loading progress bar */}
         <RouteLoadingProgress />
         <Layout className="min-h-screen bg-[var(--color-bg-base)]">
-          {/* 移动端头部 - 传入移动端导航作为左侧插槽 */}
+          {/* Mobile header - mobile nav passed as left slot */}
           <Header leftSlot={null} />
 
-          {/* 内容区域 */}
+          {/* Content area */}
           <Content className="overflow-auto bg-[var(--color-bg-base)] p-3">
             {children}
           </Content>
 
-          {/* 移动端侧边栏Drawer */}
+          {/* Mobile sidebar drawer */}
           <Drawer
             placement="left"
             open={!sidebarCollapsed}
@@ -103,7 +103,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             <Sidebar isMobile />
           </Drawer>
 
-          {/* 设置Drawer */}
+          {/* Settings drawer */}
           <SettingsDrawer
             open={settingsOpen}
             onClose={() => setSettingsOpen(false)}
@@ -113,14 +113,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
     );
   }
 
-  // 水平布局
+  // Horizontal layout
   if (isHorizontal) {
     return (
       <SettingsContext.Provider value={contextValue}>
-        {/* 路由加载Progress bar */}
+        {/* Route loading progress bar */}
         <RouteLoadingProgress />
         <Layout className="min-h-screen bg-[var(--color-bg-base)]">
-          {/* 顶部导航栏 */}
+          {/* Top navigation bar */}
           <Layout.Header className="flex items-center h-14 px-4 bg-[#001529]">
             {/* Logo */}
             <div className="flex items-center gap-2 mr-6">
@@ -128,14 +128,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
               <span className="text-lg font-bold text-white">mofa-studio</span>
             </div>
 
-            {/* 水平菜单 */}
+            {/* Horizontal menu */}
             <HorizontalNav dark />
 
-            {/* 右侧工具栏 */}
+            {/* Right toolbar */}
             <Header showBreadcrumb={false} />
           </Layout.Header>
 
-          {/* 内容区域 */}
+          {/* Content area */}
           <Layout
             className={`bg-[var(--color-bg-base)] ${isStretch ? "" : "max-w-[1400px] mx-auto"}`}
           >
@@ -144,7 +144,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             </Content>
           </Layout>
 
-          {/* 设置Drawer */}
+          {/* Settings drawer */}
           <SettingsDrawer
             open={settingsOpen}
             onClose={() => setSettingsOpen(false)}
@@ -154,16 +154,16 @@ export default function MainLayout({ children }: MainLayoutProps) {
     );
   }
 
-  // 垂直/迷你布局 (桌面端)
+  // Vertical/mini layout (desktop)
   return (
     <SettingsContext.Provider value={contextValue}>
-      {/* 路由加载Progress bar */}
+      {/* Route loading progress bar */}
       <RouteLoadingProgress />
       <Layout className="min-h-screen bg-[var(--color-bg-base)]">
-        {/* 侧边栏 */}
+        {/* Sidebar */}
         <Sidebar />
 
-        {/* 主内容区 - 添加过渡动画 */}
+        {/* Main content area - with transition animation */}
         <Layout
           className={`
             bg-[var(--color-bg-base)]
@@ -171,16 +171,16 @@ export default function MainLayout({ children }: MainLayoutProps) {
             ${isStretch ? "" : "max-w-[1400px] mx-auto"}
           `}
         >
-          {/* 头部 */}
+          {/* Header */}
           <Header />
 
-          {/* 内容区域 */}
+          {/* Content area */}
           <Content className="overflow-auto bg-[var(--color-bg-base)] p-4">
             {children}
           </Content>
         </Layout>
 
-        {/* 设置Drawer */}
+        {/* Settings drawer */}
         <SettingsDrawer
           open={settingsOpen}
           onClose={() => setSettingsOpen(false)}

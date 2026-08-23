@@ -1,6 +1,6 @@
 /**
- * Loading state组件
- * 用于页面、卡片等加载中的展示
+ * Loading state component
+ * Loading display for pages, cards, etc.
  */
 
 import React from "react";
@@ -55,7 +55,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   return content;
 };
 
-// Skeleton screen组件
+// Skeleton component
 export interface SkeletonProps {
   rows?: number;
   className?: string;
@@ -80,7 +80,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   );
 };
 
-// 卡片Skeleton screen
+// Card skeleton
 export const CardSkeleton: React.FC<{ className?: string }> = ({
   className = "",
 }) => (
@@ -92,7 +92,7 @@ export const CardSkeleton: React.FC<{ className?: string }> = ({
   </div>
 );
 
-// 表格Skeleton screen
+// Table skeleton
 export const TableSkeleton: React.FC<{ rows?: number; className?: string }> = ({
   rows = 5,
   className = "",

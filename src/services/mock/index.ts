@@ -1,5 +1,5 @@
 /**
- * Mock 数据服务入口
+ * Mock data service entry
  */
 
 export * from './agents';

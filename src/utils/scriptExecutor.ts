@@ -1,12 +1,12 @@
 /**
- * 脚本执行引擎
- * 执行前置/后置JavaScript脚本
+ * Script execution engine
+ * Execute pre/post JavaScript scripts
  */
 
 import type { ScriptContext, ScriptExecutionResult } from "@/types/testset";
 
 /**
- * 创建沙箱化的脚本执行环境
+ * Create a sandboxed script execution environment
  */
 function createSandbox(context: ScriptContext, logs: string[]): any {
   const sandbox = {
@@ -47,7 +47,7 @@ function createSandbox(context: ScriptContext, logs: string[]): any {
 }
 
 /**
- * 执行脚本
+ * Execute script
  */
 export async function executeScript(
   script: string,
@@ -57,7 +57,7 @@ export async function executeScript(
   const testResults: Array<{ name: string; passed: boolean; error?: string }> = [];
   const environmentChanges: Array<{ key: string; value: string; action: "set" | "unset" }> = [];
 
-  // 监控Environment variable的变化
+  // Watch environment variable changes
   const originalEnvGet = context.environment.get;
   const originalEnvSet = context.environment.set;
   const originalEnvUnset = context.environment.unset;
@@ -75,13 +75,13 @@ export async function executeScript(
     toArray: context.environment.toArray,
   };
 
-  // 创建测试函数
+  // Create test function
   const tests: Array<{ name: string; fn: () => void }> = [];
   const testFn = (name: string, fn: () => void) => {
     tests.push({ name, fn });
   };
 
-  // 创建增强的上下文
+  // Create enhanced context
   const enhancedContext: ScriptContext = {
     ...context,
     environment: trackedEnv,
@@ -89,19 +89,19 @@ export async function executeScript(
   };
 
   try {
-    // 创建沙箱环境
+    // Create sandbox environment
     const sandbox = createSandbox(enhancedContext, logs);
 
-    // 使用Function构造函数执行脚本（比eval更安全）
+    // Execute scripts via the Function constructor (safer than eval)
     const scriptFn = new Function(
       ...Object.keys(sandbox),
       `"use strict";\n${script}`
     );
 
-    // 执行脚本
+    // Execute script
     await scriptFn(...Object.values(sandbox));
 
-    // 执行测试断言
+    // Execute test assertions
     for (const { name, fn } of tests) {
       try {
         fn();
@@ -132,7 +132,7 @@ export async function executeScript(
 }
 
 /**
- * 创建默认脚本上下文
+ * Create default script context
  */
 export function createScriptContext(
   environment: Record<string, string>,
@@ -184,7 +184,7 @@ export function createScriptContext(
     response,
     utils: {
       replaceVariables: (text: string) => {
-        // 简单的变量替换实现
+        // Simple variable substitution implementation
         return text.replace(/\{\{([^}]+)\}\}/g, (_, key) => {
           return environment[key] || globals[key] || `{{${key}}}`;
         });

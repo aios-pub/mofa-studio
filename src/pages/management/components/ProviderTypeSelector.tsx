@@ -1,6 +1,6 @@
 /**
- * Provider 类型Select component
- * 支持分类展示、搜索过滤和卡片选择
+ * Provider type select component
+ * Supports categorized display, search filtering and card selection
  */
 
 import React, { useState, useMemo } from "react";
@@ -31,12 +31,12 @@ export const ProviderTypeSelector: React.FC<ProviderTypeSelectorProps> = ({
     useState<ProviderCategory>("cloud");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // 获取当前分类的厂商列表
+  // Get the vendor list of the current category
   const providers = useMemo(() => {
     return getProvidersByCategory(activeCategory);
   }, [activeCategory]);
 
-  // 搜索过滤
+  // Search filtering
   const filteredProviders = useMemo(() => {
     if (!searchQuery.trim()) {
       return providers;
@@ -51,7 +51,7 @@ export const ProviderTypeSelector: React.FC<ProviderTypeSelectorProps> = ({
 
   return (
     <div className="flex flex-col h-full">
-      {/* 分类Label */}
+      {/* Category stats */}
       <div className="flex gap-1 p-4 pb-2">
         {categories.map((category) => {
           const info = categoryInfo[category];
@@ -73,7 +73,7 @@ export const ProviderTypeSelector: React.FC<ProviderTypeSelectorProps> = ({
         })}
       </div>
 
-      {/* 搜索框 */}
+      {/* Search box */}
       <div className="px-4 pb-2">
         <Input
           placeholder="搜索厂商或模型..."
@@ -86,7 +86,7 @@ export const ProviderTypeSelector: React.FC<ProviderTypeSelectorProps> = ({
         />
       </div>
 
-      {/* 厂商列表 */}
+      {/* Vendor list */}
       <div className="flex-1 overflow-y-auto px-4 pb-4">
         <div className="grid grid-cols-2 gap-3">
           {filteredProviders.map((config) => (
@@ -109,7 +109,7 @@ export const ProviderTypeSelector: React.FC<ProviderTypeSelectorProps> = ({
   );
 };
 
-// 厂商卡片组件
+// Vendor card component
 interface ProviderCardProps {
   config: ProviderConfig;
   selected: boolean;

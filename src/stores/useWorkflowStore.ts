@@ -1,26 +1,26 @@
 /**
- * Workflow status管理
+ * Workflow status management
  */
 
 import { create } from 'zustand';
 import type { Node, Edge } from '@xyflow/react';
 
 interface WorkflowState {
-  // 节点和边
+  // Nodes and edges
   nodes: Node[];
   edges: Edge[];
 
-  // 选中的节点
+  // Selected nodes
   selectedNodeId: string | null;
 
-  // 历史记录（用于撤销/重做）
+  // History (for undo/redo)
   history: {
     nodes: Node[];
     edges: Edge[];
   }[];
   historyIndex: number;
 
-  // 变量
+  // Variables
   variables: { name: string; type: string; scope: string; description?: string; value?: unknown }[];
 
   // Actions
@@ -28,20 +28,20 @@ interface WorkflowState {
   setEdges: (edges: Edge[]) => void;
   setSelectedNodeId: (id: string | null) => void;
 
-  // 撤销/重做
+  // Undo/redo
   undo: () => void;
   redo: () => void;
   saveHistory: () => void;
 
-  // 变量管理
+  // Variable management
   addVariable: (variable: { name: string; type: string; scope: string; description?: string; value?: unknown }) => void;
   updateVariable: (name: string, value: Partial<{ name: string; type: string; scope: string; description?: string; value?: unknown }>) => void;
   removeVariable: (name: string) => void;
 
-  // 清空
+  // Clear
   clear: () => void;
 
-  // 检查是否可以撤销/重做
+  // Check whether undo/redo is possible
   canUndo: () => boolean;
   canRedo: () => boolean;
 }
@@ -70,7 +70,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     const { nodes, edges, history, historyIndex } = get();
     const newHistory = history.slice(0, historyIndex + 1);
     newHistory.push({ nodes: [...nodes], edges: [...edges] });
-    // 限制历史记录数量
+    // Limit history size
     if (newHistory.length > 50) {
       newHistory.shift();
     }

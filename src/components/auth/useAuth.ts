@@ -1,5 +1,5 @@
 /**
- * 权限检查 Hook
+ * Permission check hook
  */
 
 import { useUserInfo, useUserToken } from '../../stores/useUserStore';

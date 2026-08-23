@@ -1,13 +1,13 @@
 /**
- * Channel 渠道连接器类型定义
+ * Channel connector type definitions
  */
 
 /** Channel type */
 export type ChannelType =
-  | 'wechat'      // 微信
-  | 'wechat_work' // 企业微信
-  | 'dingtalk'    // 钉钉
-  | 'feishu'      // 飞书/Lark
+  | 'wechat'      // WeChat
+  | 'wechat_work' // WeCom
+  | 'dingtalk'    // DingTalk
+  | 'feishu'      // Feishu/Lark
   | 'slack'       // Slack
   | 'telegram'    // Telegram
   | 'discord'     // Discord
@@ -17,29 +17,29 @@ export type ChannelType =
   | 'instagram'   // Instagram
   | 'teams'       // Microsoft Teams
   | 'webhook'     // Webhook
-  | 'email'       // 邮件
-  | 'sms'         // 短信
+  | 'email'       // email
+  | 'sms'         // SMS
   | 'custom';     // Custom
 
-/** 渠道状态 */
+/** Channel status */
 export type ChannelStatus =
-  | 'active'      // 活跃
-  | 'inactive'    // 未激活
-  | 'connecting'  // 连接中
-  | 'error'       // 错误
-  | 'disabled';   // 已禁用
+  | 'active'      // active
+  | 'inactive'    // inactive
+  | 'connecting'  // connecting
+  | 'error'       // error
+  | 'disabled';   // disabled
 
-/** 渠道统计信息 */
+/** Channel statistics */
 export interface ChannelStats {
-  totalMessages: number;       // 总Messages数
-  successMessages: number;     // 成功Messages数
-  failedMessages: number;      // FailedMessages数
-  successRate: number;         // 成功率 (0-100)
-  avgResponseTime: number;     // 平均响应时间 (ms)
-  lastMessageAt?: Date;        // Last message时间
+  totalMessages: number;       // total message count
+  successMessages: number;     // success message count
+  failedMessages: number;      // failed message count
+  successRate: number;         // success rate (0-100)
+  avgResponseTime: number;     // average response time (ms)
+  lastMessageAt?: Date;        // last message time
 }
 
-/** 微信配置 */
+/** WeChat configuration */
 export interface WechatConfig {
   app_id: string;
   app_secret: string;
@@ -47,7 +47,7 @@ export interface WechatConfig {
   encoding_aes_key?: string;
 }
 
-/** 企业微信配置 */
+/** WeCom configuration */
 export interface WechatWorkConfig {
   corp_id: string;
   agent_id: string;
@@ -56,14 +56,14 @@ export interface WechatWorkConfig {
   encoding_aes_key?: string;
 }
 
-/** 钉钉配置 */
+/** DingTalk configuration */
 export interface DingtalkConfig {
   client_id: string;
   client_secret: string;
   agent_id?: string;
 }
 
-/** 飞书配置 */
+/** Feishu configuration */
 export interface FeishuConfig {
   app_id: string;
   app_secret: string;
@@ -71,7 +71,7 @@ export interface FeishuConfig {
   verification_token?: string;
 }
 
-/** Slack 配置 */
+/** Slack configuration */
 export interface SlackConfig {
   bot_token: string;
   app_token?: string;
@@ -80,20 +80,20 @@ export interface SlackConfig {
   client_secret?: string;
 }
 
-/** Telegram 配置 */
+/** Telegram configuration */
 export interface TelegramConfig {
   bot_token: string;
   webhook_url?: string;
 }
 
-/** Discord 配置 */
+/** Discord configuration */
 export interface DiscordConfig {
   bot_token: string;
   application_id: string;
   public_key?: string;
 }
 
-/** WhatsApp 配置 */
+/** WhatsApp configuration */
 export interface WhatsAppConfig {
   phone_number_id: string;
   business_account_id: string;
@@ -103,14 +103,14 @@ export interface WhatsAppConfig {
   app_secret?: string;
 }
 
-/** Line 配置 */
+/** Line configuration */
 export interface LineConfig {
   channel_id: string;
   channel_secret: string;
   channel_access_token: string;
 }
 
-/** Facebook Messenger 配置 */
+/** Facebook Messenger configuration */
 export interface MessengerConfig {
   page_id: string;
   page_access_token: string;
@@ -119,7 +119,7 @@ export interface MessengerConfig {
   verify_token?: string;
 }
 
-/** Instagram 配置 */
+/** Instagram configuration */
 export interface InstagramConfig {
   account_id: string;
   access_token: string;
@@ -127,7 +127,7 @@ export interface InstagramConfig {
   app_secret: string;
 }
 
-/** Microsoft Teams 配置 */
+/** Microsoft Teams configuration */
 export interface TeamsConfig {
   tenant_id: string;
   client_id: string;
@@ -136,7 +136,7 @@ export interface TeamsConfig {
   bot_password?: string;
 }
 
-/** Webhook 配置 */
+/** Webhook configuration */
 export interface WebhookConfig {
   webhook_key?: string;
   url: string;
@@ -145,7 +145,7 @@ export interface WebhookConfig {
   secret?: string;
 }
 
-/** 邮件配置 */
+/** Email configuration */
 export interface EmailConfig {
   smtp_host: string;
   smtp_port: number;
@@ -156,7 +156,7 @@ export interface EmailConfig {
   use_tls: boolean;
 }
 
-/** 短信配置 */
+/** SMS configuration */
 export interface SmsConfig {
   provider: 'aliyun' | 'tencent' | 'twilio';
   access_key_id: string;
@@ -166,7 +166,7 @@ export interface SmsConfig {
   region?: string;
 }
 
-/** Custom渠道配置 */
+/** Custom channel configuration */
 export interface CustomChannelConfig {
   endpoint: string;
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -183,7 +183,7 @@ export interface CustomChannelConfig {
   response_mapping?: string;
 }
 
-/** 渠道配置联合类型 */
+/** Channel configuration union type */
 export type ChannelConfig =
   | WechatConfig
   | WechatWorkConfig
@@ -202,7 +202,7 @@ export type ChannelConfig =
   | SmsConfig
   | CustomChannelConfig;
 
-/** 渠道基本信息 */
+/** Channel basic information */
 export interface Channel {
   id: string;
   name: string;
@@ -218,13 +218,13 @@ export interface Channel {
   errorMessage?: string;
 }
 
-/** Agent 与 Channel 的关联关系 */
+/** Agent-channel association */
 export interface AgentChannel {
   id: string;
   agentId: string;
   channelId: string;
   enabled: boolean;
-  priority: number;           // 优先级，数字越大优先级越高
+  priority: number;           // higher number means higher priority
   config?: {
     welcomeMessage?: string;
     fallbackMessage?: string;
@@ -235,7 +235,7 @@ export interface AgentChannel {
   updatedAt: Date;
 }
 
-/** Channel type信息 */
+/** Channel type info */
 export interface ChannelTypeInfo {
   type: ChannelType;
   name: string;
@@ -244,7 +244,7 @@ export interface ChannelTypeInfo {
   features: string[];
 }
 
-/** 渠道测试结果 */
+/** Channel test results */
 export interface ChannelTestResult {
   success: boolean;
   message: string;
@@ -253,7 +253,7 @@ export interface ChannelTestResult {
   error?: string;
 }
 
-/** 渠道Messages记录 */
+/** Channel message records */
 export interface ChannelMessage {
   id: string;
   channelId: string;

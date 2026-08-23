@@ -1,8 +1,8 @@
 /**
- * Skills Mock 数据
+ * Skills mock data
  */
 
-// Skill 类型
+// Skill types
 export interface Skill {
   id: string;
   name: string;
@@ -27,7 +27,7 @@ export interface SkillParameter {
   defaultValue?: unknown;
 }
 
-// Mock Skills 列表
+// Mock skills list
 export const mockSkills: Skill[] = [
   {
     id: 'skill-1',
@@ -155,36 +155,36 @@ export const mockSkills: Skill[] = [
   },
 ];
 
-// 模拟 API 延迟
+// Mock API latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Skill API Mock
 export const skillApi = {
-  // 获取所有 Skills
+  // Get all skills
   async getAll(): Promise<Skill[]> {
     await delay(300);
     return mockSkills;
   },
 
-  // 按分类获取
+  // Get by category
   async getByCategory(category: string): Promise<Skill[]> {
     await delay(200);
     return mockSkills.filter((s) => s.category === category);
   },
 
-  // 获取单个 Skill
+  // Get a single skill
   async getById(id: string): Promise<Skill | undefined> {
     await delay(200);
     return mockSkills.find((s) => s.id === id);
   },
 
-  // 按 ID 列表获取
+  // Get by ID list
   async getByIds(ids: string[]): Promise<Skill[]> {
     await delay(200);
     return mockSkills.filter((s) => ids.includes(s.id));
   },
 
-  // 创建 Skill
+  // Create skill
   async create(data: Partial<Skill>): Promise<Skill> {
     await delay(500);
     const newSkill: Skill = {
@@ -206,7 +206,7 @@ export const skillApi = {
     return newSkill;
   },
 
-  // 更新 Skill
+  // Update skill
   async update(id: string, data: Partial<Skill>): Promise<Skill | undefined> {
     await delay(300);
     const index = mockSkills.findIndex((s) => s.id === id);
@@ -215,7 +215,7 @@ export const skillApi = {
     return mockSkills[index];
   },
 
-  // 删除 Skill
+  // Delete skill
   async delete(id: string): Promise<boolean> {
     await delay(300);
     const index = mockSkills.findIndex((s) => s.id === id);
@@ -224,13 +224,13 @@ export const skillApi = {
     return true;
   },
 
-  // 获取所有分类
+  // Get all categories
   async getCategories(): Promise<string[]> {
     await delay(100);
     return [...new Set(mockSkills.map((s) => s.category))];
   },
 
-  // 执行 Skill（模拟）
+  // Execute skill (simulated)
   async execute(id: string, params: Record<string, unknown>): Promise<{ success: boolean; result: unknown }> {
     await delay(1000);
     const skill = mockSkills.find((s) => s.id === id);
@@ -243,7 +243,7 @@ export const skillApi = {
     };
   },
 
-  // 从 Hub 安装 Skill
+  // Install a skill from the hub
   async installFromHub(hubSkill: {
     hubId: string;
     name: string;
@@ -256,7 +256,7 @@ export const skillApi = {
   }): Promise<Skill> {
     await delay(500);
 
-    // 检查是否已安装
+    // Check whether installed
     const existing = mockSkills.find((s) => (s as any).hubId === hubSkill.hubId);
     if (existing) {
       throw new Error('Skill already installed');
@@ -273,7 +273,7 @@ export const skillApi = {
       enabled: true,
       createdAt: new Date(),
       updatedAt: new Date(),
-      // Hub 相关扩展字段
+      // Hub-related extension fields
       ...(hubSkill as any),
     };
 
@@ -281,7 +281,7 @@ export const skillApi = {
     return newSkill;
   },
 
-  // 从 Hub 更新 Skill
+  // Update a skill from the hub
   async updateFromHub(skillId: string, hubSkill: {
     hubId: string;
     name: string;
@@ -306,14 +306,14 @@ export const skillApi = {
       parameters: hubSkill.parameters,
       timeout: hubSkill.timeout,
       updatedAt: new Date(),
-      // 更新版本信息
+      // Update version info
       ...(hubSkill as any),
     };
 
     return mockSkills[index];
   },
 
-  // 卸载从 Hub 安装的 Skill
+  // Uninstall a skill installed from the hub
   async uninstallFromHub(skillId: string): Promise<boolean> {
     await delay(300);
 

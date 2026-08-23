@@ -1,12 +1,12 @@
 /**
- * 全局快捷键管理 Hook
+ * Global shortcut management hook
  */
 
 import { useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../stores';
 
-// 快捷键定义
+// Shortcut definitions
 export interface ShortcutDefinition {
   id: string;
   keys: string[]; // e.g., ['meta', 'n'] for Cmd+N
@@ -16,9 +16,9 @@ export interface ShortcutDefinition {
   enabled?: () => boolean;
 }
 
-// 检查事件是否匹配快捷键
+// Check whether the event matches a shortcut
 function matchesShortcut(event: KeyboardEvent, keys: string[]): boolean {
-  // 检查 event.key 是否存在
+  // Check whether event.key exists
   if (!event?.key) return false;
 
   const pressedKeys: string[] = [];
@@ -33,19 +33,19 @@ function matchesShortcut(event: KeyboardEvent, keys: string[]): boolean {
     pressedKeys.push('shift');
   }
 
-  // 添加主键
+  // Add primary keys
   const mainKey = event.key.toLowerCase();
   if (!['meta', 'control', 'alt', 'shift'].includes(mainKey)) {
     pressedKeys.push(mainKey);
   }
 
-  // 比较按键
+  // Compare keys
   if (pressedKeys.length !== keys.length) return false;
 
   return keys.every((key) => pressedKeys.includes(key));
 }
 
-// 格式化快捷键显示
+// Format shortcut display
 export function formatShortcut(keys: string[]): string {
   const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 
@@ -83,15 +83,15 @@ export function formatShortcut(keys: string[]): string {
     .join(' + ');
 }
 
-// 全局快捷键 Hook
+// Global shortcut hook
 export function useKeyboardShortcuts() {
   const navigate = useNavigate();
   const { toggleSidebar } = useAppStore();
   const shortcutsRef = useRef<ShortcutDefinition[]>([]);
 
-  // 定义快捷键
+  // Define shortcuts
   const shortcuts: ShortcutDefinition[] = [
-    // 导航类
+    // Navigation class
     {
       id: 'nav-dashboard',
       keys: ['meta', '1'],
@@ -128,7 +128,7 @@ export function useKeyboardShortcuts() {
       action: () => navigate('/system/settings'),
     },
 
-    // 视图类
+    // View class
     {
       id: 'toggle-sidebar',
       keys: ['meta', 'b'],
@@ -137,14 +137,14 @@ export function useKeyboardShortcuts() {
       action: toggleSidebar,
     },
 
-    // 操作类
+    // Action class
     {
       id: 'new-conversation',
       keys: ['meta', 'n'],
       description: 'New Conversation',
       category: 'actions',
       action: () => {
-        // 触发新建对话事件
+        // Dispatch the new-conversation event
         window.dispatchEvent(new CustomEvent('shortcut:newConversation'));
       },
     },
@@ -167,7 +167,7 @@ export function useKeyboardShortcuts() {
       },
     },
 
-    // 编辑器类
+    // Editor class
     {
       id: 'send-message',
       keys: ['meta', 'enter'],
@@ -183,21 +183,21 @@ export function useKeyboardShortcuts() {
       description: 'New Line (in input)',
       category: 'editor',
       action: () => {
-        // 默认行为，不需要处理
+        // Default behavior; nothing to do
       },
-      enabled: () => false, // 只在输入框中生效
+      enabled: () => false, // only active inside input fields
     },
   ];
 
-  // 更新 ref
+  // Update the ref
   useEffect(() => {
     shortcutsRef.current = shortcuts;
   }, [shortcuts]);
 
-  // 键盘事件处理
+  // Keyboard event handling
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      // 检查是否在输入框中
+      // Check whether focus is inside an input
       const target = event.target as HTMLElement;
       const isInputting =
         target.tagName === 'INPUT' ||
@@ -206,14 +206,14 @@ export function useKeyboardShortcuts() {
 
       for (const shortcut of shortcutsRef.current) {
         if (matchesShortcut(event, shortcut.keys)) {
-          // 检查Whether to enable
+          // Check whether enabled
           if (shortcut.enabled && !shortcut.enabled()) {
             continue;
           }
 
-          // 在输入框中时，只允许特定快捷键
+          // Inside inputs, only specific shortcuts are allowed
           if (isInputting) {
-            // Cmd/Ctrl 修饰的快捷键在输入框中仍然生效
+            // Cmd/Ctrl-modified shortcuts still work inside input fields
             const isMetaShortcut = shortcut.keys.includes('meta') || shortcut.keys.includes('control');
 
             if (!isMetaShortcut && shortcut.category !== 'navigation') {
@@ -230,7 +230,7 @@ export function useKeyboardShortcuts() {
     []
   );
 
-  // 注册全局事件监听
+  // Register global event listeners
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => {
@@ -244,7 +244,7 @@ export function useKeyboardShortcuts() {
   };
 }
 
-// 获取所有快捷键定义（用于设置页面展示）
+// Get all shortcut definitions (for the settings page)
 export function getShortcutDefinitions(): Array<{
   category: string;
   shortcuts: Array<{ keys: string[]; description: string }>;

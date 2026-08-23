@@ -1,8 +1,8 @@
 /**
- * Permissions 真实 API
- * 后端端点: /api/permission/...
+ * Permissions real API
+ * Backend endpoints: /api/permission/...
  *
- * 后端字段映射 (snake_case → camelCase):
+ * Backend field mapping (snake_case -> camelCase):
  *   agent_id        → agentId
  *   is_default      → isDefault
  *   data_scope      → dataScope
@@ -18,7 +18,7 @@
 import { apiClient } from "../api/apiClient";
 import { parseDate } from "./fieldMapper";
 
-// ==================== 类型定义 ====================
+// ==================== Type definitions ====================
 
 interface FeaturePermissions {
   webSearch: boolean;
@@ -58,7 +58,7 @@ interface PermissionAuditLog {
   operatedAt: Date;
 }
 
-// ==================== 后端原始类型 ====================
+// ==================== Raw backend types ====================
 
 interface BackendPermission {
   id?: string;
@@ -97,7 +97,7 @@ interface BackendAuditLog {
   create_time?: string;
 }
 
-// ==================== 字段映射 ====================
+// ==================== Field mapping ====================
 
 const DEFAULT_FEATURES: FeaturePermissions = {
   webSearch: true,
@@ -179,7 +179,7 @@ function mapAuditLog(raw: BackendAuditLog): PermissionAuditLog {
   };
 }
 
-// ==================== 功能权限定义 ====================
+// ==================== Function permission definitions ====================
 
 export const featurePermissionDefinitions = [
   { key: 'webSearch', label: '联网搜索', description: '允许 Agent 使用搜索引擎搜索互联网信息', icon: '🔍' },
@@ -193,16 +193,16 @@ export const featurePermissionDefinitions = [
 
 export const defaultFeaturePermissions: FeaturePermissions = { ...DEFAULT_FEATURES };
 
-// ==================== API 方法 ====================
+// ==================== API methods ====================
 
 const permissionRealApi = {
-  /** 获取 Agent 权限配置 */
+  /** Get agent permission configuration */
   async getAgentPermission(agentId: string): Promise<PermissionConfig> {
     const raw = await apiClient.get<BackendPermission>(`/api/permission/by-agent?agent_id=${agentId}`);
     return mapPermissionConfig(raw);
   },
 
-  /** 更新 Agent 权限配置 */
+  /** Update agent permission configuration */
   async updateAgentPermission(agentId: string, config: PermissionConfig): Promise<PermissionConfig> {
     const body = {
       agent_id: agentId,
@@ -212,12 +212,12 @@ const permissionRealApi = {
     return mapPermissionConfig(raw);
   },
 
-  /** 删除 Agent 权限配置 */
+  /** Delete agent permission configuration */
   async deleteAgentPermission(agentId: string): Promise<void> {
     await apiClient.delete(`/api/permission/delete-by-agent?agent_id=${agentId}`);
   },
 
-  // ==================== 权限模板 ====================
+  // ==================== Permission templates ====================
 
   async getTemplates(): Promise<PermissionTemplate[]> {
     const data = await apiClient.get<BackendPermissionTemplate[]>('/api/permission/template/list');
@@ -253,13 +253,13 @@ const permissionRealApi = {
     await apiClient.delete(`/api/permission/template/delete/${id}`);
   },
 
-  /** 应用模板 */
+  /** Apply template */
   async applyTemplate(agentId: string, templateId: string): Promise<PermissionConfig> {
     const template = await permissionRealApi.getTemplate(templateId);
     return permissionRealApi.updateAgentPermission(agentId, template.config);
   },
 
-  /** 审计日志 */
+  /** Audit logs */
   async getAuditLogs(agentId?: string): Promise<PermissionAuditLog[]> {
     const data = await apiClient.get<BackendAuditLog[]>('/api/audit-logs', { params: { agent_id: agentId } });
     if (!Array.isArray(data)) return [];

@@ -1,5 +1,5 @@
 /**
- * 认证组件入口
+ * Auth component entry
  */
 
 export { AuthGuard } from './AuthGuard';

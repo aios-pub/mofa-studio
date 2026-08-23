@@ -1,6 +1,6 @@
 /**
- * 任务管理 Tab
- * 参考 apalis-board Tasks 页面：状态Tabs过滤 + 分页表格 + 详情面板
+ * Task management tab
+ * Modeled on apalis-board Tasks: status tab filter + paginated table + detail panel
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -29,7 +29,7 @@ import { formatDate } from "@/utils";
 import TaskDetail from "./TaskDetail";
 import TaskFormModal from "./TaskFormModal";
 
-// 合并后端动态类型 + 前端静态 fallback 的配置
+// Merged config of backend dynamic types + frontend static fallback
 function buildTypeConfig(dynamicTypes: TaskTypeDescriptor[]) {
   const merged: Record<
     string,
@@ -65,7 +65,7 @@ export default function TasksTab({
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<ScheduledTask | null>(null);
 
-  // 合并后的类型配置
+  // Merged type configuration
   const mergedConfig = useMemo(() => buildTypeConfig(taskTypes), [taskTypes]);
 
   const loadData = useCallback(async () => {
@@ -93,7 +93,7 @@ export default function TasksTab({
     loadData();
   }, [loadData]);
 
-  // 从 OverviewTab 跳转时应用类型过滤
+  // Apply type filter when navigating from the overview tab
   useEffect(() => {
     if (initialFilterType) {
       setFilterType(initialFilterType);
@@ -342,7 +342,7 @@ export default function TasksTab({
 
   return (
     <div className="flex flex-col h-full">
-      {/* 操作栏 */}
+      {/* Action bar */}
       <div className="flex items-center gap-3 p-3 border-b border-(--color-border)">
         <Input
           placeholder="搜索任务..."
@@ -376,7 +376,7 @@ export default function TasksTab({
         </Button>
       </div>
 
-      {/* 状态Tabs */}
+      {/* Status tabs */}
       <div className="flex border-b border-(--color-border)">
         {[
           { key: "all" as const, label: "全部", count: tasks.length },
@@ -399,7 +399,7 @@ export default function TasksTab({
         ))}
       </div>
 
-      {/* 数据表格 */}
+      {/* Data table */}
       <div className="flex-1 overflow-hidden">
         <Table
           dataSource={filteredTasks}
@@ -423,7 +423,7 @@ export default function TasksTab({
         />
       </div>
 
-      {/* 详情面板 */}
+      {/* Detail panel */}
       {selectedTask && (
         <div className="border-t border-(--color-border) h-72 flex-shrink-0 bg-[var(--color-bg-secondary)]">
           <TaskDetail
@@ -438,7 +438,7 @@ export default function TasksTab({
         </div>
       )}
 
-      {/* 创建/编辑弹窗 */}
+      {/* Create/edit modal */}
       {(showModal || editingTask) && (
         <TaskFormModal
           task={editingTask}

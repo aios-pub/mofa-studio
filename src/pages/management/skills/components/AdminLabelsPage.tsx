@@ -1,6 +1,6 @@
 /**
  * Admin Labels Page
- * 管理员Label管理页面
+ * Admin label management page
  */
 
 import { useEffect, useState } from 'react';

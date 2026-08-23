@@ -1,6 +1,6 @@
 /**
- * Task scheduling module主页面
- * 参考 apalis-board 布局：Tabs 导航（概览/任务管理/执行记录/Worker监控）
+ * Task scheduling module main page
+ * Modeled on apalis-board layout: tab navigation (overview/tasks/executions/workers)
  */
 
 import { useState, useEffect } from 'react';
@@ -21,7 +21,7 @@ export default function SchedulerPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [tasksFilterType, setTasksFilterType] = useState<TaskType | ''>('');
 
-  // 从 URL query 参数读取初始 tab
+  // Read the initial tab from URL query parameters
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tab = params.get('tab');
@@ -30,7 +30,7 @@ export default function SchedulerPage() {
     }
   }, []);
 
-  // 切换 tab 时更新 URL
+  // Update the URL when switching tabs
   const handleTabChange = (key: string) => {
     setActiveTab(key);
     const url = new URL(window.location.href);
@@ -38,7 +38,7 @@ export default function SchedulerPage() {
     window.history.replaceState(null, '', url.toString());
   };
 
-  // 概览页跳转到任务管理并过滤类型
+  // Navigate from overview to task management with a type filter
   const handleNavigateToTasks = (type?: TaskType) => {
     setTasksFilterType(type || '');
     setActiveTab('tasks');

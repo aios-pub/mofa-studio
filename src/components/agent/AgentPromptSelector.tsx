@@ -1,5 +1,5 @@
 /**
- * Agent 关联提示词选择器 — 全部使用 antd 组件
+ * Agent associated prompts selector - all antd components
  */
 
 import { useState, useEffect } from "react";
@@ -68,7 +68,7 @@ export default function AgentPromptSelector({
       p.category.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  // 按分类分组
+  // Group by category
   const groupedPrompts = filteredPrompts.reduce(
     (acc, prompt) => {
       if (!acc[prompt.category]) {
@@ -80,7 +80,7 @@ export default function AgentPromptSelector({
     {} as Record<string, Prompt[]>,
   );
 
-  // 已选择的提示词对象
+  // Selected prompt objects
   const selectedPromptObjects = prompts.filter((p) =>
     selectedPrompts.includes(p.id),
   );
@@ -95,7 +95,7 @@ export default function AgentPromptSelector({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      {/* 已选择的提示词Label */}
+      {/* Selected prompt tags */}
       {selectedPromptObjects.length > 0 && (
         <div>
           <Text
@@ -120,7 +120,7 @@ export default function AgentPromptSelector({
         </div>
       )}
 
-      {/* 搜索框 */}
+      {/* Search box */}
       <Input
         placeholder="搜索提示词..."
         prefix={<SearchOutlined />}
@@ -130,7 +130,7 @@ export default function AgentPromptSelector({
         size="small"
       />
 
-      {/* 提示词列表 */}
+      {/* Prompt list */}
       {filteredPrompts.length === 0 ? (
         <Empty
           description="暂无匹配的提示词"
@@ -176,7 +176,7 @@ export default function AgentPromptSelector({
                             overflow: "hidden",
                           }}
                         >
-                          {/* 头部：Checkbox + 展开按钮 */}
+                          {/* Header: checkbox + expand button */}
                           <div
                             style={{
                               display: "flex",
@@ -230,7 +230,7 @@ export default function AgentPromptSelector({
                             />
                           </div>
 
-                          {/* 展开详情 */}
+                          {/* Expanded details */}
                           {isExpanded && (
                             <div
                               style={{

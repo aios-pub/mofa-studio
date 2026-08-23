@@ -1,8 +1,8 @@
 /**
- * 权限相关类型定义
+ * Permission-related type definitions
  */
 
-/** 功能权限项 */
+/** Function permission item */
 export interface FeaturePermission {
   key: string;
   label: string;
@@ -10,7 +10,7 @@ export interface FeaturePermission {
   enabled: boolean;
 }
 
-/** 功能权限配置 */
+/** Function permission configuration */
 export interface FeaturePermissions {
   webSearch: boolean;
   webFetch: boolean;
@@ -21,24 +21,24 @@ export interface FeaturePermissions {
   databaseAccess: boolean;
 }
 
-/** 数据权限范围 */
+/** Data permission scope */
 export type DataScope = 'self' | 'department' | 'organization';
 
-/** 权限配置 */
+/** Permission configuration */
 export interface PermissionConfig {
-  // 功能权限
+  // Function permissions
   features: FeaturePermissions;
-  // Skills 访问权限 (Skills ID 列表)
+  // Skills access permissions (skill ID list)
   accessibleSkills: string[];
-  // 提示词访问权限 (提示词 ID 列表)
+  // Prompt access permissions (prompt ID list)
   accessiblePrompts: string[];
-  // 数据权限
+  // Data permissions
   dataScope: DataScope;
   allowSensitiveData: boolean;
   historyRetentionDays: number;
 }
 
-/** 权限模板 */
+/** Permission template */
 export interface PermissionTemplate {
   id: string;
   name: string;
@@ -47,7 +47,7 @@ export interface PermissionTemplate {
   isDefault?: boolean;
 }
 
-/** 权限变更记录 */
+/** Permission change records */
 export interface PermissionAuditLog {
   id: string;
   agentId: string;

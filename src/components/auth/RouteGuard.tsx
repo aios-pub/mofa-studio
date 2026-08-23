@@ -1,6 +1,6 @@
 /**
- * 路由守卫组件
- * 用于保护需要登录才能访问的路由
+ * Route guard component
+ * Protects routes that require authentication
  */
 
 import { ReactNode } from 'react';
@@ -16,7 +16,7 @@ export default function RouteGuard({ children }: RouteGuardProps) {
   const location = useLocation();
 
   if (!isAuthenticated) {
-    // 保存当前路径，登录后跳转回来
+    // Save the current path to redirect back after login
     return <Navigate to="/auth/login" state={{ from: location.pathname }} replace />;
   }
 

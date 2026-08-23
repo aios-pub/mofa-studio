@@ -1,6 +1,6 @@
 /**
- * API 客户端封装
- * 基于 axios 的 HTTP 客户端
+ * API client wrapper
+ * HTTP client based on axios
  */
 
 import axios, {
@@ -12,7 +12,7 @@ import axios, {
 import { message } from "antd";
 import { GLOBAL_CONFIG, isMockEnabled } from "@/config";
 
-// ==================== 类型定义 ====================
+// ==================== Type definitions ====================
 
 export interface ApiResponse<T = unknown> {
   code: number;
@@ -29,10 +29,10 @@ export interface ApiError {
 export type RequestConfig = AxiosRequestConfig & {
   showError?: boolean;
   errorMessage?: string;
-  useMock?: boolean; // 单独请求是否使用 mock
+  useMock?: boolean; // whether this request uses mock
 };
 
-// ==================== 配置 ====================
+// ==================== Configuration ====================
 
 const DEFAULT_CONFIG: AxiosRequestConfig = {
   baseURL: GLOBAL_CONFIG.serverURL || "/api",
@@ -42,14 +42,14 @@ const DEFAULT_CONFIG: AxiosRequestConfig = {
   },
 };
 
-// ==================== 创建实例 ====================
+// ==================== Instance creation ====================
 
 const axiosInstance = axios.create(DEFAULT_CONFIG);
 
-// ==================== 工具函数 ====================
+// ==================== Utilities ====================
 
 /**
- * 生成 UUID v4
+ * Generate UUID v4
  */
 function generateUUID(): string {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -60,21 +60,21 @@ function generateUUID(): string {
 }
 
 /**
- * 递归转换对象中的时间字符串为 Date 对象
- * 匹配常见的日期时间字段名（created_at, updated_at, published_at 等）
- * 以及以 _at, _time, _on 结尾的字段
+ * Recursively convert time strings in an object to Date objects
+ * Match common datetime field names (created_at, updated_at, published_at, etc.)
+ * and fields ending with _at, _time, _on
  */
 function convertDateFields<T>(data: T): T {
   if (data === null || data === undefined) {
     return data;
   }
 
-  // 处理数组
+  // Handle arrays
   if (Array.isArray(data)) {
     return data.map(convertDateFields) as T;
   }
 
-  // 只处理普通对象
+  // Only handle plain objects
   if (typeof data !== "object") {
     return data;
   }
@@ -88,7 +88,7 @@ function convertDateFields<T>(data: T): T {
     const value = (data as any)[key];
     const lowerKey = key.toLowerCase();
 
-    // 判断是否是日期时间字段
+    // Determine whether the field is a datetime field
     const isDateField =
       lowerKey.endsWith("_at") ||
       lowerKey.endsWith("_time") ||
@@ -99,12 +99,12 @@ function convertDateFields<T>(data: T): T {
       lowerKey === "timestamp";
 
     if (isDateField && typeof value === "string" && value) {
-      // 处理 PostgreSQL 时间格式: "2026-04-21 08:36:02.753513"
-      // 将空格替换为 T，使其符合 ISO 8601 格式
+      // Handle PostgreSQL time format: "2026-04-21 08:36:02.753513"
+      // Replace the space with T to conform to ISO 8601
       let dateStr = value;
       if (dateStr.includes(' ') && !dateStr.includes('T')) {
         dateStr = dateStr.replace(' ', 'T');
-        // e.g.果没有时区信息，添加 Z 表示 UTC
+        // If no timezone info, append Z for UTC
         if (!dateStr.includes('Z') && !dateStr.includes('+') && !dateStr.includes('-', 10)) {
           dateStr += 'Z';
         }
@@ -124,10 +124,10 @@ function convertDateFields<T>(data: T): T {
 }
 
 
-// ==================== 请求拦截器 ====================
+// ==================== Request interceptor ====================
 
 /**
- * 从 zustand persist storage 获取 token
+ * Get token from zustand persist storage
  */
 function getAccessToken(): string | null {
   try {
@@ -143,30 +143,30 @@ function getAccessToken(): string | null {
 }
 
 /**
- * 清除用户认证信息
+ * Clear user authentication info
  */
 function clearAuth() {
   localStorage.removeItem("mofa-studio-user-store");
-  // 同时也清除旧格式的 token（e.g.果有）
+  // Also clear the legacy token format (if any)
   localStorage.removeItem("token");
 }
 
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // 添加 Token - 从 zustand persist storage 读取
+    // Add token - read from zustand persist storage
     const token = getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // 添加Language
+    // Add language
     const language = localStorage.getItem("language") || "zh-CN";
     config.headers["Accept-Language"] = language;
 
-    // 添加链路Tracing ID (X_REQUEST_ID)
+    // Add trace ID header (X_REQUEST_ID)
     config.headers["X_REQUEST_ID"] = generateUUID();
 
-    // FormData 请求不要设置 Content-Type，让浏览器自动设置带 boundary 的值
+    // Do not set Content-Type for FormData requests; let the browser set it with the boundary
     if (config.data instanceof FormData) {
       delete config.headers["Content-Type"];
       // Debug: Log FormData requests
@@ -189,13 +189,13 @@ axiosInstance.interceptors.request.use(
   },
 );
 
-// ==================== 响应拦截器 ====================
+// ==================== Response interceptor ====================
 
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse<ApiResponse>): any => {
     const { data } = response;
 
-    // Blob / ArrayBuffer 响应直接返回，不做 JSON 键名/日期转换
+    // Blob / ArrayBuffer responses are returned as-is without JSON key/date conversion
     if (
       response.config.responseType === "blob" ||
       response.config.responseType === "arraybuffer"
@@ -209,12 +209,12 @@ axiosInstance.interceptors.response.use(
       console.log('[apiClient] Response data field:', data.data);
     }
 
-    // e.g.果响应直接是数据，返回
+    // If the response is the data itself, return it
     if (data === undefined || data === null) {
       return response.data;
     }
 
-    // e.g.果有 code 字段，检查业务状态码
+    // If there is a code field, check the business status code
     if ("code" in data) {
       if (data.code === 0 || data.code === 200) {
         const converted = convertDateFields(data.data);
@@ -224,12 +224,12 @@ axiosInstance.interceptors.response.use(
         return converted;
       }
 
-      // 业务错误 — 使用后端返回的 msg
+      // Business error - use the msg returned by the backend
       const errorMsg = data.msg || "请求失败";
       return Promise.reject(new Error(errorMsg));
     }
 
-    // 直接返回数据，只转换时间字段
+    // Return the data directly, only converting time fields
     return convertDateFields(data);
   },
   (error: AxiosError<ApiResponse>) => {
@@ -244,7 +244,7 @@ axiosInstance.interceptors.response.use(
           break;
         case 401:
           errorMessage = "未授权，请重新登录";
-          // 清除认证信息并跳转Login page
+          // Clear auth info and redirect to the login page
           clearAuth();
           window.location.href = "/auth/login";
           break;
@@ -281,32 +281,32 @@ axiosInstance.interceptors.response.use(
   },
 );
 
-// ==================== API 客户端类 ====================
+// ==================== API client class ====================
 
 class ApiClient {
   /**
-   * 获取base URL
+   * Get base URL
    */
   getBaseUrl(): string {
     return axiosInstance.defaults.baseURL || "";
   }
 
   /**
-   * 获取当前 Token
+   * Get the current token
    */
   getToken(): string | null {
     return getAccessToken();
   }
 
   /**
-   * GET 请求
+   * GET request
    */
   get<T = unknown>(url: string, config?: RequestConfig): Promise<T> {
     return this.request<T>({ ...config, method: "GET", url });
   }
 
   /**
-   * POST 请求
+   * POST request
    */
   post<T = unknown>(
     url: string,
@@ -317,7 +317,7 @@ class ApiClient {
   }
 
   /**
-   * PUT 请求
+   * PUT request
    */
   put<T = unknown>(
     url: string,
@@ -328,7 +328,7 @@ class ApiClient {
   }
 
   /**
-   * PATCH 请求
+   * PATCH request
    */
   patch<T = unknown>(
     url: string,
@@ -339,21 +339,21 @@ class ApiClient {
   }
 
   /**
-   * DELETE 请求
+   * DELETE request
    */
   delete<T = unknown>(url: string, config?: RequestConfig): Promise<T> {
     return this.request<T>({ ...config, method: "DELETE", url });
   }
 
   /**
-   * 通用请求方法
+   * Generic request method
    */
   request<T = unknown>(config: RequestConfig): Promise<T> {
     return axiosInstance.request<any, T>(config);
   }
 
   /**
-   * 上传文件
+   * Upload file
    */
   upload<T = unknown>(
     url: string,
@@ -383,7 +383,7 @@ class ApiClient {
   }
 
   /**
-   * 下载文件
+   * Download file
    */
   download(
     url: string,
@@ -408,16 +408,16 @@ class ApiClient {
   }
 }
 
-// ==================== 导出 ====================
+// ==================== Export ====================
 
 export const apiClient = new ApiClient();
 
-// 导出认证辅助函数
+// Export auth helpers
 export { getAccessToken, clearAuth };
 
 export default apiClient;
 
-// 便捷方法
+// Convenience methods
 export const get = apiClient.get.bind(apiClient);
 export const post = apiClient.post.bind(apiClient);
 export const put = apiClient.put.bind(apiClient);
@@ -426,5 +426,5 @@ export const del = apiClient.delete.bind(apiClient);
 export const upload = apiClient.upload.bind(apiClient);
 export const download = apiClient.download.bind(apiClient);
 
-// 导出 mock 开关状态，方便其他模块使用
+// Export mock flag for use by other modules
 export { isMockEnabled };

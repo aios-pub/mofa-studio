@@ -1,11 +1,11 @@
 /**
- * Skill Hub 真实 API
- * 后端端点: /api/skill-hub/...
+ * Skill hub real API
+ * Backend endpoints: /api/skill-hub/...
  */
 
 import { apiClient } from "../api/apiClient";
 
-// 类型定义
+// Type definitions
 interface SkillParameter {
   name: string;
   type: 'string' | 'number' | 'boolean' | 'object' | 'array';
@@ -53,33 +53,33 @@ interface HubStats {
 }
 
 const skillHubRealApi = {
-  // 获取热门 Skills
+  // Get popular skills
   getPopular: (limit: number = 10): Promise<HubSkill[]> =>
     apiClient.get<HubSkill[]>('/api/skill-hub/popular', { params: { limit } }),
 
-  // 获取最新 Skills
+  // Get latest skills
   getLatest: (limit: number = 10): Promise<HubSkill[]> =>
     apiClient.get<HubSkill[]>('/api/skill-hub/latest', { params: { limit } }),
 
-  // 获取所有分类
+  // Get all categories
   getCategories: (): Promise<HubCategory[]> =>
     apiClient.get<HubCategory[]>('/api/skill-hub/categories'),
 
-  // 搜索 Skills
+  // Search skills
   search: (query: string, category?: string, page: number = 1, pageSize: number = 20): Promise<HubSearchResult> =>
     apiClient.get<HubSearchResult>('/api/skill-hub/search', {
       params: { query, category, page, page_size: pageSize }
     }),
 
-  // 获取单个 Skill 详情
+  // Get a single skill's details
   getById: (hubId: string): Promise<HubSkill> =>
     apiClient.get<HubSkill>(`/api/skill-hub/skills/${hubId}`),
 
-  // 获取 Hub 统计
+  // Get hub statistics
   getStats: (): Promise<HubStats> =>
     apiClient.get<HubStats>('/api/skill-hub/stats'),
 
-  // 检查更新
+  // Check for updates
   checkUpdates: (installedSkills: Array<{ hubId: string; version: string }>): Promise<Array<{ hubId: string; latestVersion: string }>> =>
     apiClient.post<Array<{ hubId: string; latestVersion: string }>>('/api/skill-hub/check-updates', { installed_skills: installedSkills }),
 };

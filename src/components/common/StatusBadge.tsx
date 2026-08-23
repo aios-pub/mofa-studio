@@ -1,5 +1,5 @@
 /**
- * 状态徽章组件
+ * Status badge component
  */
 
 import { Tag } from "antd";

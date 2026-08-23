@@ -1,10 +1,10 @@
 /**
- * Agent Mock 数据
+ * Agent mock data
  */
 
 import type { Agent, AgentPermission } from '../../types';
 
-// Mock Agent 列表
+// Mock agent list
 export const mockAgents: Agent[] = [
   {
     id: 'agent-1',
@@ -127,7 +127,7 @@ export const mockAgents: Agent[] = [
   },
 ];
 
-// Mock Agent 权限
+// Mock agent permissions
 export const mockAgentPermissions: AgentPermission[] = [
   {
     agentId: 'agent-1',
@@ -216,24 +216,24 @@ export const mockAgentPermissions: AgentPermission[] = [
   },
 ];
 
-// 模拟 API 延迟
+// Mock API latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Agent API Mock
 export const agentApi = {
-  // 获取所有 Agent
+  // Get all agents
   async getAll(): Promise<Agent[]> {
     await delay(300);
     return mockAgents;
   },
 
-  // 获取单个 Agent
+  // Get a single agent
   async getById(id: string): Promise<Agent | undefined> {
     await delay(200);
     return mockAgents.find((a) => a.id === id);
   },
 
-  // 创建 Agent
+  // Create agent
   async create(data: Partial<Agent>): Promise<Agent> {
     await delay(500);
     const newAgent: Agent = {
@@ -258,7 +258,7 @@ export const agentApi = {
     return newAgent;
   },
 
-  // 更新 Agent
+  // Update agent
   async update(id: string, data: Partial<Agent>): Promise<Agent | undefined> {
     await delay(300);
     const index = mockAgents.findIndex((a) => a.id === id);
@@ -267,7 +267,7 @@ export const agentApi = {
     return mockAgents[index];
   },
 
-  // 删除 Agent
+  // Delete agent
   async delete(id: string): Promise<boolean> {
     await delay(300);
     const index = mockAgents.findIndex((a) => a.id === id);
@@ -276,13 +276,13 @@ export const agentApi = {
     return true;
   },
 
-  // 获取 Agent 权限
+  // Get agent permissions
   async getPermissions(agentId: string): Promise<AgentPermission | undefined> {
     await delay(200);
     return mockAgentPermissions.find((p) => p.agentId === agentId);
   },
 
-  // 更新 Agent 权限
+  // Update agent permissions
   async updatePermissions(
     agentId: string,
     data: Partial<AgentPermission>

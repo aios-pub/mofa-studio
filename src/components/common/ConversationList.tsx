@@ -1,5 +1,5 @@
 /**
- * Conversation list组件
+ * Conversation list component
  */
 
 import { useState, useEffect } from "react";
@@ -37,7 +37,7 @@ export default function ConversationList({
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
 
-  // 加载Conversation list
+  // Load conversation list
   useEffect(() => {
     loadConversations();
     agentApi.getAll().then(setAgents).catch(console.error);
@@ -55,7 +55,7 @@ export default function ConversationList({
     }
   };
 
-  // 创建新会话
+  // Create new conversation
   const handleCreateConversation = async () => {
     if (onCreateConversation) {
       onCreateConversation();
@@ -84,18 +84,18 @@ export default function ConversationList({
     }
   };
 
-  // 过滤会话
+  // Filter conversations
   const filteredConversations = conversations.filter((c) =>
     c.title.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  // 按 Agent 分组
+  // Group by agent
   const groupedConversations = agents.map((agent) => ({
     agent,
     conversations: filteredConversations.filter((c) => c.agentId === agent.id),
   }));
 
-  // 重命名会话
+  // Rename conversation
   const handleRenameConversation = async (id: string) => {
     if (!renameValue.trim()) {
       setRenamingId(null);
@@ -114,13 +114,13 @@ export default function ConversationList({
     }
   };
 
-  // 右键菜单
+  // Context menu
   const handleContextMenu = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     setContextMenu({ id, x: e.clientX, y: e.clientY });
   };
 
-  // 点击外部关闭菜单
+  // Close the menu on outside click
   useEffect(() => {
     const handleClick = () => setContextMenu(null);
     if (contextMenu) {
@@ -131,7 +131,7 @@ export default function ConversationList({
 
   return (
     <div className="flex flex-col h-full bg-[var(--color-bg-secondary)]">
-      {/* 头部 - 新建按钮和搜索 */}
+      {/* Header - new button and search */}
       <div className="p-3 space-y-2">
         <button
           onClick={handleCreateConversation}
@@ -173,7 +173,7 @@ export default function ConversationList({
               ({ agent, conversations: groupConvs }) =>
                 groupConvs.length > 0 && (
                   <div key={agent.id} className="mb-4">
-                    {/* Agent 分组Title */}
+                    {/* Agent group title */}
                     <div className="flex items-center gap-2 px-2 py-1 text-xs font-medium text-[var(--color-text-tertiary)]">
                       <span>{agent.avatar || "🤖"}</span>
                       <span>{agent.agent_name}</span>
@@ -182,7 +182,7 @@ export default function ConversationList({
                       </span>
                     </div>
 
-                    {/* 会话项 */}
+                    {/* Conversation item */}
                     {groupConvs.map((conversation) => (
                       <div
                         key={conversation.id}
@@ -242,7 +242,7 @@ export default function ConversationList({
         )}
       </div>
 
-      {/* 右键菜单 */}
+      {/* Context menu */}
       {contextMenu && (
         <div
           className="fixed z-50 py-1 bg-[var(--color-bg-base)] border border-(--color-border) rounded-lg shadow-lg"
@@ -276,7 +276,7 @@ export default function ConversationList({
   );
 }
 
-// 格式化相对时间
+// Format relative time
 function formatRelativeTime(date: Date): string {
   const now = new Date();
   const diff = now.getTime() - new Date(date).getTime();

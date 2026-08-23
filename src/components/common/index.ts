@@ -1,11 +1,11 @@
-// 对话列表
+// Conversation list
 export { default as ConversationList } from './ConversationList';
 
-// 分页
+// Pagination
 export { default as Pagination } from './Pagination';
 export * from './Pagination';
 
-// 状态徽章
+// Status badge
 export { default as StatusBadge } from './StatusBadge';
 export type { StatusType, StatusBadgeProps } from './StatusBadge';
 
@@ -13,7 +13,7 @@ export type { StatusType, StatusBadgeProps } from './StatusBadge';
 export { default as EmptyState } from './EmptyState';
 export type { EmptyType, EmptyStateProps } from './EmptyState';
 
-// 卡片
+// Card
 export {
   default as Card,
   CardHeader,
@@ -24,7 +24,7 @@ export {
 } from './Card';
 export type { CardVariant, CardProps } from './Card';
 
-// 页面头部
+// Page header
 export { default as PageHeader } from './PageHeader';
 export type { PageHeaderProps } from './PageHeader';
 
@@ -36,22 +36,22 @@ export {
 } from './LoadingState';
 export type { LoadingSize, LoadingStateProps, SkeletonProps } from './LoadingState';
 
-// 滚动区域
+// Scroll area
 export {
   default as ScrollArea,
   ScrollAreaHorizontal,
 } from './ScrollArea';
 export type { ScrollAreaProps } from './ScrollArea';
 
-// 搜索命令面板
+// Search command palette
 export { default as SearchCommand } from './SearchCommand';
 export type { SearchCommandProps } from './SearchCommand';
 
-// 数据表格
+// Data table
 export { default as DataTable } from './DataTable';
 export type { DataTableProps } from './DataTable';
 
-// 表单字段
+// Form fields
 export {
   default as FormField,
   InputField,
@@ -73,7 +73,7 @@ export type {
   CheckboxFieldProps,
 } from './FormField';
 
-// 表单布局
+// Form layout
 export {
   default as FormLayout,
   FormSection,
@@ -91,7 +91,7 @@ export type {
   FormActionsProps,
 } from './FormLayout';
 
-// Modal 组件
+// Modal component
 export {
   BaseModal,
   FormModal,
@@ -109,7 +109,7 @@ export type {
   FormDrawerProps,
 } from './Modal';
 
-// 描述列表
+// Description list
 export {
   DataDescriptions,
   SimpleDescriptions,
@@ -122,7 +122,7 @@ export type {
   VerticalDescriptionsProps,
 } from './Descriptions';
 
-// 结果页面
+// Result page
 export {
   default as ResultPage,
   SuccessPage,
@@ -140,7 +140,7 @@ export type {
   ServerErrorPageProps,
 } from './ResultPage';
 
-// Multi-tab管理
+// Multi-tab management
 export {
   MultiTabProvider,
   MultiTabView,
@@ -153,18 +153,18 @@ export type {
   MultiTabViewProps,
 } from './MultiTab';
 
-// Markdown 渲染
+// Markdown rendering
 export { default as MarkdownRenderer } from './MarkdownRenderer';
 export type { MarkdownRendererProps } from './MarkdownRenderer';
 
-// 滚动Progress bar
+// Scroll progress bar
 export { ScrollProgress } from './ScrollProgress';
 export type { ScrollProgressProps } from './ScrollProgress';
 
-// Toast 通知
+// Toast notifications
 export { toast, ToastProvider } from './Toast';
 
-// 头像组
+// Avatar group
 export {
   default as AvatarGroup,
   SimpleAvatarGroup,
@@ -185,7 +185,7 @@ export {
   SkeletonCard,
 } from './Loading';
 
-// 加载按钮
+// Loading button
 export {
   default as LoadingButton,
   ButtonGroup,
@@ -193,5 +193,5 @@ export {
 } from './LoadingButton';
 export type { LoadingButtonProps } from './LoadingButton';
 
-// 路由加载Progress bar
+// Route loading progress bar
 export { default as RouteLoadingProgress } from './RouteLoadingProgress';

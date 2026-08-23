@@ -1,6 +1,6 @@
 /**
  * My Stars Page
- * 显示当前用户收藏的技能
+ * Show skills starred by the current user
  */
 
 import { useEffect, useState } from 'react';

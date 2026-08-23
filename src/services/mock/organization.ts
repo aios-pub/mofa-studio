@@ -1,8 +1,8 @@
 /**
- * Organization Mock 数据和 API
+ * Organization mock data and API
  */
 
-// 用户类型
+// User types
 export interface User {
   id: string;
   name: string;
@@ -19,7 +19,7 @@ export interface User {
   };
 }
 
-// 部门类型
+// Department types
 export interface Department {
   id: string;
   name: string;
@@ -30,7 +30,7 @@ export interface Department {
   createdAt: Date;
 }
 
-// Mock 用户数据
+// Mock user data
 const mockUsers: User[] = [
   {
     id: 'user-1',
@@ -121,7 +121,7 @@ const mockUsers: User[] = [
   },
 ];
 
-// Mock 部门数据
+// Mock department data
 const mockDepartments: Department[] = [
   {
     id: 'dept-1',
@@ -169,14 +169,14 @@ const mockDepartments: Department[] = [
   },
 ];
 
-// 模拟延迟
+// Simulated latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Organization API Mock
 export const organizationApi = {
-  // ===== 用户管理 =====
+  // ===== User management =====
 
-  // 获取所有用户
+  // Get all users
   async getUsers(filter?: { department?: string; status?: string; role?: string }): Promise<User[]> {
     await delay(300);
     let users = [...mockUsers];
@@ -194,13 +194,13 @@ export const organizationApi = {
     return users;
   },
 
-  // 获取单个用户
+  // Get a single user
   async getUser(id: string): Promise<User | undefined> {
     await delay(200);
     return mockUsers.find((u) => u.id === id);
   },
 
-  // 创建用户
+  // Create user
   async createUser(data: Partial<User>): Promise<User> {
     await delay(500);
     const newUser: User = {
@@ -217,7 +217,7 @@ export const organizationApi = {
     return newUser;
   },
 
-  // 更新用户
+  // Update user
   async updateUser(id: string, data: Partial<User>): Promise<User | undefined> {
     await delay(300);
     const index = mockUsers.findIndex((u) => u.id === id);
@@ -226,7 +226,7 @@ export const organizationApi = {
     return mockUsers[index];
   },
 
-  // 删除用户
+  // Delete user
   async deleteUser(id: string): Promise<boolean> {
     await delay(300);
     const index = mockUsers.findIndex((u) => u.id === id);
@@ -235,7 +235,7 @@ export const organizationApi = {
     return true;
   },
 
-  // 批量更新用户状态
+  // Batch update user status
   async batchUpdateStatus(userIds: string[], status: User['status']): Promise<boolean> {
     await delay(400);
     userIds.forEach((id) => {
@@ -247,21 +247,21 @@ export const organizationApi = {
     return true;
   },
 
-  // ===== 部门管理 =====
+  // ===== Department management =====
 
-  // 获取所有部门
+  // Get all departments
   async getDepartments(): Promise<Department[]> {
     await delay(300);
     return [...mockDepartments];
   },
 
-  // 获取单个部门
+  // Get a single department
   async getDepartment(id: string): Promise<Department | undefined> {
     await delay(200);
     return mockDepartments.find((d) => d.id === id);
   },
 
-  // 创建部门
+  // Create department
   async createDepartment(data: Partial<Department>): Promise<Department> {
     await delay(500);
     const newDept: Department = {
@@ -277,7 +277,7 @@ export const organizationApi = {
     return newDept;
   },
 
-  // 更新部门
+  // Update department
   async updateDepartment(id: string, data: Partial<Department>): Promise<Department | undefined> {
     await delay(300);
     const index = mockDepartments.findIndex((d) => d.id === id);
@@ -286,7 +286,7 @@ export const organizationApi = {
     return mockDepartments[index];
   },
 
-  // 删除部门
+  // Delete department
   async deleteDepartment(id: string): Promise<boolean> {
     await delay(300);
     const index = mockDepartments.findIndex((d) => d.id === id);
@@ -295,7 +295,7 @@ export const organizationApi = {
     return true;
   },
 
-  // 获取部门成员
+  // Get department members
   async getDepartmentMembers(departmentId: string): Promise<User[]> {
     await delay(200);
     const dept = mockDepartments.find((d) => d.id === departmentId);
@@ -303,7 +303,7 @@ export const organizationApi = {
     return mockUsers.filter((u) => u.department === dept.name);
   },
 
-  // 获取部门统计
+  // Get department statistics
   async getDepartmentStats(): Promise<{ department: string; users: number; conversations: number; tokens: number }[]> {
     await delay(200);
     const stats = new Map<string, { users: number; conversations: number; tokens: number }>();

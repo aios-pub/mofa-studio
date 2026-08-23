@@ -1,5 +1,5 @@
 /**
- * 文件预览组件
+ * File preview component
  */
 
 import { Card, Empty, Spin } from 'antd';

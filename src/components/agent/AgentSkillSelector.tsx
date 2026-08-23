@@ -1,5 +1,5 @@
 /**
- * Agent 关联 Skills 选择器
+ * Agent associated skills selector
  */
 
 import { useState, useEffect } from "react";
@@ -74,7 +74,7 @@ export default function AgentSkillSelector({
       s.category.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  // 按分类分组
+  // Group by category
   const groupedSkills = filteredSkills.reduce(
     (acc, skill) => {
       if (!acc[skill.category]) {
@@ -86,7 +86,7 @@ export default function AgentSkillSelector({
     {} as Record<string, Skill[]>,
   );
 
-  // 类型颜色映射
+  // Type color mapping
   const typeColors: Record<string, string> = {
     builtin:
       "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
@@ -94,14 +94,14 @@ export default function AgentSkillSelector({
     api: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
   };
 
-  // 已选择的 Skills
+  // Selected skills
   const selectedSkillObjects = skills.filter((s) =>
     selectedSkills.includes(s.id),
   );
 
   return (
     <div className="space-y-4">
-      {/* 已选择的 Skills */}
+      {/* Selected skills */}
       {selectedSkillObjects.length > 0 && (
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-[var(--color-text-primary)]">
@@ -129,7 +129,7 @@ export default function AgentSkillSelector({
         </div>
       )}
 
-      {/* 搜索框 */}
+      {/* Search box */}
       <Input
         placeholder="搜索 Skills..."
         prefix={<SearchOutlined />}
@@ -138,7 +138,7 @@ export default function AgentSkillSelector({
         allowClear
       />
 
-      {/* Skills 列表 */}
+      {/* Skills list */}
       {loading ? (
         <div className="text-center py-4 text-[var(--color-text-tertiary)]">
           加载中...
@@ -165,7 +165,7 @@ export default function AgentSkillSelector({
                           : "bg-[var(--color-bg-secondary)] border-(--color-border) hover:border-[var(--color-border-hover)]"
                       } ${!skill.enabled ? "opacity-60" : ""}`}
                     >
-                      {/* 头部 */}
+                      {/* Header */}
                       <div
                         className={`flex items-center gap-3 p-3 ${skill.enabled ? "cursor-pointer" : ""}`}
                         onClick={() => skill.enabled && toggleSkill(skill.id)}
@@ -218,11 +218,11 @@ export default function AgentSkillSelector({
                         </button>
                       </div>
 
-                      {/* 展开内容 */}
+                      {/* Expanded content */}
                       {isExpanded && (
                         <div className="px-3 pb-3 border-t border-(--color-border)">
                           <div className="mt-2 space-y-3">
-                            {/* 参数列表 */}
+                            {/* Parameter list */}
                             {Array.isArray(skill.parameters) &&
                               skill.parameters.length > 0 && (
                                 <div>
@@ -258,7 +258,7 @@ export default function AgentSkillSelector({
                                 </div>
                               )}
 
-                            {/* 超时时间 */}
+                            {/* Timeout */}
                             <div className="flex items-center gap-2 text-xs">
                               <span className="text-[var(--color-text-tertiary)]">
                                 超时时间:
@@ -268,7 +268,7 @@ export default function AgentSkillSelector({
                               </span>
                             </div>
 
-                            {/* 测试按钮 */}
+                            {/* Test button */}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();

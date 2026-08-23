@@ -1,8 +1,8 @@
 /**
- * Evaluation 真实 API
- * 后端端点: /api/evaluation/...
+ * Evaluation real API
+ * Backend endpoints: /api/evaluation/...
  *
- * 后端字段映射 (snake_case → camelCase):
+ * Backend field mapping (snake_case -> camelCase):
  *   agent_id        → agentId
  *   conversation_id → conversationId
  *   overall_score   → overallScore
@@ -15,7 +15,7 @@
 import { apiClient } from "../api/apiClient";
 import { parseDate } from "./fieldMapper";
 
-// ==================== 前端类型 ====================
+// ==================== Frontend types ====================
 
 interface Evaluation {
   id: string;
@@ -51,7 +51,7 @@ interface EvaluationMetric {
   updatedAt?: Date;
 }
 
-// ==================== 后端原始类型 ====================
+// ==================== Raw backend types ====================
 
 interface BackendEvaluation {
   id: string;
@@ -79,7 +79,7 @@ interface BackendEvaluationMetric {
   update_time: string;
 }
 
-// ==================== 字段映射 ====================
+// ==================== Field mapping ====================
 
 function mapEvaluation(raw: BackendEvaluation): Evaluation {
   return {
@@ -133,7 +133,7 @@ function mapMetricToBackend(data: Partial<EvaluationMetric>): Record<string, unk
   return result;
 }
 
-// ==================== API 方法 ====================
+// ==================== API methods ====================
 
 const evaluationRealApi = {
   async getAll(): Promise<Evaluation[]> {

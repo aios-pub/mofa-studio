@@ -1,5 +1,5 @@
 /**
- * 状态管理入口
+ * State management entry
  */
 
 export * from './useAppStore';

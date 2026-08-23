@@ -1,6 +1,6 @@
 /**
- * 本地存储 Hook
- * 提供与 localStorage/sessionStorage 同步的状态管理
+ * Local storage hook
+ * Provides state management synced with localStorage/sessionStorage
  */
 
 import { useCallback, useState, useEffect } from 'react';
@@ -8,7 +8,7 @@ import { useCallback, useState, useEffect } from 'react';
 type SetValue<T> = (value: T | ((prevValue: T) => T)) => void;
 
 /**
- * 从存储中解析 JSON 值
+ * Parse JSON value from storage
  */
 function parseJSON<T>(value: string | null, fallback: T): T {
   if (value === null) {
@@ -23,9 +23,9 @@ function parseJSON<T>(value: string | null, fallback: T): T {
 
 /**
  * useLocalStorage Hook
- * 与 localStorage 同步的状态管理
+ * State management synced with localStorage
  * @param key Storage key names
- * @param initialValue 初始值
+ * @param initialValue Initial value
  * @returns [storedValue, setValue, removeValue]
  */
 export function useLocalStorage<T>(
@@ -37,9 +37,9 @@ export function useLocalStorage<T>(
 
 /**
  * useSessionStorage Hook
- * 与 sessionStorage 同步的状态管理
+ * State management synced with sessionStorage
  * @param key Storage key names
- * @param initialValue 初始值
+ * @param initialValue Initial value
  * @returns [storedValue, setValue, removeValue]
  */
 export function useSessionStorage<T>(
@@ -50,14 +50,14 @@ export function useSessionStorage<T>(
 }
 
 /**
- * 通用存储 Hook
+ * Generic storage hook
  */
 function useStorage<T>(
   key: string,
   initialValue: T,
   storage: Storage
 ): [T, SetValue<T>, () => void] {
-  // 获取初始值
+  // Get initial value
   const getStoredValue = useCallback((): T => {
     if (typeof window === 'undefined') {
       return initialValue;
@@ -74,7 +74,7 @@ function useStorage<T>(
 
   const [storedValue, setStoredValue] = useState<T>(getStoredValue);
 
-  // 设置值
+  // Set value
   const setValue: SetValue<T> = useCallback(
     (value) => {
       if (typeof window === 'undefined') {
@@ -85,21 +85,21 @@ function useStorage<T>(
       }
 
       try {
-        // 支持函数式更新
+        // Supports functional updates
         const valueToStore =
           value instanceof Function ? value(storedValue) : value;
 
-        // 保存到状态
+        // Save to state
         setStoredValue(valueToStore);
 
-        // 保存到存储
+        // Save to storage
         if (valueToStore === undefined) {
           storage.removeItem(key);
         } else {
           storage.setItem(key, JSON.stringify(valueToStore));
         }
 
-        // 触发 storage 事件（用于跨Tabs同步）
+        // Dispatch a storage event (for cross-tab sync)
         window.dispatchEvent(
           new StorageEvent('storage', {
             key,
@@ -114,7 +114,7 @@ function useStorage<T>(
     [key, storage, storedValue]
   );
 
-  // 删除值
+  // Delete value
   const removeValue = useCallback(() => {
     if (typeof window === 'undefined') {
       return;
@@ -128,20 +128,20 @@ function useStorage<T>(
     }
   }, [initialValue, key, storage]);
 
-  // 监听其他Tabs的变化
+  // Watch other tabs' changes
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key !== key || event.storageArea !== storage) {
         return;
       }
 
-      // e.g.果值被删除
+      // If the value was deleted
       if (event.newValue === null) {
         setStoredValue(initialValue);
         return;
       }
 
-      // 更新值
+      // Update value
       const newValue = parseJSON(event.newValue, initialValue);
       setStoredValue(newValue);
     };
@@ -155,7 +155,7 @@ function useStorage<T>(
 
 /**
  * useStorageState Hook
- * 简化版的存储状态，自动选择 localStorage
+ * Simplified storage state, auto-selects localStorage
  */
 export function useStorageState<T>(
   key: string,
@@ -167,14 +167,14 @@ export function useStorageState<T>(
 
 /**
  * usePersistedState Hook
- * 带有版本控制的持久化状态
+ * Persistent state with version control
  */
 export interface PersistedStateOptions<T> {
-  /** 版本号，用于数据迁移 */
+  /** Version number for data migration */
   version?: number;
-  /** 迁移函数 */
+  /** Migration functions */
   migrate?: (oldState: any, oldVersion: number) => T;
-  /** 存储类型 */
+  /** Storage type */
   storage?: 'local' | 'session';
 }
 
@@ -194,13 +194,13 @@ export function usePersistedState<T>(
     }
 
     try {
-      // 先检查当前版本
+      // Check the current version first
       const currentVersionItem = storage.getItem(fullKey);
       if (currentVersionItem !== null) {
         return parseJSON(currentVersionItem, initialValue);
       }
 
-      // e.g.果当前版本不存在，检查旧版本并迁移
+      // If the current version does not exist, check the old version and migrate
       if (migrate) {
         for (let v = version - 1; v >= 0; v--) {
           const oldKey = `${key}_v${v}`;
@@ -209,7 +209,7 @@ export function usePersistedState<T>(
             const oldState = parseJSON(oldItem, null);
             if (oldState !== null) {
               const migratedState = migrate(oldState, v);
-              // 清理旧数据
+              // Clean up old data
               storage.removeItem(oldKey);
               return migratedState;
             }

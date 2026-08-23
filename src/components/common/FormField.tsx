@@ -1,6 +1,6 @@
 /**
- * 表单字段组件
- * 提供统一的表单项样式和验证提示
+ * Form field component
+ * Provides unified form item styling and validation hints
  */
 
 import React, { forwardRef } from 'react';
@@ -11,27 +11,27 @@ const { TextArea } = Input;
 const { Password } = Input;
 const { RangePicker } = DatePicker;
 
-// 基础表单字段属性
+// Base form field props
 export interface FormFieldBaseProps {
-  /** 字段名 */
+  /** Field name */
   name: string;
   /** Label */
   label?: React.ReactNode;
-  /** 是否必填 */
+  /** Required */
   required?: boolean;
-  /** 帮助提示 */
+  /** Help hint */
   tooltip?: string | React.ReactNode;
-  /** 额外说明 */
+  /** Additional notes */
   extra?: React.ReactNode;
-  /** 占位符 */
+  /** Placeholder */
   placeholder?: string;
-  /** 是否禁用 */
+  /** Disabled */
   disabled?: boolean;
-  /** 类名 */
+  /** Class name */
   className?: string;
 }
 
-// 输入框字段
+// Input field
 export interface InputFieldProps extends FormFieldBaseProps {
   type?: 'text' | 'password' | 'textarea';
   rows?: number;
@@ -39,7 +39,7 @@ export interface InputFieldProps extends FormFieldBaseProps {
   onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
-// 选择框字段
+// Select field
 export interface SelectFieldProps extends FormFieldBaseProps {
   options: Array<{ label: string; value: any; disabled?: boolean }>;
   value?: any;
@@ -48,7 +48,7 @@ export interface SelectFieldProps extends FormFieldBaseProps {
   showSearch?: boolean;
 }
 
-// Number input字段
+// Number input field
 export interface NumberFieldProps extends FormFieldBaseProps {
   value?: number;
   onChange?: (value: number | null) => void;
@@ -57,34 +57,34 @@ export interface NumberFieldProps extends FormFieldBaseProps {
   step?: number;
 }
 
-// 开关字段
+// Switch field
 export interface SwitchFieldProps extends FormFieldBaseProps {
   checked?: boolean;
   onChange?: (checked: boolean) => void;
 }
 
-// 日期选择字段
+// Date picker field
 export interface DateFieldProps extends FormFieldBaseProps {
   type?: 'date' | 'range' | 'time';
   value?: any;
   onChange?: (value: any) => void;
 }
 
-// 单选字段
+// Radio field
 export interface RadioFieldProps extends FormFieldBaseProps {
   options: Array<{ label: string; value: any; disabled?: boolean }>;
   value?: any;
   onChange?: (e: any) => void;
 }
 
-// 复选框字段
+// Checkbox field
 export interface CheckboxFieldProps extends FormFieldBaseProps {
   options: Array<{ label: string; value: any; disabled?: boolean }>;
   value?: any[];
   onChange?: (checkedValue: any[]) => void;
 }
 
-// 统一表单字段属性
+// Unified form field props
 export type FormFieldProps =
   | ({ fieldType: 'input' } & InputFieldProps)
   | ({ fieldType: 'select' } & SelectFieldProps)
@@ -95,11 +95,11 @@ export type FormFieldProps =
   | ({ fieldType: 'checkbox' } & CheckboxFieldProps);
 
 /**
- * 通用表单字段组件
+ * Generic form field component
  */
 export const FormField = forwardRef<any, FormFieldProps>(
   ({ fieldType, name, label, required, tooltip, extra, className, ...restProps }, ref) => {
-    // 渲染表单控件
+    // Render form controls
     const renderControl = () => {
       switch (fieldType) {
         case 'input': {
@@ -160,7 +160,7 @@ export const FormField = forwardRef<any, FormFieldProps>(
       }
     };
 
-    // Label渲染（包含 tooltip）
+    // Tab rendering (with tooltip)
     const labelNode = tooltip ? (
       <span className="flex items-center gap-1">
         {label}
@@ -189,7 +189,7 @@ export const FormField = forwardRef<any, FormFieldProps>(
 
 FormField.displayName = 'FormField';
 
-// 便捷组件导出
+// Convenience component exports
 export const InputField = (props: Omit<InputFieldProps, 'fieldType'>) => (
   <FormField fieldType="input" {...props} />
 );

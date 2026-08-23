@@ -1,8 +1,8 @@
 /**
- * 可调整宽度的侧边栏组件
- * 支持鼠标拖拽调整宽度，带最小/最大宽度限制
- * 支持拖拽到最小尺寸后自动折叠
- * 支持 localStorage 持久化宽度
+ * Resizable sidebar component
+ * Supports mouse drag resizing with min/max width limits
+ * Auto-collapses when dragged to the minimum size
+ * Persists width to localStorage
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -84,7 +84,7 @@ export default function ResizableSidebar({
   const [collapsed, setCollapsed] = useState(storedCollapsed);
   const [showCollapseBtn, setShowCollapseBtn] = useState(false);
 
-  // 用 ref 保存最新值，避免事件监听器闭包捕获旧值
+  // Keep the latest value in a ref to avoid stale closures in listeners
   const widthRef = useRef(width);
   const collapsedRef = useRef(collapsed);
   const startXRef = useRef(0);
@@ -95,12 +95,12 @@ export default function ResizableSidebar({
   useEffect(() => { widthRef.current = width; }, [width]);
   useEffect(() => { collapsedRef.current = collapsed; }, [collapsed]);
 
-  // 持久化状态
+  // Persistent state
   useEffect(() => {
     storeState(storageKey, width, collapsed);
   }, [storageKey, width, collapsed]);
 
-  // 拖拽逻辑
+  // Dragging logic
   useEffect(() => {
     if (!isResizing) return;
 
@@ -172,7 +172,7 @@ export default function ResizableSidebar({
       onMouseEnter={() => setShowCollapseBtn(true)}
       onMouseLeave={() => setShowCollapseBtn(false)}
     >
-      {/* 内容区域 */}
+      {/* Content area */}
       <div
         className="flex flex-col h-full"
         style={{
@@ -185,7 +185,7 @@ export default function ResizableSidebar({
         {children}
       </div>
 
-      {/* 折叠状态下的展开按钮 — z-index 高于拖拽手柄确保可点击 */}
+      {/* Expand button in collapsed state - z-index above drag handle to stay clickable */}
       {collapsed && (
         <button
           onClick={handleToggle}
@@ -202,7 +202,7 @@ export default function ResizableSidebar({
         </button>
       )}
 
-      {/* 拖拽手柄 — 折叠时 z-index 低于展开按钮 */}
+      {/* Drag handle - z-index below expand button when collapsed */}
       <div
         className="absolute top-0 right-0 h-full z-20 select-none"
         style={{
@@ -225,7 +225,7 @@ export default function ResizableSidebar({
         )}
       </div>
 
-      {/* 折叠按钮 */}
+      {/* Collapse button */}
       {!collapsed && showCollapseBtn && !isResizing && (
         <button
           onClick={handleToggle}

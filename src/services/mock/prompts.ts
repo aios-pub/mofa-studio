@@ -1,8 +1,8 @@
 /**
- * Prompt Mock 数据
+ * Prompt mock data
  */
 
-// 提示词类型
+// Prompt types
 export interface Prompt {
   id: string;
   name: string;
@@ -23,7 +23,7 @@ export interface PromptVariable {
   options?: string[];
 }
 
-// 提示词版本类型
+// Prompt version types
 export interface PromptVersion {
   id: string;
   promptId: string;
@@ -35,14 +35,14 @@ export interface PromptVersion {
   createdBy: string;
 }
 
-// 版本差异类型
+// Version diff types
 export interface VersionDiff {
   additions: { line: number; content: string }[];
   deletions: { line: number; content: string }[];
   modifications: { line: number; oldContent: string; newContent: string }[];
 }
 
-// Mock 提示词列表
+// Mock prompt list
 export const mockPrompts: Prompt[] = [
   {
     id: 'prompt-1',
@@ -157,7 +157,7 @@ export const mockPrompts: Prompt[] = [
   },
 ];
 
-// Mock 提示词版本历史
+// Mock prompt version history
 export const mockPromptVersions: PromptVersion[] = [
   {
     id: 'version-1-1',
@@ -260,30 +260,30 @@ export const mockPromptVersions: PromptVersion[] = [
   },
 ];
 
-// 模拟 API 延迟
+// Mock API latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Prompt API Mock
 export const promptApi = {
-  // 获取所有提示词
+  // Get all prompts
   async getAll(): Promise<Prompt[]> {
     await delay(300);
     return mockPrompts;
   },
 
-  // 按分类获取
+  // Get by category
   async getByCategory(category: string): Promise<Prompt[]> {
     await delay(200);
     return mockPrompts.filter((p) => p.category === category);
   },
 
-  // 获取单个提示词
+  // Get a single prompt
   async getById(id: string): Promise<Prompt | undefined> {
     await delay(200);
     return mockPrompts.find((p) => p.id === id);
   },
 
-  // 创建提示词
+  // Create prompt
   async create(data: Partial<Prompt>): Promise<Prompt> {
     await delay(500);
     const newPrompt: Prompt = {
@@ -301,7 +301,7 @@ export const promptApi = {
     return newPrompt;
   },
 
-  // 更新提示词
+  // Update prompt
   async update(id: string, data: Partial<Prompt>): Promise<Prompt | undefined> {
     await delay(300);
     const index = mockPrompts.findIndex((p) => p.id === id);
@@ -315,7 +315,7 @@ export const promptApi = {
     return mockPrompts[index];
   },
 
-  // 删除提示词
+  // Delete prompt
   async delete(id: string): Promise<boolean> {
     await delay(300);
     const index = mockPrompts.findIndex((p) => p.id === id);
@@ -324,15 +324,15 @@ export const promptApi = {
     return true;
   },
 
-  // 获取所有分类
+  // Get all categories
   async getCategories(): Promise<string[]> {
     await delay(100);
     return [...new Set(mockPrompts.map((p) => p.category))];
   },
 
-  // ===== 版本控制相关 =====
+  // ===== Version control =====
 
-  // 获取提示词的所有版本
+  // Get all versions of a prompt
   async getVersions(promptId: string): Promise<PromptVersion[]> {
     await delay(200);
     return mockPromptVersions
@@ -340,13 +340,13 @@ export const promptApi = {
       .sort((a, b) => parseFloat(b.version) - parseFloat(a.version));
   },
 
-  // 获取特定版本
+  // Get a specific version
   async getVersion(versionId: string): Promise<PromptVersion | undefined> {
     await delay(150);
     return mockPromptVersions.find((v) => v.id === versionId);
   },
 
-  // 保存新版本（更新时自动调用）
+  // Save a new version (called automatically on update)
   async saveVersion(
     promptId: string,
     content: string,
@@ -377,7 +377,7 @@ export const promptApi = {
     return newVersion;
   },
 
-  // 回滚到指定版本
+  // Roll back to a specific version
   async rollbackToVersion(promptId: string, versionId: string): Promise<Prompt | undefined> {
     await delay(400);
     const version = mockPromptVersions.find((v) => v.id === versionId);
@@ -386,11 +386,11 @@ export const promptApi = {
     const index = mockPrompts.findIndex((p) => p.id === promptId);
     if (index === -1) return undefined;
 
-    // 保存当前状态为新版本
+    // Save the current state as a new version
     const currentPrompt = mockPrompts[index];
     await this.saveVersion(promptId, currentPrompt.content, currentPrompt.variables, `回滚前自动保存`);
 
-    // 更新为历史版本内容
+    // Update to historical version content
     mockPrompts[index] = {
       ...currentPrompt,
       content: version.content,
@@ -402,7 +402,7 @@ export const promptApi = {
     return mockPrompts[index];
   },
 
-  // 比较两个版本
+  // Compare two versions
   async compareVersions(versionId1: string, versionId2: string): Promise<VersionDiff> {
     await delay(200);
     const v1 = mockPromptVersions.find((v) => v.id === versionId1);
@@ -434,20 +434,20 @@ export const promptApi = {
     return diff;
   },
 
-  // ===== 测试相关 =====
+  // ===== Testing =====
 
-  // 替换变量生成最终内容
+  // Replace variables to generate the final content
   replaceVariables(content: string, variables: PromptVariable[], values: Record<string, string> = {}): string {
     let result = content;
 
-    // 替换Custom变量
+    // Replace custom variables
     variables.forEach((variable) => {
       const value = values[variable.name] ?? variable.defaultValue ?? '';
       const regex = new RegExp(`\\{\\{${variable.name}\\}\\}`, 'g');
       result = result.replace(regex, value);
     });
 
-    // 替换系统变量
+    // Replace system variables
     const now = new Date();
     const systemVariables: Record<string, string> = {
       current_date: now.toLocaleDateString('zh-CN'),
@@ -465,7 +465,7 @@ export const promptApi = {
     return result;
   },
 
-  // 估算 Token count（简单估算：中文约1.5字符/token，英文约4字符/token）
+  // Estimate token count (rough: ~1.5 chars/token for Chinese, ~4 chars/token for English)
   estimateTokens(content: string): { input: number; estimated: number } {
     const chineseChars = (content.match(/[\u4e00-\u9fa5]/g) || []).length;
     const otherChars = content.length - chineseChars;
@@ -478,14 +478,14 @@ export const promptApi = {
     };
   },
 
-  // 模拟对话测试
+  // Simulated conversation test
   async simulateChat(promptId: string, userInput: string, _variableValues: Record<string, string> = {}): Promise<string> {
     await delay(1000 + Math.random() * 1000);
 
     const prompt = mockPrompts.find((p) => p.id === promptId);
     if (!prompt) throw new Error('Prompt not found');
 
-    // 模拟不同类型提示词的响应
+    // Simulate responses for different prompt types
     const responses: Record<string, string[]> = {
       '通用': [
         `好的，我理解您的问题是："${userInput}"。让我为您详细解答...\n\n根据您的需求，我建议您可以从以下几个方面入手：\n1. 首先，明确问题的核心\n2. 其次，收集相关信息\n3. 最后，制定解决方案\n\n希望这个回答对您有帮助！`,

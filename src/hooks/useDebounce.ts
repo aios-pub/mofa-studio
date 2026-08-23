@@ -1,17 +1,17 @@
 /**
- * 防抖和节流 Hook
- * 提供值和回调的防抖/节流功能
+ * Debounce and throttle hook
+ * Provides debounce/throttle for values and callbacks
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-// ==================== 防抖值 ====================
+// ==================== Debounced value ====================
 
 /**
- * 防抖值 Hook
- * @param value 需要防抖的值
- * @param delay 延迟时间（milliseconds）
- * @returns 防抖后的值
+ * Debounced value hook
+ * @param value Value to debounce
+ * @param delay Delay in milliseconds
+ * @returns Debounced value
  */
 export function useDebounce<T>(value: T, delay: number = 300): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -29,13 +29,13 @@ export function useDebounce<T>(value: T, delay: number = 300): T {
   return debouncedValue;
 }
 
-// ==================== 节流值 ====================
+// ==================== Throttled value ====================
 
 /**
- * 节流值 Hook
- * @param value 需要节流的值
- * @param interval 间隔时间（milliseconds）
- * @returns 节流后的值
+ * Throttled value hook
+ * @param value Value to throttle
+ * @param interval Interval in milliseconds
+ * @returns Throttled value
  */
 export function useThrottle<T>(value: T, interval: number = 300): T {
   const [throttledValue, setThrottledValue] = useState<T>(value);
@@ -63,13 +63,13 @@ export function useThrottle<T>(value: T, interval: number = 300): T {
   return throttledValue;
 }
 
-// ==================== 防抖回调 ====================
+// ==================== Debounced callback ====================
 
 /**
- * 防抖回调 Hook
- * @param callback 需要防抖的回调函数
- * @param delay 延迟时间（milliseconds）
- * @returns 防抖后的回调函数
+ * Debounced callback hook
+ * @param callback Callback to debounce
+ * @param delay Delay in milliseconds
+ * @returns Debounced callback
  */
 export function useDebouncedCallback<T extends (...args: any[]) => any>(
   callback: T,
@@ -90,7 +90,7 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
     [callback, delay]
   );
 
-  // 清理
+  // Cleanup
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
@@ -103,10 +103,10 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
 }
 
 /**
- * 节流回调 Hook
- * @param callback 需要节流的回调函数
- * @param interval 间隔时间（milliseconds）
- * @returns 节流后的回调函数
+ * Throttled callback hook
+ * @param callback Callback to throttle
+ * @param interval Interval in milliseconds
+ * @returns Throttled callback
  */
 export function useThrottledCallback<T extends (...args: any[]) => any>(
   callback: T,
@@ -124,7 +124,7 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
         lastCallRef.current = now;
         callback(...args);
       } else {
-        // 确保最后一次调用会被执行
+        // Ensure the last call is executed
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
         }
@@ -138,7 +138,7 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
     [callback, interval]
   );
 
-  // 清理
+  // Cleanup
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
@@ -150,14 +150,14 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
   return throttledCallback;
 }
 
-// ==================== 带立即执行的防抖 ====================
+// ==================== Debounce with immediate execution ====================
 
 /**
- * 带立即执行选项的防抖回调 Hook
- * @param callback 需要防抖的回调函数
- * @param delay 延迟时间（milliseconds）
- * @param immediate 是否立即执行第一次调用
- * @returns 防抖后的回调函数和取消函数
+ * Debounced callback hook with immediate execution option
+ * @param callback Callback to debounce
+ * @param delay Delay in milliseconds
+ * @param immediate Whether to execute the first call immediately
+ * @returns Debounced callback and cancel function
  */
 export function useDebouncedCallbackWithImmediate<T extends (...args: any[]) => any>(
   callback: T,
@@ -208,7 +208,7 @@ export function useDebouncedCallbackWithImmediate<T extends (...args: any[]) => 
     }
   }, [callback, cancel]);
 
-  // 清理
+  // Cleanup
   useEffect(() => {
     return () => {
       cancel();

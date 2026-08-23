@@ -1,5 +1,5 @@
 /**
- * Skills 组件导出
+ * Skills component exports
  */
 
 export { LocalSkillsList } from './components/LocalSkillsList';

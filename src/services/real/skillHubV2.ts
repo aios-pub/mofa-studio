@@ -1,6 +1,6 @@
 /**
- * Skill Hub V2 真实 API
- * 后端端点: /api/skill-hub/...
+ * Skill hub V2 real API
+ * Backend endpoints: /api/skill-hub/...
  */
 
 import { apiClient } from "../api/apiClient";

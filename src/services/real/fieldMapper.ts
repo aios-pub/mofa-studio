@@ -1,16 +1,16 @@
 /**
- * 通用字段映射工具
- * 用于 snake_case (后端) ↔ camelCase (前端) 之间的转换
+ * Generic field mapping utilities
+ * For converting between snake_case (backend) and camelCase (frontend)
  */
 
-/** 安全解析后端返回的日期字符串或 Date 对象 */
+/** Safely parse date strings or Date objects returned by the backend */
 export function parseDate(value: string | number | Date | null | undefined): Date | undefined {
   if (!value) return undefined;
-  // e.g.果已经是 Date 对象，直接返回
+  // If already a Date object, return directly
   if (value instanceof Date) return isNaN(value.getTime()) ? undefined : value;
   if (typeof value === 'number') return new Date(value);
   if (typeof value === 'string') {
-    // chrono::NaiveDateTime 可能输出 "YYYY-MM-DDTHH:MM:SS" 或 "YYYY-MM-DD HH:MM:SS"
+    // chrono::NaiveDateTime may output "YYYY-MM-DDTHH:MM:SS" or "YYYY-MM-DD HH:MM:SS"
     const d = new Date(value.includes(' ') ? value.replace(' ', 'T') : value);
     return isNaN(d.getTime()) ? undefined : d;
   }
@@ -27,7 +27,7 @@ export function toCamelCase(str: string): string {
   return str.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase());
 }
 
-/** 递归转换对象所有 key */
+/** Recursively convert all keys of an object */
 export function convertKeys(obj: unknown, converter: (key: string) => string): unknown {
   if (!obj || typeof obj !== 'object') return obj;
   if (Array.isArray(obj)) return obj.map((v) => convertKeys(v, converter));
@@ -38,12 +38,12 @@ export function convertKeys(obj: unknown, converter: (key: string) => string): u
   return result;
 }
 
-/** 后端 snake_case 响应 → 前端 camelCase */
+/** Backend snake_case response -> frontend camelCase */
 export function mapToCamel<T>(obj: unknown): T {
   return convertKeys(obj, toCamelCase) as T;
 }
 
-/** 前端 camelCase → 后端 snake_case */
+/** Frontend camelCase -> backend snake_case */
 export function mapToSnake<T>(obj: unknown): T {
   return convertKeys(obj, toSnakeCase) as T;
 }

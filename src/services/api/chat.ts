@@ -1,6 +1,6 @@
 /**
- * 对话 API 服务
- * 通过后端 /v1/chat/completions 代理调用 LLM Provider
+ * Conversation API service
+ * Call LLM providers via the backend /v1/chat/completions proxy
  */
 
 import { apiClient } from "../api/apiClient";
@@ -13,10 +13,10 @@ export interface APIConfig {
   model: string;
 }
 
-// 流式响应回调
+// Streaming response callback
 export type StreamCallback = (chunk: string, done: boolean) => void;
 
-// 对话请求参数
+// Conversation request parameters
 export interface ChatRequest {
   messages: Array<{
     role: 'system' | 'user' | 'assistant';
@@ -28,7 +28,7 @@ export interface ChatRequest {
   stream?: boolean;
 }
 
-// 对话响应
+// Conversation response
 export interface ChatResponse {
   id: string;
   content: string;
@@ -39,7 +39,7 @@ export interface ChatResponse {
   finishReason: string;
 }
 
-// Provider 配置映射
+// Provider configuration mapping
 export const providerConfigs: Record<string, { baseUrl: string; models: string[] }> = {
   openai: {
     baseUrl: 'https://api.openai.com/v1',
@@ -56,8 +56,8 @@ export const providerConfigs: Record<string, { baseUrl: string; models: string[]
 };
 
 /**
- * 聊天服务类
- * 通过后端代理调用各种 LLM Provider
+ * Chat service class
+ * Call various LLM providers via the backend proxy
  */
 class ChatService {
   private config: APIConfig | null = null;
@@ -70,7 +70,7 @@ class ChatService {
     return this.config;
   }
 
-  // 发送聊天请求 (非流式)
+  // Send chat request (non-streaming)
   async chat(request: ChatRequest): Promise<ChatResponse> {
     const body: Record<string, unknown> = {
       messages: request.messages,
@@ -97,7 +97,7 @@ class ChatService {
     };
   }
 
-  // 流式聊天 - 通过 SSE 读取后端流式响应
+  // Streaming chat - read the backend streaming response via SSE
   async chatStream(
     request: ChatRequest,
     onChunk: StreamCallback,
@@ -120,7 +120,7 @@ class ChatService {
     });
 
     if (!response.ok || !response.body) {
-      // 降级为非流式
+      // Fall back to non-streaming
       return this.chat({ ...request, stream: false });
     }
 
@@ -153,7 +153,7 @@ class ChatService {
             }
             if (parsed.id) chatId = parsed.id;
           } catch {
-            // 忽略解析错误，继续处理下一行
+            // Ignore parse errors and continue with the next line
           }
         }
       }
@@ -169,10 +169,10 @@ class ChatService {
   }
 }
 
-// 导出单例
+// Export singleton
 export const chatService = new ChatService();
 
-// 导出便捷方法
+// Export convenience methods
 export const chat = (request: ChatRequest) => chatService.chat(request);
 export const chatStream = (request: ChatRequest, onChunk: StreamCallback) =>
   chatService.chatStream(request, onChunk);

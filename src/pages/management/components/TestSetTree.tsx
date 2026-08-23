@@ -1,6 +1,6 @@
 /**
- * 测试集树形组件
- * 使用 Ant Design DirectoryTree 展示分类和测试集的树形结构
+ * Test set tree component
+ * Use Ant Design DirectoryTree to show the category/test set tree
  */
 
 import { useMemo, useCallback } from "react";
@@ -45,9 +45,9 @@ export function TestSetTree({
   onEditCategory,
   onDeleteCategory,
 }: TestSetTreeProps) {
-  // 构建树形数据
+  // Build tree data
   const treeData = useMemo(() => {
-    // 过滤
+    // Filter
     const filteredTestSets = testSets.filter((t) => {
       if (!searchQuery) return true;
       const q = searchQuery.toLowerCase();
@@ -57,7 +57,7 @@ export function TestSetTree({
       );
     });
 
-    // 分类树
+    // Category tree
     const categoryNodes = categories.map((cat) => ({
       id: cat.id,
       parentId: cat.parentId || "",
@@ -65,22 +65,22 @@ export function TestSetTree({
     }));
     const categoryTree = convertFlatToTree(categoryNodes);
 
-    // 将分类树转为 DataNode
+    // Convert the category tree to DataNode
     function buildCategoryNodes(
       cats: (typeof categoryTree)[number][],
     ): DataNode[] {
       return cats.map((cat) => {
-        // 该分类下的测试集
+        // Test sets under this category
         const childTestSets = filteredTestSets.filter(
           (ts) => ts.categoryId === cat.id,
         );
 
-        // 子分类节点
+        // Subcategory nodes
         const childCategoryNodes = cat.children
           ? buildCategoryNodes(cat.children as any[])
           : [];
 
-        // 测试集叶节点
+        // Test set leaf nodes
         const testSetNodes: DataNode[] = childTestSets.map((ts) => ({
           key: `testset-${ts.id}`,
           title: ts.name,
@@ -99,7 +99,7 @@ export function TestSetTree({
 
     const rootNodes = buildCategoryNodes(categoryTree);
 
-    // 未分类的测试集
+    // Uncategorized test sets
     const uncategorizedTestSets = filteredTestSets.filter(
       (ts) => !ts.categoryId,
     );
@@ -122,7 +122,7 @@ export function TestSetTree({
     return rootNodes;
   }, [testSets, categories, searchQuery]);
 
-  // key -> 数据映射
+  // key -> data mapping
   const keyMap = useMemo(() => {
     const map: Record<
       string,
@@ -152,7 +152,7 @@ export function TestSetTree({
     [keyMap, onSelectTestSet],
   );
 
-  // 右键菜单
+  // Context menu
   const getContextMenu = useCallback(
     (nodeKey: string) => {
       const entry = keyMap[nodeKey];
@@ -221,7 +221,7 @@ export function TestSetTree({
 
   return (
     <div className="flex flex-col h-full">
-      {/* 头部搜索 */}
+      {/* Header search */}
       <div className="p-3 space-y-2 border-b border-(--color-border)">
         <div className="flex items-center gap-2">
           <Input
@@ -242,7 +242,7 @@ export function TestSetTree({
         </div>
       </div>
 
-      {/* 树形列表 */}
+      {/* Tree list */}
       <div className="flex-1 overflow-y-auto p-2">
         {treeData.length === 0 ? (
           <div className="text-center py-8">

@@ -1,6 +1,6 @@
 /**
- * 页面头部组件
- * 提供一致的页面Title、描述和操作区域
+ * Page header component
+ * Provides consistent page title, description and action area
  */
 
 import React from 'react';

@@ -1,6 +1,6 @@
 /**
  * OpenTelemetry configuration
- * Note: this is base configuration，实际使用需要安装相关依赖
+ * Note: this is base configuration; dependencies must be installed for actual use
  */
 
 // Check if in browser environment

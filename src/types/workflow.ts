@@ -1,5 +1,5 @@
 /**
- * Workflow Workflow类型定义
+ * Workflow type definitions
  */
 
 /** Node type */
@@ -22,7 +22,7 @@ export type NodeType =
 /** Workflow status */
 export type WorkflowStatus =
   | 'draft'        // Draft
-  | 'published'    // 已发布
+  | 'published'    // published
   | 'archived';    // Archived
 
 /** Execution status */
@@ -31,7 +31,7 @@ export type ExecutionStatus =
   | 'running'      // Running
   | 'completed'    // Completed
   | 'failed'       // Failed
-  | 'cancelled';   // 已取消
+  | 'cancelled';   // cancelled
 
 /** Node port definition */
 export interface NodePort {
@@ -182,7 +182,7 @@ export interface VariableNodeConfig extends BaseNodeConfig {
 
 /** Delay node config */
 export interface DelayNodeConfig extends BaseNodeConfig {
-  duration: number; // 延迟时间（milliseconds）
+  duration: number; // delay in milliseconds
 }
 
 /** Webhook trigger node config */
@@ -242,7 +242,7 @@ export interface WorkflowEdge {
   targetNodeId: string;
   targetPortId?: string;
   label?: string;
-  condition?: string; // Condition expression（用于条件分支）
+  condition?: string; // condition expression (for condition branches)
 }
 
 /** Workflow variables */

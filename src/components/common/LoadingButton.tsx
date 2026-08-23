@@ -1,6 +1,6 @@
 /**
- * LoadingButton Loading state按钮
- * 自动处理Loading state，禁用点击
+ * Loading state button
+ * Auto-handle loading state and disable clicks
  */
 
 import { Button } from 'antd';
@@ -9,11 +9,11 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { cn } from '../../utils';
 
 export interface LoadingButtonProps extends ButtonProps {
-  /** 是否正在加载 */
+  /** Whether currently loading */
   loading?: boolean;
-  /** 加载时显示的文字 */
+  /** Text shown while loading */
   loadingText?: string;
-  /** 加载图标位置 */
+  /** Loading icon position */
   loadingIconPosition?: 'start' | 'end';
 }
 
@@ -48,7 +48,7 @@ export default function LoadingButton({
 }
 
 /**
- * 按钮组 - 用于并排显示多个按钮
+ * Button group - for displaying multiple buttons side by side
  */
 export function ButtonGroup({
   children,
@@ -76,7 +76,7 @@ export function ButtonGroup({
 }
 
 /**
- * 确认取消按钮组
+ * Confirm/cancel button group
  */
 export function ConfirmButtons({
   confirmText = '确认',

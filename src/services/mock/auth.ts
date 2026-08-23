@@ -1,5 +1,5 @@
 /**
- * Mock 认证服务
+ * Mock auth service
  */
 
 import type {
@@ -10,7 +10,7 @@ import type {
   UserToken,
 } from "../../types/user";
 
-// Mock 用户数据
+// Mock user data
 const MOCK_USERS: Array<{
   username: string;
   password: string;
@@ -61,7 +61,7 @@ const MOCK_USERS: Array<{
   },
 ];
 
-// 生成 Mock Token
+// Generate mock tokens
 const generateMockToken = (userId: string): string => {
   return `mock_access_token_${userId}_${Date.now()}`;
 };
@@ -70,15 +70,15 @@ const generateMockRefreshToken = (userId: string): string => {
   return `mock_refresh_token_${userId}_${Date.now()}`;
 };
 
-// 模拟延迟
+// Simulated latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const authApi = {
   /**
-   * 登录
+   * Login
    */
   signin: async (data: SignInReq): Promise<SignInRes> => {
-    await delay(500); // 模拟网络延迟
+    await delay(500); // simulate network latency
 
     const user = MOCK_USERS.find(
       (u) => u.username === data.username && u.password === data.password,
@@ -96,12 +96,12 @@ export const authApi = {
   },
 
   /**
-   * 注册
+   * Register
    */
   signup: async (data: SignUpReq): Promise<SignInRes> => {
     await delay(500);
 
-    // 检查用户名是否已存在
+    // Check whether the username already exists
     const existingUser = MOCK_USERS.find((u) => u.username === data.username);
     if (existingUser) {
       throw new Error("用户名已存在");
@@ -120,7 +120,7 @@ export const authApi = {
       ],
     };
 
-    // 添加到 Mock 数据（实际应用中会写入数据库）
+    // Add to mock data (real app would write to the database)
     MOCK_USERS.push({
       username: data.username,
       password: data.password,
@@ -135,20 +135,20 @@ export const authApi = {
   },
 
   /**
-   * 登出
+   * Logout
    */
   logout: async (): Promise<void> => {
     await delay(200);
-    // Mock 登出，实际应用中会调用后端 API
+    // Mock logout; real app would call the backend API
   },
 
   /**
-   * 刷新 Token
+   * Refresh token
    */
   refresh: async (refreshToken: string): Promise<UserToken> => {
     await delay(300);
 
-    // 解析 refresh token 获取用户 ID
+    // Parse the refresh token to get the user ID
     const match = refreshToken.match(/mock_refresh_token_(\d+)_/);
     if (!match) {
       throw new Error("无效的 refresh token");
@@ -167,14 +167,14 @@ export const authApi = {
   },
 
   /**
-   * 重置密码
+   * Reset password
    */
   resetPassword: async (_newPassword: string, _token?: string): Promise<void> => {
     await delay(300);
   },
 
   /**
-   * 修改密码
+   * Change password
    */
   changePassword: async (_currentPassword: string, _newPassword: string): Promise<void> => {
     await delay(300);

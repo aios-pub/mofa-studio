@@ -1,5 +1,5 @@
 /**
- * Skill 详情组件
+ * Skill detail component
  */
 
 import { useState, useEffect } from "react";
@@ -48,7 +48,7 @@ export function SkillDetail({
   >([]);
 
   useEffect(() => {
-    // 初始化测试参数
+    // Initialize test parameters
     const initialParams: Record<string, unknown> = {};
     (Array.isArray(skill.parameters) ? skill.parameters : []).forEach((p) => {
       if (p.defaultValue !== undefined) {
@@ -130,7 +130,7 @@ export function SkillDetail({
 
   return (
     <div className="flex flex-col h-full">
-      {/* 头部 */}
+      {/* Header */}
       <div className="flex items-start justify-between p-6 pb-4">
         <div>
           <div className="flex items-center gap-2">
@@ -159,7 +159,7 @@ export function SkillDetail({
         </div>
       </div>
 
-      {/* 元信息 */}
+      {/* Meta information */}
       <div className="grid grid-cols-4 gap-4 px-6 pb-4">
         <Card
           size="small"
@@ -226,7 +226,7 @@ export function SkillDetail({
         </Card>
       </div>
 
-      {/* Label栏 */}
+      {/* Tabs bar */}
       <Tabs
         activeKey={activeTab}
         onChange={(key) => setActiveTab(key as typeof activeTab)}
@@ -242,7 +242,7 @@ export function SkillDetail({
         className="px-6"
       />
 
-      {/* 内容区 */}
+      {/* Content area */}
       <div className="flex-1 overflow-hidden">
         {activeTab === "params" && (
           <div className="p-6 h-full overflow-y-auto">
@@ -317,7 +317,7 @@ export function SkillDetail({
               )}
             </div>
 
-            {/* JSON Schema 展示 */}
+            {/* JSON Schema display */}
             <div className="mt-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
               <div className="p-3 border-b border-(--color-border) bg-(--color-bg-tertiary)">
                 <span className="text-sm font-medium text-[var(--color-text-primary)]">
@@ -356,7 +356,7 @@ export function SkillDetail({
         {activeTab === "test" && (
           <div className="p-6 h-full overflow-y-auto">
             <div className="space-y-4">
-              {/* 参数输入 */}
+              {/* Parameter input */}
               <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
                 <div className="p-3 border-b border-(--color-border) bg-(--color-bg-tertiary)">
                   <span className="text-sm font-medium text-[var(--color-text-primary)]">
@@ -409,7 +409,7 @@ export function SkillDetail({
                 </div>
               </div>
 
-              {/* 执行结果 */}
+              {/* Execution result */}
               {testResult && (
                 <div
                   className={`bg-[var(--color-bg-secondary)] rounded-lg border overflow-hidden ${

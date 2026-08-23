@@ -1,5 +1,5 @@
 /**
- * Workflow列表页面
+ * Workflow list page
  */
 
 import { useState, useEffect } from "react";
@@ -29,7 +29,7 @@ import {
 import { workflowApi } from "@/services";
 import type { Workflow, WorkflowStatus } from "../../types/workflow";
 
-// 状态配置
+// Status configuration
 const statusConfig: Record<WorkflowStatus, { color: string; text: string }> = {
   draft: { color: "default", text: "草稿" },
   published: { color: "green", text: "已发布" },
@@ -115,7 +115,7 @@ export default function WorkflowListPage() {
     try {
       const execution = await workflowApi.execute(workflow.id);
       message.success("工作流已开始执行");
-      // 可以跳转到执行详情页
+      // Can navigate to the execution detail page
       console.log("Execution started:", execution);
     } catch (error) {
       console.error("Failed to execute workflow:", error);
@@ -211,7 +211,7 @@ export default function WorkflowListPage() {
 
   return (
     <div className="h-full overflow-y-auto bg-[var(--color-bg-base)]">
-      {/* 头部 */}
+      {/* Header */}
       <div className="p-6 border-b border-(--color-border)">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -241,7 +241,7 @@ export default function WorkflowListPage() {
         />
       </div>
 
-      {/* 列表 */}
+      {/* List */}
       <div className="p-6">
         {loading ? (
           <div className="flex justify-center py-12">
@@ -281,7 +281,7 @@ export default function WorkflowListPage() {
   );
 }
 
-// Workflow卡片
+// Workflow card
 function WorkflowCard({
   workflow,
   onEdit,
@@ -295,7 +295,7 @@ function WorkflowCard({
 }) {
   return (
     <div className="bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg p-4 hover:border-(--color-primary)/50 transition-colors group">
-      {/* 头部 */}
+      {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-[var(--color-primary)]/10 flex items-center justify-center">
@@ -322,19 +322,19 @@ function WorkflowCard({
         </Dropdown>
       </div>
 
-      {/* 描述 */}
+      {/* Description */}
       <p className="text-sm text-[var(--color-text-secondary)] mb-4 line-clamp-2">
         {workflow.description || "暂无描述"}
       </p>
 
-      {/* 统计 */}
+      {/* Statistics */}
       <div className="flex items-center gap-4 text-xs text-[var(--color-text-tertiary)] mb-4">
         <span>{workflow.nodes.length} 个节点</span>
         <span>{workflow.edges.length} 条连接</span>
         <span>v{workflow.version}</span>
       </div>
 
-      {/* 操作按钮 */}
+      {/* Action buttons */}
       <div className="flex gap-2">
         <Button size="small" onClick={onEdit}>
           编辑

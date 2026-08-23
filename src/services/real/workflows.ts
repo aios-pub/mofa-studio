@@ -1,8 +1,8 @@
 /**
- * Workflows 真实 API
- * 后端端点: /api/workflow/...
+ * Workflows real API
+ * Backend endpoints: /api/workflow/...
  *
- * 后端字段映射 (snake_case → camelCase):
+ * Backend field mapping (snake_case -> camelCase):
  *   published_at   → publishedAt
  *   create_time    → createdAt
  *   update_time    → updatedAt
@@ -13,7 +13,7 @@ import { apiClient } from "../api/apiClient";
 import { parseDate } from "./fieldMapper";
 import type { Workflow, WorkflowStatus, WorkflowNode, WorkflowEdge, WorkflowVariable, WorkflowTrigger, WorkflowStats } from "@/types";
 
-// ==================== 后端原始类型 ====================
+// ==================== Raw backend types ====================
 
 interface BackendWorkflow {
   id: string;
@@ -44,7 +44,7 @@ interface BackendWorkflowExecution {
   [key: string]: unknown;
 }
 
-// ==================== 字段映射 ====================
+// ==================== Field mapping ====================
 
 function mapWorkflow(raw: BackendWorkflow): Workflow {
   return {
@@ -77,30 +77,30 @@ function mapWorkflowToBackend(data: Partial<Workflow>): Record<string, unknown> 
   return result;
 }
 
-// ==================== API 方法 ====================
+// ==================== API methods ====================
 
 const workflowRealApi = {
-  /** 获取所有Workflow */
+  /** Get all workflows */
   async getAll(): Promise<Workflow[]> {
     const data = await apiClient.get<BackendWorkflow[]>("/api/workflow/list");
     if (!Array.isArray(data)) return [];
     return data.map(mapWorkflow);
   },
 
-  /** 获取单个Workflow */
+  /** Get a single workflow */
   async getById(id: string): Promise<Workflow> {
     const raw = await apiClient.get<BackendWorkflow>(`/api/workflow/${id}`);
     return mapWorkflow(raw);
   },
 
-  /** 创建Workflow */
+  /** Create workflow */
   async create(data: Partial<Workflow>): Promise<Workflow> {
     const body = mapWorkflowToBackend(data);
     const raw = await apiClient.post<BackendWorkflow>("/api/workflow/create", body);
     return mapWorkflow(raw);
   },
 
-  /** 更新Workflow */
+  /** Update workflow */
   async update(id: string, data: Partial<Workflow>): Promise<Workflow> {
     const existing = await workflowRealApi.getById(id);
     const merged = { ...existing, ...data };
@@ -109,26 +109,26 @@ const workflowRealApi = {
     return mapWorkflow(raw);
   },
 
-  /** 删除Workflow */
+  /** Delete workflow */
   async delete(id: string): Promise<boolean> {
     await apiClient.delete(`/api/workflow/delete/${id}`);
     return true;
   },
 
-  /** 按状态获取 */
+  /** Get by status */
   async getByStatus(status: string): Promise<Workflow[]> {
     const data = await apiClient.get<BackendWorkflow[]>(`/api/workflow/by-status?status=${status}`);
     if (!Array.isArray(data)) return [];
     return data.map(mapWorkflow);
   },
 
-  /** 发布Workflow */
+  /** Publish workflow */
   async publish(id: string): Promise<Workflow> {
     const raw = await apiClient.post<BackendWorkflow>(`/api/workflow/publish/${id}`);
     return mapWorkflow(raw);
   },
 
-  // ==================== 版本管理 ====================
+  // ==================== Version management ====================
 
   async getVersions(): Promise<BackendWorkflowVersion[]> {
     return apiClient.get("/api/workflow/versions");
@@ -147,7 +147,7 @@ const workflowRealApi = {
     return true;
   },
 
-  // ==================== 执行管理 ====================
+  // ==================== Execution management ====================
 
   async getExecutions(): Promise<BackendWorkflowExecution[]> {
     return apiClient.get("/api/workflow/executions");
@@ -170,7 +170,7 @@ const workflowRealApi = {
     return true;
   },
 
-  /** 复制Workflow */
+  /** Copy workflow */
   async duplicate(id: string): Promise<Workflow> {
     const original = await workflowRealApi.getById(id);
     const { id: _, createdAt, updatedAt, ...rest } = original as Workflow;
@@ -180,30 +180,30 @@ const workflowRealApi = {
     });
   },
 
-  /** 执行Workflow */
+  /** Execute workflow */
   async execute(id: string, _payload?: Record<string, unknown>): Promise<{ executionId: string }> {
     const execution = await apiClient.post<{ id: string }>("/api/workflow/execution/create", { workflow_id: id });
     return { executionId: execution.id };
   },
 
-  /** 回滚到指定版本 */
+  /** Roll back to a specific version */
   async rollback(workflowId: string, versionId: string): Promise<Workflow> {
     const raw = await apiClient.post<BackendWorkflow>("/api/workflow/rollback", { workflow_id: workflowId, version_id: versionId });
     return mapWorkflow(raw);
   },
 
-  /** 取消执行 */
+  /** Cancel execution */
   async cancelExecution(executionId: string): Promise<boolean> {
     await apiClient.post(`/api/workflow/execution/cancel/${executionId}`);
     return true;
   },
 
-  /** 验证Workflow */
+  /** Validate workflow */
   async validate(workflowId: string): Promise<{ valid: boolean; errors: string[] }> {
     return apiClient.post<{ valid: boolean; errors: string[] }>(`/api/workflow/validate/${workflowId}`);
   },
 
-  /** 获取Workflow统计 */
+  /** Get workflow statistics */
   async getStats(workflowId: string): Promise<WorkflowStats> {
     const data = await apiClient.get<Record<string, unknown>>(`/api/workflow/${workflowId}/stats`);
     return {
@@ -218,7 +218,7 @@ const workflowRealApi = {
 
 export { workflowRealApi };
 
-// Node type配置 — UI 常量，非 mock 数据
+// Node type configuration - UI constants, not mock data
 export const nodeTypeConfig: Record<string, { name: string; icon: string; category: string; description: string; color: string }> = {
   start: { name: '开始', icon: '▶️', category: 'trigger', description: '工作流开始节点', color: '#52c41a' },
   end: { name: '结束', icon: '⏹️', category: 'trigger', description: '工作流结束节点', color: '#ff4d4f' },

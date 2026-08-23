@@ -1,6 +1,6 @@
 /**
- * WebSocket 管理器
- * 统一管理 WebSocket 连接，支持 Socket.IO 和 WSS 模式切换
+ * WebSocket manager
+ * Unified WebSocket connection management with Socket.IO/WSS switching
  */
 
 import type {
@@ -13,20 +13,20 @@ import type { WebSocketAdapter } from "./base";
 import { NativeWebSocketAdapter } from "./adapters/wss";
 import { SocketIOAdapter } from "./adapters/socketio";
 
-/** WebSocket 管理器配置 */
+/** WebSocket manager configuration */
 export interface WebSocketManagerConfig extends Partial<WebSocketConfig> {
-  /** 服务器 URL (必须) */
+  /** Server URL (required) */
   url: string;
-  /** 默认连接模式 */
+  /** Default connection mode */
   defaultMode?: ConnectionMode;
 }
 
-/** 存储键 */
+/** Storage key */
 const STORAGE_KEY = "mofa-studio-ws-mode";
 
 /**
- * WebSocket 管理器
- * 提供统一的 WebSocket 连接管理，支持 Socket.IO 和 WSS 模式切换
+ * WebSocket manager
+ * Provides unified WebSocket connection management with Socket.IO/WSS switching
  */
 export class WebSocketManager {
   private adapter: WebSocketAdapter | null = null;
@@ -36,13 +36,13 @@ export class WebSocketManager {
 
   constructor(config: WebSocketManagerConfig) {
     this.config = config;
-    // 从存储中读取模式，或使用配置的默认模式
+    // Read mode from storage or use the configured default
     this._mode =
       this.loadMode() ?? config.defaultMode ?? config.mode ?? "socketio";
   }
 
   /**
-   * 内部触发事件
+   * Internal trigger event
    */
   private emitInternal<T = unknown>(event: string, data: T): void {
     const handlers = this.eventHandlers.get(event);
@@ -60,36 +60,36 @@ export class WebSocketManager {
     }
   }
 
-  /** 获取当前连接模式 */
+  /** Get the current connection mode */
   get mode(): ConnectionMode {
     return this._mode;
   }
 
-  /** 获取当前连接状态 */
+  /** Get the current connection state */
   get state(): ConnectionState {
     return this.adapter?.state ?? "disconnected";
   }
 
-  /** 是否已连接 */
+  /** Whether connected */
   isConnected(): boolean {
     return this.adapter?.isConnected() ?? false;
   }
 
   /**
-   * 切换连接模式
-   * @param mode 新的连接模式
-   * @param reconnect 是否自动重连
+   * Switch connection mode
+   * @param mode New connection mode
+   * @param reconnect Whether to reconnect automatically
    */
   async switchMode(mode: ConnectionMode, reconnect = true): Promise<void> {
     if (this._mode === mode && this.adapter) {
       return;
     }
 
-    // 保存模式到存储
+    // Save mode to storage
     this.saveMode(mode);
     const wasConnected = this.isConnected();
 
-    // 断开当前连接
+    // Disconnect the current connection
     if (this.adapter) {
       this.adapter.disconnect();
       this.adapter = null;
@@ -97,24 +97,24 @@ export class WebSocketManager {
 
     this._mode = mode;
 
-    // e.g.果之前是连接状态，自动重连
+    // If previously connected, reconnect automatically
     if (reconnect && wasConnected) {
       await this.connect();
     }
   }
 
   /**
-   * 连接到服务器
+   * Connect to the server
    */
   async connect(): Promise<void> {
     if (this.adapter?.isConnected()) {
       return;
     }
 
-    // 创建适配器
+    // Create adapter
     this.adapter = this.createAdapter(this._mode);
 
-    // 转发状态变化事件
+    // Forward state change events
     this.adapter.on("state_change", (data) => {
       this.emitInternal("state_change", data);
     });
@@ -123,7 +123,7 @@ export class WebSocketManager {
   }
 
   /**
-   * 断开连接
+   * Disconnect
    */
   disconnect(): void {
     if (this.adapter) {
@@ -143,29 +143,29 @@ export class WebSocketManager {
   }
 
   /**
-   * 订阅事件
+   * Subscribe to events
    */
   on<T = unknown>(
     event: string,
     handler: WebSocketEventHandler<T>,
   ): () => void {
-    // 添加到管理器自己的事件处理器
+    // Add to the manager's own event handlers
     if (!this.eventHandlers.has(event)) {
       this.eventHandlers.set(event, new Set());
     }
     this.eventHandlers.get(event)!.add(handler as WebSocketEventHandler);
 
-    // 同时订阅适配器事件
+    // Also subscribe to adapter events
     if (this.adapter) {
       this.adapter.on(event, handler);
     }
 
-    // 返回取消订阅函数
+    // Return the unsubscribe function
     return () => this.off(event, handler);
   }
 
   /**
-   * 取消订阅
+   * Unsubscribe
    */
   off<T = unknown>(event: string, handler?: WebSocketEventHandler<T>): void {
     if (handler) {
@@ -183,14 +183,14 @@ export class WebSocketManager {
   }
 
   /**
-   * 一次性订阅
+   * One-time subscription
    */
   once<T = unknown>(event: string, handler: WebSocketEventHandler<T>): void {
     this.adapter?.once(event, handler);
   }
 
   /**
-   * 创建指定模式的适配器
+   * Create adapter for the given mode
    */
   private createAdapter(mode: ConnectionMode): WebSocketAdapter {
     const adapterConfig: WebSocketConfig = {
@@ -208,7 +208,7 @@ export class WebSocketManager {
   }
 
   /**
-   * 从存储加载模式
+   * Load mode from storage
    */
   private loadMode(): ConnectionMode | null {
     try {
@@ -217,28 +217,28 @@ export class WebSocketManager {
         return saved;
       }
     } catch {
-      // 忽略存储错误
+      // Ignore storage errors
     }
     return null;
   }
 
   /**
-   * 保存模式到存储
+   * Save mode to storage
    */
   private saveMode(mode: ConnectionMode): void {
     try {
       localStorage.setItem(STORAGE_KEY, mode);
     } catch {
-      // 忽略存储错误
+      // Ignore storage errors
     }
   }
 }
 
-// 创建全局 WebSocket 管理器实例
+// Create global WebSocket manager instance
 let globalManager: WebSocketManager | null = null;
 
 /**
- * 获取全局 WebSocket 管理器实例
+ * Get the global WebSocket manager instance
  */
 export function getWebSocketManager(
   config?: WebSocketManagerConfig,
@@ -255,7 +255,7 @@ export function getWebSocketManager(
 }
 
 /**
- * 初始化全局 WebSocket 管理器
+ * Initialize global WebSocket manager
  */
 export function initWebSocketManager(
   config: WebSocketManagerConfig,

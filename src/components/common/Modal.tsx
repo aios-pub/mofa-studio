@@ -1,6 +1,6 @@
 /**
- * Modal 组件封装
- * 提供统一的弹窗样式和交互模式
+ * Modal component wrapper
+ * Provides unified modal styling and interaction patterns
  */
 
 import React from 'react';
@@ -14,39 +14,39 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 
-// ==================== 基础 Modal ====================
+// ==================== Base modal ====================
 
 export interface BaseModalProps extends Omit<ModalProps, 'footer'> {
-  /** 提交按钮文字 */
+  /** Submit button text */
   submitText?: string;
-  /** 取消按钮文字 */
+  /** Cancel button text */
   cancelText?: string;
-  /** 是否显示取消按钮 */
+  /** Whether to show the cancel button */
   showCancel?: boolean;
-  /** 是否显示提交按钮 */
+  /** Whether to show the submit button */
   showSubmit?: boolean;
-  /** 提交按钮类型 */
+  /** Submit button type */
   submitButtonType?: 'primary' | 'default' | 'dashed' | 'text' | 'link';
-  /** 提交按钮是否危险 */
+  /** Whether the submit button is dangerous */
   submitDanger?: boolean;
   /** Loading state */
   loading?: boolean;
-  /** 禁用状态 */
+  /** Disabled state */
   disabled?: boolean;
-  /** 提交回调 */
+  /** Submit callback */
   onSubmit?: () => void;
-  /** 取消回调 */
+  /** Cancel callback */
   onCancel?: () => void;
-  /** 底部按钮对齐方式 */
+  /** Bottom button alignment */
   footerAlign?: 'left' | 'center' | 'right';
-  /** 表单Error information，显示在表单下方 */
+  /** Form error message, displayed below the form */
   error?: string | null;
-  /** Error information关闭回调 */
+  /** Error close callback */
   onClearError?: () => void;
 }
 
 /**
- * 基础 Modal 组件
+ * Base modal component
  */
 export const BaseModal: React.FC<BaseModalProps> = ({
   submitText,
@@ -117,16 +117,16 @@ export const BaseModal: React.FC<BaseModalProps> = ({
   );
 };
 
-// ==================== 表单 Modal ====================
+// ==================== Form modal ====================
 
 export interface FormModalProps extends BaseModalProps {
-  /** 表单内容 */
+  /** Form content */
   children: React.ReactNode;
 }
 
 /**
- * 表单 Modal 组件
- * 用于包含表单的弹窗
+ * Form modal component
+ * Modal that contains a form
  */
 export const FormModal: React.FC<FormModalProps> = ({
   className = '',
@@ -149,24 +149,24 @@ export const FormModal: React.FC<FormModalProps> = ({
   );
 };
 
-// ==================== 确认对话框 ====================
+// ==================== Confirm dialog ====================
 
 export type ConfirmType = 'info' | 'success' | 'warning' | 'error' | 'confirm';
 
 export interface ConfirmModalOptions {
   /** Title */
   title?: string;
-  /** 内容 */
+  /** Content */
   content?: React.ReactNode;
-  /** 确认按钮文字 */
+  /** Confirm button text */
   okText?: string;
-  /** 取消按钮文字 */
+  /** Cancel button text */
   cancelText?: string;
-  /** 类型 */
+  /** Types */
   type?: ConfirmType;
-  /** 确认回调 */
+  /** Confirm callback */
   onOk?: () => void | Promise<void>;
-  /** 取消回调 */
+  /** Cancel callback */
   onCancel?: () => void;
 }
 
@@ -179,8 +179,8 @@ const iconMap = {
 };
 
 /**
- * 显示确认对话框
- * 注意：建议使用 App.useApp() 获取 modal 实例后调用，以避免上下文警告
+ * Show the confirmation dialog
+ * Note: prefer getting the modal instance via App.useApp() to avoid context warnings
  */
 export function showConfirm(options: ConfirmModalOptions, modal?: ReturnType<typeof App.useApp>['modal']) {
   const { type = 'confirm', title, content, okText, cancelText, onOk, onCancel } = options;
@@ -205,8 +205,8 @@ export function showConfirm(options: ConfirmModalOptions, modal?: ReturnType<typ
 }
 
 /**
- * 显示删除确认对话框
- * 注意：建议使用 App.useApp() 获取 modal 实例后调用，以避免上下文警告
+ * Show the delete confirmation dialog
+ * Note: prefer getting the modal instance via App.useApp() to avoid context warnings
  */
 export function showDeleteConfirm(options: Omit<ConfirmModalOptions, 'type'>, modal?: ReturnType<typeof App.useApp>['modal']) {
   return showConfirm({
@@ -217,31 +217,31 @@ export function showDeleteConfirm(options: Omit<ConfirmModalOptions, 'type'>, mo
   }, modal);
 }
 
-// ==================== Drawer 弹窗 ====================
+// ==================== Drawer ====================
 
 export interface BaseDrawerProps extends Omit<DrawerProps, 'footer'> {
-  /** 提交按钮文字 */
+  /** Submit button text */
   submitText?: string;
-  /** 取消按钮文字 */
+  /** Cancel button text */
   cancelText?: string;
-  /** 是否显示取消按钮 */
+  /** Whether to show the cancel button */
   showCancel?: boolean;
-  /** 是否显示提交按钮 */
+  /** Whether to show the submit button */
   showSubmit?: boolean;
   /** Loading state */
   loading?: boolean;
-  /** 禁用状态 */
+  /** Disabled state */
   disabled?: boolean;
-  /** 提交回调 */
+  /** Submit callback */
   onSubmit?: () => void;
-  /** 表单Error information，显示在表单下方 */
+  /** Form error message, displayed below the form */
   error?: string | null;
-  /** Error information关闭回调 */
+  /** Error close callback */
   onClearError?: () => void;
 }
 
 /**
- * 基础 Drawer 组件
+ * Base drawer component
  */
 export const BaseDrawer: React.FC<BaseDrawerProps> = ({
   submitText,
@@ -304,14 +304,14 @@ export const BaseDrawer: React.FC<BaseDrawerProps> = ({
   );
 };
 
-// ==================== 表单 Drawer ====================
+// ==================== Form drawer ====================
 
 export interface FormDrawerProps extends BaseDrawerProps {
   children: React.ReactNode;
 }
 
 /**
- * 表单 Drawer 组件
+ * Form drawer component
  */
 export const FormDrawer: React.FC<FormDrawerProps> = ({
   className = '',
@@ -334,12 +334,12 @@ export const FormDrawer: React.FC<FormDrawerProps> = ({
   );
 };
 
-// ==================== 表单错误管理 Hook ====================
+// ==================== Form error management hook ====================
 
 /**
- * 管理表单提交错误的 Hook
- * - 自动在 open 变化时清除错误
- * - 提供 setError / clearError / handleError 方法
+ * Hook for managing form submission errors
+ * - Automatically clear errors when open changes
+ * - Provides setError / clearError / handleError methods
  */
 export function useFormError(open?: boolean) {
   const [error, setError] = React.useState<string | null>(null);

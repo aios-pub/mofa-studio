@@ -1,5 +1,5 @@
 /**
- * Conversation Mock 数据
+ * Conversation mock data
  */
 
 import type { Conversation, Message } from '../../types';
@@ -136,18 +136,18 @@ export const mockConversations: Conversation[] = [
   },
 ];
 
-// 模拟 API 延迟
+// Mock API latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Conversation API Mock
 export const conversationApi = {
-  // 获取所有会话
+  // Get all conversations
   async getAll(): Promise<Conversation[]> {
     await delay(300);
     return mockConversations;
   },
 
-  // 获取单个会话
+  // Get a single conversation
   async getById(id: string): Promise<Conversation | undefined> {
     await delay(200);
     return mockConversations.find((c) => c.id === id);

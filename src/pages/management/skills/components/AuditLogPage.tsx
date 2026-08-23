@@ -1,6 +1,6 @@
 /**
  * Audit Log Page
- * 审计日志页面
+ * Audit log page
  */
 
 import { useEffect, useState } from "react";

@@ -1,5 +1,5 @@
 /**
- * WebSocket 连接模式切换组件
+ * WebSocket connection mode switcher component
  */
 
 import { useState } from 'react';
@@ -16,15 +16,15 @@ import { useWebSocket } from '@/hooks/useWebSocket';
 import type { ConnectionMode, ConnectionState } from '@/services/websocket';
 
 interface ConnectionSwitcherProps {
-  /** 是否显示状态文本 */
+  /** Whether to show status text */
   showStatusText?: boolean;
-  /** 样式 */
+  /** Styles */
   style?: React.CSSProperties;
-  /** 类名 */
+  /** Class name */
   className?: string;
 }
 
-/** 获取状态图标 */
+/** Get status icon */
 function getStatusIcon(state: ConnectionState) {
   switch (state) {
     case 'connected':
@@ -39,7 +39,7 @@ function getStatusIcon(state: ConnectionState) {
   }
 }
 
-/** 获取状态颜色 */
+/** Get status color */
 function getStatusColor(state: ConnectionState): string {
   switch (state) {
     case 'connected':
@@ -54,7 +54,7 @@ function getStatusColor(state: ConnectionState): string {
   }
 }
 
-/** 获取状态文本 */
+/** Get status text */
 function getStatusText(state: ConnectionState): string {
   switch (state) {
     case 'connected':
@@ -69,7 +69,7 @@ function getStatusText(state: ConnectionState): string {
   }
 }
 
-/** 获取模式文本 */
+/** Get mode text */
 function getModeText(mode: ConnectionMode): string {
   switch (mode) {
     case 'socketio':
@@ -91,17 +91,17 @@ export default function ConnectionSwitcher({
   });
   const [switching, setSwitching] = useState(false);
 
-  // 处理模式切换
+  // Handle mode switching
   const handleModeChange = async (newMode: ConnectionMode) => {
     if (newMode === mode || switching) return;
 
     setSwitching(true);
     try {
-      // 先断开当前连接
+      // Disconnect the current connection first
       disconnect();
-      // 切换模式
+      // Switch mode
       await switchMode(newMode);
-      // 重新连接
+      // Reconnect
       await connect();
     } catch (error) {
       console.error('Failed to switch mode:', error);
@@ -110,7 +110,7 @@ export default function ConnectionSwitcher({
     }
   };
 
-  // 处理重连
+  // Handle reconnection
   const handleReconnect = async () => {
     if (state === 'disconnected' || state === 'error') {
       await connect();
@@ -122,7 +122,7 @@ export default function ConnectionSwitcher({
       className={`flex items-center gap-3 ${className || ''}`}
       style={style}
     >
-      {/* 连接状态指示器 */}
+      {/* Connection status indicator */}
       <Tooltip title={`${getModeText(mode)} - ${getStatusText(state)}`}>
         <Badge
           dot
@@ -141,7 +141,7 @@ export default function ConnectionSwitcher({
         </Badge>
       </Tooltip>
 
-      {/* 模式切换 */}
+      {/* Mode switching */}
       <Radio.Group
         value={mode}
         onChange={(e) => handleModeChange(e.target.value)}

@@ -1,7 +1,7 @@
 /**
- * Octos 后端 API 客户端
- * 每个 Octos Claw 实例对应一个独立的 API 客户端（不同的 baseUrl）
- * 不使用共享的 apiClient，而是直接创建 axios 实例
+ * Octos backend API client
+ * Each Octos claw instance has its own API client (different baseUrl)
+ * Create an axios instance directly instead of the shared apiClient
  */
 
 import axios, { type AxiosInstance } from "axios";
@@ -29,7 +29,7 @@ export class OctosApiClient {
     this.originalBaseUrl = baseUrl;
     this.authToken = authToken;
 
-    // 开发环境使用代理避免 CORS
+    // Use a proxy in development to avoid CORS
     const isDev = import.meta.env.DEV;
     const shouldUseProxy = isDev && baseUrl && !baseUrl.startsWith("/");
 
@@ -38,14 +38,14 @@ export class OctosApiClient {
       timeout: 15000,
       headers: {
         "Content-Type": "application/json",
-        // 使用请求头传递目标地址
+        // Pass the target address via request headers
         ...(shouldUseProxy ? { "X-Octos-Target": baseUrl } : {}),
         ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       },
     });
   }
 
-  // ==================== 检测连接 ====================
+  // ==================== Connection detection ====================
 
   async checkConnection(): Promise<boolean> {
     try {
@@ -95,7 +95,7 @@ export class OctosApiClient {
     return data;
   }
 
-  // ==================== 网关控制 ====================
+  // ==================== Gateway control ====================
 
   async startGateway(id: string): Promise<OctosActionResponse> {
     const { data } = await this.http.post(`/api/admin/profiles/${id}/start`);
@@ -119,7 +119,7 @@ export class OctosApiClient {
     return data;
   }
 
-  // ==================== Provider 操作 ====================
+  // ==================== Provider operations ====================
 
   async testProvider(params: {
     provider: string;
@@ -144,7 +144,7 @@ export class OctosApiClient {
     return data;
   }
 
-  // ==================== 批量操作 ====================
+  // ==================== Batch operations ====================
 
   async startAll(): Promise<OctosActionResponse> {
     const { data } = await this.http.post("/api/admin/start-all");
@@ -253,12 +253,12 @@ export class OctosApiClient {
 
     const path = `/api/admin/profiles/${profileId}/logs`;
 
-    // 构建查询参数
+    // Build query parameters
     const params = new URLSearchParams();
     if (this.authToken) {
       params.append("token", this.authToken);
     }
-    // 开发环境使用代理时，需要将目标地址作为参数传递
+    // When using a proxy in development, pass the target address as a parameter
     if (shouldUseProxy) {
       params.append("target", this.originalBaseUrl);
     }
@@ -266,14 +266,14 @@ export class OctosApiClient {
     const queryString = params.toString();
     const fullPath = queryString ? `${path}?${queryString}` : path;
 
-    // 开发环境使用代理，否则直接使用原始 URL
+    // Use a proxy in development; otherwise use the raw URL
     const baseURL = shouldUseProxy ? "/octos-proxy" : this.originalBaseUrl;
     const cleanBaseURL = baseURL.endsWith("/") ? baseURL.slice(0, -1) : baseURL;
 
     return cleanBaseURL + fullPath;
   }
 
-  // ==================== 子账户 ====================
+  // ==================== Sub-accounts ====================
 
   async listSubAccounts(parentId: string): Promise<OctosProfileResponse[]> {
     const { data } = await this.http.get(
@@ -333,8 +333,8 @@ export class OctosApiClient {
 }
 
 /**
- * 从 Agent 创建 OctosApiClient
- * 读取 custom_params.claw 中的 endpointUrl 和 authConfig
+ * Create OctosApiClient from an agent
+ * Read endpointUrl and authConfig from custom_params.claw
  */
 export function createOctosApiClient(agent: Agent): OctosApiClient {
   const claw =

@@ -1,8 +1,8 @@
 /**
- * Prompts 真实 API
- * 后端端点: /api/prompt/...
+ * Prompts real API
+ * Backend endpoints: /api/prompt/...
  *
- * 后端字段映射 (snake_case → camelCase):
+ * Backend field mapping (snake_case -> camelCase):
  *   create_time    → createdAt
  *   update_time    → updatedAt
  *   prompt_id      → promptId
@@ -13,7 +13,7 @@
 import { apiClient } from "../api/apiClient";
 import { parseDate } from "./fieldMapper";
 
-// ==================== 类型定义 ====================
+// ==================== Type definitions ====================
 
 interface Prompt {
   id: string;
@@ -53,7 +53,7 @@ interface VersionDiff {
   modifications: { line: number; oldContent: string; newContent: string }[];
 }
 
-// ==================== 后端原始类型 ====================
+// ==================== Raw backend types ====================
 
 interface BackendPrompt {
   id: string;
@@ -84,7 +84,7 @@ interface BackendPromptVersion {
   createdBy?: string;
 }
 
-// ==================== 字段映射 ====================
+// ==================== Field mapping ====================
 
 function mapPrompt(raw: BackendPrompt): Prompt {
   let variables: PromptVariable[] = [];
@@ -92,7 +92,7 @@ function mapPrompt(raw: BackendPrompt): Prompt {
     if (Array.isArray(raw.variables)) {
       variables = raw.variables as PromptVariable[];
     } else if (typeof raw.variables === 'object') {
-      // 后端可能存为 JSON 对象
+      // Backend may store it as a JSON object
       variables = Array.isArray(raw.variables) ? raw.variables as PromptVariable[] : [];
     }
   }
@@ -122,30 +122,30 @@ function mapPromptToBackend(prompt: Partial<Prompt>): Record<string, unknown> {
   return result;
 }
 
-// ==================== API 方法 ====================
+// ==================== API methods ====================
 
 const promptRealApi = {
-  /** 获取所有 Prompt */
+  /** Get all prompts */
   async getAll(): Promise<Prompt[]> {
     const data = await apiClient.get<BackendPrompt[]>("/api/prompt/list");
     if (!Array.isArray(data)) return [];
     return data.map(mapPrompt);
   },
 
-  /** 获取单个 Prompt */
+  /** Get a single prompt */
   async getById(id: string): Promise<Prompt> {
     const raw = await apiClient.get<BackendPrompt>(`/api/prompt/${id}`);
     return mapPrompt(raw);
   },
 
-  /** 创建 Prompt */
+  /** Create prompt */
   async create(data: Partial<Prompt>): Promise<Prompt> {
     const body = mapPromptToBackend(data);
     const raw = await apiClient.post<BackendPrompt>("/api/prompt/create", body);
     return mapPrompt(raw);
   },
 
-  /** 更新 Prompt */
+  /** Update prompt */
   async update(id: string, data: Partial<Prompt>): Promise<Prompt> {
     const existing = await promptRealApi.getById(id);
     const merged = { ...existing, ...data };
@@ -154,20 +154,20 @@ const promptRealApi = {
     return mapPrompt(raw);
   },
 
-  /** 删除 Prompt */
+  /** Delete prompt */
   async delete(id: string): Promise<boolean> {
     await apiClient.delete(`/api/prompt/delete/${id}`);
     return true;
   },
 
-  /** 按分类获取 */
+  /** Get by category */
   async getByCategory(category: string): Promise<Prompt[]> {
     const data = await apiClient.get<BackendPrompt[]>(`/api/prompt/by-category?category=${category}`);
     if (!Array.isArray(data)) return [];
     return data.map(mapPrompt);
   },
 
-  /** 获取版本列表 */
+  /** Get version list */
   async getVersions(promptId: string): Promise<PromptVersion[]> {
     const data = await apiClient.get<BackendPromptVersion[]>(`/api/prompt/versions?prompt_id=${promptId}`);
     if (!Array.isArray(data)) return [];
@@ -183,17 +183,17 @@ const promptRealApi = {
     }));
   },
 
-  /** 版本比较 - 后端暂不支持 */
+  /** Version comparison - not yet supported by the backend */
   async compareVersions(_versionId1: string, _versionId2: string): Promise<VersionDiff> {
     return { additions: [], deletions: [], modifications: [] };
   },
 
-  /** 回滚版本 - 后端暂不支持 */
+  /** Roll back version - not yet supported by the backend */
   async rollbackToVersion(_promptId: string, _versionId: string): Promise<Prompt> {
     throw new Error("Version rollback not supported by backend");
   },
 
-  /** 替换变量 - 前端实现 */
+  /** Replace variables - frontend implementation */
   replaceVariables(content: string, variables: PromptVariable[], values: Record<string, string>): string {
     let result = content;
     for (const variable of variables) {
@@ -203,14 +203,14 @@ const promptRealApi = {
     return result;
   },
 
-  /** 估算 Token count - 前端实现 */
+  /** Estimate token count - frontend implementation */
   estimateTokens(content: string): number {
     const chineseChars = (content.match(/[\u4e00-\u9fa5]/g) || []).length;
     const otherChars = content.length - chineseChars;
     return Math.ceil(chineseChars / 1.5 + otherChars / 4);
   },
 
-  /** 模拟聊天 - 后端暂不支持 */
+  /** Simulated chat - not yet supported by the backend */
   async simulateChat(_promptId: string, _message: string, _variables?: Record<string, string>): Promise<{ response: string }> {
     return {
       response: "Chat simulation is not supported by the backend. Please test the prompt in a real conversation.",

@@ -1,5 +1,5 @@
 /**
- * 对话状态管理
+ * Conversation state management
  */
 
 import { create } from 'zustand';

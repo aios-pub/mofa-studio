@@ -1,34 +1,34 @@
 /**
- * 图片和滚动相关 Hook
+ * Image and scrolling hooks
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-// ==================== 图片加载 ====================
+// ==================== Image loading ====================
 
 export interface UseImageLoadOptions {
-  /** 加载Failed时显示的图片 */
+  /** Image shown when loading fails */
   fallback?: string;
-  /** 加载超时时间 */
+  /** Load timeout */
   timeout?: number;
 }
 
 export interface UseImageLoadReturn {
   /** Loading state */
   status: 'loading' | 'loaded' | 'error';
-  /** 是否加载中 */
+  /** Whether loading */
   isLoading: boolean;
-  /** 是否加载完成 */
+  /** Whether loading is complete */
   isLoaded: boolean;
-  /** 是否加载Failed */
+  /** Whether loading failed */
   isError: boolean;
-  /** 当前显示的图片 URL */
+  /** Currently displayed image URL */
   src: string;
 }
 
 /**
- * 图片Loading state Hook
- * @param src 图片 URL
+ * Image loading state hook
+ * @param src Image URL
  * @param options Configuration options
  * @returns Loading state
  */
@@ -65,7 +65,7 @@ export function useImageLoad(
     img.onerror = handleError;
     img.src = src;
 
-    // 超时处理
+    // Timeout handling
     timeoutId = setTimeout(() => {
       setStatus('error');
     }, timeout);
@@ -87,8 +87,8 @@ export function useImageLoad(
 }
 
 /**
- * 批量图片加载
- * @param srcs 图片 URL 数组
+ * Batch image loading
+ * @param srcs Array of image URLs
  * @returns Loading state
  */
 export function useImagesLoad(srcs: string[]): {
@@ -140,28 +140,28 @@ export interface ImagePreviewItem {
 }
 
 export interface UseImagePreviewReturn {
-  /** 是否显示预览 */
+  /** Whether to show preview */
   visible: boolean;
-  /** 当前预览索引 */
+  /** Current preview index */
   currentIndex: number;
-  /** 当前预览图片 */
+  /** Current preview image */
   currentImage: ImagePreviewItem | null;
-  /** 打开预览 */
+  /** Open preview */
   open: (index?: number) => void;
-  /** 关闭预览 */
+  /** Close preview */
   close: () => void;
-  /** 上一张 */
+  /** Previous */
   prev: () => void;
-  /** 下一张 */
+  /** Next */
   next: () => void;
-  /** 跳转到指定图片 */
+  /** Navigate to a specific image */
   goTo: (index: number) => void;
 }
 
 /**
  * Image preview Hook
- * @param images 图片列表
- * @returns 预览控制
+ * @param images Image list
+ * @returns Preview controls
  */
 export function useImagePreview(
   images: ImagePreviewItem[]
@@ -190,7 +190,7 @@ export function useImagePreview(
     setCurrentIndex(Math.max(0, Math.min(index, images.length - 1)));
   }, [images.length]);
 
-  // 键盘控制
+  // Keyboard control
   useEffect(() => {
     if (!visible) return;
 
@@ -224,21 +224,21 @@ export function useImagePreview(
   };
 }
 
-// ==================== 无限滚动 ====================
+// ==================== Infinite scroll ====================
 
 export interface UseInfiniteScrollOptions {
-  /** 是否有更多数据 */
+  /** Whether more data is available */
   hasMore: boolean;
-  /** 加载更多的回调 */
+  /** Load more callback */
   onLoadMore: () => void | Promise<void>;
-  /** 触发加载的距离阈值（像素） */
+  /** Distance threshold to trigger loading (pixels) */
   threshold?: number;
-  /** 目标元素（默认为窗口） */
+  /** Target element (defaults to window) */
   targetRef?: React.RefObject<HTMLElement | null>;
 }
 
 /**
- * 无限滚动 Hook
+ * Infinite scroll hook
  * @param options Configuration options
  */
 export function useInfiniteScroll(options: UseInfiniteScrollOptions): {
@@ -282,19 +282,19 @@ export function useInfiniteScroll(options: UseInfiniteScrollOptions): {
   return { isLoading };
 }
 
-// ==================== 滚动到元素 ====================
+// ==================== Scroll to element ====================
 
 export interface UseScrollToOptions {
-  /** 滚动行为 */
+  /** Scroll behavior */
   behavior?: ScrollBehavior;
-  /** 顶部偏移 */
+  /** Top offset */
   offset?: number;
 }
 
 /**
- * 滚动到指定元素
+ * Scroll to a specific element
  * @param options Configuration options
- * @returns 滚动函数
+ * @returns Scroll function
  */
 export function useScrollTo(options: UseScrollToOptions = {}) {
   const { behavior = 'smooth', offset = 0 } = options;
@@ -328,11 +328,11 @@ export function useScrollTo(options: UseScrollToOptions = {}) {
   return { scrollTo, scrollToTop, scrollToBottom };
 }
 
-// ==================== 滚动锁定 ====================
+// ==================== Scroll locking ====================
 
 /**
- * 锁定/解锁页面滚动
- * @param locked 是否锁定
+ * Lock/unlock page scrolling
+ * @param locked Whether locked
  */
 export function useScrollLock(locked: boolean): void {
   useEffect(() => {
@@ -341,7 +341,7 @@ export function useScrollLock(locked: boolean): void {
     const originalStyle = window.getComputedStyle(document.body).overflow;
     const originalPaddingRight = window.getComputedStyle(document.body).paddingRight;
 
-    // 计算滚动条宽度
+    // Compute scrollbar width
     const scrollbarWidth = window.innerWidth - document.body.clientWidth;
 
     document.body.style.overflow = 'hidden';
@@ -356,16 +356,16 @@ export function useScrollLock(locked: boolean): void {
   }, [locked]);
 }
 
-// ==================== 滚动位置恢复 ====================
+// ==================== Scroll position restoration ====================
 
 /**
- * 保存和恢复滚动位置
- * @param key 存储键
+ * Save and restore scroll position
+ * @param key Storage key
  */
 export function useScrollRestoration(key: string): void {
   const scrollKey = `scroll_${key}`;
 
-  // 保存滚动位置
+  // Save scroll position
   useEffect(() => {
     const handleScroll = () => {
       sessionStorage.setItem(scrollKey, String(window.scrollY));
@@ -375,7 +375,7 @@ export function useScrollRestoration(key: string): void {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [scrollKey]);
 
-  // 恢复滚动位置
+  // Restore scroll position
   useEffect(() => {
     const savedPosition = sessionStorage.getItem(scrollKey);
     if (savedPosition) {

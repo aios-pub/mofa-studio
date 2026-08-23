@@ -1,5 +1,5 @@
 /**
- * 配置面板 - 右侧节点配置面板
+ * Config panel - right node configuration panel
  */
 
 import { useState } from "react";
@@ -31,7 +31,7 @@ export default function ConfigPanel({
   );
   const [agents, setAgents] = useState<Agent[]>([]);
 
-  // 加载相关数据
+  // Load related data
   useEffect(() => {
     const loadData = async () => {
       const agentData = await agentApi.getAll();
@@ -61,7 +61,7 @@ export default function ConfigPanel({
 
   return (
     <div className="w-80 border-l border-(--color-border) bg-[var(--color-bg-secondary)] flex flex-col">
-      {/* 头部 */}
+      {/* Header */}
       <div className="p-4 border-b border-(--color-border) flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-xl">{typeInfo?.icon}</span>
@@ -77,9 +77,9 @@ export default function ConfigPanel({
         />
       </div>
 
-      {/* 内容 */}
+      {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
-        {/* 基本信息 */}
+        {/* Basic information */}
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
@@ -92,7 +92,7 @@ export default function ConfigPanel({
             />
           </div>
 
-          {/* 根据Node type渲染不同配置 */}
+          {/* Render different configs by node type */}
           {config.type === "agent" && (
             <AgentConfig
               config={config}
@@ -112,7 +112,7 @@ export default function ConfigPanel({
         </div>
       </div>
 
-      {/* 底部 */}
+      {/* Bottom */}
       <div className="p-4 border-t border-(--color-border)">
         <Button danger block icon={<DeleteOutlined />} onClick={onDelete}>
           删除节点
@@ -122,7 +122,7 @@ export default function ConfigPanel({
   );
 }
 
-// Agent 配置
+// Agent configuration
 function AgentConfig({
   config,
   agents,
@@ -203,7 +203,7 @@ function AgentConfig({
   );
 }
 
-// 条件配置
+// Condition configuration
 function ConditionConfig({ config: _config }: { config: NodeConfig }) {
   const condConfig = _config as {
     type: "condition";
@@ -239,7 +239,7 @@ function ConditionConfig({ config: _config }: { config: NodeConfig }) {
   );
 }
 
-// HTTP 请求配置
+// HTTP request configuration
 function HttpRequestConfig({
   config,
   onChange,
@@ -309,7 +309,7 @@ function HttpRequestConfig({
   );
 }
 
-// 延迟配置
+// Latency configuration
 function DelayConfig({
   config,
   onChange,

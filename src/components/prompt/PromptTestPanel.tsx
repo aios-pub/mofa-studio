@@ -1,5 +1,5 @@
 /**
- * 提示词测试面板组件
+ * Prompt test panel component
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -41,7 +41,7 @@ export default function PromptTestPanel({
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    // 初始化变量值
+    // Initialize variable values
     const initialValues: Record<string, string> = {};
     variables.forEach((v) => {
       initialValues[v.name] = v.defaultValue || "";
@@ -114,7 +114,7 @@ export default function PromptTestPanel({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Label栏 */}
+      {/* Tabs bar */}
       <div className="flex border-b border-(--color-border)">
         <button
           onClick={() => setActiveTab("preview")}
@@ -140,7 +140,7 @@ export default function PromptTestPanel({
         </button>
       </div>
 
-      {/* 变量输入区 */}
+      {/* Variable input area */}
       {variables.length > 0 && (
         <div className="p-3 border-b border-(--color-border) bg-[var(--color-bg-secondary)]">
           <div className="flex items-center justify-between mb-2">
@@ -204,11 +204,11 @@ export default function PromptTestPanel({
         </div>
       )}
 
-      {/* 内容区 */}
+      {/* Content area */}
       <div className="flex-1 overflow-hidden">
         {activeTab === "preview" ? (
           <div className="h-full flex flex-col">
-            {/* Token 统计 */}
+            {/* Token statistics */}
             <div className="flex items-center justify-between px-4 py-2 border-b border-(--color-border) bg-[var(--color-bg-secondary)]">
               <div className="flex items-center gap-4 text-xs">
                 <div className="flex items-center gap-1">
@@ -247,7 +247,7 @@ export default function PromptTestPanel({
               </button>
             </div>
 
-            {/* 预览内容 */}
+            {/* Preview content */}
             <div className="flex-1 overflow-y-auto p-4">
               <pre className="text-sm text-[var(--color-text-primary)] whitespace-pre-wrap font-mono">
                 {previewContent || "（提示词内容为空）"}
@@ -256,7 +256,7 @@ export default function PromptTestPanel({
           </div>
         ) : (
           <div className="h-full flex flex-col">
-            {/* 聊天Messages */}
+            {/* Chat messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {chatMessages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-tertiary)]">
@@ -296,7 +296,7 @@ export default function PromptTestPanel({
               )}
             </div>
 
-            {/* 输入区 */}
+            {/* Input area */}
             <div className="p-3 border-t border-(--color-border) bg-[var(--color-bg-secondary)]">
               <div className="flex gap-2">
                 <textarea

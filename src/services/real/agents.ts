@@ -1,17 +1,17 @@
 /**
- * Agent 真实 API
- * 后端端点: /api/agent/...
+ * Agent real API
+ * Backend endpoints: /api/agent/...
  *
- * 后端使用 snake_case 字段名，前端使用 camelCase
- * 此层负责双向转换
+ * Backend uses snake_case field names; frontend uses camelCase
+ * This layer handles bidirectional conversion
  */
 
 import { apiClient } from "../api/apiClient";
 import type { Agent, AgentPermission, ThinkingConfig } from "@/types";
 
-// ==================== 后端请求/响应类型 ====================
+// ==================== Backend request/response types ====================
 
-/** 后端 AgentReq (创建/更新请求) */
+/** Backend AgentReq (create/update request) */
 interface BackendAgentReq {
   id?: string;
   provider_id: string;
@@ -33,7 +33,7 @@ interface BackendAgentReq {
   agent_type?: string;
 }
 
-/** 后端 AgentVo (响应) */
+/** Backend AgentVo (response) */
 interface BackendAgentVo {
   id: string;
   model_id: string;
@@ -57,9 +57,9 @@ interface BackendAgentVo {
   max_completion_tokens?: number;
 }
 
-// ==================== 转换函数 ====================
+// ==================== Conversion functions ====================
 
-/** 前端 → 后端 */
+/** Frontend -> backend */
 function toBackend(data: Partial<Agent>, isUpdate = false): BackendAgentReq {
   const req: BackendAgentReq = {
     provider_id: data.provider?.id || '',
@@ -102,7 +102,7 @@ function parseThinking(val: unknown): ThinkingConfig | undefined {
   return undefined;
 }
 
-/** 后端 → 前端 */
+/** Backend -> frontend */
 function fromBackend(vo: BackendAgentVo): Agent {
   const agentType = vo.agent_category || 'native';
   const cp = vo.custom_params;
@@ -128,17 +128,17 @@ function fromBackend(vo: BackendAgentVo): Agent {
   };
 }
 
-// ==================== API 方法 ====================
+// ==================== API methods ====================
 
 export const agentRealApi = {
-  /** 获取所有 Agent */
+  /** Get all agents */
   async getAll(): Promise<Agent[]> {
     const data = await apiClient.get<BackendAgentVo[]>("/api/agent/fetch");
     if (!Array.isArray(data)) return [];
     return data.map(fromBackend);
   },
 
-  /** 获取单个 Agent */
+  /** Get a single agent */
   async getById(id: string): Promise<Agent> {
     const all = await agentRealApi.getAll();
     const item = all.find((a) => a.id === id);
@@ -146,32 +146,32 @@ export const agentRealApi = {
     return item;
   },
 
-  /** 创建 Agent */
+  /** Create agent */
   async create(data: Partial<Agent>): Promise<Agent> {
     const req = toBackend(data, false);
     const vo = await apiClient.post<BackendAgentVo>("/api/agent/create", req);
     return fromBackend(vo);
   },
 
-  /** 更新 Agent */
+  /** Update agent */
   async update(id: string, data: Partial<Agent>): Promise<Agent> {
     const req = toBackend({ ...data, id }, true);
     const vo = await apiClient.post<BackendAgentVo>("/api/agent/update", req);
     return fromBackend(vo);
   },
 
-  /** 删除 Agent */
+  /** Delete agent */
   async delete(id: string): Promise<boolean> {
     await apiClient.delete(`/api/agent/delete/${id}`);
     return true;
   },
 
-  /** 获取 Agent 权限 */
+  /** Get agent permissions */
   async getPermissions(agentId: string): Promise<AgentPermission | undefined> {
     return apiClient.get<AgentPermission>(`/api/permission/by-agent?agent_id=${agentId}`);
   },
 
-  /** 更新 Agent 权限 */
+  /** Update agent permissions */
   async updatePermissions(
     agentId: string,
     data: Partial<AgentPermission>

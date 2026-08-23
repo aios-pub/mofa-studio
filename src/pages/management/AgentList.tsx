@@ -1,5 +1,5 @@
 /**
- * Agent 列表页面 - 完整 CRUD 管理
+ * Agent list page - full CRUD management
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -63,7 +63,7 @@ import { channelTypeConfig } from "@/services/mock/channels";
 import OctosManagementPanel from "./components/octos/OctosManagementPanel";
 import ResizableSidebar from "@/components/layout/ResizableSidebar";
 
-/** 从 agent.custom_params.claw 提取 Agent type配置 */
+/** Extract agent type configuration from agent.custom_params.claw */
 function getClaw(agent: Agent): Record<string, unknown> {
   return (
     ((agent.custom_params as Record<string, unknown>)?.claw as Record<
@@ -77,7 +77,7 @@ function clawVal(agent: Agent, key: string): string | undefined {
   return typeof v === "string" ? v : undefined;
 }
 
-// ==================== Custom parameters编辑器（JSON 可视化）===================
+// ==================== Custom parameters editor (JSON visualization) ====================
 
 type JsonValue =
   | string
@@ -87,7 +87,7 @@ type JsonValue =
   | JsonValue[]
   | { [k: string]: JsonValue };
 
-/** 获取 JSON 值的类型Label */
+/** Get the type tag of a JSON value */
 function jsonTypeOf(v: JsonValue): string {
   if (v === null) return "null";
   if (Array.isArray(v)) return "array";
@@ -112,7 +112,7 @@ const TYPE_OPTIONS = [
   { label: "数组", value: "array" },
 ];
 
-/** 将任意 JSON 值转为指定类型的默认值 */
+/** Convert any JSON value to the default value of the given type */
 function castType(val: JsonValue, targetType: string): JsonValue {
   if (targetType === "string")
     return typeof val === "string" ? val : String(val ?? "");
@@ -128,7 +128,7 @@ function castType(val: JsonValue, targetType: string): JsonValue {
   return {};
 }
 
-/** 单行值编辑器：根据当前类型渲染合适的输入控件 */
+/** Single-line value editor: render the appropriate input control by current type */
 function ValueInput({
   value,
   onChange,
@@ -166,7 +166,7 @@ function ValueInput({
         onChange={(v) => onChange(v)}
       />
     );
-  // null / object / array — 不可在此行内编辑，交给子节点
+  // null / object / array - not editable inline; delegate to child nodes
   return (
     <Typography.Text type="secondary" className="text-xs">
       {t === "null"
@@ -178,7 +178,7 @@ function ValueInput({
   );
 }
 
-/** 递归节点：渲染一个 key-value 对，对象/数组可展开子节点 */
+/** Recursive node: renders a key-value pair; objects/arrays expand into child nodes */
 function JsonNode({
   path,
   keyName,
@@ -257,7 +257,7 @@ function JsonNode({
   return (
     <div style={{ marginLeft: depth > 0 ? 16 : 0 }}>
       <div className="flex items-center gap-1.5 py-0.5 group">
-        {/* 展开/折叠 */}
+        {/* Expand/collapse */}
         {isContainer ? (
           <button
             type="button"
@@ -270,7 +270,7 @@ function JsonNode({
           <span className="w-4 flex-shrink-0" />
         )}
 
-        {/* 键名 */}
+        {/* Key name */}
         {!root && (
           <Typography.Text
             strong
@@ -281,7 +281,7 @@ function JsonNode({
           </Typography.Text>
         )}
 
-        {/* 类型选择 */}
+        {/* Type selection */}
         <Tag
           color={TYPE_COLOR[t]}
           className="text-xs leading-tight px-1 cursor-pointer m-0"
@@ -297,7 +297,7 @@ function JsonNode({
           />
         </Tag>
 
-        {/* 值 */}
+        {/* Value */}
         <div className="flex-1 min-w-0">
           <ValueInput
             value={value}
@@ -306,7 +306,7 @@ function JsonNode({
           />
         </div>
 
-        {/* 删除按钮 */}
+        {/* Delete button */}
         {!root && (
           <Button
             size="small"
@@ -320,7 +320,7 @@ function JsonNode({
         )}
       </div>
 
-      {/* 子节点 */}
+      {/* Child nodes */}
       {isContainer && expanded && (
         <div>
           {entries.map(([k, v]) => (
@@ -369,7 +369,7 @@ function CustomParamsEditor({
     if (path.length === 1) {
       onChange?.({ ...data, [rootKey]: val });
     } else {
-      // 深层修改：构建新对象
+      // Deep change: build a new object
       const newObj = { ...data };
       newObj[rootKey] = val;
       onChange?.(newObj);
@@ -510,7 +510,7 @@ function CustomParamsEditor({
   );
 }
 
-// ==================== Avatar 选择器 ====================
+// ==================== Avatar selector ====================
 
 const AVATAR_OPTIONS = [
   "🤖",
@@ -560,7 +560,7 @@ const AvatarPicker = ({
   </div>
 );
 
-// ==================== 创建/编辑 Agent Modal ====================
+// ==================== Create/edit agent modal ====================
 
 interface AgentFormModalProps {
   open: boolean;
@@ -601,7 +601,7 @@ function AgentFormModal({
     }
   };
 
-  // 编辑时初始化表单
+  // Initialize the form when editing
   useEffect(() => {
     if (open && agent) {
       form.setFieldsValue({
@@ -617,7 +617,7 @@ function AgentFormModal({
         custom_params: agent.custom_params || {},
       });
       setSelectedProviderId(agent.provider?.id);
-      // 加载已有的提示词关联
+      // Load existing prompt associations
       loadAgentPrompts(agent.id);
     } else if (open && !agent) {
       form.resetFields();
@@ -645,7 +645,7 @@ function AgentFormModal({
     }
   };
 
-  // provider 变化时加载模型列表
+  // Load model list when provider changes
   useEffect(() => {
     if (selectedProviderId) {
       const provider = providers.find((p) => p.id === selectedProviderId);
@@ -655,7 +655,7 @@ function AgentFormModal({
     }
   }, [selectedProviderId, providers]);
 
-  // 当 availableModels 更新后，确保编辑模式下的 modelId 正确回显
+  // When availableModels updates, ensure modelId echoes correctly in edit mode
   useEffect(() => {
     if (open && agent && availableModels.length > 0 && agent.model_id) {
       const modelExists = availableModels.some(
@@ -724,7 +724,7 @@ function AgentFormModal({
         savedAgent = await agentApi.create(agentData);
       }
 
-      // 保存提示词关联
+      // Save prompt associations
       if (savedAgent) {
         try {
           const existingPerm = await agentApi.getPermissions(savedAgent.id);
@@ -734,7 +734,7 @@ function AgentFormModal({
               accessiblePrompts: selectedPrompts,
             });
           } else {
-            // 新 agent 没有 permission 记录，创建一条
+            // New agent has no permission record; create one
             const newPerm: Partial<AgentPermission> = {
               agentId: savedAgent.id,
               features: {
@@ -755,7 +755,7 @@ function AgentFormModal({
             await agentApi.updatePermissions(savedAgent.id, newPerm);
           }
         } catch (permError) {
-          // e.g.果是新建的 agent，关联Failed时回滚
+          // If the agent was just created, roll back on association failure
           if (!isEdit && savedAgent) {
             try {
               await agentApi.delete(savedAgent.id);
@@ -883,7 +883,7 @@ function AgentFormModal({
   );
 }
 
-// ==================== Agent basic info（可编辑）====================
+// ==================== Agent basic info (editable) ====================
 
 function AgentBasicInfo({
   agent,
@@ -911,7 +911,7 @@ function AgentBasicInfo({
     loadLinkedPromptNames();
   }, [agent.provider?.id, agent.id]);
 
-  // 当 editing 或 availableModels 变化时，设置表单值
+  // When editing or availableModels changes, set form values
   useEffect(() => {
     if (editing) {
       form.setFieldsValue({
@@ -1008,7 +1008,7 @@ function AgentBasicInfo({
             : undefined,
       });
 
-      // 保存提示词关联
+      // Save prompt associations
       const existingPerm = await agentApi.getPermissions(agent.id);
       if (existingPerm) {
         await agentApi.updatePermissions(agent.id, {
@@ -1278,7 +1278,7 @@ function AgentBasicInfo({
   );
 }
 
-// ==================== Agent 关联提示词 ====================
+// ==================== Agent associated prompts ====================
 
 function AgentPromptsTab({
   agent,
@@ -1352,7 +1352,7 @@ function AgentPromptsTab({
   );
 }
 
-// ==================== Agent 关联 Skills ====================
+// ==================== Agent associated skills ====================
 
 function AgentSkillsTab({
   agent,
@@ -1426,7 +1426,7 @@ function AgentSkillsTab({
   );
 }
 
-// ==================== Agent 关联测试集 ====================
+// ==================== Agent associated test sets ====================
 
 function AgentTestSetsTab({
   agent,
@@ -1438,7 +1438,7 @@ function AgentTestSetsTab({
   const [selectedTestSets, setSelectedTestSets] = useState<string[]>([]);
 
   useEffect(() => {
-    // TODO: 后端增加 accessibleTestSets 字段后从 permission 加载
+    // TODO: load from permission once backend adds the accessibleTestSets field
     setSelectedTestSets([]);
   }, [agent.id]);
 
@@ -1461,7 +1461,7 @@ function AgentTestSetsTab({
   );
 }
 
-// ==================== Agent 详情 ====================
+// ==================== Agent details ====================
 
 function AgentDetail({
   agent,
@@ -1565,7 +1565,7 @@ function AgentDetail({
   );
 }
 
-// 权限Tabs
+// Permission tabs
 function AgentPermissionTab({ agent }: { agent: Agent }) {
   return (
     <PermissionConfig
@@ -1576,7 +1576,7 @@ function AgentPermissionTab({ agent }: { agent: Agent }) {
   );
 }
 
-// ==================== 主页面 ====================
+// ==================== Main page ====================
 
 export default function AgentListPage() {
   const { modal, message } = App.useApp();
@@ -1661,7 +1661,7 @@ export default function AgentListPage() {
         thinking: agent.thinking,
       });
 
-      // 复制提示词和技能关联
+      // Copy prompt and skill associations
       const sourcePerm = await agentApi.getPermissions(agent.id);
       if (sourcePerm && newAgent) {
         const newPerm = await agentApi.getPermissions(newAgent.id);
@@ -1772,7 +1772,7 @@ export default function AgentListPage() {
 
   return (
     <div className="flex h-full">
-      {/* 左侧列表 */}
+      {/* Left list */}
       <ResizableSidebar className="border-r border-(--color-border) bg-[var(--color-bg-secondary)]" storageKey="sidebar:agents">
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
@@ -1899,7 +1899,7 @@ export default function AgentListPage() {
         </div>
       </ResizableSidebar>
 
-      {/* 右侧详情 */}
+      {/* Right details */}
       <div className="flex-1 overflow-y-auto">
         {selectedAgent ? (
           isClawAgent(selectedAgent) ? (
@@ -1963,7 +1963,7 @@ export default function AgentListPage() {
   );
 }
 
-// ==================== Agent 详情面板（外部 Agent type）====================
+// ==================== Agent detail panel (external agent types) ====================
 
 interface ClawAgentDetailProps {
   agent: Agent;
@@ -2421,13 +2421,13 @@ function ClawCreateModal({
         .getAll()
         .then(setProviders)
         .catch(() => {});
-      // 预设置 Agent type（e.g.果有）
+      // Preset agent type (if any)
       if (preselectedType && !selectedType) {
         setSelectedType(preselectedType);
         form.setFieldValue("clawType", preselectedType);
       }
     } else {
-      // 关闭时清除选中状态
+      // Clear selection on close
       setSelectedType(null);
     }
   }, [open, preselectedType]);
@@ -2654,7 +2654,7 @@ function ClawEditModal({
     }
   };
 
-  // 当 models 更新后，确保编辑模式下的 modelId 正确回显
+  // When models updates, ensure modelId echoes correctly in edit mode
   useEffect(() => {
     if (open && agent && models.length > 0 && agent.model_id) {
       const modelExists = models.some((m: any) => m.id === agent.model_id);
@@ -2785,7 +2785,7 @@ function ClawEditModal({
   );
 }
 
-// ==================== Agent 连接指南 ====================
+// ==================== Agent connection guide ====================
 
 function ConnectionGuideDialog({
   open,
@@ -2853,7 +2853,7 @@ function ConnectionGuideDialog({
   );
 }
 
-// ==================== 渠道分配 ====================
+// ==================== Channel assignment ====================
 
 function ChannelAssignModal({
   open,
@@ -2970,7 +2970,7 @@ function ChannelAssignModal({
   );
 }
 
-// ==================== 渠道代理配置指南 ====================
+// ==================== Channel proxy configuration guide ====================
 
 function ChannelProxyGuideModal({
   open,

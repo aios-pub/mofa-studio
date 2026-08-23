@@ -1,5 +1,5 @@
 /**
- * 仪表盘页面
+ * Dashboard page
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -25,7 +25,7 @@ import {
   type AgentStatus,
 } from "@/services";
 
-// 欢迎横幅组件
+// Welcome banner component
 function WelcomeBanner() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "早上好" : hour < 18 ? "下午好" : "晚上好";
@@ -49,7 +49,7 @@ function WelcomeBanner() {
           </div>
         </div>
       </div>
-      {/* 装饰背景 */}
+      {/* Decorative background */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
       <div className="absolute bottom-0 left-1/4 w-32 h-32 bg-white/5 rounded-full translate-y-1/2" />
     </div>
@@ -95,7 +95,7 @@ export default function Dashboard() {
     return num.toString();
   };
 
-  // 计算趋势
+  // Compute trend
   const calculateTrend = (data: DailyStats[], key: keyof DailyStats) => {
     if (data.length < 2) return 0;
     const current = data[data.length - 1][key];
@@ -109,10 +109,10 @@ export default function Dashboard() {
     return ((current - previous) / previous) * 100;
   };
 
-  // 当前选中指标的趋势变化
+  // Trend of the currently selected metric
   const trendChange = calculateTrend(dailyStats, trendMetric);
 
-  // 统计卡片配置
+  // Statistics card configuration
   const statCards = stats
     ? [
         {
@@ -136,7 +136,7 @@ export default function Dashboard() {
         {
           title: "平均响应",
           value: `${((stats.avg_response_time || 0) / 1000).toFixed(1)}s`,
-          change: -calculateTrend(dailyStats, "avg_response_time"), // 响应时间越低越好
+          change: -calculateTrend(dailyStats, "avg_response_time"), // lower response time is better
           icon: ClockCircleOutlined,
           color: "#f59e0b",
           chartData: dailyStats.map((d) => d.avg_response_time),
@@ -152,7 +152,7 @@ export default function Dashboard() {
       ]
     : [];
 
-  // 快捷操作
+  // Quick actions
   const quickActions = [
     {
       label: "新建对话",
@@ -174,7 +174,7 @@ export default function Dashboard() {
     },
   ];
 
-  // Agent status统计
+  // Agent status statistics
   const agentStats = {
     online: agentStatuses.filter(
       (a) => a.status === "online" || a.status === "busy",
@@ -184,7 +184,7 @@ export default function Dashboard() {
     total: agentStatuses.length,
   };
 
-  // 获取趋势图标和颜色
+  // Get trend icon and color
   const getTrendDisplay = (change: number) => {
     const isPositive = change >= 0;
     return {
@@ -196,10 +196,10 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-6 w-full p-6">
-      {/* 欢迎横幅 */}
+      {/* Welcome banner */}
       <WelcomeBanner />
 
-      {/* 顶部工具栏 */}
+      {/* Top toolbar */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-[var(--color-text-primary)]">
@@ -224,7 +224,7 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
-          {/* 统计卡片 */}
+          {/* Statistics cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {statCards.map((stat) => {
               const Icon = stat.icon;
@@ -256,7 +256,7 @@ export default function Dashboard() {
                       {trend.icon} {trend.text}
                     </span>
                   </div>
-                  {/* 迷你图表 */}
+                  {/* Mini chart */}
                   <div className="flex items-end gap-0.5 h-8">
                     {stat.chartData.map((value, idx) => {
                       const height =
@@ -280,9 +280,9 @@ export default function Dashboard() {
             })}
           </div>
 
-          {/* 主内容区域 */}
+          {/* Main content area */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* 使用趋势图表 */}
+            {/* Usage trend chart */}
             <Card
               className="lg:col-span-2"
               styles={{ body: { padding: "20px" } }}
@@ -292,7 +292,7 @@ export default function Dashboard() {
                   近7天使用趋势
                 </h3>
                 <div className="flex items-center gap-4">
-                  {/* 指标切换 */}
+                  {/* Metric switching */}
                   <div className="flex items-center gap-1 bg-[var(--color-bg-secondary)] rounded-lg p-1">
                     {[
                       { key: "tokens", label: "Token", color: "#8b5cf6" },
@@ -340,7 +340,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Line chart区域 */}
+              {/* Line chart area */}
               <div className="h-48 relative" ref={chartRef}>
                 {(() => {
                   if (dailyStats.length === 0) {
@@ -371,14 +371,14 @@ export default function Dashboard() {
                   };
                   const config = metricConfig[trendMetric];
 
-                  // SVG 尺寸
+                  // SVG size
                   const width = 600;
                   const height = 160;
                   const padding = { top: 20, right: 20, bottom: 30, left: 50 };
                   const chartWidth = width - padding.left - padding.right;
                   const chartHeight = height - padding.top - padding.bottom;
 
-                  // 计算点坐标
+                  // Compute point coordinates
                   const points = values.map((value, index) => ({
                     x:
                       padding.left + (index / (values.length - 1)) * chartWidth,
@@ -391,22 +391,22 @@ export default function Dashboard() {
                     day: dailyStats[index],
                   }));
 
-                  // 生成折线路径
+                  // Generate line path
                   const linePath = points
                     .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
                     .join(" ");
 
-                  // 生成填充区域路径
+                  // Generate fill area path
                   const areaPath = `${linePath} L ${points[points.length - 1].x} ${padding.top + chartHeight} L ${padding.left} ${padding.top + chartHeight} Z`;
 
-                  // Y 轴刻度
+                  // Y-axis ticks
                   const yTicks = 4;
                   const yTickValues = Array.from(
                     { length: yTicks + 1 },
                     (_, i) => minValue + (range * i) / yTicks,
                   );
 
-                  // 计算 SVG 在容器中的实际位置（考虑 preserveAspectRatio 居中）
+                  // Compute the SVG's actual position in the container (preserveAspectRatio centering)
                   const containerWidth = chartRef.current?.offsetWidth || 600;
                   const containerHeight = chartRef.current?.offsetHeight || 192;
                   const viewBoxRatio = width / height;
@@ -418,13 +418,13 @@ export default function Dashboard() {
                     offsetY: number;
 
                   if (containerRatio > viewBoxRatio) {
-                    // 容器更宽，SVG 上下有空白
+                    // Container wider than SVG: blank space above and below
                     svgActualHeight = containerHeight;
                     svgActualWidth = containerHeight * viewBoxRatio;
                     offsetX = (containerWidth - svgActualWidth) / 2;
                     offsetY = 0;
                   } else {
-                    // 容器更高，SVG 左右有空白
+                    // Container taller than SVG: blank space left and right
                     svgActualWidth = containerWidth;
                     svgActualHeight = containerWidth / viewBoxRatio;
                     offsetX = 0;
@@ -441,7 +441,7 @@ export default function Dashboard() {
                         className="w-full h-full"
                         preserveAspectRatio="xMidYMid meet"
                       >
-                        {/* 渐变定义 */}
+                        {/* Gradient definition */}
                         <defs>
                           <linearGradient
                             id={`gradient-${trendMetric}`}
@@ -463,7 +463,7 @@ export default function Dashboard() {
                           </linearGradient>
                         </defs>
 
-                        {/* 网格线 */}
+                        {/* Grid lines */}
                         {yTickValues.map((tick, i) => (
                           <g key={i}>
                             <line
@@ -500,13 +500,13 @@ export default function Dashboard() {
                           </g>
                         ))}
 
-                        {/* 填充区域 */}
+                        {/* Fill area */}
                         <path
                           d={areaPath}
                           fill={`url(#gradient-${trendMetric})`}
                         />
 
-                        {/* 折线 */}
+                        {/* Line */}
                         <path
                           d={linePath}
                           fill="none"
@@ -516,12 +516,12 @@ export default function Dashboard() {
                           strokeLinejoin="round"
                         />
 
-                        {/* 数据点 */}
+                        {/* Data points */}
                         {points.map((point, index) => {
                           const isToday = index === points.length - 1;
                           return (
                             <g key={index}>
-                              {/* 外圈 */}
+                              {/* Outer ring */}
                               <circle
                                 cx={point.x}
                                 cy={point.y}
@@ -529,7 +529,7 @@ export default function Dashboard() {
                                 fill={config.color}
                                 fillOpacity="0.15"
                               />
-                              {/* 数据点 */}
+                              {/* Data points */}
                               <circle
                                 cx={point.x}
                                 cy={point.y}
@@ -538,7 +538,7 @@ export default function Dashboard() {
                                 stroke={config.color}
                                 strokeWidth={isToday ? "0" : "2"}
                               />
-                              {/* 今日Label */}
+                              {/* Today's stats */}
                               {isToday && (
                                 <text
                                   x={point.x}
@@ -553,7 +553,7 @@ export default function Dashboard() {
                                   今日
                                 </text>
                               )}
-                              {/* X轴Label */}
+                              {/* X-axis labels */}
                               <text
                                 x={point.x}
                                 y={height - 8}
@@ -578,10 +578,10 @@ export default function Dashboard() {
                         })}
                       </svg>
 
-                      {/* Tooltip 交互层 */}
+                      {/* Tooltip interaction layer */}
                       <div className="absolute inset-0 pointer-events-none">
                         {points.map((point, index) => {
-                          // 计算数据点在容器中的实际像素位置
+                          // Compute a data point's actual pixel position in the container
                           const actualX = offsetX + point.x * scaleX;
                           const actualY = offsetY + point.y * scaleY;
 
@@ -658,7 +658,7 @@ export default function Dashboard() {
                 })()}
               </div>
 
-              {/* 底部统计摘要 */}
+              {/* Bottom statistics summary */}
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-(--color-border)">
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-2">
@@ -714,7 +714,7 @@ export default function Dashboard() {
               </div>
             </Card>
 
-            {/* Agent status概览 */}
+            {/* Agent status overview */}
             <Card styles={{ body: { padding: "20px" } }}>
               <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-4">
                 Agent 状态
@@ -789,7 +789,7 @@ export default function Dashboard() {
             </Card>
           </div>
 
-          {/* 快捷操作 */}
+          {/* Quick actions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {quickActions.map((action) => {
               const Icon = action.icon;
@@ -820,7 +820,7 @@ export default function Dashboard() {
             })}
           </div>
 
-          {/* 活跃 Agent 列表 */}
+          {/* Active agents list */}
           <Card styles={{ body: { padding: "20px" } }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-semibold text-[var(--color-text-primary)]">

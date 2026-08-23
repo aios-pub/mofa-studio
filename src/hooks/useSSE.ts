@@ -1,38 +1,38 @@
 /**
  * useSSE Hook
- * 提供 SSE (Server-Sent Events) 连接管理
+ * Provides SSE (Server-Sent Events) connection management
  */
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 
-/** SSE 连接状态 */
+/** SSE connection state */
 export type SSEConnectionState = 'connecting' | 'open' | 'closed' | 'error';
 
 /** SSE Hook configuration */
 interface UseSSEOptions {
-  /** 自动连接 */
+  /** Auto-connect */
   autoConnect?: boolean;
-  /** 重连间隔（milliseconds） */
+  /** Reconnect interval (milliseconds) */
   reconnectInterval?: number;
-  /** 最大重连次数 */
+  /** Maximum retry count */
   maxReconnectAttempts?: number;
-  /** Messages解析函数 */
+  /** Message parser */
   parseMessage?: (data: string) => unknown;
 }
 
-/** SSE Hook 返回值 */
+/** SSE hook return value */
 interface UseSSEReturn {
-  /** 连接状态 */
+  /** Connection state */
   state: SSEConnectionState;
-  /** 是否已连接 */
+  /** Whether connected */
   isConnected: boolean;
-  /** 最后一条Messages */
+  /** Last message */
   lastMessage: unknown | null;
-  /** 连接 */
+  /** Connection */
   connect: () => void;
-  /** 断开连接 */
+  /** Disconnect */
   disconnect: () => void;
-  /** 重新连接 */
+  /** Reconnect */
   reconnect: () => void;
   /** Error information */
   error: Event | null;
@@ -61,10 +61,10 @@ export function useSSE(
   const reconnectAttemptsRef = useRef(0);
   const isManualCloseRef = useRef(false);
 
-  // 获取 URL（支持函数形式）
+  // Get the URL (function form supported)
   const getUrl = useCallback(() => (typeof url === 'function' ? url() : url), [url]);
 
-  // 清理连接
+  // Clean up connections
   const cleanup = useCallback(() => {
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
@@ -76,7 +76,7 @@ export function useSSE(
     }
   }, []);
 
-  // 连接
+  // Connection
   const connect = useCallback(() => {
     cleanup();
 
@@ -107,14 +107,14 @@ export function useSSE(
         setError(err);
         setState('error');
 
-        // e.g.果是手动关闭或达到最大重连次数，则不再重连
+        // If closed manually or max retries reached, stop reconnecting
         if (isManualCloseRef.current || reconnectAttemptsRef.current >= maxReconnectAttempts) {
           cleanup();
           setState('closed');
           return;
         }
 
-        // EventSource 会自动重连，但我们手动控制以支持配置
+        // EventSource reconnects automatically, but we control it manually to support configuration
         reconnectAttemptsRef.current++;
         reconnectTimeoutRef.current = setTimeout(() => {
           if (!isManualCloseRef.current) {
@@ -128,21 +128,21 @@ export function useSSE(
     }
   }, [cleanup, getUrl, parseMessage, maxReconnectAttempts, reconnectInterval]);
 
-  // 断开连接
+  // Disconnect
   const disconnect = useCallback(() => {
     isManualCloseRef.current = true;
     cleanup();
     setState('closed');
   }, [cleanup]);
 
-  // 重新连接
+  // Reconnect
   const reconnect = useCallback(() => {
     disconnect();
     isManualCloseRef.current = false;
     connect();
   }, [disconnect, connect]);
 
-  // 自动连接
+  // Auto-connect
   useEffect(() => {
     if (autoConnect && getUrl()) {
       connect();
@@ -152,7 +152,7 @@ export function useSSE(
       isManualCloseRef.current = true;
       cleanup();
     };
-  }, [autoConnect]); // 仅在 autoConnect 变化时执行
+  }, [autoConnect]); // only re-run when autoConnect changes
 
   return {
     state,

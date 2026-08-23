@@ -1,7 +1,7 @@
 /**
- * Markdown 渲染组件
- * 用于 LLM 对话Messages渲染
- * 支持 GFM、代码高亮、数学公式等
+ * Markdown renderer component
+ * For rendering LLM conversation messages
+ * Supports GFM, code highlighting, math formulas, etc.
  */
 
 import React, { useMemo, useCallback } from 'react';
@@ -16,31 +16,31 @@ import { Button, Tooltip } from 'antd';
 import { useBoolean } from '@/hooks';
 import { copyToClipboard } from '@/utils';
 
-// KaTeX 样式
+// KaTeX styles
 import 'katex/dist/katex.min.css';
 
-// ==================== 类型定义 ====================
+// ==================== Type definitions ====================
 
 export interface MarkdownRendererProps {
-  /** Markdown 内容 */
+  /** Markdown content */
   content: string;
   /** Whether to enable GFM (GitHub Flavored Markdown) */
   gfm?: boolean;
-  /** Whether to enable代码高亮 */
+  /** Whether to enable code highlighting */
   highlight?: boolean;
-  /** Whether to enable数学公式 */
+  /** Whether to enable math formulas */
   math?: boolean;
-  /** 是否允许 HTML */
+  /** Whether HTML is allowed */
   allowHtml?: boolean;
-  /** 是否显示代码复制按钮 */
+  /** Whether to show the code copy button */
   showCopyButton?: boolean;
-  /** Custom类名 */
+  /** Custom class name */
   className?: string;
-  /** 链接点击回调 */
+  /** Link click callback */
   onLinkClick?: (href: string, e: React.MouseEvent) => void;
 }
 
-// ==================== 代码块组件 ====================
+// ==================== Code block component ====================
 
 interface CodeBlockProps {
   language?: string;
@@ -61,7 +61,7 @@ function CodeBlock({ language, code, showCopyButton = true }: CodeBlockProps) {
 
   return (
     <div className="relative group my-4">
-      {/* LanguageLabel和复制按钮 */}
+      {/* Language tag and copy buttons */}
       <div className="flex items-center justify-between px-4 py-2 bg-gray-800 rounded-t-lg border-b border-gray-700">
         <span className="text-xs text-gray-400 font-mono">
           {language || 'text'}
@@ -79,7 +79,7 @@ function CodeBlock({ language, code, showCopyButton = true }: CodeBlockProps) {
         )}
       </div>
 
-      {/* 代码内容 */}
+      {/* Code content */}
       <div className="overflow-x-auto">
         <pre className="!mt-0 !rounded-t-none p-4 bg-gray-900 text-sm">
           <code className={`language-${language || 'text'}`}>{code}</code>
@@ -89,7 +89,7 @@ function CodeBlock({ language, code, showCopyButton = true }: CodeBlockProps) {
   );
 }
 
-// ==================== Markdown 渲染器 ====================
+// ==================== Markdown renderer ====================
 
 export function MarkdownRenderer({
   content,
@@ -101,7 +101,7 @@ export function MarkdownRenderer({
   className = '',
   onLinkClick,
 }: MarkdownRendererProps) {
-  // 配置 remark 插件
+  // Configure remark plugins
   const remarkPlugins = useMemo(() => {
     const plugins = [];
     if (gfm) {
@@ -113,7 +113,7 @@ export function MarkdownRenderer({
     return plugins;
   }, [gfm, math]) as React.ComponentProps<typeof ReactMarkdown>['remarkPlugins'];
 
-  // 配置 rehype 插件
+  // Configure rehype plugins
   const rehypePlugins = useMemo(() => {
     const plugins = [];
     if (highlight) {
@@ -128,10 +128,10 @@ export function MarkdownRenderer({
     return plugins;
   }, [highlight, math, allowHtml]) as React.ComponentProps<typeof ReactMarkdown>['rehypePlugins'];
 
-  // Custom组件
+  // Custom component
   const components = useMemo(
     () => ({
-      // 代码块
+      // Code block
       code: ({ inline, className: codeClassName, children, ...props }: any) => {
         if (inline) {
           return (
@@ -144,7 +144,7 @@ export function MarkdownRenderer({
           );
         }
 
-        // 提取Language
+        // Extract language
         const match = /language-(\w+)/.exec(codeClassName || '');
         const language = match ? match[1] : undefined;
         const codeString = String(children).replace(/\n$/, '');
@@ -158,14 +158,14 @@ export function MarkdownRenderer({
         );
       },
 
-      // 链接
+      // Link
       a: ({ href, children, ...props }: any) => {
         const handleClick = (e: React.MouseEvent) => {
           if (onLinkClick) {
             e.preventDefault();
             onLinkClick(href, e);
           } else if (href && (href.startsWith('http') || href.startsWith('//'))) {
-            // 外部链接在新窗口打开
+            // Open external links in a new window
             e.preventDefault();
             window.open(href, '_blank', 'noopener,noreferrer');
           }
@@ -185,7 +185,7 @@ export function MarkdownRenderer({
         );
       },
 
-      // 表格
+      // Table
       table: ({ children, ...props }: any) => (
         <div className="overflow-x-auto my-4">
           <table
@@ -197,7 +197,7 @@ export function MarkdownRenderer({
         </div>
       ),
 
-      // 表头
+      // Table header
       th: ({ children, ...props }: any) => (
         <th
           className="border border-gray-300 dark:border-gray-600 px-4 py-2 bg-gray-100 dark:bg-gray-800 font-semibold text-left"
@@ -207,7 +207,7 @@ export function MarkdownRenderer({
         </th>
       ),
 
-      // 表格单元格
+      // Table cell
       td: ({ children, ...props }: any) => (
         <td
           className="border border-gray-300 dark:border-gray-600 px-4 py-2"
@@ -217,7 +217,7 @@ export function MarkdownRenderer({
         </td>
       ),
 
-      // 引用块
+      // Blockquote
       blockquote: ({ children, ...props }: any) => (
         <blockquote
           className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 my-4 italic text-gray-600 dark:text-gray-400"
@@ -249,7 +249,7 @@ export function MarkdownRenderer({
         </h4>
       ),
 
-      // 列表
+      // List
       ul: ({ children, ...props }: any) => (
         <ul className="list-disc list-inside my-2 space-y-1" {...props}>
           {children}
@@ -261,12 +261,12 @@ export function MarkdownRenderer({
         </ol>
       ),
 
-      // 分割线
+      // Divider
       hr: (props: any) => (
         <hr className="my-6 border-gray-300 dark:border-gray-600" {...props} />
       ),
 
-      // 图片
+      // Image
       img: ({ src, alt, ...props }: any) => (
         <img
           src={src}
@@ -277,7 +277,7 @@ export function MarkdownRenderer({
         />
       ),
 
-      // 段落
+      // Paragraph
       p: ({ children, ...props }: any) => (
         <p className="my-2 leading-relaxed" {...props}>
           {children}

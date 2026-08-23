@@ -1,5 +1,5 @@
 /**
- * Antd Theme适配器
+ * Antd theme adapter
  */
 
 import { StyleProvider } from '@ant-design/cssinjs';
@@ -21,20 +21,20 @@ export function AntdAdapter({ children, mode }: AntdAdapterProps) {
   const { language } = useAppStore();
   const settings = useSettings();
 
-  // 确定实际Theme mode
+  // Determine the actual theme mode
   const themeMode = mode || 'light';
 
-  // 配置 dayjs Language
+  // Configure dayjs locale
   dayjs.locale(language === 'zh-CN' ? 'zh-cn' : 'en');
 
-  // 根据Theme mode选择算法
+  // Choose algorithm by theme mode
   const algorithm =
     themeMode === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm;
 
-  // 获取Theme色
+  // Get theme color
   const primaryColor = themeColorPresetsMap[settings.themeColorPresets].default;
 
-  // antd Theme配置
+  // antd theme configuration
   const token: ThemeConfig['token'] = {
     colorPrimary: primaryColor,
     colorPrimaryBg: themeColorPresetsMap[settings.themeColorPresets].lighter,
@@ -55,7 +55,7 @@ export function AntdAdapter({ children, mode }: AntdAdapterProps) {
     wireframe: false,
   };
 
-  // 组件级别配置
+  // Component-level configuration
   const components: ThemeConfig['components'] = {
     Menu: {
       itemBorderRadius: 6,

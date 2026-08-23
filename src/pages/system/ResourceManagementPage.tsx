@@ -1,6 +1,6 @@
 /**
- * 资源管理页面
- * 使用 Ant Design 组件重构
+ * Resource management page
+ * Rebuilt with Ant Design components
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -64,7 +64,7 @@ import { formatDate } from "@/utils";
 
 const { Text } = Typography;
 
-// 将完整密钥转换为打码显示
+// Convert the full key to masked display
 const maskApiKey = (fullKey?: string): string => {
   if (!fullKey) return "sk-***";
   if (fullKey.length <= 8) return `${fullKey}...`;
@@ -175,7 +175,7 @@ export default function ResourceManagementPage() {
     loadDataByTab(key);
   };
 
-  // 初始加载：providers + 当前 tab 数据
+  // Initial load: providers + current tab data
   useEffect(() => {
     loadProviders();
     loadDataByTab(activeTab);
@@ -305,7 +305,7 @@ export default function ResourceManagementPage() {
     return "#22c55e";
   };
 
-  // API Keys 表格列
+  // API keys table columns
   const apiKeyColumns: ColumnsType<ApiKey> = [
     {
       title: t("resource.keyName", "名称"),
@@ -361,9 +361,9 @@ export default function ResourceManagementPage() {
       key: "fullKey",
       width: 280,
       render: (_, record) => {
-        // 显示打码的密钥
+        // Show the masked key
         const displayKey = record.keyPrefix || maskApiKey(record.fullKey);
-        // 复制时使用完整的明文密钥
+        // Use the full plaintext key when copying
         const copyKey = record.fullKey || record.keyPrefix;
         return (
           <div className="flex items-center gap-2">
@@ -461,7 +461,7 @@ export default function ResourceManagementPage() {
     },
   ];
 
-  // Tabs 内容
+  // Tabs content
   const tabItems = [
     {
       key: "api-keys",
@@ -473,7 +473,7 @@ export default function ResourceManagementPage() {
       ),
       children: (
         <div className="space-y-4">
-          {/* 新创建的密钥提示 */}
+          {/* Newly created key notice */}
           {newlyCreatedKey && (
             <Alert
               type="success"
@@ -500,7 +500,7 @@ export default function ResourceManagementPage() {
             />
           )}
 
-          {/* 筛选区域 */}
+          {/* Filter area */}
           <Card size="small">
             <Space wrap>
               <Input
@@ -542,7 +542,7 @@ export default function ResourceManagementPage() {
             </Space>
           </Card>
 
-          {/* 密钥表格 */}
+          {/* API keys table */}
           <Card>
             <Table
               columns={apiKeyColumns}
@@ -724,7 +724,7 @@ export default function ResourceManagementPage() {
       ),
       children: usageStats ? (
         <div className="space-y-4">
-          {/* 统计卡片 */}
+          {/* Statistics cards */}
           <Row gutter={[16, 16]}>
             <Col xs={24} sm={12} lg={6}>
               <Card>
@@ -768,7 +768,7 @@ export default function ResourceManagementPage() {
             </Col>
           </Row>
 
-          {/* Provider 分布 */}
+          {/* Provider distribution */}
           <Row gutter={[16, 16]}>
             <Col xs={24} lg={12}>
               <Card title="Token 消耗分布">
@@ -832,7 +832,7 @@ export default function ResourceManagementPage() {
             </Col>
           </Row>
 
-          {/* 每日使用趋势 */}
+          {/* Daily usage trend */}
           <Card title="近 30 天使用趋势">
             <div className="h-48 flex items-end gap-1">
               {(usageStats.dailyUsage ?? []).map((day, index) => {
@@ -892,7 +892,7 @@ export default function ResourceManagementPage() {
         />
       </Card>
 
-      {/* 创建密钥弹窗 */}
+      {/* Create API key modal */}
       <CreateKeyModal
         open={createModalOpen}
         providers={providers}
@@ -912,7 +912,7 @@ export default function ResourceManagementPage() {
         }}
       />
 
-      {/* 编辑配额弹窗 */}
+      {/* Edit quota modal */}
       {editingQuota && (
         <QuotaEditModal
           quota={editingQuota}
@@ -921,14 +921,14 @@ export default function ResourceManagementPage() {
         />
       )}
 
-      {/* 创建配额弹窗 */}
+      {/* Create quota modal */}
       <CreateQuotaModal
         open={createQuotaModalOpen}
         onClose={() => setCreateQuotaModalOpen(false)}
         onSave={handleCreateQuota}
       />
 
-      {/* 编辑 Provider 弹窗 */}
+      {/* Edit provider modal */}
       {editingKeyProvider && (
         <EditProviderModal
           apiKey={editingKeyProvider}
@@ -941,7 +941,7 @@ export default function ResourceManagementPage() {
   );
 }
 
-// 创建密钥弹窗
+// Create key modal
 function CreateKeyModal({
   open,
   providers,
@@ -976,7 +976,7 @@ function CreateKeyModal({
         name: values.name,
         provider_id: values.provider_id,
         key: values.key,
-        keyPrefix: values.key ? undefined : "", // e.g.果用户输入了密钥，不需要生成前缀
+        keyPrefix: values.key ? undefined : "", // if the user entered a key, no prefix needed
         description: values.description,
         expiresAt:
           hasExpiry && values.expiresAt ? values.expiresAt.toDate() : undefined,
@@ -1089,7 +1089,7 @@ function CreateKeyModal({
   );
 }
 
-// 配额编辑弹窗
+// Quota edit modal
 function QuotaEditModal({
   quota,
   onClose,
@@ -1170,7 +1170,7 @@ function QuotaEditModal({
   );
 }
 
-// 创建配额弹窗
+// Create quota modal
 function CreateQuotaModal({
   open,
   onClose,
@@ -1312,7 +1312,7 @@ function CreateQuotaModal({
 // Import dayjs for DatePicker
 import dayjs from "dayjs";
 
-// 编辑 Provider 弹窗
+// Edit provider modal
 function EditProviderModal({
   apiKey,
   providers,

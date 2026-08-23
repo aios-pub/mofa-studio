@@ -1,13 +1,13 @@
 /**
- * Monitoring 真实 API
- * 后端端点: /api/monitoring/...
- * 支持 WebSocket 实时订阅
+ * Monitoring real API
+ * Backend endpoints: /api/monitoring/...
+ * Supports real-time WebSocket subscription
  */
 
 import { apiClient } from "../api/apiClient";
 import { getWebSocketManager } from "../websocket";
 
-// 统一使用 snake_case 与后端保持一致
+// Use snake_case consistently to match the backend
 export interface AgentStatus {
   agent_id: string;
   agent_name: string;
@@ -63,7 +63,7 @@ const monitoringRealApi = {
   getAllAgentStatus: () =>
     apiClient.get("/api/monitoring/agents"),
 
-  // 别名方法
+  // Alias methods
   getAgentStatuses: (): Promise<AgentStatus[]> =>
     apiClient.get("/api/monitoring/agents"),
 
@@ -79,17 +79,17 @@ const monitoringRealApi = {
   acknowledgeAlert: (alertId: string) =>
     apiClient.post(`/api/monitoring/alerts/${alertId}/acknowledge`),
 
-  // 兼容旧接口
+  // Legacy interface compatibility
   getAgentMetrics: (agentId: string, params?: { period?: string }) =>
     apiClient.get(`/api/monitoring/agents/${agentId}`, { params }),
 
   resolveAlert: (alertId: string) =>
     apiClient.post(`/api/monitoring/alerts/${alertId}/acknowledge`),
 
-  // ==================== WebSocket 订阅 ====================
+  // ==================== WebSocket subscription ====================
 
   /**
-   * 订阅实时更新 (活动事件)
+   * Subscribe to real-time updates (activity events)
    */
   subscribeToUpdates: (callback: (event: ActivityEvent) => void): (() => void) => {
     try {
@@ -102,7 +102,7 @@ const monitoringRealApi = {
   },
 
   /**
-   * 订阅系统指标更新
+   * Subscribe to system metric updates
    */
   subscribeToMetrics: (callback: (metrics: SystemMetrics) => void): (() => void) => {
     try {
@@ -115,7 +115,7 @@ const monitoringRealApi = {
   },
 
   /**
-   * 订阅 Agent status更新
+   * Subscribe to agent status updates
    */
   subscribeToAgentStatus: (callback: (status: AgentStatus) => void): (() => void) => {
     try {
@@ -128,7 +128,7 @@ const monitoringRealApi = {
   },
 
   /**
-   * 订阅告警更新
+   * Subscribe to alert updates
    */
   subscribeToAlerts: (callback: (alert: Alert) => void): (() => void) => {
     try {
@@ -141,7 +141,7 @@ const monitoringRealApi = {
   },
 
   /**
-   * 订阅所有监控事件
+   * Subscribe to all monitoring events
    */
   subscribeToAll: (handlers: {
     onActivity?: (event: ActivityEvent) => void;

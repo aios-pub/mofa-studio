@@ -1,11 +1,11 @@
 /**
- * Providers 真实 API
- * 后端端点: /api/provider/...
+ * Providers real API
+ * Backend endpoints: /api/provider/...
  */
 
 import { apiClient } from "../api/apiClient";
 
-/** 后端原始 Provider VO */
+/** Raw backend provider VO */
 interface ProviderRaw {
   id: string;
   api_base: string;
@@ -20,7 +20,7 @@ interface ProviderRaw {
   available_models?: ExternalModel[];
 }
 
-/** 后端原始 ProviderModel VO */
+/** Raw backend ProviderModel VO */
 interface ProviderModelRaw {
   id: string;
   model_id: string;
@@ -30,7 +30,7 @@ interface ProviderModelRaw {
   enabled: boolean;
 }
 
-/** 前端使用的 Model（兼容页面展示） */
+/** Model used by the frontend (for page display compatibility) */
 export interface ProviderModel {
   id: string;
   name: string;
@@ -42,14 +42,14 @@ export interface ProviderModel {
   maxTokens: number;
 }
 
-/** 外部模型（未持久化到 DB，来自厂商 API） */
+/** External models (not persisted to DB, from vendor API) */
 export interface ExternalModel {
   model_id: string;
   model_type: string | null;
   owned_by: string | null;
 }
 
-/** 前端使用的 Provider */
+/** Provider used by the frontend */
 export interface Provider {
   id: string;
   name: string;
@@ -67,11 +67,11 @@ export interface Provider {
     lastUsed: Date;
   };
   apiKey?: string;
-  /** 创建/刷新时返回的厂商外部可用模型列表（未入库） */
+  /** Vendor's externally available models returned on create/refresh (not persisted) */
   availableModels?: ExternalModel[];
 }
 
-/** 将后端 model 映射为前端 model */
+/** Map backend model to frontend model */
 function mapModel(raw: ProviderModelRaw): ProviderModel {
   return {
     id: raw.id,
@@ -85,7 +85,7 @@ function mapModel(raw: ProviderModelRaw): ProviderModel {
   };
 }
 
-/** 将后端字段映射为前端字段 */
+/** Map backend fields to frontend fields */
 function mapProvider(raw: ProviderRaw): Provider {
   return {
     id: raw.id,
@@ -133,7 +133,7 @@ const providerRealApi = {
   },
 
   update: async (id: string, data: Record<string, unknown>): Promise<Provider> => {
-    // 合并已有数据以确保完整字段
+    // Merge existing data to ensure complete fields
     const existing = await providerRealApi.getById(id);
     const merged = {
       ...existing,
@@ -163,17 +163,17 @@ const providerRealApi = {
     return true;
   },
 
-  // 验证 API Key
+  // Validate API key
   validateApiKey: (providerId: string): Promise<{ valid: boolean; message: string; model_count?: number }> =>
     apiClient.post(`/api/provider/validate/${providerId}`),
 
-  // 获取外部可用模型列表（不入库）
+  // Get externally available model list (not persisted)
   refreshModels: async (providerId: string): Promise<ExternalModel[]> => {
     const result = await apiClient.post<{ models: ExternalModel[] }>(`/api/provider/refresh-models/${providerId}`);
     return result.models || [];
   },
 
-  // 选择模型：启用指定模型，禁用其他模型
+  // Select model: enable the specified models and disable the others
   selectModels: async (providerId: string, modelIds: string[]): Promise<ProviderModel[]> => {
     const result = await apiClient.post<ProviderModelRaw[]>(
       `/api/provider/${providerId}/select-models`,
@@ -183,7 +183,7 @@ const providerRealApi = {
   },
 
   /**
-   * 从前端表单数据创建 Provider
+   * Create a provider from frontend form data
    */
   createFromFormData: async (formData: Record<string, unknown>): Promise<Provider> => {
     return providerRealApi.create(formData);

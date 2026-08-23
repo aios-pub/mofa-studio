@@ -1,6 +1,6 @@
 /**
  * Promotion Queue Component
- * 管理跨命名空间技能推广请求
+ * Manage cross-namespace skill promotion requests
  */
 
 import { useEffect, useState } from 'react';

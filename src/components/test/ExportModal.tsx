@@ -1,6 +1,6 @@
 /**
- * 导出弹窗组件
- * 支持导出为Postman Collection和OpenAPI格式
+ * Export modal component
+ * Supports exporting to Postman Collection and OpenAPI formats
  */
 
 import { useState } from "react";
@@ -115,7 +115,7 @@ export function ExportModal({ open, onClose, testSets, onExport }: ExportModalPr
       }
     >
       <div className="space-y-4">
-        {/* 导出格式 */}
+        {/* Export format */}
         <div>
           <Text strong>导出格式</Text>
           <div className="mt-2">
@@ -162,7 +162,7 @@ export function ExportModal({ open, onClose, testSets, onExport }: ExportModalPr
           </div>
         </div>
 
-        {/* 导出范围 */}
+        {/* Export scope */}
         <div>
           <Text strong>导出范围</Text>
           <div className="mt-2">
@@ -178,7 +178,7 @@ export function ExportModal({ open, onClose, testSets, onExport }: ExportModalPr
           </div>
         </div>
 
-        {/* 选择测试集 */}
+        {/* Select test set */}
         {scope === "selected" && (
           <div>
             <Text strong>选择要导出的测试集</Text>
@@ -206,7 +206,7 @@ export function ExportModal({ open, onClose, testSets, onExport }: ExportModalPr
           </div>
         )}
 
-        {/* 导出选项 */}
+        {/* Export options */}
         <div>
           <Text strong>导出选项</Text>
           <div className="mt-2 space-y-2">
@@ -253,7 +253,7 @@ export function ExportModal({ open, onClose, testSets, onExport }: ExportModalPr
           </div>
         </div>
 
-        {/* 格式说明 */}
+        {/* Format description */}
         <Alert
           message={
             format === "postman" ? (

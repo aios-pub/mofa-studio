@@ -1,6 +1,6 @@
 /**
- * 滚动区域组件
- * 提供Custom滚动条样式的容器
+ * Scroll area component
+ * Container with custom scrollbar styling
  */
 
 import React, { forwardRef } from 'react';
@@ -10,8 +10,8 @@ export interface ScrollAreaProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * 滚动区域组件
- * 提供美观的Custom滚动条
+ * Scroll area component
+ * Provides nicely styled custom scrollbars
  */
 export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
   (
@@ -24,7 +24,7 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
     },
     ref
   ) => {
-    // 根据方向设置滚动类
+    // Set scroll class by direction
     const overflowClass = {
       vertical: 'overflow-y-auto overflow-x-hidden',
       horizontal: 'overflow-x-auto overflow-y-hidden',
@@ -57,7 +57,7 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
 ScrollArea.displayName = 'ScrollArea';
 
 /**
- * 横向滚动区域
+ * Horizontal scroll area
  */
 export const ScrollAreaHorizontal = forwardRef<HTMLDivElement, Omit<ScrollAreaProps, 'orientation'>>(
   ({ className = '', ...props }, ref) => (

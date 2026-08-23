@@ -1,26 +1,26 @@
 /**
- * 滚动Progress bar组件
- * 显示页面滚动进度，提升阅读体验
+ * Scroll progress bar component
+ * Show page scroll progress to improve reading experience
  */
 
 import { useSpring, motion, type MotionValue } from "framer-motion";
 import type { CSSProperties } from "react";
 
 export interface ScrollProgressProps {
-  /** Progress bar颜色 */
+  /** Progress bar color */
   color?: string;
-  /** 滚动进度值 (0-1) */
+  /** Scroll progress value (0-1) */
   scrollYProgress: MotionValue<number>;
-  /** Progress bar高度 */
+  /** Progress bar height */
   height?: number;
-  /** Custom类名 */
+  /** Custom class name */
   className?: string;
 }
 
 /**
- * 滚动Progress bar组件
+ * Scroll progress bar component
  *
- * 使用 Framer Motion 的 spring 动画实现平滑过渡
+ * Use Framer Motion spring animations for smooth transitions
  *
  * @example
  * ```tsx
@@ -34,14 +34,14 @@ export function ScrollProgress({
   color,
   className,
 }: ScrollProgressProps) {
-  // 使用 spring 动画使Progress bar变化更平滑
+  // Use spring animation for smoother progress bar changes
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
     restDelta: 0.001,
   });
 
-  // 设置Progress bar颜色，默认使用Theme色
+  // Set progress bar color, defaults to theme color
   const backgroundColor = color || "var(--color-primary)";
 
   const style: CSSProperties = {

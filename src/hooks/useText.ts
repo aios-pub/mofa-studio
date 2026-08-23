@@ -1,12 +1,12 @@
 /**
- * 文本处理 Hook
- * 提供文本选择和剪贴板操作
+ * Text processing hook
+ * Provides text selection and clipboard operations
  */
 
 import { useState, useCallback, useEffect } from 'react';
 import { message } from 'antd';
 
-// ==================== 文本选择 ====================
+// ==================== Text selection ====================
 
 export interface TextSelection {
   text: string;
@@ -23,8 +23,8 @@ const emptySelection: TextSelection = {
 };
 
 /**
- * 获取文本选择
- * @returns 当前选择的文本信息
+ * Get text selection
+ * @returns Currently selected text info
  */
 export function useTextSelection(): TextSelection {
   const [selection, setSelection] = useState<TextSelection>(emptySelection);
@@ -58,9 +58,9 @@ export function useTextSelection(): TextSelection {
 }
 
 /**
- * 监听元素内的文本选择
- * @param ref 元素引用
- * @returns 选择的文本信息
+ * Listen to text selection within the element
+ * @param ref Element reference
+ * @returns Selected text info
  */
 export function useElementTextSelection<T extends HTMLElement>(
   ref: React.RefObject<T | null>
@@ -78,7 +78,7 @@ export function useElementTextSelection<T extends HTMLElement>(
 
     const range = domSelection.getRangeAt(0);
 
-    // 检查选择是否在目标元素内
+    // Check whether the selection is inside the target element
     if (!ref.current.contains(range.commonAncestorContainer)) {
       setSelection(emptySelection);
       return;
@@ -107,42 +107,42 @@ export function useElementTextSelection<T extends HTMLElement>(
   return selection;
 }
 
-// ==================== 剪贴板增强版 ====================
+// ==================== Enhanced clipboard ====================
 
 export interface UseClipboardOptions {
-  /** 成功提示 */
+  /** Success hint */
   successMessage?: string | false;
-  /** Failed提示 */
+  /** Failure hint */
   errorMessage?: string | false;
-  /** 复制成功回调 */
+  /** Copy success callback */
   onSuccess?: (text: string) => void;
-  /** 复制Failed回调 */
+  /** Copy failure callback */
   onError?: (error: Error) => void;
-  /** 读取成功回调 */
+  /** Read success callback */
   onRead?: (text: string) => void;
 }
 
 export interface UseClipboardReturn {
-  /** 复制文本 */
+  /** Copy text */
   copy: (text: string) => Promise<boolean>;
-  /** 复制Rich text（HTML） */
+  /** Copy rich text (HTML) */
   copyHTML: (html: string, plainText?: string) => Promise<boolean>;
-  /** 读取剪贴板文本 */
+  /** Read clipboard text */
   read: () => Promise<string | null>;
-  /** 读取剪贴板所有项目 */
+  /** Read all clipboard items */
   readAll: () => Promise<ClipboardItems | null>;
-  /** 最后复制的文本 */
+  /** Last copied text */
   lastCopied: string | null;
-  /** 是否正在操作 */
+  /** Whether an operation is in progress */
   loading: boolean;
-  /** 是否支持剪贴板 API */
+  /** Whether the Clipboard API is supported */
   isSupported: boolean;
 }
 
 /**
- * 剪贴板操作 Hook（增强版）
+ * Clipboard operations hook (enhanced)
  * @param options Configuration options
- * @returns 剪贴板操作方法
+ * @returns Clipboard operation methods
  */
 export function useClipboard(options: UseClipboardOptions = {}): UseClipboardReturn {
   const {
@@ -166,7 +166,7 @@ export function useClipboard(options: UseClipboardOptions = {}): UseClipboardRet
         if (isSupported && navigator.clipboard.writeText) {
           await navigator.clipboard.writeText(text);
         } else {
-          // Fallback: 使用 execCommand
+          // Fallback: use execCommand
           const textarea = document.createElement('textarea');
           textarea.value = text;
           textarea.style.position = 'fixed';
@@ -218,7 +218,7 @@ export function useClipboard(options: UseClipboardOptions = {}): UseClipboardRet
           ];
           await navigator.clipboard.write(clipboardItems);
         } else {
-          // Fallback: 只复制纯文本
+          // Fallback: copy plain text only
           const textToCopy = plainText || html.replace(/<[^>]*>/g, '');
           return copy(textToCopy);
         }
@@ -293,7 +293,7 @@ export function useClipboard(options: UseClipboardOptions = {}): UseClipboardRet
   };
 }
 
-// ==================== 文本统计 ====================
+// ==================== Text statistics ====================
 
 export interface TextStats {
   characters: number;
@@ -304,9 +304,9 @@ export interface TextStats {
 }
 
 /**
- * 计算文本统计信息
- * @param text 文本
- * @returns 统计信息
+ * Compute text statistics
+ * @param text Text
+ * @returns Statistics info
  */
 export function useTextStats(text: string): TextStats {
   return {
@@ -318,23 +318,23 @@ export function useTextStats(text: string): TextStats {
   };
 }
 
-// ==================== 文本搜索高亮 ====================
+// ==================== Text search highlighting ====================
 
 export interface UseTextHighlightOptions {
-  /** 是否区分大小写 */
+  /** Case-sensitive */
   caseSensitive?: boolean;
-  /** 是否全词匹配 */
+  /** Whole-word match */
   wholeWord?: boolean;
-  /** 高亮类名 */
+  /** Highlight class name */
   highlightClassName?: string;
 }
 
 /**
- * 文本搜索高亮
- * @param text 原始文本
- * @param search 搜索词
+ * Text search highlighting
+ * @param text Raw text
+ * @param search Search term
  * @param options Configuration options
- * @returns 高亮后的文本片段数组
+ * @returns Array of highlighted text segments
  */
 export function useTextHighlight(
   text: string,
@@ -359,17 +359,17 @@ export function useTextHighlight(
   let lastIndex = 0;
 
   text.replace(regex, (match, index) => {
-    // 添加未匹配的部分
+    // Add the unmatched part
     if (index > lastIndex) {
       result.push({ text: text.slice(lastIndex, index), highlighted: false });
     }
-    // 添加匹配的部分
+    // Add the matched part
     result.push({ text: match, highlighted: true });
     lastIndex = index + match.length;
     return match;
   });
 
-  // 添加剩余部分
+  // Add the remaining part
   if (lastIndex < text.length) {
     result.push({ text: text.slice(lastIndex), highlighted: false });
   }

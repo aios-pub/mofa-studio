@@ -1,5 +1,5 @@
 /**
- * Mock Evaluation服务
+ * Mock evaluation service
  */
 
 import type {
@@ -10,7 +10,7 @@ import type {
   EvaluationFilter,
 } from '../../types/evaluation';
 
-// 默认Evaluation指标
+// Default evaluation metrics
 const DEFAULT_METRICS: EvaluationMetric[] = [
   {
     id: 'accuracy',
@@ -62,7 +62,7 @@ const DEFAULT_METRICS: EvaluationMetric[] = [
   },
 ];
 
-// Agent 列表
+// Agent list
 const AGENTS = [
   { id: 'agent-1', name: 'Customer Service Bot' },
   { id: 'agent-2', name: 'Technical Support Agent' },
@@ -70,14 +70,14 @@ const AGENTS = [
   { id: 'agent-4', name: 'Data Analyst Bot' },
 ];
 
-// 生成随机评分
+// Generate random rating
 const generateScore = (base: number = 7): number => {
   const variance = 3;
   const score = base + (Math.random() - 0.5) * variance;
   return Math.max(1, Math.min(10, Math.round(score * 10) / 10));
 };
 
-// 生成 Mock Evaluation记录
+// Generate mock evaluation records
 const generateMockEvaluation = (index: number): EvaluationRecord => {
   const agent = AGENTS[index % AGENTS.length];
   const now = new Date();
@@ -107,17 +107,17 @@ const generateMockEvaluation = (index: number): EvaluationRecord => {
   };
 };
 
-// 生成 Mock 数据
+// Generate mock data
 const MOCK_EVALUATIONS: EvaluationRecord[] = Array.from({ length: 100 }, (_, i) =>
   generateMockEvaluation(i)
 );
 
-// 模拟延迟
+// Simulated latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const evaluationApi = {
   /**
-   * 获取Evaluation指标列表
+   * Get evaluation metric list
    */
   getEvaluationMetrics: async (): Promise<EvaluationMetric[]> => {
     await delay(200);
@@ -125,7 +125,7 @@ export const evaluationApi = {
   },
 
   /**
-   * 获取 Agent Evaluation记录
+   * Get agent evaluation records
    */
   getAgentEvaluations: async (
     filter?: EvaluationFilter
@@ -149,7 +149,7 @@ export const evaluationApi = {
       }
     }
 
-    // 按时间排序
+    // Sort by time
     filtered.sort((a, b) => new Date(b.evaluatedAt).getTime() - new Date(a.evaluatedAt).getTime());
 
     return {
@@ -159,7 +159,7 @@ export const evaluationApi = {
   },
 
   /**
-   * 创建Evaluation记录
+   * Create evaluation record
    */
   createEvaluation: async (data: {
     agentId: string;
@@ -187,7 +187,7 @@ export const evaluationApi = {
   },
 
   /**
-   * 获取 Agent Evaluation摘要
+   * Get agent evaluation summary
    */
   getAgentEvaluationSummary: async (agentId: string): Promise<AgentEvaluationSummary | null> => {
     await delay(300);
@@ -207,7 +207,7 @@ export const evaluationApi = {
       metricAverages[metric.id] = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
     });
 
-    // 计算趋势
+    // Compute trend
     const recentEvals = agentEvals
       .sort((a, b) => new Date(b.evaluatedAt).getTime() - new Date(a.evaluatedAt).getTime())
       .slice(0, 10);
@@ -232,7 +232,7 @@ export const evaluationApi = {
   },
 
   /**
-   * 获取所有 Agent 的Evaluation摘要
+   * Get evaluation summaries of all agents
    */
   getAllAgentSummaries: async (): Promise<AgentEvaluationSummary[]> => {
     await delay(400);
@@ -281,7 +281,7 @@ export const evaluationApi = {
   },
 
   /**
-   * 获取 Agent 对比数据
+   * Get agent comparison data
    */
   getComparisonData: async (agentIds: string[]): Promise<ComparisonData> => {
     await delay(400);
@@ -306,7 +306,7 @@ export const evaluationApi = {
   },
 
   /**
-   * 获取 Agent 列表
+   * Get agent list
    */
   getAgents: async (): Promise<Array<{ id: string; name: string }>> => {
     await delay(200);

@@ -1,27 +1,27 @@
 /**
- * 工具函数库
+ * Utility library
  */
 
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-// ==================== 类名工具 ====================
+// ==================== Class name utilities ====================
 
 /**
- * 合并 Tailwind CSS 类名
- * 使用 clsx 处理条件类名，使用 tailwind-merge 处理冲突
+ * Merge Tailwind CSS class names
+ * Use clsx for conditional class names and tailwind-merge for conflicts
  */
 export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
 
-// ==================== URL 工具 ====================
+// ==================== URL utilities ====================
 
 /**
- * 安全拼接 URL
- * 自动处理多余的斜杠
- * @param parts URL 片段
- * @returns 拼接后的 URL
+ * Safely join URL
+ * Automatically handle redundant slashes
+ * @param parts URL segments
+ * @returns Joined URL
  */
 export function urlJoin(...parts: string[]): string {
   return parts
@@ -37,13 +37,13 @@ export function urlJoin(...parts: string[]): string {
     .join("/");
 }
 
-// ==================== 数组检查工具 ====================
+// ==================== Array check utilities ====================
 
 /**
- * 检查数组中是否有任意一个元素满足条件
- * @param arr 数组
- * @param predicate 条件函数
- * @returns 是否有满足条件的元素
+ * Check whether any array element satisfies the condition
+ * @param arr Array
+ * @param predicate Predicate function
+ * @returns Whether any element satisfies the condition
  */
 export function checkAny<T>(
   arr: T[],
@@ -53,10 +53,10 @@ export function checkAny<T>(
 }
 
 /**
- * 检查数组中是否所有元素都满足条件
- * @param arr 数组
- * @param predicate 条件函数
- * @returns 是否所有元素都满足条件
+ * Check whether all array elements satisfy the condition
+ * @param arr Array
+ * @param predicate Predicate function
+ * @returns Whether all elements satisfy the condition
  */
 export function checkAll<T>(
   arr: T[],
@@ -65,17 +65,17 @@ export function checkAll<T>(
   return arr.every(predicate);
 }
 
-// ==================== 存储工具 ====================
+// ==================== Storage utilities ====================
 
 /**
- * 本地存储工具
+ * Local storage utilities
  */
 export const storage = {
   /**
-   * 获取存储项
-   * @param key 键名
-   * @param defaultValue 默认值
-   * @returns 存储的值或默认值
+   * Get storage item
+   * @param key Key name
+   * @param defaultValue Default value
+   * @returns Stored value or default
    */
   get<T>(key: string, defaultValue?: T): T | null {
     try {
@@ -90,18 +90,18 @@ export const storage = {
   },
 
   /**
-   * 获取字符串存储项
-   * @param key 键名
-   * @returns 存储的字符串或 null
+   * Get string storage item
+   * @param key Key name
+   * @returns Stored string or null
    */
   getString(key: string): string | null {
     return localStorage.getItem(key);
   },
 
   /**
-   * 设置存储项
-   * @param key 键名
-   * @param value 值
+   * Set storage item
+   * @param key Key name
+   * @param value Value
    */
   set<T>(key: string, value: T): void {
     try {
@@ -112,32 +112,32 @@ export const storage = {
   },
 
   /**
-   * 设置字符串存储项
-   * @param key 键名
-   * @param value 字符串值
+   * Set string storage item
+   * @param key Key name
+   * @param value String value
    */
   setString(key: string, value: string): void {
     localStorage.setItem(key, value);
   },
 
   /**
-   * 移除存储项
-   * @param key 键名
+   * Remove storage item
+   * @param key Key name
    */
   remove(key: string): void {
     localStorage.removeItem(key);
   },
 
   /**
-   * 清除所有存储项
+   * Remove all storage items
    */
   clear(): void {
     localStorage.clear();
   },
 
   /**
-   * 清除匹配前缀的存储项
-   * @param prefix 键名前缀
+   * Remove storage items matching a prefix
+   * @param prefix Key prefix
    */
   clearByPrefix(prefix: string): void {
     const keysToRemove: string[] = [];
@@ -152,7 +152,7 @@ export const storage = {
 };
 
 /**
- * 会话存储工具
+ * Conversation storage utilities
  */
 export const sessionStorage = {
   get<T>(key: string, defaultValue?: T): T | null {
@@ -184,12 +184,12 @@ export const sessionStorage = {
   },
 };
 
-// ==================== 剪贴板工具 ====================
+// ==================== Clipboard utilities ====================
 
 /**
- * 复制文本到剪贴板
- * @param text 要复制的文本
- * @returns 是否成功
+ * Copy text to clipboard
+ * @param text Text to copy
+ * @returns Whether successful
  */
 export async function copyToClipboard(text: string): Promise<boolean> {
   try {
@@ -198,7 +198,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
       return true;
     }
 
-    // 回退方案：使用 document.execCommand
+    // Fallback: use document.execCommand
     const textArea = document.createElement("textarea");
     textArea.value = text;
     textArea.style.position = "fixed";
@@ -218,13 +218,13 @@ export async function copyToClipboard(text: string): Promise<boolean> {
   }
 }
 
-// ==================== 颜色工具 ====================
+// ==================== Color utilities ====================
 
 /**
- * 将十六进制颜色转换为带透明度的颜色
- * @param hex 十六进制颜色值
- * @param alpha 透明度 (0-1)
- * @returns rgba 颜色字符串
+ * Convert hex color to color with opacity
+ * @param hex Hex color value
+ * @param alpha Opacity (0-1)
+ * @returns rgba color string
  */
 export function hexToRgba(hex: string, alpha: number): string {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -239,30 +239,30 @@ export function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-// ==================== 字符串工具 ====================
+// ==================== String utilities ====================
 
 /**
- * 首字母大写
- * @param str 字符串
- * @returns 首字母大写的字符串
+ * Capitalize first letter
+ * @param str String
+ * @returns Capitalized string
  */
 export function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 /**
- * 生成唯一 ID
- * @param prefix 前缀
- * @returns 唯一 ID
+ * Generate unique ID
+ * @param prefix Prefix
+ * @returns Unique ID
  */
 export function generateId(prefix = "id"): string {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
 /**
- * 格式化File size
- * @param bytes 字节数
- * @returns 格式化后的字符串
+ * Format file size
+ * @param bytes Number of bytes
+ * @returns Formatted string
  */
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return "0 B";
@@ -274,21 +274,21 @@ export function formatFileSize(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
 }
 
-// ==================== 日期工具 ====================
+// ==================== Date utilities ====================
 
 /**
- * 将后端日期字符串统一解析为 Date 对象
- * 后端格式示例: "2026-04-13T07:41:16.516682" (无时区信息的 ISO 8601)
+ * Parse backend date strings uniformly into Date objects
+ * Backend format example: "2026-04-13T07:41:16.516682" (ISO 8601 without timezone)
  */
 export function parseDate(date: Date | string | number): Date {
   return new Date(date);
 }
 
 /**
- * 格式化日期为标准显示格式
- * @param date 后端日期字符串或 Date 对象
- * @param format 格式类型: 'datetime' | 'date' | 'time' | 'short'
- * @returns 格式化后的字符串
+ * Format date to standard display format
+ * @param date Backend date string or Date object
+ * @param format Format type: 'datetime' | 'date' | 'time' | 'short'
+ * @returns Formatted string
  */
 export function formatDate(
   date: Date | string | number | undefined | null,
@@ -308,9 +308,9 @@ export function formatDate(
 }
 
 /**
- * 格式化相对时间
- * @param date 日期
- * @returns 相对时间字符串
+ * Format relative time
+ * @param date Date
+ * @returns Relative time string
  */
 export function formatRelativeTime(date: Date | string | number): string {
   const now = new Date();
@@ -334,13 +334,13 @@ export function formatRelativeTime(date: Date | string | number): string {
   return `${years} 年前`;
 }
 
-// ==================== 防抖节流工具 ====================
+// ==================== Debounce/throttle utilities ====================
 
 /**
- * 防抖函数
- * @param fn 要执行的函数
- * @param delay 延迟时间（milliseconds）
- * @returns 防抖后的函数
+ * Debounce function
+ * @param fn Function to execute
+ * @param delay Delay in milliseconds
+ * @returns Debounced function
  */
 export function debounce<T extends (...args: any[]) => any>(
   fn: T,
@@ -355,10 +355,10 @@ export function debounce<T extends (...args: any[]) => any>(
 }
 
 /**
- * 节流函数
- * @param fn 要执行的函数
- * @param delay 间隔时间（milliseconds）
- * @returns 节流后的函数
+ * Throttle function
+ * @param fn Function to execute
+ * @param delay Interval in milliseconds
+ * @returns Throttled function
  */
 export function throttle<T extends (...args: any[]) => any>(
   fn: T,
@@ -375,24 +375,24 @@ export function throttle<T extends (...args: any[]) => any>(
   };
 }
 
-// ==================== 验证工具 ====================
+// ==================== Validation utilities ====================
 
 /**
- * 验证邮箱格式
+ * Validate email format
  */
 export function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 /**
- * 验证手机号格式（中国）
+ * Validate phone number format (China)
  */
 export function isValidPhone(phone: string): boolean {
   return /^1[3-9]\d{9}$/.test(phone);
 }
 
 /**
- * 验证 URL 格式
+ * Validate URL format
  */
 export function isValidUrl(url: string): boolean {
   try {
@@ -403,15 +403,15 @@ export function isValidUrl(url: string): boolean {
   }
 }
 
-// ==================== 树形数据工具 ====================
+// ==================== Tree data utilities ====================
 
 export * from "./tree";
 
-// ==================== 数字格式化工具 ====================
+// ==================== Number formatting utilities ====================
 
 export * from "./format-number";
 
-// ==================== 通用工具函数 ====================
+// ==================== Common utilities ====================
 
 export * from "./helpers";
 

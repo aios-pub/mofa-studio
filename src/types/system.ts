@@ -1,21 +1,21 @@
 /**
- * 系统管理相关类型定义
+ * System management type definitions
  */
 
-/** 基础状态 */
+/** Base state */
 export enum BasicStatus {
   DISABLE = 0,
   ENABLE = 1,
 }
 
-/** 菜单类型 */
+/** Menu types */
 export enum MenuType {
-  CATALOGUE = 0, // 目录
-  MENU = 1, // 菜单
-  BUTTON = 2, // 按钮
+  CATALOGUE = 0, // catalogue
+  MENU = 1, // menu
+  BUTTON = 2, // button
 }
 
-/** 菜单项 */
+/** Menu items */
 export interface MenuItem {
   id: string;
   parentId: string | null;
@@ -35,7 +35,7 @@ export interface MenuItem {
   updatedAt: Date;
 }
 
-/** 角色项 */
+/** Role item */
 export interface SystemRole {
   id: string;
   name: string;
@@ -43,13 +43,13 @@ export interface SystemRole {
   description?: string;
   status: BasicStatus;
   order: number;
-  permissions: string[]; // 权限ID列表
-  menus: string[]; // 菜单ID列表
+  permissions: string[]; // permission ID list
+  menus: string[]; // menu ID list
   createdAt: Date;
   updatedAt: Date;
 }
 
-/** 角色创建/编辑表单 */
+/** Role create/edit form */
 export interface RoleFormData {
   id?: string;
   name: string;
@@ -61,7 +61,7 @@ export interface RoleFormData {
   menus: string[];
 }
 
-/** 菜单创建/编辑表单 */
+/** Menu create/edit form */
 export interface MenuFormData {
   id?: string;
   parentId: string | null;

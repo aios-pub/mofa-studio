@@ -1,5 +1,5 @@
 /**
- * Agent 相关类型定义
+ * Agent-related type definitions
  */
 
 /** Agent status */
@@ -59,20 +59,20 @@ export interface Agent {
   max_completion_tokens?: number;
   /** Input parameter config (frontend use) */
   input_parameters?: AgentInputParameter[];
-  /** 平台标识 */
+  /** Platform identifier */
   platform?: number;
-  /** 状态（前端用） */
+  /** Status (frontend use) */
   status?: AgentStatus;
   /** Created time */
   created_at?: Date;
-  /** 更新时间 */
+  /** Updated time */
   updated_at?: Date;
 }
 
-/** Agent RBAC 权限配置 */
+/** Agent RBAC permission configuration */
 export interface AgentPermission {
   agentId: string;
-  // 功能权限
+  // Function permissions
   features: {
     webSearch: boolean;
     webFetch: boolean;
@@ -82,17 +82,17 @@ export interface AgentPermission {
     systemCommand: boolean;
     databaseAccess: boolean;
   };
-  // Skills 访问权限
+  // Skills access permissions
   accessibleSkills: string[];
-  // 提示词访问权限
+  // Prompt access permissions
   accessiblePrompts: string[];
-  // 数据权限
+  // Data permissions
   dataScope: "self" | "department" | "organization";
   allowSensitiveData: boolean;
   historyRetentionDays: number;
 }
 
-/** Agent 关联的提示词 */
+/** Prompts associated with the agent */
 export interface AgentPrompt {
   id: string;
   agentId: string;
@@ -102,7 +102,7 @@ export interface AgentPrompt {
   enabled: boolean;
 }
 
-/** Agent 关联的 Skill */
+/** Skills associated with the agent */
 export interface AgentSkill {
   id: string;
   agentId: string;
@@ -112,14 +112,14 @@ export interface AgentSkill {
   enabled: boolean;
 }
 
-/** Agent 关联的测试集 */
+/** Test sets associated with the agent */
 export interface AgentTestSet {
   id: string;
   agentId: string;
   testSetId: string;
 }
 
-/** Agent 输入参数类型 */
+/** Agent input parameter types */
 export type AgentParameterType =
   | "text"
   | "number"
@@ -128,7 +128,7 @@ export type AgentParameterType =
   | "select"
   | "date";
 
-/** Agent 输入参数定义 */
+/** Agent input parameter definitions */
 export interface AgentInputParameter {
   id: string;
   name: string;
@@ -147,7 +147,7 @@ export interface AgentInputParameter {
   };
 }
 
-/** Agent 输入参数值 */
+/** Agent input parameter values */
 export interface AgentInputValue {
   parameterId: string;
   value: string | number | boolean | File | null;

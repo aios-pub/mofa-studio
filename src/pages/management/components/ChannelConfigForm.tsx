@@ -1,5 +1,5 @@
 /**
- * 渠道配置Form component
+ * Channel configuration form component
  */
 
 import { useState, useEffect } from "react";
@@ -64,7 +64,7 @@ export default function ChannelConfigForm({
 
   const handleTypeChange = (type: ChannelType) => {
     setChannelType(type);
-    // 重置Configuration fields
+    // Reset configuration fields
     const currentName = form.getFieldValue("name");
     const currentDesc = form.getFieldValue("description");
     form.resetFields();
@@ -79,7 +79,7 @@ export default function ChannelConfigForm({
         type: channelType,
       }}
     >
-      {/* 基本信息 */}
+      {/* Basic information */}
       <Form.Item
         name="name"
         label="渠道名称"
@@ -114,7 +114,7 @@ export default function ChannelConfigForm({
 
       <Divider>渠道配置</Divider>
 
-      {/* 根据类型渲染不同的配置表单 */}
+      {/* Render different config forms by type */}
       {channelType === "wechat" && <WechatConfigForm />}
       {channelType === "wechat_work" && <WechatWorkConfigForm />}
       {channelType === "dingtalk" && <DingtalkConfigForm />}
@@ -146,7 +146,7 @@ export default function ChannelConfigForm({
   );
 }
 
-// 构建渠道配置（扁平结构，直接对应后端 JSONB）
+// Build channel config (flat structure, maps directly to backend JSONB)
 function buildChannelConfig(
   type: ChannelType,
   values: Record<string, unknown>,
@@ -277,7 +277,7 @@ function buildChannelConfig(
   }
 }
 
-// 微信配置表单
+// WeChat configuration form
 function WechatConfigForm() {
   return (
     <>
@@ -301,7 +301,7 @@ function WechatConfigForm() {
   );
 }
 
-// 企业微信配置表单
+// WeCom configuration form
 function WechatWorkConfigForm() {
   return (
     <>
@@ -324,7 +324,7 @@ function WechatWorkConfigForm() {
   );
 }
 
-// 钉钉配置表单
+// DingTalk configuration form
 function DingtalkConfigForm() {
   return (
     <>
@@ -345,7 +345,7 @@ function DingtalkConfigForm() {
   );
 }
 
-// 飞书配置表单
+// Feishu configuration form
 function FeishuConfigForm() {
   return (
     <>
@@ -369,7 +369,7 @@ function FeishuConfigForm() {
   );
 }
 
-// Slack 配置表单
+// Slack configuration form
 function SlackConfigForm() {
   return (
     <>
@@ -396,7 +396,7 @@ function SlackConfigForm() {
   );
 }
 
-// Telegram 配置表单
+// Telegram configuration form
 function TelegramConfigForm() {
   return (
     <>
@@ -410,7 +410,7 @@ function TelegramConfigForm() {
   );
 }
 
-// Discord 配置表单
+// Discord configuration form
 function DiscordConfigForm() {
   return (
     <>
@@ -431,7 +431,7 @@ function DiscordConfigForm() {
   );
 }
 
-// Webhook 配置表单
+// Webhook configuration form
 function WebhookConfigForm() {
   return (
     <>
@@ -465,7 +465,7 @@ function WebhookConfigForm() {
   );
 }
 
-// 邮件配置表单
+// Email configuration form
 function EmailConfigForm() {
   return (
     <>
@@ -512,7 +512,7 @@ function EmailConfigForm() {
   );
 }
 
-// 短信配置表单
+// SMS configuration form
 function SmsConfigForm() {
   return (
     <>
@@ -557,7 +557,7 @@ function SmsConfigForm() {
   );
 }
 
-// Custom配置表单
+// Custom configuration form
 function CustomConfigForm() {
   return (
     <>
@@ -601,7 +601,7 @@ function CustomConfigForm() {
   );
 }
 
-// WhatsApp 配置表单
+// WhatsApp configuration form
 function WhatsAppConfigForm() {
   return (
     <>
@@ -639,7 +639,7 @@ function WhatsAppConfigForm() {
   );
 }
 
-// Line 配置表单
+// Line configuration form
 function LineConfigForm() {
   return (
     <>
@@ -668,7 +668,7 @@ function LineConfigForm() {
   );
 }
 
-// Facebook Messenger 配置表单
+// Facebook Messenger configuration form
 function MessengerConfigForm() {
   return (
     <>
@@ -699,7 +699,7 @@ function MessengerConfigForm() {
   );
 }
 
-// Instagram 配置表单
+// Instagram configuration form
 function InstagramConfigForm() {
   return (
     <>
@@ -731,7 +731,7 @@ function InstagramConfigForm() {
   );
 }
 
-// Microsoft Teams 配置表单
+// Microsoft Teams configuration form
 function TeamsConfigForm() {
   return (
     <>

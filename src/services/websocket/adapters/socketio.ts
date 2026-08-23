@@ -1,6 +1,6 @@
 /**
- * Socket.IO 适配器
- * 动态加载 Socket.IO 客户端
+ * Socket.IO adapter
+ * Dynamically load the Socket.IO client
  */
 
 import type {
@@ -10,7 +10,7 @@ import type {
 } from '../types';
 import { BaseWebSocketAdapter } from '../base';
 
-// Socket.IO 客户端类型定义
+// Socket.IO client type definitions
 interface SocketIOClient {
   connect(): void;
   disconnect(): void;
@@ -27,18 +27,18 @@ interface SocketIOConstructor {
 
 let socketIO: SocketIOConstructor | null = null;
 
-// 动态加载 Socket.IO
+// Dynamically load Socket.IO
 async function loadSocketIO(): Promise<SocketIOConstructor> {
   if (socketIO) return socketIO;
 
   try {
-    // 尝试从 CDN 加载 Socket.IO
-    // @ts-ignore - 动态加载
+    // Try loading Socket.IO from CDN
+    // @ts-ignore - dynamic import
     const module = await import('https://cdn.socket.io/4.7.2/socket.io.esm.min.js');
     socketIO = module.default || module.io;
     return socketIO!;
   } catch {
-    // e.g.果 CDN 加载Failed，尝试从 npm 包加载
+    // If CDN loading fails, try loading from the npm package
     try {
       // @ts-ignore
       const module = await import('socket.io-client');
@@ -68,33 +68,33 @@ export class SocketIOAdapter extends BaseWebSocketAdapter {
     this.resetReconnectAttempts();
 
     try {
-      // 加载 Socket.IO 客户端
+      // Load the Socket.IO client
       if (!this.io) {
         this.io = await loadSocketIO();
       }
 
-      // 构建 URL
+      // Build URL
       let url = this.config.url;
       if (this.config.namespace) {
         url = `${url}${this.config.namespace}`;
       }
 
-      // 创建连接选项
+      // Create connection options
       const options: Record<string, unknown> = {
         transports: ['websocket', 'polling'],
-        reconnection: false, // 我们自己处理重连
+        reconnection: false, // we handle reconnection ourselves
         auth: {},
       };
 
-      // 添加认证令牌
+      // Add auth token
       if (this.config.authToken) {
         options.auth = { token: this.config.authToken };
       }
 
-      // 创建 Socket 连接
+      // Create socket connection
       this.socket = this.io(url, options);
 
-      // 设置事件监听
+      // Set up event listeners
       this.setupEventListeners();
 
       return new Promise((resolve, reject) => {
@@ -182,7 +182,7 @@ export class SocketIOAdapter extends BaseWebSocketAdapter {
       this.handleError(error);
     });
 
-    // 监听所有Messages
+    // Listen to all messages
     this.socket.on('message', (data: unknown) => {
       this.emitInternal('message', data);
     });
@@ -192,7 +192,7 @@ export class SocketIOAdapter extends BaseWebSocketAdapter {
     this.setState('disconnected');
     this.emitInternal('disconnect', { reason, mode: this.mode });
 
-    // e.g.果不是主动断开，尝试重连
+    // If not disconnected intentionally, try to reconnect
     if (reason !== 'client namespace disconnect') {
       this.scheduleReconnect();
     }

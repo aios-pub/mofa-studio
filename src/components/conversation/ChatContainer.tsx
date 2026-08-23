@@ -1,6 +1,6 @@
 /**
- * 对话内容区容器组件
- * 支持智能体选择、文件上传、清空上下文
+ * Conversation content container component
+ * Supports agent selection, file upload and context clearing
  */
 
 import { useState, useRef, useEffect } from "react";
@@ -73,17 +73,17 @@ export default function ChatContainer({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // 获取当前选中的智能体
+  // Get the currently selected agent
   const selectedAgent =
     agents.find((a) => a.id === selectedAgentId) ||
     (conversation ? agents.find((a) => a.id === conversation.agentId) : null);
 
-  // 滚动到底部
+  // Scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation?.messages]);
 
-  // 自动调整输入框高度
+  // Auto-resize the input height
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -91,7 +91,7 @@ export default function ChatContainer({
     }
   }, [input]);
 
-  // 处理文件上传
+  // Handle file upload
   const handleFileChange = (info: { fileList: UploadFile[] }) => {
     setFileList(info.fileList);
     const newAttachments: MessageAttachment[] = info.fileList
@@ -106,7 +106,7 @@ export default function ChatContainer({
     setAttachments(newAttachments);
   };
 
-  // 移除附件
+  // Remove attachment
   const handleRemoveFile = (file: UploadFile) => {
     setFileList((prev) => prev.filter((f) => f.uid !== file.uid));
     setAttachments((prev) => prev.filter((a) => a.id !== file.uid));
@@ -116,7 +116,7 @@ export default function ChatContainer({
   const handleSend = () => {
     if (!input.trim() || isLoading) return;
 
-    // 检查是否需要填写参数
+    // Check whether parameters need to be filled in
     if (
       selectedAgent?.input_parameters &&
       selectedAgent.input_parameters.length > 0
@@ -146,7 +146,7 @@ export default function ChatContainer({
     }
   };
 
-  // 按键处理
+  // Key handling
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -154,7 +154,7 @@ export default function ChatContainer({
     }
   };
 
-  // 清空上下文
+  // Clear context
   const handleClearContext = () => {
     if (onClearContext) {
       onClearContext();
@@ -162,7 +162,7 @@ export default function ChatContainer({
     }
   };
 
-  // 渲染参数输入表单
+  // Render the parameter input form
   const renderParameterForm = (parameter: AgentInputParameter) => {
     switch (parameter.type) {
       case "text":
@@ -266,7 +266,7 @@ export default function ChatContainer({
 
   return (
     <div className="flex flex-col h-full bg-[var(--color-bg-base)]">
-      {/* 头部 - 会话信息 */}
+      {/* Header - conversation info */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-(--color-border)">
         <RobotOutlined className="text-xl text-[var(--color-primary)]" />
         <div className="flex-1">
@@ -279,7 +279,7 @@ export default function ChatContainer({
           </p>
         </div>
 
-        {/* 智能体选择器 */}
+        {/* Agent selector */}
         {onSelectAgent && agents.length > 0 && (
           <Select
             placeholder="选择智能体"
@@ -293,7 +293,7 @@ export default function ChatContainer({
           />
         )}
 
-        {/* 参数设置按钮 */}
+        {/* Parameter settings button */}
         {selectedAgent?.input_parameters &&
           selectedAgent.input_parameters.length > 0 && (
             <Button
@@ -303,7 +303,7 @@ export default function ChatContainer({
             />
           )}
 
-        {/* 清空上下文按钮 */}
+        {/* Clear context button */}
         {onClearContext && (
           <Popconfirm
             title="确定要清空上下文吗？"
@@ -319,7 +319,7 @@ export default function ChatContainer({
         )}
       </div>
 
-      {/* Messages区域 */}
+      {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4">
         {conversation.messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
@@ -337,7 +337,7 @@ export default function ChatContainer({
               <MessageItem key={msg.id} title={msg} />
             ))}
 
-            {/* 加载中 */}
+            {/* Loading */}
             {isLoading && (
               <div className="flex gap-3">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-(--color-bg-tertiary) flex items-center justify-center">
@@ -359,7 +359,7 @@ export default function ChatContainer({
         )}
       </div>
 
-      {/* 附件预览区 */}
+      {/* Attachment preview area */}
       {attachments.length > 0 && (
         <div className="px-4 py-2 border-t border-(--color-border) bg-[var(--color-bg-secondary)]">
           <div className="max-w-3xl mx-auto flex flex-wrap gap-2">
@@ -390,10 +390,10 @@ export default function ChatContainer({
         </div>
       )}
 
-      {/* 输入区域 */}
+      {/* Input area */}
       <div className="p-4 border-t border-(--color-border)">
         <div className="max-w-3xl mx-auto flex gap-2">
-          {/* 文件上传按钮 */}
+          {/* File upload button */}
           <Upload
             multiple
             showUploadList={false}
@@ -428,7 +428,7 @@ export default function ChatContainer({
         </div>
       </div>
 
-      {/* 参数填写弹窗 */}
+      {/* Parameter input modal */}
       <Modal
         title="智能体参数设置"
         open={showParamModal}
@@ -473,14 +473,14 @@ export default function ChatContainer({
   );
 }
 
-// Messages项组件
+// Message item component
 function MessageItem({ message }: { message: Message }) {
   const [showThinking, setShowThinking] = useState(false);
   const isUser = message.role === "user";
 
   return (
     <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
-      {/* 头像 */}
+      {/* Avatar */}
       <div
         className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
           isUser ? "bg-[var(--color-primary)]" : "bg-(--color-bg-tertiary)"
@@ -515,7 +515,7 @@ function MessageItem({ message }: { message: Message }) {
           </div>
         )}
 
-        {/* 附件 */}
+        {/* Attachments */}
         {message.attachments && message.attachments.length > 0 && (
           <div className="mb-2 flex flex-wrap gap-1">
             {message.attachments.map((att) => (
@@ -530,7 +530,7 @@ function MessageItem({ message }: { message: Message }) {
           </div>
         )}
 
-        {/* Messages正文 */}
+        {/* Message body */}
         <div
           className={`inline-block px-4 py-2 rounded-lg ${
             isUser
@@ -579,7 +579,7 @@ function MessageItem({ message }: { message: Message }) {
           </div>
         )}
 
-        {/* 底部信息 */}
+        {/* Bottom info */}
         <div
           className={`mt-1 flex items-center gap-2 text-xs text-[var(--color-text-tertiary)] ${isUser ? "justify-end" : ""}`}
         >
@@ -605,7 +605,7 @@ function MessageItem({ message }: { message: Message }) {
   );
 }
 
-// 格式化时间
+// Format time
 function formatTime(date: Date): string {
   return new Date(date).toLocaleTimeString("zh-CN", {
     hour: "2-digit",
@@ -613,7 +613,7 @@ function formatTime(date: Date): string {
   });
 }
 
-// 格式化File size
+// Format file size
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;

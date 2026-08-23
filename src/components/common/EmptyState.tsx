@@ -1,6 +1,6 @@
 /**
- * Empty state组件
- * 用于列表、表格等无数据时的展示
+ * Empty state component
+ * Empty display for lists, tables, etc.
  */
 
 import { Button } from 'antd';

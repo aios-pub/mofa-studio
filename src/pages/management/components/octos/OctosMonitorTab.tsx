@@ -1,6 +1,6 @@
 /**
- * Octos 监控配置
- * 看门狗和告警开关控制
+ * Octos monitoring configuration
+ * Watchdog and alert toggles
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -100,7 +100,7 @@ export default function OctosMonitorTab({ apiClient }: Props) {
       />
 
       <Row gutter={16}>
-        {/* 看门狗 */}
+        {/* Watchdog */}
         <Col span={12}>
           <Card
             title={
@@ -135,7 +135,7 @@ export default function OctosMonitorTab({ apiClient }: Props) {
           </Card>
         </Col>
 
-        {/* 告警 */}
+        {/* Alerts */}
         <Col span={12}>
           <Card
             title={

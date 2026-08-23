@@ -1,5 +1,5 @@
 /**
- * 权限 Mock 数据和 API
+ * Permission mock data and API
  */
 
 import type {
@@ -9,7 +9,7 @@ import type {
   FeaturePermissions,
 } from '../../types/permission';
 
-// 默认功能权限配置
+// Default function permission configuration
 export const defaultFeaturePermissions: FeaturePermissions = {
   webSearch: true,
   webFetch: true,
@@ -20,7 +20,7 @@ export const defaultFeaturePermissions: FeaturePermissions = {
   databaseAccess: false,
 };
 
-// 功能权限定义
+// Function permission definitions
 export const featurePermissionDefinitions = [
   {
     key: 'webSearch',
@@ -66,7 +66,7 @@ export const featurePermissionDefinitions = [
   },
 ];
 
-// 权限模板列表
+// Permission template list
 export const mockPermissionTemplates: PermissionTemplate[] = [
   {
     id: 'template-basic',
@@ -157,17 +157,17 @@ export const mockPermissionTemplates: PermissionTemplate[] = [
   },
 ];
 
-// Agent 权限配置存储
+// Agent permission configuration store
 const agentPermissions: Map<string, PermissionConfig> = new Map();
 
-// 初始化一些默认权限
+// Initialize some default permissions
 agentPermissions.set('agent-1', mockPermissionTemplates[0].config);
 agentPermissions.set('agent-2', mockPermissionTemplates[1].config);
 agentPermissions.set('agent-3', mockPermissionTemplates[0].config);
 agentPermissions.set('agent-4', mockPermissionTemplates[2].config);
 agentPermissions.set('agent-5', mockPermissionTemplates[0].config);
 
-// 权限审计日志
+// Permission audit logs
 const auditLogs: PermissionAuditLog[] = [
   {
     id: 'log-1',
@@ -194,18 +194,18 @@ const auditLogs: PermissionAuditLog[] = [
   },
 ];
 
-// 模拟延迟
+// Simulated latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// 权限 API
+// Permission API
 export const permissionApi = {
-  // 获取 Agent 权限配置
+  // Get agent permission configuration
   async getAgentPermission(agentId: string): Promise<PermissionConfig | undefined> {
     await delay(200);
     return agentPermissions.get(agentId);
   },
 
-  // 更新 Agent 权限配置
+  // Update agent permission configuration
   async updateAgentPermission(
     agentId: string,
     config: PermissionConfig
@@ -215,7 +215,7 @@ export const permissionApi = {
     return config;
   },
 
-  // 应用权限模板
+  // Apply permission template
   async applyTemplate(
     agentId: string,
     templateId: string
@@ -229,13 +229,13 @@ export const permissionApi = {
     return template.config;
   },
 
-  // 获取所有权限模板
+  // Get all permission templates
   async getTemplates(): Promise<PermissionTemplate[]> {
     await delay(100);
     return mockPermissionTemplates;
   },
 
-  // 获取权限审计日志
+  // Get permission audit logs
   async getAuditLogs(agentId?: string): Promise<PermissionAuditLog[]> {
     await delay(200);
     if (agentId) {
@@ -244,7 +244,7 @@ export const permissionApi = {
     return auditLogs;
   },
 
-  // 添加审计日志
+  // Add audit log
   async addAuditLog(log: Omit<PermissionAuditLog, 'id' | 'operatedAt'>): Promise<PermissionAuditLog> {
     await delay(100);
     const newLog: PermissionAuditLog = {

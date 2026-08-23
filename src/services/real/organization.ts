@@ -1,8 +1,8 @@
 /**
- * Organization 真实 API
- * 后端端点: /api/department/... 和 /api/account/...
+ * Organization real API
+ * Backend endpoints: /api/department/... and /api/account/...
  *
- * 后端字段映射 (snake_case → camelCase):
+ * Backend field mapping (snake_case -> camelCase):
  *   parent_id      → parentId
  *   manager_id     → managerId
  *   member_count   → memberCount
@@ -14,7 +14,7 @@
 import { apiClient } from "../api/apiClient";
 import { parseDate } from "./fieldMapper";
 
-// ==================== 前端类型 ====================
+// ==================== Frontend types ====================
 
 interface User {
   id: string;
@@ -41,7 +41,7 @@ interface Department {
   createdAt?: Date;
 }
 
-// ==================== 后端原始类型 ====================
+// ==================== Raw backend types ====================
 
 interface BackendDepartment {
   id: string;
@@ -69,7 +69,7 @@ interface BackendAccount {
   email_verified?: boolean;
 }
 
-// ==================== 字段映射 ====================
+// ==================== Field mapping ====================
 
 function mapDepartment(raw: BackendDepartment): Department {
   return {
@@ -118,10 +118,10 @@ function mapUserToBackend(data: Partial<User>): Record<string, unknown> {
   return result;
 }
 
-// ==================== API 方法 ====================
+// ==================== API methods ====================
 
 const organizationRealApi = {
-  // ==================== 部门管理 ====================
+  // ==================== Department management ====================
 
   async getAll(): Promise<Department[]> {
     const data = await apiClient.get<BackendDepartment[]>("/api/department/list");
@@ -153,14 +153,14 @@ const organizationRealApi = {
     return true;
   },
 
-  /** 别名方法 */
+  /** Alias methods */
   getDepartments: (): Promise<Department[]> => organizationRealApi.getAll(),
   getDepartment: (id: string): Promise<Department> => organizationRealApi.getById(id),
   createDepartment: (data: Partial<Department>): Promise<Department> => organizationRealApi.create(data),
   updateDepartment: (id: string, data: Partial<Department>): Promise<Department> => organizationRealApi.update(id, data),
   deleteDepartment: (id: string): Promise<boolean> => organizationRealApi.delete(id),
 
-  /** 按父级获取 */
+  /** Get by parent */
   async getByParent(parentId?: string): Promise<Department[]> {
     const url = parentId
       ? `/api/department/by-parent?parent_id=${parentId}`
@@ -170,10 +170,10 @@ const organizationRealApi = {
     return data.map(mapDepartment);
   },
 
-  /** 获取部门成员 */
+  /** Get department members */
   getDepartmentMembers: (_departmentId: string): Promise<User[]> => organizationRealApi.getUsers(),
 
-  // ==================== 用户管理 ====================
+  // ==================== User management ====================
 
   async getUsers(): Promise<User[]> {
     const data = await apiClient.get<BackendAccount[]>("/api/account/list");
@@ -205,7 +205,7 @@ const organizationRealApi = {
     return true;
   },
 
-  /** 批量更新状态 - 后端暂不支持 */
+  /** Batch update status - not yet supported by the backend */
   async batchUpdateStatus(_userIds: string[], _status: string): Promise<boolean> {
     return true;
   },

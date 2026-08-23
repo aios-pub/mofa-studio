@@ -1,7 +1,7 @@
 /**
- * Worker 监控 Tab
- * 参考 apalis-board Workers 页面：Worker 状态 + Handler 列表
- * Handler 数据从后端 GET /api/task/types 动态获取
+ * Worker monitoring tab
+ * Modeled on apalis-board Workers: worker status + handler list
+ * Handler data fetched dynamically from backend GET /api/task/types
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -11,7 +11,7 @@ import { TeamOutlined, ApiOutlined } from "@ant-design/icons";
 import { scheduledTaskApi } from "@/services";
 import type { TaskTypeDescriptor } from "@/services";
 
-// Handler 信息（从 TaskTypeDescriptor 转换）
+// Handler info (converted from TaskTypeDescriptor)
 interface HandlerInfo {
   taskType: string;
   label: string;
@@ -90,7 +90,7 @@ export default function WorkersTab() {
 
   return (
     <div className="p-4 space-y-6 overflow-y-auto h-full">
-      {/* 调度器状态 */}
+      {/* Scheduler status */}
       <section>
         <h2 className="text-base font-semibold text-[var(--color-text-primary)] mb-1 flex items-center gap-2">
           <TeamOutlined /> 调度器状态
@@ -118,7 +118,7 @@ export default function WorkersTab() {
         </div>
       </section>
 
-      {/* 已注册 Handler */}
+      {/* Registered handlers */}
       <section>
         <h2 className="text-base font-semibold text-[var(--color-text-primary)] mb-1 flex items-center gap-2">
           <ApiOutlined /> 已注册 Handler

@@ -1,5 +1,5 @@
 /**
- * 应用常量定义
+ * Application constant definitions
  */
 
 // App information
@@ -16,12 +16,12 @@ export const MAX_PAGE_SIZE = 100;
 
 // Agent status color mapping
 export const AGENT_STATUS_COLORS: Record<string, string> = {
-  idle: "#22c55e", // 绿色
-  thinking: "#eab308", // 黄色
-  tool: "#3b82f6", // 蓝色
-  waiting: "#f97316", // 橙色
-  error: "#ef4444", // 红色
-  offline: "#6b7280", // 灰色
+  idle: "#22c55e", // green
+  thinking: "#eab308", // yellow
+  tool: "#3b82f6", // blue
+  waiting: "#f97316", // orange
+  error: "#ef4444", // red
+  offline: "#6b7280", // gray
 };
 
 // Agent status text

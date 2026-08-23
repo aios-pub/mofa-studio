@@ -1,6 +1,6 @@
 /**
- * 洞察分析页面
- * 显示 AI Agent 系统的性能和使用数据分析
+ * Insights page
+ * Show performance and usage analytics of the AI agent system
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -22,7 +22,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { PageHeader } from '@/components/common';
 import { analyticsApi, agentApi } from '@/services';
 
-// 时间范围选项
+// Time range options
 const timeOptions = [
   { label: '今天', value: 'day' },
   { label: '本周', value: 'week' },
@@ -30,7 +30,7 @@ const timeOptions = [
   { label: '本季度', value: 'quarter' },
 ];
 
-// 统计卡片组件
+// Statistics card component
 interface StatCardProps {
   title: string;
   value: string;
@@ -69,7 +69,7 @@ function StatCard({ title, value, change, changeLabel, icon, color }: StatCardPr
   );
 }
 
-// 条形图组件
+// Bar chart component
 function SimpleBarChart({ data }: { data: { label: string; value: number }[] }) {
   const maxValue = Math.max(...data.map(d => d.value));
 
@@ -92,7 +92,7 @@ function SimpleBarChart({ data }: { data: { label: string; value: number }[] }) 
   );
 }
 
-// 环形图组件
+// Ring chart component
 function SimpleDonutChart({ data }: { data: { label: string; value: number; color: string }[] }) {
   const total = data.reduce((acc, item) => acc + item.value, 0);
   let cumulativePercent = 0;
@@ -130,7 +130,7 @@ function SimpleDonutChart({ data }: { data: { label: string; value: number; colo
         </div>
       </div>
 
-      {/* 图例 */}
+      {/* Legend */}
       <div className="space-y-2 flex-1">
         {data.map((item, index) => (
           <div key={index} className="flex items-center justify-between">
@@ -151,7 +151,7 @@ function SimpleDonutChart({ data }: { data: { label: string; value: number; colo
   );
 }
 
-// Bar chart组件
+// Bar chart component
 function SimpleColumnChart({ data }: { data: { date: string; value: number }[] }) {
   const maxValue = Math.max(...data.map(d => d.value));
   const minValue = Math.min(...data.map(d => d.value));
@@ -177,7 +177,7 @@ function SimpleColumnChart({ data }: { data: { date: string; value: number }[] }
   );
 }
 
-// 默认数据（API 返回前使用）
+// Default data (used before the API returns)
 const defaultStats = {
   totalConversations: 0,
   conversationsChange: 0,
@@ -309,7 +309,7 @@ export default function InsightPage() {
         }
       />
 
-      {/* 核心指标 */}
+      {/* Core metrics */}
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
           <StatCard

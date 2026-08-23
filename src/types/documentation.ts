@@ -1,10 +1,10 @@
 /**
- * API Document类型定义
- * 用于生成可视化 API Document
+ * API documentation type definitions
+ * For generating visual API documentation
  */
 
 /**
- * API Document主体结构
+ * API documentation main structure
  */
 export interface ApiDocumentation {
   info: DocInfo;
@@ -14,7 +14,7 @@ export interface ApiDocumentation {
 }
 
 /**
- * Document基本信息
+ * Documentation basic information
  */
 export interface DocInfo {
   title: string;
@@ -28,7 +28,7 @@ export interface DocInfo {
 }
 
 /**
- * 服务器信息
+ * Server information
  */
 export interface ServerInfo {
   url: string;
@@ -37,7 +37,7 @@ export interface ServerInfo {
 }
 
 /**
- * 服务器变量（用于枚举值）
+ * Server variables (for enum values)
  */
 export interface ServerVariable {
   enum?: string[];
@@ -46,7 +46,7 @@ export interface ServerVariable {
 }
 
 /**
- * API 端点Document
+ * API endpoint documentation
  */
 export interface EndpointDocumentation {
   id: string;
@@ -64,7 +64,7 @@ export interface EndpointDocumentation {
 }
 
 /**
- * 参数定义
+ * Parameter definitions
  */
 export interface Parameter {
   name: string;
@@ -83,7 +83,7 @@ export interface Parameter {
 }
 
 /**
- * 请求头定义
+ * Request header definitions
  */
 export interface Header {
   name: string;
@@ -99,7 +99,7 @@ export interface Header {
 }
 
 /**
- * 请求体定义
+ * Request body definitions
  */
 export interface RequestBody {
   content_type: string;
@@ -110,7 +110,7 @@ export interface RequestBody {
 }
 
 /**
- * 响应示例
+ * Response example
  */
 export interface ResponseExample {
   status_code: number;
@@ -122,7 +122,7 @@ export interface ResponseExample {
 }
 
 /**
- * 响应头
+ * Response headers
  */
 export interface ResponseHeader {
   name: string;
@@ -131,7 +131,7 @@ export interface ResponseHeader {
 }
 
 /**
- * 安全认证要求
+ * Security authentication requirements
  */
 export interface SecurityRequirement {
   type: "apiKey" | "http" | "oauth2" | "openIdConnect" | "bearer";
@@ -142,7 +142,7 @@ export interface SecurityRequirement {
 }
 
 /**
- * OAuth 流程配置
+ * OAuth flow configuration
  */
 export interface OAuthFlows {
   implicit?: OAuthFlow;
@@ -152,7 +152,7 @@ export interface OAuthFlows {
 }
 
 /**
- * OAuth 流程详情
+ * OAuth flow details
  */
 export interface OAuthFlow {
   authorization_url?: string;
@@ -162,7 +162,7 @@ export interface OAuthFlow {
 }
 
 /**
- * 测试执行参数（用于Document页面内联测试）
+ * Test execution parameters (for inline testing on the documentation page)
  */
 export interface TestExecutionParams {
   path_params?: Record<string, string>;
@@ -172,7 +172,7 @@ export interface TestExecutionParams {
 }
 
 /**
- * 测试执行结果
+ * Test execution results
  */
 export interface TestExecutionResult {
   status_code: number;

@@ -1,6 +1,6 @@
 /**
- * Socket.IO测试构建器组件
- * 用于配置和测试Socket.IO连接
+ * Socket.IO test builder component
+ * For configuring and testing Socket.IO connections
  */
 
 import { useState, useEffect, useRef } from "react";
@@ -62,7 +62,7 @@ export function SocketIOTestBuilder({
     scrollToBottom();
   }, [messages]);
 
-  // 组件卸载时断开Socket.IO连接，防止内存泄漏
+  // Disconnect Socket.IO on unmount to avoid memory leaks
   useEffect(() => {
     return () => {
       if (connectTimeoutRef.current) {
@@ -95,18 +95,18 @@ export function SocketIOTestBuilder({
     try {
       const socketOptions: any = {};
 
-      // 添加认证信息
+      // Add authentication info
       if (config.auth) {
         socketOptions.auth = config.auth;
       }
 
-      // 连接到Socket.IO服务器
+      // Connect to the Socket.IO server
       const namespace = config.namespace || "/";
       const socket = io(`${config.url}${namespace}`, socketOptions);
 
       socketRef.current = socket;
 
-      // 连接超时处理（10秒）
+      // Connection timeout handling (10s)
       connectTimeoutRef.current = setTimeout(() => {
         if (socket.connected === false) {
           setConnectionState("error");
@@ -144,7 +144,7 @@ export function SocketIOTestBuilder({
         addMessage("received", "connect_error", `❌ 连接错误: ${error.message}`);
       });
 
-      // 监听配置的事件
+      // Listen to configured events
       const eventsToListen = config.eventsToListen || [];
       eventsToListen.forEach((eventName) => {
         socket.on(eventName, (...args: any[]) => {
@@ -177,10 +177,10 @@ export function SocketIOTestBuilder({
 
     let data: any = inputData;
     try {
-      // 尝试解析为JSON
+      // Try parsing as JSON
       data = inputData ? JSON.parse(inputData) : {};
     } catch {
-      // e.g.果不是JSON，使用原始字符串
+      // If not JSON, use the raw string
     }
 
     if (socketRef.current) {
@@ -236,7 +236,7 @@ export function SocketIOTestBuilder({
 
   return (
     <div className="space-y-4">
-      {/* 连接配置 */}
+      {/* Connection configuration */}
       <Card title="连接配置" size="small">
         <div className="space-y-3">
           <div>
@@ -271,7 +271,7 @@ export function SocketIOTestBuilder({
                   const auth = e.target.value ? JSON.parse(e.target.value) : undefined;
                   updateConfig({ auth });
                 } catch {
-                  // 忽略JSON解析错误
+                  // Ignore JSON parse errors
                 }
               }}
               placeholder='{"token": "your-token"}'
@@ -312,7 +312,7 @@ export function SocketIOTestBuilder({
         </div>
       </Card>
 
-      {/* Messages区域 */}
+      {/* Messages area */}
       <Card title="消息" size="small">
         <Tabs
           defaultActiveKey="messages"

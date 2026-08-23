@@ -1,6 +1,6 @@
 /**
- * SSE（Server-Sent Events）测试构建器组件
- * 用于配置和测试SSE连接
+ * SSE (Server-Sent Events) test builder component
+ * For configuring and testing SSE connections
  */
 
 import { useState, useEffect, useRef } from "react";
@@ -54,7 +54,7 @@ export function SSETestBuilder({
     scrollToBottom();
   }, [events]);
 
-  // 组件卸载时关闭EventSource连接，防止内存泄漏
+  // Close the EventSource on unmount to avoid memory leaks
   useEffect(() => {
     return () => {
       if (connectTimeoutRef.current) {
@@ -88,7 +88,7 @@ export function SSETestBuilder({
       const eventSource = new EventSource(config.url);
       eventSourceRef.current = eventSource;
 
-      // 连接超时处理（10秒）
+      // Connection timeout handling (10s)
       connectTimeoutRef.current = setTimeout(() => {
         setConnectionState("error");
         addEvent("error", "❌ SSE连接超时");
@@ -122,7 +122,7 @@ export function SSETestBuilder({
         }
       };
 
-      // 监听命名事件
+      // Listen to named events
       const expectedEvents = config.expectedEvents || [];
       expectedEvents.forEach((evt: any) => {
         eventSource.addEventListener(evt.event || "message", (e: any) => {
@@ -176,7 +176,7 @@ export function SSETestBuilder({
 
   return (
     <div className="space-y-4">
-      {/* 连接配置 */}
+      {/* Connection configuration */}
       <Card title="连接配置" size="small">
         <div className="space-y-3">
           <div>
@@ -252,7 +252,7 @@ export function SSETestBuilder({
         </div>
       </Card>
 
-      {/* 事件流展示 */}
+      {/* Event stream display */}
       <Card
         title="事件流"
         size="small"
@@ -293,7 +293,7 @@ export function SSETestBuilder({
         </div>
       </Card>
 
-      {/* 预期事件配置 */}
+      {/* Expected events configuration */}
       <Card title="预期事件配置" size="small">
         <div className="text-sm text-gray-500">
           配置预期收到的事件用于断言验证（开发中...）

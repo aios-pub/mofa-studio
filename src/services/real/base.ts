@@ -1,20 +1,20 @@
 /**
- * 真实 API 基础工具
- * 提供通用的 API 方法生成
+ * Real API base utilities
+ * Provides generic API method generation
  *
- * 后端 API 风格：
- * - 列表: GET  /api/{resource}/list 或 /api/{resource}/fetch
- * - 详情: GET  /api/{resource}/{id} (部分资源没有)
- * - 创建: POST /api/{resource}/create
- * - 更新: POST /api/{resource}/update (id 在 body 中)
- * - 删除: DELETE /api/{resource}/delete/{id}
+ * Backend API style:
+ * - List: GET /api/{resource}/list or /api/{resource}/fetch
+ * - Detail: GET /api/{resource}/{id} (not available for some resources)
+ * - Create: POST /api/{resource}/create
+ * - Update: POST /api/{resource}/update (id in body)
+ * - Delete: DELETE /api/{resource}/delete/{id}
  */
 
 import { apiClient } from "../api/apiClient";
 
 /**
- * 创建标准的 RESTful API 方法 (保留兼容旧代码)
- * @deprecated 使用 createActionApi 替代
+ * Create standard RESTful API methods (kept for legacy compatibility)
+ * @deprecated Use createActionApi instead
  */
 export function createRestApi<T extends { id: string }>(basePath: string) {
   return {
@@ -38,22 +38,22 @@ export function createRestApi<T extends { id: string }>(basePath: string) {
  * createActionApi Configuration options
  */
 interface CreateActionApiOptions {
-  /** 列表动作名，默认 "list"，某些资源使用 "fetch" */
+  /** List action name, defaults to "list"; some resources use "fetch" */
   listAction?: "list" | "fetch";
-  /** 是否支持 getById，默认 true */
+  /** Whether getById is supported, defaults to true */
   hasGetById?: boolean;
 }
 
 /**
- * 创建基于 Action 的 API 方法 (匹配后端 API 风格)
- * @param basePath - 基础路径，e.g. "/api/agent"
- * @param listActionOrOptions - 列表动作名或Configuration options
+ * Create action-based API methods (matching backend API style)
+ * @param basePath - Base path, e.g. "/api/agent"
+ * @param listActionOrOptions - List action name or configuration options
  */
 export function createActionApi<T extends { id: string }>(
   basePath: string,
   listActionOrOptions?: "list" | "fetch" | CreateActionApiOptions
 ) {
-  // 解析参数
+  // Parse parameters
   let listAction: "list" | "fetch" = "list";
   let hasGetById = true;
 
@@ -80,7 +80,7 @@ export function createActionApi<T extends { id: string }>(
     },
   };
 
-  // e.g.果后端支持 getById，添加该方法
+  // If the backend supports getById, add the method
   if (hasGetById) {
     return {
       ...baseMethods,
@@ -89,12 +89,12 @@ export function createActionApi<T extends { id: string }>(
     };
   }
 
-  // e.g.果后端不支持 getById，返回一个警告方法
+  // If the backend does not support getById, return a warning method
   return {
     ...baseMethods,
     getById: async (_id: string): Promise<T> => {
       console.warn(`getById: Backend does not support ${basePath}/{id} endpoint`);
-      // 从列表中查找
+      // Find from the list
       const all = await baseMethods.getAll();
       const item = all.find((item: T) => item.id === _id);
       if (!item) {
@@ -106,7 +106,7 @@ export function createActionApi<T extends { id: string }>(
 }
 
 /**
- * 创建Custom API 方法
+ * Create custom API method
  */
 export function createApiMethod<T = unknown, R = unknown>(
   method: "get" | "post" | "put" | "patch" | "delete",

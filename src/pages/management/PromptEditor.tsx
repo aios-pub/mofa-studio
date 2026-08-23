@@ -1,5 +1,5 @@
 /**
- * 提示词编辑器组件
+ * Prompt editor component
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -25,7 +25,7 @@ interface PromptEditorProps {
   onCancel?: () => void;
 }
 
-// 系统变量定义
+// System variable definitions
 const systemVariables = [
   { name: "current_date", label: "当前日期", example: "2024-01-15" },
   { name: "current_time", label: "当前时间", example: "14:30:00" },
@@ -40,7 +40,7 @@ const systemVariables = [
   { name: "agent_id", label: "Agent ID", example: "agent-001" },
 ];
 
-// 预设模板
+// Preset templates
 const presetTemplates = [
   {
     id: "translation",
@@ -156,7 +156,7 @@ const presetTemplates = [
   },
 ];
 
-// 变量类型映射
+// Variable type mapping
 const variableTypes = [
   { value: "string", label: "字符串", icon: FontSizeOutlined },
   { value: "number", label: "数字", icon: NumberOutlined },
@@ -175,7 +175,7 @@ export default function PromptEditor({
     "content" | "variables" | "preview"
   >("content");
 
-  // 表单状态
+  // Form state
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("通用");
@@ -183,12 +183,12 @@ export default function PromptEditor({
   const [variables, setVariables] = useState<PromptVariable[]>([]);
   const [originalPrompt, setOriginalPrompt] = useState<Prompt | null>(null);
 
-  // 预览状态
+  // Preview state
   const [previewValues, setPreviewValues] = useState<Record<string, string>>(
     {},
   );
 
-  // 是否有修改
+  // Whether modified
   const hasChanges = originalPrompt
     ? name !== originalPrompt.name ||
       description !== originalPrompt.description ||
@@ -196,7 +196,7 @@ export default function PromptEditor({
       JSON.stringify(variables) !== JSON.stringify(originalPrompt.variables)
     : name || description || content;
 
-  // 加载提示词
+  // Load prompts
   useEffect(() => {
     if (promptId) {
       loadPrompt(promptId);
@@ -222,7 +222,7 @@ export default function PromptEditor({
     }
   };
 
-  // 应用预设模板
+  // Apply preset template
   const applyTemplate = (template: (typeof presetTemplates)[0]) => {
     setName(template.name);
     setCategory(template.category);
@@ -233,7 +233,7 @@ export default function PromptEditor({
     setActiveTab("content");
   };
 
-  // 添加变量
+  // Add variable
   const addVariable = () => {
     setVariables((prev) => {
       const newVar: PromptVariable = {
@@ -246,19 +246,19 @@ export default function PromptEditor({
     });
   };
 
-  // 更新变量
+  // Update variable
   const updateVariable = (index: number, updates: Partial<PromptVariable>) => {
     const newVars = [...variables];
     newVars[index] = { ...newVars[index], ...updates };
     setVariables(newVars);
   };
 
-  // 删除变量
+  // Delete variable
   const removeVariable = (index: number) => {
     setVariables((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // 插入变量到内容
+  // Insert variable into content
   const insertVariable = (varName: string) => {
     const textarea = document.querySelector(
       'textarea[name="content"]',
@@ -281,10 +281,10 @@ export default function PromptEditor({
     }
   };
 
-  // 预览内容（替换变量）
+  // Preview content (variables substituted)
   const getPreviewContent = useCallback(() => {
     let preview = content;
-    // 替换Custom变量
+    // Replace custom variables
     variables.forEach((v) => {
       const value = previewValues[v.name] || v.defaultValue || `[${v.name}]`;
       preview = preview.replace(
@@ -292,7 +292,7 @@ export default function PromptEditor({
         value,
       );
     });
-    // 替换系统变量
+    // Replace system variables
     const now = new Date();
     systemVariables.forEach((sv) => {
       let value = "";
@@ -327,7 +327,7 @@ export default function PromptEditor({
     return preview;
   }, [content, variables, previewValues]);
 
-  // 保存
+  // Save
   const handleSave = async () => {
     if (!name.trim() || !content.trim()) {
       alert("请填写名称和内容");
@@ -370,7 +370,7 @@ export default function PromptEditor({
 
   return (
     <div className="flex flex-col h-full bg-[var(--color-bg-base)]">
-      {/* 头部 */}
+      {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-(--color-border)">
         <div className="flex items-center gap-4">
           <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
@@ -409,7 +409,7 @@ export default function PromptEditor({
 
       <div className="flex-1 overflow-hidden">
         <div className="flex h-full">
-          {/* 左侧：预设模板 */}
+          {/* Left: preset templates */}
           <div className="w-56 border-r border-(--color-border) p-3 overflow-y-auto bg-[var(--color-bg-secondary)]">
             <h3 className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
               预设模板
@@ -453,9 +453,9 @@ export default function PromptEditor({
             </div>
           </div>
 
-          {/* 中间：编辑区 */}
+          {/* Center: editing area */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            {/* 基本信息表单 */}
+            {/* Basic info form */}
             <div className="p-4 border-b border-(--color-border) space-y-3">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -497,7 +497,7 @@ export default function PromptEditor({
               </div>
             </div>
 
-            {/* Label栏 */}
+            {/* Tabs bar */}
             <div className="flex border-b border-(--color-border)">
               {[
                 { key: "content", label: "内容", icon: FileTextOutlined },
@@ -519,7 +519,7 @@ export default function PromptEditor({
               ))}
             </div>
 
-            {/* 内容区 */}
+            {/* Content area */}
             <div className="flex-1 overflow-y-auto p-4">
               {activeTab === "content" && (
                 <textarea
@@ -652,7 +652,7 @@ export default function PromptEditor({
 
               {activeTab === "preview" && (
                 <div className="space-y-4">
-                  {/* 变量输入 */}
+                  {/* Variable input */}
                   {variables.length > 0 && (
                     <div className="p-4 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg">
                       <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">
@@ -714,7 +714,7 @@ export default function PromptEditor({
                     </div>
                   )}
 
-                  {/* 预览结果 */}
+                  {/* Preview result */}
                   <div className="p-4 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg">
                     <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">
                       预览结果

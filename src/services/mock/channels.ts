@@ -1,5 +1,5 @@
 /**
- * Channel Mock 数据
+ * Channel mock data
  */
 
 import type {
@@ -9,7 +9,7 @@ import type {
   ChannelTestResult,
 } from "../../types/channel";
 
-// Channel type配置信息
+// Channel type configuration info
 export const channelTypeConfig: Record<
   ChannelType,
   { name: string; icon: string; description: string }
@@ -96,7 +96,7 @@ export const channelTypeConfig: Record<
   },
 };
 
-// Mock 渠道数据
+// Mock channel data
 export const mockChannels: Channel[] = [
   {
     id: "channel-1",
@@ -269,7 +269,7 @@ export const mockChannels: Channel[] = [
   },
 ];
 
-// Mock Agent-Channel 关联
+// Mock agent-channel association
 export const mockAgentChannels: AgentChannel[] = [
   {
     id: "ac-1",
@@ -324,24 +324,24 @@ export const mockAgentChannels: AgentChannel[] = [
   },
 ];
 
-// 模拟 API 延迟
+// Mock API latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Channel API Mock
 export const channelApi = {
-  // 获取所有渠道
+  // Get all channels
   async getAll(): Promise<Channel[]> {
     await delay(300);
     return mockChannels;
   },
 
-  // 获取单个渠道
+  // Get a single channel
   async getById(id: string): Promise<Channel | undefined> {
     await delay(200);
     return mockChannels.find((c) => c.id === id);
   },
 
-  // 创建渠道
+  // Create channel
   async create(data: Partial<Channel>): Promise<Channel> {
     await delay(500);
     const newChannel: Channel = {
@@ -369,7 +369,7 @@ export const channelApi = {
     return newChannel;
   },
 
-  // 更新渠道
+  // Update channel
   async update(
     id: string,
     data: Partial<Channel>,
@@ -385,13 +385,13 @@ export const channelApi = {
     return mockChannels[index];
   },
 
-  // 删除渠道
+  // Delete channel
   async delete(id: string): Promise<boolean> {
     await delay(300);
     const index = mockChannels.findIndex((c) => c.id === id);
     if (index === -1) return false;
     mockChannels.splice(index, 1);
-    // 同时删除关联
+    // Also delete associations
     const acIndex = mockAgentChannels.findIndex((ac) => ac.channelId === id);
     if (acIndex !== -1) {
       mockAgentChannels.splice(acIndex, 1);
@@ -399,7 +399,7 @@ export const channelApi = {
     return true;
   },
 
-  // 测试连接
+  // Test connection
   async testConnection(id: string): Promise<ChannelTestResult> {
     await delay(1000 + Math.random() * 1000);
     const channel = mockChannels.find((c) => c.id === id);
@@ -411,7 +411,7 @@ export const channelApi = {
       };
     }
 
-    // 模拟测试结果
+    // Simulated test results
     const success = Math.random() > 0.2;
     if (success) {
       return {
@@ -433,13 +433,13 @@ export const channelApi = {
     }
   },
 
-  // 获取渠道关联的 Agents
+  // Get agents associated with a channel
   async getChannelAgents(channelId: string): Promise<AgentChannel[]> {
     await delay(200);
     return mockAgentChannels.filter((ac) => ac.channelId === channelId);
   },
 
-  // 添加 Agent 到渠道
+  // Add an agent to a channel
   async addAgentToChannel(data: {
     agentId: string;
     channelId: string;
@@ -461,7 +461,7 @@ export const channelApi = {
     return newAgentChannel;
   },
 
-  // 从渠道移除 Agent
+  // Remove an agent from a channel
   async removeAgentFromChannel(
     agentId: string,
     channelId: string,
@@ -475,7 +475,7 @@ export const channelApi = {
     return true;
   },
 
-  // 更新 Agent-Channel 关联配置
+  // Update agent-channel association configuration
   async updateAgentChannel(
     agentId: string,
     channelId: string,
@@ -494,7 +494,7 @@ export const channelApi = {
     return mockAgentChannels[index];
   },
 
-  // 切换渠道状态
+  // Toggle channel status
   async toggleStatus(id: string): Promise<Channel | undefined> {
     await delay(300);
     const channel = mockChannels.find((c) => c.id === id);
@@ -505,12 +505,12 @@ export const channelApi = {
     return channel;
   },
 
-  // 获取Channel type配置
+  // Get channel type configuration
   getChannelTypeConfig(type: ChannelType) {
     return channelTypeConfig[type];
   },
 
-  // 获取所有Channel type
+  // Get all channel types
   getAllChannelTypes() {
     return Object.entries(channelTypeConfig).map(([type, config]) => ({
       type: type as ChannelType,

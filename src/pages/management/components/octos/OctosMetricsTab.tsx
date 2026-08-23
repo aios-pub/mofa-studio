@@ -1,6 +1,6 @@
 /**
  * Octos Provider QoS metrics
- * 展示 Provider 延迟、成功率、错误率等 QoS 数据
+ * Show provider QoS data such as latency, success rate and error rate
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -50,7 +50,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
 
   useEffect(() => {
     fetchMetrics();
-    const interval = setInterval(fetchMetrics, 30000); // 30 秒刷新
+    const interval = setInterval(fetchMetrics, 30000); // refresh every 30s
     return () => clearInterval(interval);
   }, [fetchMetrics]);
 
@@ -73,7 +73,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
     );
   }
 
-  // 计算汇总数据
+  // Compute summary data
   const totalRequests = metrics.providers.reduce(
     (sum, p) => sum + p.success_count + p.failure_count,
     0
@@ -183,7 +183,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
 
   return (
     <div className="space-y-4">
-      {/* 汇总统计 */}
+      {/* Summary statistics */}
       <Row gutter={16}>
         <Col span={6}>
           <Card>
@@ -231,7 +231,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
         </Col>
       </Row>
 
-      {/* Provider 指标表格 */}
+      {/* Provider metrics table */}
       <Table
         columns={columns}
         dataSource={metrics.providers}

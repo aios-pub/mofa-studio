@@ -1,6 +1,6 @@
 /**
- * Environment variable管理组件
- * 类似Postman的环境管理功能
+ * Environment variable management component
+ * Postman-like environment management
  */
 
 import { useState, useEffect, useRef } from "react";
@@ -56,7 +56,7 @@ export function EnvironmentManager({
     loadActiveEnvironment();
   }, []);
 
-  // 当父组件传递的 value 变化时，同步更新选中状态
+  // When the parent's value changes, sync the selection
   useEffect(() => {
     if (value !== undefined) {
       const selectedEnv = environments.find((e) => e.id === value);
@@ -67,7 +67,7 @@ export function EnvironmentManager({
         setActiveEnvironment(null);
         onVariablesChange?.([]);
       } else {
-        // value 指向的环境已被删除或不存在，清除状态
+        // The environment referenced by value was deleted or missing; clear the state
         setActiveEnvironment(null);
         onVariablesChange?.([]);
       }
@@ -108,7 +108,7 @@ export function EnvironmentManager({
   };
 
   const handleSetActive = async (envId: string) => {
-    // e.g.果选择了"不使用环境"，只通知父组件清除选择
+    // If "no environment" is selected, only notify the parent to clear the selection
     if (!envId) {
       onVariablesChange?.([]);
       onChange?.("");
@@ -119,7 +119,7 @@ export function EnvironmentManager({
       await environmentApi.setActive(envId);
       await loadActiveEnvironment();
 
-      // 获取选中的环境并通知父组件变量更新
+      // Get the selected environment and notify the parent of variable updates
       const selectedEnv = environments.find((e) => e.id === envId);
       if (selectedEnv && onVariablesChange) {
         onVariablesChange(selectedEnv.variables);

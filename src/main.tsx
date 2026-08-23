@@ -3,10 +3,15 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { isTauriApp } from "./utils/tauri";
+import { initLocalServer } from "./bootstrap/localServer";
 import "./styles/globals.css";
 
 // Main window entry - For main window only
 const init = async () => {
+  // Resolve the embedded local backend (and establish the silent local
+  // session) before rendering, so the first API call targets it already
+  await initLocalServer();
+
   let RootApp: React.ReactNode;
 
   if (isTauriApp()) {

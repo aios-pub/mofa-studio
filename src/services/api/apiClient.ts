@@ -10,7 +10,8 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from "axios";
 import { message } from "antd";
-import { GLOBAL_CONFIG, isMockEnabled } from "@/config";
+import { GLOBAL_CONFIG, isLocalMode, isMockEnabled } from "@/config";
+import { silentRelogin } from "@/services/localAuth";
 
 // ==================== Type definitions ====================
 
@@ -35,7 +36,9 @@ export type RequestConfig = AxiosRequestConfig & {
 // ==================== Configuration ====================
 
 const DEFAULT_CONFIG: AxiosRequestConfig = {
-  baseURL: GLOBAL_CONFIG.serverURL || "/api",
+  // No static baseURL: the embedded Tauri server address is only known
+  // after the local-server bootstrap resolves, so it is applied per
+  // request in the interceptor below
   timeout: GLOBAL_CONFIG.apiTimeout || 50000,
   headers: {
     "Content-Type": "application/json;charset=utf-8",
@@ -153,6 +156,12 @@ function clearAuth() {
 
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    // Resolve the base URL per request: the embedded server URL may be set
+    // after module load by the local-server bootstrap
+    if (!config.baseURL) {
+      config.baseURL = GLOBAL_CONFIG.serverURL || "/api";
+    }
+
     // Add token - read from zustand persist storage
     const token = getAccessToken();
     if (token) {
@@ -243,10 +252,17 @@ axiosInstance.interceptors.response.use(
           errorMessage = "请求参数错误";
           break;
         case 401:
-          errorMessage = "未授权，请重新登录";
-          // Clear auth info and redirect to the login page
-          clearAuth();
-          window.location.href = "/auth/login";
+          if (isLocalMode()) {
+            // Local-first mode has no login screen: silently re-mint the
+            // local session (e.g. after the JWT secret rotated)
+            errorMessage = "本地会话已续期，请重试";
+            void silentRelogin();
+          } else {
+            errorMessage = "未授权，请重新登录";
+            // Clear auth info and redirect to the login page
+            clearAuth();
+            window.location.href = "/auth/login";
+          }
           break;
         case 403:
           errorMessage = "拒绝访问";
@@ -285,10 +301,10 @@ axiosInstance.interceptors.response.use(
 
 class ApiClient {
   /**
-   * Get base URL
+   * Get base URL (dynamic: may point at the embedded Tauri server)
    */
   getBaseUrl(): string {
-    return axiosInstance.defaults.baseURL || "";
+    return GLOBAL_CONFIG.serverURL || axiosInstance.defaults.baseURL || "";
   }
 
   /**

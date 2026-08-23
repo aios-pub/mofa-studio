@@ -78,12 +78,13 @@ mofa-studio/
 │   ├── floating/           # Floating window components
 │   └── tracing/            # Conversation span tracing
 ├── src-tauri/              # Tauri shell (tray, floating ball, window mgmt)
+│   └── crates/server-core/ # Embedded local-first backend (Axum + SQLite)
 ├── docs/
 │   └── prd/                # Product requirements documents (en/zh)
 └── public/                 # Static assets
 ```
 
-> The embedded Axum backend (`server-core`) described in the [PRD](docs/prd/README.md) is planned work; today's shell is thin while all business logic runs through the service layer.
+> The embedded Axum backend (`src-tauri/crates/server-core`) boots with the app on `127.0.0.1:<dynamic port>`: local-first SQLite document storage behind the agentos-compatible REST surface, no-login local sessions, and a native WebSocket endpoint. The frontend resolves the server through the `get_server_info` Tauri command at startup. Deeper PRD capabilities (llm-gateway BYOK proxy, FTS5/sqlite-vec search) are still planned work.
 
 ## Getting Started
 
@@ -131,7 +132,7 @@ cp .env.example .env
 ```
 
 Key configuration items:
-- `VITE_APP_SERVER_URL` - API base URL of your backend instance
+- `VITE_APP_SERVER_URL` - API base URL of your backend instance (browser dev only; inside the Tauri shell the embedded local backend is used automatically)
 - `VITE_APP_ENABLE_MOCK` - toggle mock data layer
 - `VITE_APP_FLOATING_MODE` - `floating` or `window` launch mode
 - `VITE_APP_TITLE` - Application title

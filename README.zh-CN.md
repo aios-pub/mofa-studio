@@ -78,12 +78,13 @@ mofa-studio/
 │   ├── floating/           # 悬浮窗口组件
 │   └── tracing/            # 会话链路追踪
 ├── src-tauri/              # Tauri 壳层（托盘/悬浮球/窗口管理）
+│   └── crates/server-core/ # 内嵌本地优先后端（Axum + SQLite）
 ├── docs/
 │   └── prd/                # 产品需求文档（中英双语）
 └── public/                 # 静态资源
 ```
 
-> [PRD](docs/prd/README.zh-CN.md) 中描述的内嵌 Axum 后端（server-core）为规划项；当前壳层保持轻量，业务逻辑经由服务层运行。
+> 内嵌 Axum 后端（`src-tauri/crates/server-core`）随应用启动并监听 `127.0.0.1:<动态端口>`：以本地优先的 SQLite 文档存储支撑 agentos 兼容的 REST 接口、免登录本地会话与原生 WebSocket 端点。前端启动时通过 `get_server_info` Tauri 命令解析服务地址。PRD 中的更深能力（llm-gateway BYOK 代理、FTS5/sqlite-vec 检索）仍为规划项。
 
 ## 快速开始
 
@@ -131,7 +132,7 @@ cp .env.example .env
 ```
 
 主要配置项：
-- `VITE_APP_SERVER_URL` - 后端服务地址
+- `VITE_APP_SERVER_URL` - 后端服务地址（仅浏览器开发模式生效；Tauri 壳内自动使用内嵌本地后端）
 - `VITE_APP_ENABLE_MOCK` - Mock 数据开关
 - `VITE_APP_FLOATING_MODE` - 启动模式（`floating` 悬浮球 / `window` 窗口）
 - `VITE_APP_TITLE` - 应用标题

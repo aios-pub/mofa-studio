@@ -1,3 +1,6 @@
+[workspace]
+members = ["crates/server-core"]
+
 [package]
 name = "mofa-studio"
 version = "0.1.0"
@@ -22,6 +25,7 @@ tauri = { version = "2", features = ["macos-private-api", "tray-icon"] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+server-core = { path = "crates/server-core" }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = "0.6"

@@ -93,6 +93,8 @@ mofa-studio/
 │   ├── floating/       # Floating window components
 │   └── tauri/          # Tauri bridge utilities
 ├── src-tauri/          # Rust backend (Tauri)
+│   └── crates/
+│       └── server-core # Embedded local-first backend (Axum + SQLite)
 ├── docs/               # Documentation
 └── public/             # Static assets
 ```

@@ -44,6 +44,32 @@ export function getWebSocketURL(): string {
     : SERVER_CONFIG.production.wsURL;
 }
 
+// ==================== Embedded local server ====================
+
+/**
+ * Base URL of the server embedded in the Tauri shell (127.0.0.1:<dynamic
+ * port>). Set once at startup by the local-server bootstrap, before the
+ * first API request is made. While set, the app runs in local-first mode.
+ */
+let embeddedServerURL: string | null = null;
+
+/** Whether the app is served by the embedded local backend (Tauri shell). */
+export function isLocalMode(): boolean {
+  return embeddedServerURL !== null;
+}
+
+/**
+ * Point the whole service layer at the embedded local backend and flip the
+ * app into local-first mode.
+ */
+export function setEmbeddedServer(baseURL: string): void {
+  embeddedServerURL = baseURL;
+  // GLOBAL_CONFIG is a plain mutable object; apiClient reads these fields
+  // per request, so late binding after Tauri's invoke resolves works
+  GLOBAL_CONFIG.serverURL = baseURL;
+  GLOBAL_CONFIG.wsURL = baseURL.replace(/^http/, "ws");
+}
+
 /**
  * Whether to enable Mock data
  */

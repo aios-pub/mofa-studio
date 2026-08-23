@@ -40,6 +40,7 @@
     "npm:sonner@^2.0.7": "2.0.7_react@19.2.4_react-dom@19.2.4__react@19.2.4",
     "npm:tailwind-merge@^3.5.0": "3.5.0",
     "npm:tailwindcss@^4.2.1": "4.2.1",
+    "npm:typescript@*": "5.8.3",
     "npm:typescript@~5.8.3": "5.8.3",
     "npm:vite@*": "8.0.0",
     "npm:vite@8": "8.0.0",

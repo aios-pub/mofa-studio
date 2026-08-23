@@ -2,6 +2,7 @@ mod tray;
 
 use serde::Deserialize;
 use std::fs;
+use std::net::{IpAddr, Ipv4Addr};
 use tauri::Manager;
 
 /// Floating ball mode configuration
@@ -88,6 +89,48 @@ fn get_floating_mode() -> String {
     }
 }
 
+// ==================== Embedded server ====================
+
+/// Address of the embedded local-first backend, exposed to the webview so
+/// the frontend can point its API client at the loopback server.
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct ServerInfo {
+    pub base_url: String,
+    pub port: u16,
+    pub version: String,
+}
+
+/// Frontend-facing handle to the embedded server-core instance.
+#[tauri::command]
+fn get_server_info(state: tauri::State<ServerInfo>) -> ServerInfo {
+    state.inner().clone()
+}
+
+/// Spawn the embedded server-core on the loopback interface with an
+/// OS-assigned dynamic port and register its address in app state.
+fn start_embedded_server(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+    let data_dir = app
+        .path()
+        .app_data_dir()
+        .unwrap_or_else(|_| std::env::temp_dir().join("mofa-studio"));
+    fs::create_dir_all(&data_dir)?;
+
+    let config = server_core::ServerConfig {
+        host: IpAddr::V4(Ipv4Addr::LOCALHOST),
+        port: 0,
+        data_dir,
+    };
+    let addr = tauri::async_runtime::block_on(server_core::start(config))?;
+    println!("[server-core] embedded backend on http://{addr}");
+
+    app.manage(ServerInfo {
+        base_url: format!("http://{addr}"),
+        port: addr.port(),
+        version: server_core::VERSION.to_string(),
+    });
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let config = load_app_config();
@@ -95,8 +138,16 @@ pub fn run() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, get_floating_mode])
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            get_floating_mode,
+            get_server_info
+        ])
         .setup(move |app| {
+            // Bring up the embedded local-first backend before any window
+            // logic so the webview can resolve its API base URL on load
+            start_embedded_server(app)?;
+
             // Get the window
             let main_window = app.get_webview_window("main");
             let floating_window = app.get_webview_window("floating");

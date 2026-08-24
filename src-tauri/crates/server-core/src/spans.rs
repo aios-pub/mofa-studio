@@ -33,6 +33,7 @@ pub(crate) fn record_span(
     tokens_out: Option<u64>,
     duration_ms: u64,
     status: &str,
+    detail: Option<&str>,
 ) {
     let id = format!("span-{}", uuid::Uuid::new_v4());
     let created_at = chrono::Utc::now()
@@ -48,6 +49,8 @@ pub(crate) fn record_span(
         "tokens_out": tokens_out,
         "duration_ms": duration_ms,
         "status": status,
+        // Error reason for failed calls (PLAT-15 失败请求详情); metadata only.
+        "detail": detail,
         "created_at": created_at,
     });
     if let Err(e) = store.insert("span", &id, doc) {
@@ -104,6 +107,7 @@ mod tests {
             Some(34),
             1200,
             "ok",
+            None,
         );
         let spans = store.list("span");
         assert_eq!(spans.len(), 1);
@@ -136,6 +140,7 @@ mod tests {
             None,
             1,
             "ok",
+            None,
         );
         let old_id = "span-old";
         let old_created = (chrono::Utc::now() - chrono::Duration::days(100))

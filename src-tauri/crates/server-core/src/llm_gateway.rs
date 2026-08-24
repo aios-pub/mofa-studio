@@ -169,6 +169,12 @@ async fn chat_completions_blocking(state: Arc<AppState>, engine_req: Value) -> R
         }
     };
     if !status.is_success() {
+        let msg = payload
+            .pointer("/error/message")
+            .or_else(|| payload.get("message"))
+            .and_then(Value::as_str)
+            .unwrap_or("engine rejected the request")
+            .to_string();
         spans::record_span(
             &state.store,
             spans::KIND_LLM,
@@ -179,13 +185,8 @@ async fn chat_completions_blocking(state: Arc<AppState>, engine_req: Value) -> R
             None,
             0,
             "error",
+            Some(&msg),
         );
-        let msg = payload
-            .pointer("/error/message")
-            .or_else(|| payload.get("message"))
-            .and_then(Value::as_str)
-            .unwrap_or("engine rejected the request")
-            .to_string();
         return openai_error(map_engine_status(status), &msg);
     }
 
@@ -210,6 +211,7 @@ async fn chat_completions_blocking(state: Arc<AppState>, engine_req: Value) -> R
             .and_then(Value::as_u64)
             .unwrap_or(0),
         "ok",
+        None,
     );
     let reasoning = payload
         .get("reasoning")
@@ -332,6 +334,7 @@ async fn chat_completions_stream(state: Arc<AppState>, engine_req: Value) -> Res
             tokens_seen,
             0,
             status,
+            if saw_error { Some("stream failed in-band") } else { None },
         );
     });
 
@@ -672,6 +675,7 @@ async fn image_generations(
             .and_then(Value::as_u64)
             .unwrap_or(0),
         "ok",
+        None,
     );
 
     Json(json!({

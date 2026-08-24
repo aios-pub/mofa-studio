@@ -23,6 +23,7 @@ import {
   AuditOutlined,
   UserOutlined,
   ApartmentOutlined,
+  LineChartOutlined,
   FolderOutlined,
   FileSearchOutlined,
   PieChartOutlined,
@@ -103,6 +104,11 @@ const coreMenuItems: MenuProps["items"] = [
     key: "/flow",
     icon: <ApartmentOutlined />,
     label: "工作流画布",
+  },
+  {
+    key: "/usage",
+    icon: <LineChartOutlined />,
+    label: "用量与日志",
   },
   { type: "divider" },
   {

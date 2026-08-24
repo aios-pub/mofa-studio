@@ -99,6 +99,11 @@ const coreMenuItems: MenuProps["items"] = [
     icon: <PictureOutlined />,
     label: "作品画廊",
   },
+  {
+    key: "/flow",
+    icon: <ApartmentOutlined />,
+    label: "工作流画布",
+  },
   { type: "divider" },
   {
     key: "/management/providers",

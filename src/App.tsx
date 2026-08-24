@@ -31,6 +31,7 @@ import ImageGenPage from './pages/creation/ImageGenPage';
 import WritingPage from './pages/creation/WritingPage';
 import KeyWizard from './components/onboarding/KeyWizard';
 import GalleryPage from './pages/gallery/GalleryPage';
+import FlowCanvasPage from './pages/flow/FlowCanvasPage';
 import { ThemeProvider } from './theme';
 import { useFloatingBridge } from './tauri/useFloatingBridge';
 import { useSettings } from './stores';
@@ -58,6 +59,7 @@ function App() {
                   <Route path="/creation/image-gen" element={<ImageGenPage />} />
                   <Route path="/creation/writing" element={<WritingPage />} />
                   <Route path="/gallery" element={<GalleryPage />} />
+                  <Route path="/flow" element={<FlowCanvasPage />} />
 
                   {/* Workbench */}
                   <Route path="/" element={<Dashboard />} />

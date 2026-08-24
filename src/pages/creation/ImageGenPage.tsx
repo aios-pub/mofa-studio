@@ -28,6 +28,7 @@ import {
   type ImageGenHistoryEntry,
 } from "@/services/api/image";
 import { AUTO_MODEL, engineService } from "@/services/api/engine";
+import { recordImageAssets } from "@/services/api/assets";
 
 const HISTORY_KEY = "mofa-studio-image-history";
 const HISTORY_LIMIT = 50;
@@ -87,6 +88,11 @@ export default function ImageGenPage() {
           size: effectiveSize,
         });
         setResults(response.images);
+        // PLAT-06: every generated image lands in the unified asset model.
+        void recordImageAssets("studio", effectivePrompt, response.images, {
+          size: effectiveSize,
+          model: response.model_used,
+        });
         if (!hasFirstOutput() && response.images.length > 0) {
           markFirstOutput();
           setFirstOutputOpen(true);

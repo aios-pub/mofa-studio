@@ -30,6 +30,7 @@ import { InteractiveDocs } from './pages/docs/InteractiveDocs';
 import ImageGenPage from './pages/creation/ImageGenPage';
 import WritingPage from './pages/creation/WritingPage';
 import KeyWizard from './components/onboarding/KeyWizard';
+import GalleryPage from './pages/gallery/GalleryPage';
 import { ThemeProvider } from './theme';
 import { useFloatingBridge } from './tauri/useFloatingBridge';
 import { useSettings } from './stores';
@@ -56,6 +57,7 @@ function App() {
                   {/* Creation toolbox (创作工坊) */}
                   <Route path="/creation/image-gen" element={<ImageGenPage />} />
                   <Route path="/creation/writing" element={<WritingPage />} />
+                  <Route path="/gallery" element={<GalleryPage />} />
 
                   {/* Workbench */}
                   <Route path="/" element={<Dashboard />} />

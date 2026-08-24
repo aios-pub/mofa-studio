@@ -93,6 +93,11 @@ const coreMenuItems: MenuProps["items"] = [
     icon: <EditOutlined />,
     label: "AI 写作",
   },
+  {
+    key: "/gallery",
+    icon: <PictureOutlined />,
+    label: "作品画廊",
+  },
   { type: "divider" },
   {
     key: "/management/providers",

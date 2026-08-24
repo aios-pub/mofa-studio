@@ -20,6 +20,7 @@ import {
 } from "@/utils/chatHistory";
 import { detectImageIntent, refineImagePrompt } from "@/utils/imageIntent";
 import { exportFilename, imageService } from "@/services/api/image";
+import { assetService, recordImageAssets } from "@/services/api/assets";
 import type { Conversation, Agent, Message, MessageAttachment } from "../../types";
 
 export default function ConversationPage() {
@@ -48,6 +49,27 @@ export default function ConversationPage() {
   // Load conversation list
   useEffect(() => {
     loadConversations();
+  }, []);
+
+  // PLAT-06 cross-domain: 「发送到对话」from the gallery attaches the asset
+  // (zero-copy: the existing ref_path becomes the attachment payload).
+  const [pendingAttachment, setPendingAttachment] = useState<MessageAttachment | null>(null);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const attachId = params.get("attach");
+    if (!attachId) return;
+    void assetService.get(attachId).then((asset) => {
+      if (!asset) return;
+      setPendingAttachment({
+        id: asset.id,
+        name: `${asset.title}.png`,
+        type: `image/${asset.type === "image" ? "png" : "octet-stream"}`,
+        size: 0,
+        url: asset.ref_path,
+      });
+      message.info("已从画廊附加作品，发送时将作为图片理解输入");
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadAgents = async () => {
@@ -274,12 +296,21 @@ export default function ConversationPage() {
 
       const conversationId = selectedConversation.id;
       const history = selectedConversation.messages;
+      const mergedAttachments =
+        attachments && attachments.length > 0
+          ? attachments
+          : pendingAttachment
+            ? [pendingAttachment]
+            : undefined;
+      if (pendingAttachment && (!attachments || attachments.length === 0)) {
+        setPendingAttachment(null);
+      }
       const userMessage: Message = {
         id: `msg-u-${Date.now()}`,
         conversationId,
         role: "user",
         content,
-        attachments: attachments && attachments.length > 0 ? attachments : undefined,
+        attachments: mergedAttachments,
         status: "completed",
         createdAt: new Date(),
       };
@@ -298,9 +329,9 @@ export default function ConversationPage() {
         return;
       }
       lastImagePromptRef.current = null;
-      await runGeneration(conversationId, history, content, attachments);
+      await runGeneration(conversationId, history, content, mergedAttachments);
     },
-    [selectedConversation, isLoading, runGeneration],
+    [selectedConversation, isLoading, runGeneration, pendingAttachment],
   );
 
   // CHAT-05: generate an image in-conversation; the assistant message
@@ -331,6 +362,10 @@ export default function ConversationPage() {
           throw new Error("引擎没有返回图片，请检查 image_gen 模型配置");
         }
         lastImagePromptRef.current = prompt;
+        // PLAT-06: chat-generated images flow into the asset model too.
+        void recordImageAssets("chat", prompt, response.images, {
+          model: response.model_used,
+        });
         setSelectedConversation((prev) => {
           if (!prev || prev.id !== conversationId) return prev;
           return {

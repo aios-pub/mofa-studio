@@ -12,9 +12,9 @@
  * - Local session: login always succeeds with the on-device user, so the
  *   app opens straight to the workbench without a login screen
  */
-
 pub mod auth;
 pub mod collections;
+pub mod llm_gateway;
 pub mod routes;
 pub mod store;
 pub mod ws;
@@ -48,6 +48,9 @@ pub struct ServerConfig {
     pub port: u16,
     /// Directory holding the SQLite database and generated secrets.
     pub data_dir: PathBuf,
+    /// Base URL of the mofa-engine inference server. `None` falls back to
+    /// the `MOFA_ENGINE_URL` env var, then the default loopback address.
+    pub engine_base_url: Option<String>,
 }
 
 impl ServerConfig {
@@ -57,6 +60,7 @@ impl ServerConfig {
             host: IpAddr::V4(Ipv4Addr::LOCALHOST),
             port: 0,
             data_dir,
+            engine_base_url: None,
         }
     }
 }
@@ -74,13 +78,21 @@ pub(crate) struct AppState {
     pub store: store::Store,
     pub jwt_secret: String,
     pub events: tokio::sync::broadcast::Sender<String>,
+    /// Shared HTTP client for outbound calls to mofa-engine.
+    pub http: reqwest::Client,
+    /// Resolved mofa-engine base URL (config → env → default).
+    pub engine_base_url: String,
 }
 
 // ==================== Response helpers ====================
 
 /// Success envelope: `{"code": 0, "msg": "success", "data": ...}`.
 pub(crate) fn ok_data<T: serde::Serialize>(data: T) -> Response {
-    (StatusCode::OK, Json(json!({ "code": 0, "msg": "success", "data": data }))).into_response()
+    (
+        StatusCode::OK,
+        Json(json!({ "code": 0, "msg": "success", "data": data })),
+    )
+        .into_response()
 }
 
 /// Error envelope with an explicit HTTP status.
@@ -102,12 +114,21 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         store,
         jwt_secret,
         events: tokio::sync::broadcast::channel(64).0,
+        // The engine is always a local/direct service; never route these
+        // hops through a system HTTP proxy (reqwest would otherwise pick up
+        // e.g. a Clash-style system proxy and break loopback calls).
+        http: reqwest::Client::builder()
+            .no_proxy()
+            .build()
+            .expect("reqwest client"),
+        engine_base_url: llm_gateway::resolve_engine_url(config.engine_base_url.clone()),
     });
 
     let app = Router::new()
         .route("/health", get(health))
         .merge(ws::ws_routes())
         .merge(routes::extras_routes())
+        .merge(llm_gateway::llm_routes())
         .merge(auth::auth_routes())
         .merge(collections::collection_routes())
         .fallback(not_implemented)

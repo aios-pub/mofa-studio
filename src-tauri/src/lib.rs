@@ -119,6 +119,8 @@ fn start_embedded_server(app: &tauri::App) -> Result<(), Box<dyn std::error::Err
         host: IpAddr::V4(Ipv4Addr::LOCALHOST),
         port: 0,
         data_dir,
+        // mofa-engine address: MOFA_ENGINE_URL env or default loopback:8420
+        engine_base_url: None,
     };
     let addr = tauri::async_runtime::block_on(server_core::start(config))?;
     println!("[server-core] embedded backend on http://{addr}");

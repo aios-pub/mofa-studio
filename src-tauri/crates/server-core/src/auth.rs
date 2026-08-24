@@ -8,7 +8,6 @@
  * listens on 127.0.0.1, so treating the loopback origin as the local user is
  * the trust boundary.
  */
-
 use std::sync::Arc;
 
 use axum::extract::State;

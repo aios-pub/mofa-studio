@@ -6,7 +6,6 @@
  * Timestamps are stored both in columns (for ordering) and inside the
  * document body (for the frontend date conversion).
  */
-
 use std::io;
 use std::path::Path;
 use std::sync::Mutex;
@@ -113,8 +112,8 @@ impl Store {
         obj.insert("created_at".to_string(), Value::String(now.clone()));
         obj.insert("updated_at".to_string(), Value::String(now.clone()));
 
-        let body = serde_json::to_string(&doc)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+        let body =
+            serde_json::to_string(&doc).map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
         {
             let conn = self.conn.lock().map_err(poisoned)?;
             conn.execute(
@@ -135,10 +134,7 @@ impl Store {
         for (key, value) in patch_obj {
             obj.insert(key.clone(), value.clone());
         }
-        obj.insert(
-            "updated_at".to_string(),
-            Value::String(now_iso8601()),
-        );
+        obj.insert("updated_at".to_string(), Value::String(now_iso8601()));
 
         let body = serde_json::to_string(&doc).ok()?;
         {
@@ -212,7 +208,9 @@ impl Store {
 
 /// UTC timestamp in ISO 8601 (parseable by the frontend date converter).
 fn now_iso8601() -> String {
-    chrono::Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string()
+    chrono::Utc::now()
+        .format("%Y-%m-%dT%H:%M:%S%.3fZ")
+        .to_string()
 }
 
 fn poisoned<T>(_: T) -> io::Error {

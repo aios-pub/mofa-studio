@@ -3,13 +3,12 @@
  * the generic document CRUD: dashboard analytics, agent monitoring, and the
  * OpenAI-compatible chat endpoint.
  */
-
 use std::sync::Arc;
 
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::Response;
-use axum::routing::{get, post};
+use axum::routing::get;
 use axum::Router;
 use serde_json::{json, Value};
 
@@ -112,7 +111,9 @@ async fn monitoring_agent(
 
 /// GET /api/monitoring/metrics — shape matches `SystemMetrics`.
 async fn monitoring_metrics() -> Response {
-    let now = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now = chrono::Utc::now()
+        .format("%Y-%m-%dT%H:%M:%S%.3fZ")
+        .to_string();
     ok_data(json!({
         "cpu": 0.0,
         "memory": 0.0,
@@ -123,18 +124,11 @@ async fn monitoring_metrics() -> Response {
     }))
 }
 
-/// POST /v1/chat/completions — the LLM gateway (BYOK proxy) is planned work;
-/// until it lands, answer honestly instead of faking a model.
-async fn chat_completions() -> Response {
-    err_msg(
-        StatusCode::NOT_IMPLEMENTED,
-        "LLM chat is not available in local mode yet; the llm-gateway crate (BYOK provider proxy) is planned",
-    )
-}
-
 // ==================== Routes ====================
 
-/// Analytics / monitoring / chat routes with agentos-compatible paths.
+/// Analytics / monitoring routes with agentos-compatible paths.
+/// Chat completions live in `llm_gateway` (OpenAI-compatible mofa-engine
+/// proxy), merged into the router by `build_router`.
 pub(crate) fn extras_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/api/analytics/overview", get(analytics_overview))
@@ -146,5 +140,4 @@ pub(crate) fn extras_routes() -> Router<Arc<AppState>> {
         .route("/api/monitoring/events", get(empty_array))
         .route("/api/monitoring/metrics", get(monitoring_metrics))
         .route("/api/monitoring/alerts", get(empty_array))
-        .route("/v1/chat/completions", post(chat_completions))
 }

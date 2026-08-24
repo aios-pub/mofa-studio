@@ -2,9 +2,6 @@
  * Integration tests for the embedded server router.
  * Uses tower's oneshot so no real sockets are opened.
  */
-
-
-
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use axum::Router;
@@ -30,7 +27,12 @@ async fn json_body(response: axum::http::Response<Body>) -> Value {
 async fn health_returns_ok() {
     let app = test_router("health");
     let response = app
-        .oneshot(Request::builder().uri("/health").body(Body::empty()).unwrap())
+        .oneshot(
+            Request::builder()
+                .uri("/health")
+                .body(Body::empty())
+                .unwrap(),
+        )
         .await
         .unwrap();
     assert_eq!(response.status(), StatusCode::OK);
@@ -45,7 +47,9 @@ async fn local_login_always_succeeds() {
                 .method("POST")
                 .uri("/api/auth/login")
                 .header("content-type", "application/json")
-                .body(Body::from(json!({ "username": "anyone", "password": "anything" }).to_string()))
+                .body(Body::from(
+                    json!({ "username": "anyone", "password": "anything" }).to_string(),
+                ))
                 .unwrap(),
         )
         .await
@@ -54,7 +58,9 @@ async fn local_login_always_succeeds() {
     assert_eq!(response.status(), StatusCode::OK);
     let body = json_body(response).await;
     assert_eq!(body["code"], 0);
-    assert!(body["data"]["access_token"].as_str().is_some_and(|t| !t.is_empty()));
+    assert!(body["data"]["access_token"]
+        .as_str()
+        .is_some_and(|t| !t.is_empty()));
     assert_eq!(body["data"]["user"]["username"], "local");
 }
 
@@ -70,7 +76,9 @@ async fn collection_crud_roundtrip() {
                 .method("POST")
                 .uri("/api/agent/create")
                 .header("content-type", "application/json")
-                .body(Body::from(json!({ "name": "writer", "status": "online" }).to_string()))
+                .body(Body::from(
+                    json!({ "name": "writer", "status": "online" }).to_string(),
+                ))
                 .unwrap(),
         )
         .await
@@ -84,7 +92,12 @@ async fn collection_crud_roundtrip() {
     // List
     let response = app
         .clone()
-        .oneshot(Request::builder().uri("/api/agent/list").body(Body::empty()).unwrap())
+        .oneshot(
+            Request::builder()
+                .uri("/api/agent/list")
+                .body(Body::empty())
+                .unwrap(),
+        )
         .await
         .unwrap();
     let list = json_body(response).await;
@@ -112,14 +125,19 @@ async fn collection_crud_roundtrip() {
                 .method("POST")
                 .uri("/api/agent/update")
                 .header("content-type", "application/json")
-                .body(Body::from(json!({ "id": id, "name": "editor" }).to_string()))
+                .body(Body::from(
+                    json!({ "id": id, "name": "editor" }).to_string(),
+                ))
                 .unwrap(),
         )
         .await
         .unwrap();
     let updated = json_body(response).await;
     assert_eq!(updated["data"]["name"], "editor");
-    assert_eq!(updated["data"]["status"], "online", "unpatched fields must survive");
+    assert_eq!(
+        updated["data"]["status"], "online",
+        "unpatched fields must survive"
+    );
 
     // Delete
     let response = app
@@ -136,7 +154,12 @@ async fn collection_crud_roundtrip() {
     assert_eq!(response.status(), StatusCode::OK);
 
     let response = app
-        .oneshot(Request::builder().uri("/api/agent/list").body(Body::empty()).unwrap())
+        .oneshot(
+            Request::builder()
+                .uri("/api/agent/list")
+                .body(Body::empty())
+                .unwrap(),
+        )
         .await
         .unwrap();
     let list = json_body(response).await;
@@ -179,7 +202,12 @@ async fn analytics_overview_counts_conversations() {
     assert_eq!(response.status(), StatusCode::OK);
 
     let response = app
-        .oneshot(Request::builder().uri("/api/analytics/overview").body(Body::empty()).unwrap())
+        .oneshot(
+            Request::builder()
+                .uri("/api/analytics/overview")
+                .body(Body::empty())
+                .unwrap(),
+        )
         .await
         .unwrap();
     let overview = json_body(response).await;

@@ -7,7 +7,6 @@
  * connection alive; server-sent events can later be broadcast through the
  * shared channel.
  */
-
 use std::sync::Arc;
 
 use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
@@ -21,8 +20,7 @@ use crate::{ok_data, AppState, VERSION};
 
 /// Rejection of the WebSocketUpgrade extractor; the enum itself is private
 /// in axum 0.8, so it is named through the associated type.
-type WsUpgradeRejection =
-    <WebSocketUpgrade as FromRequestParts<Arc<AppState>>>::Rejection;
+type WsUpgradeRejection = <WebSocketUpgrade as FromRequestParts<Arc<AppState>>>::Rejection;
 
 /// Root route: WebSocket upgrade when requested, otherwise server info.
 /// `Result` is the optional-extractor form (axum-core 0.5 `Option<T>` needs

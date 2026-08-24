@@ -13,7 +13,6 @@
  * what makes the management pages (agents, prompts, skills, providers,
  * channels, workflows, ...) work offline against local SQLite.
  */
-
 use std::sync::Arc;
 
 use axum::extract::{Path, Query, State};
@@ -79,11 +78,7 @@ async fn update_handler(
         None => return err_msg(StatusCode::BAD_REQUEST, "Request body is required"),
     };
 
-    let Some(id) = patch
-        .get("id")
-        .and_then(Value::as_str)
-        .map(str::to_string)
-    else {
+    let Some(id) = patch.get("id").and_then(Value::as_str).map(str::to_string) else {
         return err_msg(StatusCode::BAD_REQUEST, "Field 'id' is required");
     };
 
@@ -114,7 +109,10 @@ async fn by_user_handler(
     let user_id = param(&params, "user_id");
     match user_id {
         Some(user_id) => ok_data(state.store.filter_eq("conversation", "user_id", &user_id)),
-        None => err_msg(StatusCode::BAD_REQUEST, "Query parameter 'user_id' is required"),
+        None => err_msg(
+            StatusCode::BAD_REQUEST,
+            "Query parameter 'user_id' is required",
+        ),
     }
 }
 
@@ -126,7 +124,10 @@ async fn by_agent_handler(
     let agent_id = param(&params, "agent_id");
     match agent_id {
         Some(agent_id) => ok_data(state.store.filter_eq("conversation", "agent_id", &agent_id)),
-        None => err_msg(StatusCode::BAD_REQUEST, "Query parameter 'agent_id' is required"),
+        None => err_msg(
+            StatusCode::BAD_REQUEST,
+            "Query parameter 'agent_id' is required",
+        ),
     }
 }
 

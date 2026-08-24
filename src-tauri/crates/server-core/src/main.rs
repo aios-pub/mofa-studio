@@ -6,7 +6,6 @@
  *   server-core [--port N] [--data-dir PATH]
  * or environment: MOFA_SERVER_PORT / MOFA_SERVER_DATA_DIR.
  */
-
 use std::path::PathBuf;
 
 use server_core::ServerConfig;
@@ -40,9 +39,14 @@ async fn run() -> std::io::Result<()> {
                     config.data_dir = PathBuf::from(dir);
                 }
             }
+            "--engine-url" => {
+                if let Some(url) = args.next() {
+                    config.engine_base_url = Some(url);
+                }
+            }
             other => {
                 eprintln!("Unknown argument: {other}");
-                eprintln!("Usage: server-core [--port N] [--data-dir PATH]");
+                eprintln!("Usage: server-core [--port N] [--data-dir PATH] [--engine-url URL]");
                 std::process::exit(1);
             }
         }

@@ -63,9 +63,11 @@ async fn chat_completions(State(state): State<Arc<AppState>>, Json(body): Json<V
         Err(msg) => return openai_error(StatusCode::BAD_REQUEST, &msg),
     };
 
-    let has_images = messages
-        .iter()
-        .any(|m| m.get("images").and_then(Value::as_array).is_some_and(|a| !a.is_empty()));
+    let has_images = messages.iter().any(|m| {
+        m.get("images")
+            .and_then(Value::as_array)
+            .is_some_and(|a| !a.is_empty())
+    });
     // Vision auto-routing: image-bearing requests ask for the vlm capability
     // so the engine picks a vision-capable model.
     let capability = if has_images { "vlm" } else { "chat" };
@@ -124,9 +126,8 @@ fn extract_messages(body: &Value) -> Result<Vec<Value>, String> {
                         Some("image_url") => {
                             // Vision parts ride along as message images for
                             // the engine's multimodal format.
-                            if let Some(url) = part
-                                .pointer("/image_url/url")
-                                .and_then(Value::as_str)
+                            if let Some(url) =
+                                part.pointer("/image_url/url").and_then(Value::as_str)
                             {
                                 images.push(url.to_string());
                             }
@@ -197,11 +198,17 @@ async fn chat_completions_blocking(state: Arc<AppState>, engine_req: Value) -> R
         &state.store,
         spans::KIND_LLM,
         spans::SOURCE_CHAT,
-        payload.get("model_used").and_then(Value::as_str).unwrap_or("unknown"),
+        payload
+            .get("model_used")
+            .and_then(Value::as_str)
+            .unwrap_or("unknown"),
         payload.get("provider").and_then(Value::as_str),
         None,
         Some(tokens),
-        payload.get("duration_ms").and_then(Value::as_u64).unwrap_or(0),
+        payload
+            .get("duration_ms")
+            .and_then(Value::as_u64)
+            .unwrap_or(0),
         "ok",
     );
     let reasoning = payload
@@ -465,7 +472,10 @@ fn translate_sse_line(
 
 /// The model field of an engine request, for span metadata.
 fn body_model(engine_req: &Value) -> &str {
-    engine_req.get("model").and_then(Value::as_str).unwrap_or("auto")
+    engine_req
+        .get("model")
+        .and_then(Value::as_str)
+        .unwrap_or("auto")
 }
 
 /// Serialize one SSE `data:` frame carrying the given JSON value.
@@ -551,7 +561,10 @@ async fn engine_health(State(state): State<Arc<AppState>>) -> Response {
 /// `image_gen` capability. The engine writes artifacts to its output dir
 /// and reports paths (`files`); the gateway reads them off the shared host
 /// and returns base64 payloads in the OpenAI shape.
-async fn image_generations(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> Response {
+async fn image_generations(
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<Value>,
+) -> Response {
     let Some(prompt) = body.get("prompt").and_then(Value::as_str) else {
         return openai_error(StatusCode::BAD_REQUEST, "field `prompt` is required");
     };
@@ -647,11 +660,17 @@ async fn image_generations(State(state): State<Arc<AppState>>, Json(body): Json<
         &state.store,
         spans::KIND_IMAGE_GEN,
         spans::SOURCE_STUDIO,
-        payload.get("model_used").and_then(Value::as_str).unwrap_or("unknown"),
+        payload
+            .get("model_used")
+            .and_then(Value::as_str)
+            .unwrap_or("unknown"),
         payload.get("provider").and_then(Value::as_str),
         None,
         None,
-        payload.get("duration_ms").and_then(Value::as_u64).unwrap_or(0),
+        payload
+            .get("duration_ms")
+            .and_then(Value::as_u64)
+            .unwrap_or(0),
         "ok",
     );
 

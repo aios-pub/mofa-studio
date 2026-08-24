@@ -14,6 +14,7 @@
  */
 pub mod auth;
 pub mod collections;
+pub mod flow_routes;
 pub mod llm_gateway;
 pub mod routes;
 pub mod spans;
@@ -83,6 +84,8 @@ pub(crate) struct AppState {
     pub http: reqwest::Client,
     /// Resolved mofa-engine base URL (config → env → default).
     pub engine_base_url: String,
+    /// Workflow runner (FLOW-04) with its signature cache.
+    pub flow_runner: std::sync::Arc<flow_engine::FlowRunner<flow_engine::HttpEngineClient>>,
 }
 
 // ==================== Response helpers ====================
@@ -114,6 +117,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
     // PLAT-15: prune expired spans at startup (default 90-day retention).
     spans::prune_spans(&store);
 
+    let engine_base_url = llm_gateway::resolve_engine_url(config.engine_base_url.clone());
     let state = Arc::new(AppState {
         store,
         jwt_secret,
@@ -125,7 +129,10 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
             .no_proxy()
             .build()
             .expect("reqwest client"),
-        engine_base_url: llm_gateway::resolve_engine_url(config.engine_base_url.clone()),
+        engine_base_url: engine_base_url.clone(),
+        flow_runner: std::sync::Arc::new(flow_engine::FlowRunner::new(
+            flow_engine::HttpEngineClient::new(engine_base_url),
+        )),
     });
 
     let app = Router::new()
@@ -133,6 +140,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         .merge(ws::ws_routes())
         .merge(routes::extras_routes())
         .merge(llm_gateway::llm_routes())
+        .merge(flow_routes::flow_routes())
         .merge(auth::auth_routes())
         .merge(collections::collection_routes())
         .fallback(not_implemented)

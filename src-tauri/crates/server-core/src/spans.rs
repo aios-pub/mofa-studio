@@ -7,7 +7,6 @@
  * Retention: spans older than the configured window (default 90 days,
  * `MOFA_SPAN_RETENTION_DAYS`) are pruned at startup.
  */
-
 use serde_json::{json, Value};
 
 use crate::store::Store;
@@ -36,7 +35,9 @@ pub(crate) fn record_span(
     status: &str,
 ) {
     let id = format!("span-{}", uuid::Uuid::new_v4());
-    let created_at = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let created_at = chrono::Utc::now()
+        .format("%Y-%m-%dT%H:%M:%S%.3fZ")
+        .to_string();
     let doc = json!({
         "id": id,
         "trace_kind": kind,
@@ -72,11 +73,7 @@ pub(crate) fn prune_spans(store: &Store) {
                 .map(|at| at < cutoff.as_str())
                 .unwrap_or(false)
         })
-        .filter_map(|doc| {
-            doc.get("id")
-                .and_then(Value::as_str)
-                .map(str::to_string)
-        })
+        .filter_map(|doc| doc.get("id").and_then(Value::as_str).map(str::to_string))
         .collect();
     for id in stale {
         store.delete("span", &id);
@@ -118,7 +115,10 @@ mod tests {
         assert_eq!(span["status"], "ok");
         // Privacy: no prompt/content fields exist on the span shape.
         for forbidden in ["prompt", "content", "messages", "text"] {
-            assert!(span.get(forbidden).is_none(), "span must not carry {forbidden}");
+            assert!(
+                span.get(forbidden).is_none(),
+                "span must not carry {forbidden}"
+            );
         }
     }
 
@@ -126,13 +126,27 @@ mod tests {
     fn prunes_spans_past_retention() {
         let store = test_store("prune");
         // Fresh span stays; a 100-day-old span goes.
-        record_span(&store, KIND_LLM, SOURCE_CHAT, "m", None, None, None, 1, "ok");
+        record_span(
+            &store,
+            KIND_LLM,
+            SOURCE_CHAT,
+            "m",
+            None,
+            None,
+            None,
+            1,
+            "ok",
+        );
         let old_id = "span-old";
         let old_created = (chrono::Utc::now() - chrono::Duration::days(100))
             .format("%Y-%m-%dT%H:%M:%S%.3fZ")
             .to_string();
         store
-            .insert("span", old_id, json!({"id": old_id, "trace_kind": "llm_call"}))
+            .insert(
+                "span",
+                old_id,
+                json!({"id": old_id, "trace_kind": "llm_call"}),
+            )
             .expect("insert old span");
         // insert() stamps created_at with now; backdate it via update so the
         // retention filter can see it as expired.

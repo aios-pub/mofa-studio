@@ -68,7 +68,9 @@ async fn mock_invoke(Json(req): Json<Value>) -> Response {
 /// engine's output dir) and reports them in `files`.
 async fn mock_invoke_image_gen(Json(req): Json<Value>) -> Response {
     assert!(
-        req["messages"][0]["content"].as_str().is_some_and(|p| !p.is_empty()),
+        req["messages"][0]["content"]
+            .as_str()
+            .is_some_and(|p| !p.is_empty()),
         "gateway must forward the prompt as message content"
     );
     let n = req["params"]["n"].as_u64().unwrap_or(1) as usize;
@@ -76,9 +78,9 @@ async fn mock_invoke_image_gen(Json(req): Json<Value>) -> Response {
     let _ = std::fs::create_dir_all(&dir);
     // 1x1 PNG: header + IHDR chunk of a red pixel.
     let png: &[u8] = &[
-        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49,
-        0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02,
-        0x00, 0x00, 0x00, 0x90, 0x77, 0x53, 0xDE,
+        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44,
+        0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02, 0x00, 0x00, 0x00, 0x90,
+        0x77, 0x53, 0xDE,
     ];
     let mut files: Vec<String> = Vec::new();
     for i in 0..n.max(1) {
@@ -412,7 +414,10 @@ async fn image_generations_requires_prompt() {
         .unwrap();
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
     let body = body_json(response).await;
-    assert!(body["error"]["message"].as_str().unwrap().contains("prompt"));
+    assert!(body["error"]["message"]
+        .as_str()
+        .unwrap()
+        .contains("prompt"));
 }
 
 #[tokio::test]
@@ -444,7 +449,10 @@ async fn vision_input_routes_vlm_and_carries_images() {
 
     assert_eq!(response.status(), StatusCode::OK);
     let body = body_json(response).await;
-    assert_eq!(body["choices"][0]["message"]["content"], "hello from mock engine");
+    assert_eq!(
+        body["choices"][0]["message"]["content"],
+        "hello from mock engine"
+    );
 }
 
 #[tokio::test]
@@ -454,11 +462,7 @@ async fn chat_calls_record_metadata_only_spans() {
 
     // Non-streaming call, then verify the span landed via the generic
     // collection route (PLAT-15 M1 slice).
-    let response = app
-        .clone()
-        .oneshot(chat_request(false))
-        .await
-        .unwrap();
+    let response = app.clone().oneshot(chat_request(false)).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
 
     let response = app
@@ -482,6 +486,9 @@ async fn chat_calls_record_metadata_only_spans() {
     assert_eq!(span["status"], "ok");
     // Privacy default: metadata only — no prompt/content anywhere.
     for forbidden in ["prompt", "content", "messages"] {
-        assert!(span.get(forbidden).is_none(), "span must not carry {forbidden}");
+        assert!(
+            span.get(forbidden).is_none(),
+            "span must not carry {forbidden}"
+        );
     }
 }

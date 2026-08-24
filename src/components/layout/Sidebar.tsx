@@ -35,6 +35,7 @@ import {
   DatabaseOutlined,
   PictureOutlined,
   BulbOutlined,
+  HistoryOutlined,
   EditOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
@@ -95,6 +96,11 @@ const coreMenuItems: MenuProps["items"] = [
     key: "/creation/image-gen",
     icon: <PictureOutlined />,
     label: "图像生成",
+  },
+  {
+    key: "/creation/history",
+    icon: <HistoryOutlined />,
+    label: "生成历史",
   },
   {
     key: "/creation/writing",

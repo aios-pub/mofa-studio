@@ -32,9 +32,11 @@ import WritingPage from './pages/creation/WritingPage';
 import KeyWizard from './components/onboarding/KeyWizard';
 import { ThemeProvider } from './theme';
 import { useFloatingBridge } from './tauri/useFloatingBridge';
+import { useSettings } from './stores';
 
 function App() {
   useFloatingBridge();
+  const expertMode = useSettings().expertMode;
 
   return (
     <ThemeProvider>
@@ -62,43 +64,26 @@ function App() {
 
                   {/* Management module */}
                   <Route path="/management/claws" element={<Navigate to="/management/agents" replace />} />
-                  <Route path="/management/agents" element={<AgentListPage />} />
                   <Route path="/management/prompts" element={<PromptListPage />} />
                   <Route path="/management/skills" element={<SkillsListPage />} />
                   <Route path="/management/skills/hub/:namespace/:slug" element={<HubSkillDetail />} />
-                  <Route path="/management/test-sets" element={<TestSetsListPage />} />
-                  <Route path="/management/test-sets/:testSetId/docs" element={<InteractiveDocs />} />
-                  <Route path="/management/load-test" element={<LoadTestPage />} />
                   <Route path="/management/providers" element={<ProvidersListPage />} />
-                  <Route path="/management/channels" element={<ChannelsListPage />} />
 
                   {/* Task scheduling module */}
                   <Route path="/scheduler" element={<SchedulerPage />} />
 
                   {/* Monitoring module */}
-                  <Route path="/analytics" element={<AnalyticsPage />} />
-                  <Route path="/monitoring" element={<MonitoringPage />} />
 
                   {/* Organization module */}
-                  <Route path="/organization/users" element={<UsersPage />} />
-                  <Route path="/organization/departments" element={<DepartmentsPage />} />
 
                   {/* System module */}
-                  <Route path="/system/resources" element={<ResourceManagementPage />} />
-                  <Route path="/system/audit-logs" element={<AuditLogsPage />} />
-                  <Route path="/system/settings" element={<SettingsPage />} />
-                  <Route path="/system/insight" element={<InsightPage />} />
-                  <Route path="/system/menu" element={<MenuManagementPage />} />
-                  <Route path="/system/role" element={<RoleManagementPage />} />
 
                   {/* Personal center */}
                   <Route path="/profile" element={<ProfilePage />} />
 
                   {/* Tracing */}
-                  <Route path="/tracing" element={<TracingPage />} />
 
                   {/* Evaluation */}
-                  <Route path="/evaluation" element={<EvaluationPage />} />
 
                   {/* Workflow */}
                   <Route path="/workflow" element={<WorkflowListPage />} />
@@ -106,6 +91,38 @@ function App() {
 
                   {/* Knowledge base */}
                   <Route path="/knowledge" element={<KnowledgeBaseListPage />} />
+
+                  {/* PLAT-14: B-end modules live under /expert/*, reachable
+                      only with expert mode enabled. Legacy paths redirect. */}
+                  {expertMode && (
+                    <>
+                      <Route path="/expert/management/agents" element={<AgentListPage />} />
+                      <Route path="/expert/management/test-sets" element={<TestSetsListPage />} />
+                      <Route path="/expert/management/test-sets/:testSetId/docs" element={<InteractiveDocs />} />
+                      <Route path="/expert/management/load-test" element={<LoadTestPage />} />
+                      <Route path="/expert/management/channels" element={<ChannelsListPage />} />
+                      <Route path="/expert/system/resources" element={<ResourceManagementPage />} />
+                      <Route path="/expert/system/audit-logs" element={<AuditLogsPage />} />
+                      <Route path="/expert/system/insight" element={<InsightPage />} />
+                      <Route path="/expert/system/menu" element={<MenuManagementPage />} />
+                      <Route path="/expert/system/role" element={<RoleManagementPage />} />
+                      <Route path="/expert/system/settings" element={<SettingsPage />} />
+                      <Route path="/expert/analytics" element={<AnalyticsPage />} />
+                      <Route path="/expert/monitoring" element={<MonitoringPage />} />
+                      <Route path="/expert/tracing" element={<TracingPage />} />
+                      <Route path="/expert/evaluation" element={<EvaluationPage />} />
+                      <Route path="/expert/organization/users" element={<UsersPage />} />
+                      <Route path="/expert/organization/departments" element={<DepartmentsPage />} />
+                      {/* Legacy deep links keep working when expert mode is on */}
+                      <Route path="/management/agents" element={<Navigate to="/expert/management/agents" replace />} />
+                      <Route path="/organization/:rest*" element={<Navigate to="/expert/organization/users" replace />} />
+                      <Route path="/system/:rest*" element={<Navigate to="/expert/system/settings" replace />} />
+                      <Route path="/analytics" element={<Navigate to="/expert/analytics" replace />} />
+                      <Route path="/monitoring" element={<Navigate to="/expert/monitoring" replace />} />
+                      <Route path="/tracing" element={<Navigate to="/expert/tracing" replace />} />
+                      <Route path="/evaluation" element={<Navigate to="/expert/evaluation" replace />} />
+                    </>
+                  )}
                 </Routes>
               </MainLayout>
             </RouteGuard>

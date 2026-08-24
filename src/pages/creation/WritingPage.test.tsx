@@ -2,7 +2,8 @@
  * Smoke tests for the AI writing page: control panel wiring, genre hints,
  * and the generate gate (empty topic blocks the draft).
  */
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import WritingPage from "./WritingPage";
 
@@ -22,7 +23,11 @@ vi.mock("@/services/api/writing", async (importOriginal) => {
 
 describe("WritingPage (TOOL-06)", () => {
   it("renders the genre selector with platform hints", async () => {
-    render(<WritingPage />);
+    render(
+      <MemoryRouter>
+        <WritingPage />
+      </MemoryRouter>,
+    );
     expect(screen.getByLabelText("体裁模板")).toBeInTheDocument();
     expect(screen.getByLabelText("写作主题")).toBeInTheDocument();
     expect(screen.getByLabelText("补充要求")).toBeInTheDocument();
@@ -34,7 +39,11 @@ describe("WritingPage (TOOL-06)", () => {
   });
 
   it("generate is gated on a non-empty topic", () => {
-    render(<WritingPage />);
+    render(
+      <MemoryRouter>
+        <WritingPage />
+      </MemoryRouter>,
+    );
     const button = screen.getByLabelText("生成初稿");
     expect(button).toBeDisabled();
     fireEvent.change(screen.getByLabelText("写作主题"), {
@@ -44,7 +53,11 @@ describe("WritingPage (TOOL-06)", () => {
   });
 
   it("editor surface and export render", async () => {
-    render(<WritingPage />);
+    render(
+      <MemoryRouter>
+        <WritingPage />
+      </MemoryRouter>,
+    );
     expect(await screen.findByLabelText("写作编辑器")).toBeInTheDocument();
     expect(screen.getByLabelText("导出 Markdown")).toBeInTheDocument();
     expect(screen.getByText(/字数：/)).toBeInTheDocument();

@@ -1,0 +1,102 @@
+/**
+ * First-task guide (ONBOARD-03): a「做同款」recommendation strip shown on
+ * the dashboard until the first successful output. One click routes into
+ * a creation tool with prefilled parameters and auto-runs.
+ */
+
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button, Modal } from "antd";
+import { RocketOutlined } from "@ant-design/icons";
+import { FIRST_RUN_CASES, hasFirstOutput } from "./firstRunCases";
+import { loadCommands, makeCommand, saveCommands } from "@/utils/slashCommands";
+
+export default function FirstRunGuide() {
+  const navigate = useNavigate();
+  const [dismissed, setDismissed] = useState(false);
+
+  if (hasFirstOutput() || dismissed) return null;
+
+  const runCase = (index: number) => {
+    const c = FIRST_RUN_CASES[index];
+    const search = new URLSearchParams(c.params).toString();
+    navigate(`${c.to}?${search}`);
+  };
+
+  return (
+    <section
+      className="mb-6 p-5 rounded-xl border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5"
+      aria-label="首任务引导"
+    >
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="flex items-center gap-2 text-base font-semibold text-[var(--color-text-primary)]">
+          <RocketOutlined className="text-[var(--color-primary)]" />
+          5 分钟拿到第一个成果——选一个「做同款」
+        </h3>
+        <Button type="text" size="small" onClick={() => setDismissed(true)} aria-label="关闭首任务引导">
+          稍后再说
+        </Button>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {FIRST_RUN_CASES.map((c, index) => (
+          <button
+            key={c.id}
+            onClick={() => runCase(index)}
+            className="text-left p-4 rounded-xl border border-(--color-border) bg-[var(--color-bg-secondary)] hover:border-[var(--color-primary)] hover:shadow-md transition-all"
+            aria-label={`做同款：${c.title}`}
+          >
+            <span className="text-2xl">{c.icon}</span>
+            <p className="mt-2 text-sm font-medium text-[var(--color-text-primary)]">
+              {c.title}
+            </p>
+            <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+              {c.description}
+            </p>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** 二选一 after the first successful output (存为模板 / 继续探索). */
+export function FirstOutputDialog({
+  open,
+  templateName,
+  templateBody,
+  onClose,
+}: {
+  open: boolean;
+  templateName: string;
+  templateBody: string;
+  onClose: () => void;
+}) {
+  const saveAsTemplate = () => {
+    // Reuse the CHAT-09 slash registry so the template is immediately
+    // usable from the chat input via「/名称」.
+    const command = makeCommand(`case-${Date.now()}`, templateName, templateBody);
+    saveCommands([...loadCommands().filter((c) => c.id !== command.id), command]);
+    onClose();
+  };
+
+  return (
+    <Modal
+      title="第一个成果已完成 🎉"
+      open={open}
+      onCancel={onClose}
+      footer={[
+        <Button key="explore" onClick={onClose}>
+          继续探索
+        </Button>,
+        <Button key="save" type="primary" onClick={saveAsTemplate}>
+          存为模板
+        </Button>,
+      ]}
+    >
+      <p className="text-sm text-[var(--color-text-secondary)]">
+        把这次的做法保存为快捷指令模板，下次在对话框输入
+        「/{templateName}」即可一键复用。
+      </p>
+    </Modal>
+  );
+}

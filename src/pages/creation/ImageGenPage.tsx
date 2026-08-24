@@ -6,7 +6,14 @@
  * with full parameter snapshots (TOOL-05 seed).
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { FirstOutputDialog } from "@/components/onboarding/FirstRunGuide";
+import {
+  hasFirstOutput,
+  markFirstOutput,
+  queryRecord,
+} from "@/components/onboarding/firstRunCases";
 import { Button, Input, Select, Spin, message, Empty, Tooltip } from "antd";
 import {
   PictureOutlined,
@@ -52,6 +59,8 @@ export default function ImageGenPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [results, setResults] = useState<string[]>([]);
   const [history, setHistory] = useState<ImageGenHistoryEntry[]>(loadHistory);
+  const [firstOutputOpen, setFirstOutputOpen] = useState(false);
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     void engineService.listModels().then((models) => {
@@ -60,43 +69,72 @@ export default function ImageGenPage() {
     });
   }, []);
 
-  const handleGenerate = useCallback(async () => {
-    const trimmed = prompt.trim();
-    if (!trimmed || isGenerating) return;
-    setIsGenerating(true);
-    setResults([]);
-    try {
-      const response = await imageService.generate({
-        prompt: trimmed,
-        model: model === AUTO_MODEL ? undefined : model,
-        n: count,
-        size,
-      });
-      setResults(response.images);
-      if (response.images.length === 0) {
-        message.warning("引擎没有返回图片，请检查 image_gen 模型配置");
+  const handleGenerateFor = useCallback(
+    async (promptOverride?: string, sizeOverride?: string) => {
+      const effectivePrompt = (promptOverride ?? prompt).trim();
+      const effectiveSize =
+        sizeOverride && SIZE_PRESETS.some((p) => p.value === sizeOverride)
+          ? sizeOverride
+          : size;
+      if (!effectivePrompt || isGenerating) return;
+      setIsGenerating(true);
+      setResults([]);
+      try {
+        const response = await imageService.generate({
+          prompt: effectivePrompt,
+          model: model === AUTO_MODEL ? undefined : model,
+          n: count,
+          size: effectiveSize,
+        });
+        setResults(response.images);
+        if (!hasFirstOutput() && response.images.length > 0) {
+          markFirstOutput();
+          setFirstOutputOpen(true);
+        }
+        if (response.images.length === 0) {
+          message.warning("引擎没有返回图片，请检查 image_gen 模型配置");
+        }
+        const entry: ImageGenHistoryEntry = {
+          id: `img-${Date.now()}`,
+          prompt: effectivePrompt,
+          model: response.model_used ?? model,
+          n: count,
+          size: effectiveSize,
+          created_at: new Date().toISOString(),
+          images: response.images,
+        };
+        setHistory((prev) => {
+          const next = [entry, ...prev];
+          saveHistory(next);
+          return next;
+        });
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : String(error);
+        message.error(`生成失败：${detail}`);
+      } finally {
+        setIsGenerating(false);
       }
-      const entry: ImageGenHistoryEntry = {
-        id: `img-${Date.now()}`,
-        prompt: trimmed,
-        model: response.model_used ?? model,
-        n: count,
-        size,
-        created_at: new Date().toISOString(),
-        images: response.images,
-      };
-      setHistory((prev) => {
-        const next = [entry, ...prev];
-        saveHistory(next);
-        return next;
-      });
-    } catch (error) {
-      const detail = error instanceof Error ? error.message : String(error);
-      message.error(`生成失败：${detail}`);
-    } finally {
-      setIsGenerating(false);
+    },
+    [prompt, isGenerating, model, count, size],
+  );
+
+  const handleGenerate = useCallback(() => handleGenerateFor(), [handleGenerateFor]);
+
+  const handleGenerateRef = useRef(handleGenerateFor);
+  handleGenerateRef.current = handleGenerateFor;
+
+  // ONBOARD-03: 「做同款」cases arrive with prefilled params and run=1.
+  useEffect(() => {
+    const params = queryRecord(window.location.search);
+    if (params.prompt) setPrompt(params.prompt);
+    if (params.size && SIZE_PRESETS.some((p) => p.value === params.size)) {
+      setSize(params.size);
     }
-  }, [prompt, isGenerating, model, count, size]);
+    if (params.run === "1" && params.prompt) {
+      void handleGenerateRef.current?.(params.prompt, params.size);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const download = useCallback(
     (dataUrl: string, seq: number) => {
@@ -276,6 +314,14 @@ export default function ImageGenPage() {
           </div>
         )}
       </div>
+
+      {/* ONBOARD-03: 存为模板 / 继续探索 */}
+      <FirstOutputDialog
+        open={firstOutputOpen}
+        templateName="生图"
+        templateBody="{{提示词}}（尺寸 {{尺寸}}）"
+        onClose={() => setFirstOutputOpen(false)}
+      />
     </div>
   );
 }

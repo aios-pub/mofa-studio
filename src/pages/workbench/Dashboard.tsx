@@ -17,6 +17,7 @@ import {
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { Button, Card, Progress, Tooltip } from "antd";
+import FirstRunGuide from "@/components/onboarding/FirstRunGuide";
 import {
   analyticsApi,
   monitoringApi,
@@ -197,6 +198,7 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col gap-6 w-full p-6">
       {/* Welcome banner */}
+      <FirstRunGuide />
       <WelcomeBanner />
 
       {/* Top toolbar */}

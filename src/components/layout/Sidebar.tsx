@@ -5,7 +5,7 @@
  */
 
 import { useNavigate, useLocation } from "react-router-dom";
-import { Layout, Menu, Button } from "antd";
+import { Layout, Menu, Button, Switch } from "antd";
 import {
   RobotOutlined,
   LeftOutlined,
@@ -36,7 +36,7 @@ import {
   EditOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
-import { useAppStore, useSettings } from "../../stores";
+import { useAppStore, useSettings, useSettingActions } from "../../stores";
 import { useTheme } from "../../hooks";
 import { useState, useRef, useEffect, useCallback } from "react";
 
@@ -47,10 +47,30 @@ interface SidebarProps {
 }
 
 // Menu configuration - Ant Design icon components
-const menuItems: MenuProps["items"] = [
+const coreMenuItems: MenuProps["items"] = [
   {
     key: "workbench",
     label: "工作台",
+    type: "group",
+  },
+  {
+    key: "management",
+    label: "管理",
+    type: "group",
+  },
+  {
+    key: "scheduler",
+    label: "任务调度",
+    type: "group",
+  },
+  {
+    key: "workflow",
+    label: "工作流",
+    type: "group",
+  },
+  {
+    key: "knowledge",
+    label: "知识库",
     type: "group",
   },
   {
@@ -75,11 +95,6 @@ const menuItems: MenuProps["items"] = [
   },
   { type: "divider" },
   {
-    key: "management",
-    label: "管理",
-    type: "group",
-  },
-  {
     key: "/management/providers",
     icon: <CloudServerOutlined />,
     label: "Provider 管理",
@@ -94,37 +109,7 @@ const menuItems: MenuProps["items"] = [
     icon: <ThunderboltOutlined />,
     label: "Skills 管理",
   },
-  {
-    key: "/management/agents",
-    icon: <RobotOutlined />,
-    label: "Agent 管理",
-  },
-  {
-    key: "/management/test-sets",
-    icon: <ExperimentOutlined />,
-    label: "测试集管理",
-  },
-  {
-    key: "/management/load-test",
-    icon: <BarChartOutlined />,
-    label: "压测管理",
-  },
-  {
-    key: "/management/channels",
-    icon: <LinkOutlined />,
-    label: "渠道管理",
-  },
-  {
-    key: "/system/resources",
-    icon: <FolderOutlined />,
-    label: "资源管理",
-  },
   { type: "divider" },
-  {
-    key: "scheduler",
-    label: "任务调度",
-    type: "group",
-  },
   {
     key: "/scheduler",
     icon: <ClockCircleOutlined />,
@@ -132,19 +117,9 @@ const menuItems: MenuProps["items"] = [
   },
   { type: "divider" },
   {
-    key: "workflow",
-    label: "工作流",
-    type: "group",
-  },
-  {
     key: "/workflow",
     icon: <BranchesOutlined />,
     label: "工作流管理",
-  },
-  {
-    key: "knowledge",
-    label: "知识库",
-    type: "group",
   },
   {
     key: "/knowledge",
@@ -152,93 +127,116 @@ const menuItems: MenuProps["items"] = [
     label: "知识库管理",
   },
   { type: "divider" },
+];
+
+/** PLAT-14: B-end modules, mounted under /expert/* and only offered when
+ * expert mode is on (persisted in the settings store). */
+const expertMenuItems: MenuProps["items"] = [
+  { type: "divider" },
   {
-    key: "monitoring",
-    label: "监控",
+    key: "expert",
+    label: "专家模式",
     type: "group",
   },
   {
-    key: "/analytics",
+    key: "/expert/management/agents",
+    icon: <RobotOutlined />,
+    label: "Agent 管理",
+  },
+  {
+    key: "/expert/management/test-sets",
+    icon: <ExperimentOutlined />,
+    label: "测试集管理",
+  },
+  {
+    key: "/expert/management/load-test",
+    icon: <BarChartOutlined />,
+    label: "压测管理",
+  },
+  {
+    key: "/expert/management/channels",
+    icon: <LinkOutlined />,
+    label: "渠道管理",
+  },
+  {
+    key: "/expert/system/resources",
+    icon: <FolderOutlined />,
+    label: "资源管理",
+  },
+  {
+    key: "/expert/analytics",
     icon: <BarChartOutlined />,
     label: "统计分析",
   },
   {
-    key: "/monitoring",
+    key: "/expert/monitoring",
     icon: <EyeOutlined />,
     label: "实时监控",
   },
   { type: "divider" },
   {
-    key: "tracing",
-    label: "追踪与评估",
-    type: "group",
-  },
-  {
-    key: "/tracing",
+    key: "/expert/tracing",
     icon: <ApiOutlined />,
     label: "追踪分析",
   },
   {
-    key: "/evaluation",
+    key: "/expert/evaluation",
     icon: <AuditOutlined />,
     label: "Agent 评估",
   },
   { type: "divider" },
   {
-    key: "organization",
-    label: "组织",
-    type: "group",
-  },
-  {
-    key: "/organization/users",
+    key: "/expert/organization/users",
     icon: <UserOutlined />,
     label: "用户管理",
   },
   {
-    key: "/organization/departments",
+    key: "/expert/organization/departments",
     icon: <ApartmentOutlined />,
     label: "部门管理",
   },
   { type: "divider" },
   {
-    key: "system",
-    label: "系统",
-    type: "group",
-  },
-  {
-    key: "/system/audit-logs",
+    key: "/expert/system/audit-logs",
     icon: <FileSearchOutlined />,
     label: "审计日志",
   },
   {
-    key: "/system/insight",
+    key: "/expert/system/insight",
     icon: <PieChartOutlined />,
     label: "洞察分析",
   },
   {
-    key: "/system/menu",
+    key: "/expert/system/menu",
     icon: <MenuOutlined />,
     label: "菜单管理",
   },
   {
-    key: "/system/role",
+    key: "/expert/system/role",
     icon: <TeamOutlined />,
     label: "角色管理",
   },
   {
-    key: "/system/settings",
+    key: "/expert/system/settings",
     icon: <SettingOutlined />,
     label: "系统设置",
   },
 ];
+;
 
 const MIN_WIDTH = 150;
 const MAX_WIDTH = 400;
 const DEFAULT_WIDTH = 224;
 
 export default function Sidebar({ isMobile = false }: SidebarProps) {
+  const expertMode = useSettings().expertMode;
+  const visibleMenuItems = expertMode
+    ? [...(coreMenuItems ?? []), ...(expertMenuItems ?? [])]
+    : coreMenuItems;
+
   const { sidebarCollapsed, toggleSidebar, setSidebarCollapsed } =
     useAppStore();
+  const { toggleExpertMode } = useSettingActions();
   const settings = useSettings();
   const { isDark } = useTheme();
   const navigate = useNavigate();
@@ -326,7 +324,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
             mode="inline"
             selectedKeys={[location.pathname]}
             onClick={handleMenuClick}
-            items={menuItems}
+            items={visibleMenuItems}
             className="!border-none"
           />
         </div>
@@ -406,10 +404,23 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           inlineCollapsed={isMini}
           selectedKeys={[location.pathname]}
           onClick={handleMenuClick}
-          items={menuItems}
+          items={visibleMenuItems}
           className="!border-none"
         />
       </div>
+
+      {/* PLAT-14: expert-mode switch — B-end modules under /expert/* */}
+      {!isMini && (
+        <div className="px-4 py-3 border-t border-(--color-border) flex items-center justify-between">
+          <span className="text-xs text-[var(--color-text-tertiary)]">专家模式</span>
+          <Switch
+            size="small"
+            checked={expertMode}
+            onChange={toggleExpertMode}
+            aria-label="专家模式开关"
+          />
+        </div>
+      )}
 
       {/* Drag handle for resizing width */}
       {!isMini && (

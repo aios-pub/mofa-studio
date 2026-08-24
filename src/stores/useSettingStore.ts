@@ -32,6 +32,8 @@ export type SettingsType = {
   darkSidebar: boolean;
   // Font size
   fontSize: number;
+  // Expert mode (PLAT-14): shows the frozen B-end modules under /expert/*
+  expertMode: boolean;
 };
 
 type SettingStore = {
@@ -39,6 +41,7 @@ type SettingStore = {
   actions: {
     setSettings: (settings: SettingsType) => void;
     resetSettings: () => void;
+    toggleExpertMode: () => void;
   };
 };
 
@@ -51,6 +54,7 @@ const defaultSettings: SettingsType = {
   accordion: false,
   darkSidebar: true,
   fontSize: 14,
+  expertMode: false,
 };
 
 export const useSettingStore = create<SettingStore>()(
@@ -63,6 +67,11 @@ export const useSettingStore = create<SettingStore>()(
         },
         resetSettings: () => {
           set({ settings: defaultSettings });
+        },
+        toggleExpertMode: () => {
+          set((state) => ({
+            settings: { ...state.settings, expertMode: !state.settings.expertMode },
+          }));
         },
       },
     }),

@@ -5,6 +5,13 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { FirstOutputDialog } from "@/components/onboarding/FirstRunGuide";
+import {
+  hasFirstOutput,
+  markFirstOutput,
+  queryRecord,
+} from "@/components/onboarding/firstRunCases";
 import { Button, Input, Select, Spin, message, Tooltip } from "antd";
 import { EditOutlined, ThunderboltOutlined } from "@ant-design/icons";
 import { Editor, EditorContent, useEditor } from "@tiptap/react";
@@ -37,7 +44,22 @@ export default function WritingPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [busyOp, setBusyOp] = useState<TransformOp | "draft" | null>(null);
   const [menu, setMenu] = useState<FloatingMenu | null>(null);
+  const [firstOutputOpen, setFirstOutputOpen] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const [searchParams] = useSearchParams();
+
+  // ONBOARD-03: 「做同款」cases arrive with genre/topic prefilled + run=1.
+  useEffect(() => {
+    const params = queryRecord(window.location.search);
+    if (
+      params.genre &&
+      GENRE_TEMPLATES.some((g) => g.id === params.genre)
+    ) {
+      setGenre(params.genre);
+    }
+    if (params.topic) setTopic(params.topic);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const editor = useEditor({
     extensions: [
@@ -81,6 +103,9 @@ export default function WritingPage() {
     };
   }, [editor, busyOp]);
 
+  const autoRunRef = useRef(false);
+  const runDraftRef = useRef<() => void>(() => {});
+
   const runDraft = useCallback(async () => {
     const trimmed = topic.trim();
     if (!trimmed || isGenerating || !editor) return;
@@ -98,6 +123,10 @@ export default function WritingPage() {
         abortRef.current.signal,
       );
       message.success("初稿已生成");
+      if (!hasFirstOutput()) {
+        markFirstOutput();
+        setFirstOutputOpen(true);
+      }
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
       message.error(`生成失败：${detail}`);
@@ -106,6 +135,18 @@ export default function WritingPage() {
       setBusyOp(null);
     }
   }, [topic, isGenerating, editor, genre, requirements, model]);
+
+  runDraftRef.current = () => void runDraft();
+
+  // ONBOARD-03 auto-run fires once, after prefill has committed.
+  useEffect(() => {
+    const params = queryRecord(window.location.search);
+    if (params.run === "1" && params.topic && !autoRunRef.current) {
+      autoRunRef.current = true;
+      runDraftRef.current();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [topic]);
 
   const runTransform = useCallback(
     async (op: TransformOp) => {
@@ -254,6 +295,14 @@ export default function WritingPage() {
           </div>
         </div>
       </div>
+
+      {/* ONBOARD-03: 存为模板 / 继续探索 */}
+      <FirstOutputDialog
+        open={firstOutputOpen}
+        templateName={activeGenre?.id === "xiaohongshu" ? "小红书" : "写作"}
+        templateBody={`按${activeGenre?.label ?? "指定"}体裁写一篇关于{{主题}}的文章`}
+        onClose={() => setFirstOutputOpen(false)}
+      />
 
       {/* Floating AI menu over the selection */}
       {menu && !busyOp && (

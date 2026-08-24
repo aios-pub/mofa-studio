@@ -37,6 +37,7 @@ import {
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { useAppStore, useSettings, useSettingActions } from "../../stores";
+import { hasFirstOutput } from "../onboarding/firstRunCases";
 import { useTheme } from "../../hooks";
 import { useState, useRef, useEffect, useCallback } from "react";
 
@@ -235,9 +236,26 @@ const DEFAULT_WIDTH = 224;
 
 export default function Sidebar({ isMobile = false }: SidebarProps) {
   const expertMode = useSettings().expertMode;
-  const visibleMenuItems = expertMode
-    ? [...(coreMenuItems ?? []), ...(expertMenuItems ?? [])]
-    : coreMenuItems;
+  // PLAT-13: the assistant entry carries an unread-inspiration dot until
+  // the first successful output (maturity-funnel nudge).
+  const coreItems = (coreMenuItems ?? []).map((item) => {
+    const chat = item as { key?: string; label?: React.ReactNode };
+    if (chat?.key === "/conversation" && !hasFirstOutput()) {
+      return {
+        ...item,
+        label: (
+          <span className="relative">
+            {chat.label}
+            <span className="absolute -right-2 top-0 inline-block w-2 h-2 rounded-full bg-red-500" />
+          </span>
+        ),
+      };
+    }
+    return item;
+  });
+  const visibleMenuItems: MenuProps["items"] = (
+    expertMode ? [...coreItems, ...(expertMenuItems ?? [])] : coreItems
+  ).filter(Boolean) as MenuProps["items"];
 
   const { sidebarCollapsed, toggleSidebar, setSidebarCollapsed } =
     useAppStore();

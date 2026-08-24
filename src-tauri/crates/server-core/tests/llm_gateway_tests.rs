@@ -446,3 +446,42 @@ async fn vision_input_routes_vlm_and_carries_images() {
     let body = body_json(response).await;
     assert_eq!(body["choices"][0]["message"]["content"], "hello from mock engine");
 }
+
+#[tokio::test]
+async fn chat_calls_record_metadata_only_spans() {
+    let engine = spawn_mock_engine().await;
+    let app = gateway_router(engine, "spans");
+
+    // Non-streaming call, then verify the span landed via the generic
+    // collection route (PLAT-15 M1 slice).
+    let response = app
+        .clone()
+        .oneshot(chat_request(false))
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/api/span/list")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = body_json(response).await;
+    let spans = body["data"].as_array().expect("span list");
+    assert!(!spans.is_empty(), "a chat call must record a span");
+    let span = &spans[0];
+    assert_eq!(span["trace_kind"], "llm_call");
+    assert_eq!(span["source"], "chat");
+    assert_eq!(span["model"], "mock/mock-model");
+    assert_eq!(span["tokens_out"], 12);
+    assert_eq!(span["status"], "ok");
+    // Privacy default: metadata only — no prompt/content anywhere.
+    for forbidden in ["prompt", "content", "messages"] {
+        assert!(span.get(forbidden).is_none(), "span must not carry {forbidden}");
+    }
+}

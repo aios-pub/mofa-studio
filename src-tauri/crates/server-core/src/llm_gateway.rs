@@ -24,7 +24,7 @@ use serde_json::{json, Value};
 use tokio_stream::wrappers::ReceiverStream;
 use tokio_stream::StreamExt;
 
-use crate::AppState;
+use crate::{spans, AppState};
 
 /// Loopback address the stock mofa-engine binary listens on.
 pub(crate) const DEFAULT_ENGINE_URL: &str = "http://127.0.0.1:8420";
@@ -168,6 +168,17 @@ async fn chat_completions_blocking(state: Arc<AppState>, engine_req: Value) -> R
         }
     };
     if !status.is_success() {
+        spans::record_span(
+            &state.store,
+            spans::KIND_LLM,
+            spans::SOURCE_CHAT,
+            body_model(&engine_req),
+            None,
+            None,
+            None,
+            0,
+            "error",
+        );
         let msg = payload
             .pointer("/error/message")
             .or_else(|| payload.get("message"))
@@ -182,6 +193,17 @@ async fn chat_completions_blocking(state: Arc<AppState>, engine_req: Value) -> R
         .get("tokens_used")
         .and_then(Value::as_u64)
         .unwrap_or(0);
+    spans::record_span(
+        &state.store,
+        spans::KIND_LLM,
+        spans::SOURCE_CHAT,
+        payload.get("model_used").and_then(Value::as_str).unwrap_or("unknown"),
+        payload.get("provider").and_then(Value::as_str),
+        None,
+        Some(tokens),
+        payload.get("duration_ms").and_then(Value::as_u64).unwrap_or(0),
+        "ok",
+    );
     let reasoning = payload
         .get("reasoning")
         .and_then(Value::as_str)
@@ -237,6 +259,9 @@ async fn chat_completions_stream(state: Arc<AppState>, engine_req: Value) -> Res
     let created = chrono::Utc::now().timestamp();
     let (tx, rx) = tokio::sync::mpsc::channel::<Result<Vec<u8>, std::io::Error>>(64);
 
+    // PLAT-15: one span per streamed call, recorded when the relay ends.
+    let span_state = state.clone();
+
     tokio::spawn(async move {
         let mut upstream_stream = Box::pin(upstream.bytes_stream());
         // Partial-line carry: SSE frames may split across network chunks,
@@ -245,6 +270,8 @@ async fn chat_completions_stream(state: Arc<AppState>, engine_req: Value) -> Res
         let mut buf: Vec<u8> = Vec::new();
         let mut chat_id = String::from("chatcmpl-unknown");
         let mut model = String::from("unknown");
+        let mut tokens_seen: Option<u64> = None;
+        let mut saw_error = false;
 
         while let Some(item) = upstream_stream.next().await {
             let bytes = match item {
@@ -258,7 +285,14 @@ async fn chat_completions_stream(state: Arc<AppState>, engine_req: Value) -> Res
             buf.extend_from_slice(&bytes);
             while let Some(pos) = buf.iter().position(|&b| b == b'\n') {
                 let line: Vec<u8> = buf.drain(..=pos).collect();
-                for frame in translate_sse_line(&line, created, &mut chat_id, &mut model) {
+                for frame in translate_sse_line(
+                    &line,
+                    created,
+                    &mut chat_id,
+                    &mut model,
+                    &mut tokens_seen,
+                    &mut saw_error,
+                ) {
                     if tx.send(Ok(frame)).await.is_err() {
                         // Client disconnected; stop draining the engine.
                         return;
@@ -268,10 +302,30 @@ async fn chat_completions_stream(state: Arc<AppState>, engine_req: Value) -> Res
         }
         // Flush a trailing line if the engine closed without a final newline.
         if !buf.is_empty() {
-            for frame in translate_sse_line(&buf, created, &mut chat_id, &mut model) {
+            for frame in translate_sse_line(
+                &buf,
+                created,
+                &mut chat_id,
+                &mut model,
+                &mut tokens_seen,
+                &mut saw_error,
+            ) {
                 let _ = tx.send(Ok(frame)).await;
             }
         }
+
+        let status = if saw_error { "error" } else { "ok" };
+        spans::record_span(
+            &span_state.store,
+            spans::KIND_LLM,
+            spans::SOURCE_CHAT,
+            if model.is_empty() { "unknown" } else { &model },
+            None,
+            None,
+            tokens_seen,
+            0,
+            status,
+        );
     });
 
     Response::builder()
@@ -289,6 +343,8 @@ fn translate_sse_line(
     created: i64,
     chat_id: &mut String,
     model: &mut String,
+    tokens_seen: &mut Option<u64>,
+    saw_error: &mut bool,
 ) -> Vec<Vec<u8>> {
     let line = String::from_utf8_lossy(line);
     let line = line.trim_end_matches(['\n', '\r']);
@@ -368,6 +424,9 @@ fn translate_sse_line(
         }
         "completed" => {
             let usage = chunk.get("tokens_used").and_then(Value::as_u64);
+            if usage.is_some() {
+                *tokens_seen = usage;
+            }
             let mut final_chunk = json!({
                 "id": chat_id,
                 "object": "chat.completion.chunk",
@@ -390,6 +449,7 @@ fn translate_sse_line(
             frames.push(b"data: [DONE]\n\n".to_vec());
         }
         "error" => {
+            *saw_error = true;
             let msg = chunk
                 .pointer("/error/message")
                 .or_else(|| chunk.pointer("/message"))
@@ -401,6 +461,11 @@ fn translate_sse_line(
         _ => {}
     }
     frames
+}
+
+/// The model field of an engine request, for span metadata.
+fn body_model(engine_req: &Value) -> &str {
+    engine_req.get("model").and_then(Value::as_str).unwrap_or("auto")
 }
 
 /// Serialize one SSE `data:` frame carrying the given JSON value.
@@ -578,6 +643,18 @@ async fn image_generations(State(state): State<Arc<AppState>>, Json(body): Json<
         );
     }
 
+    spans::record_span(
+        &state.store,
+        spans::KIND_IMAGE_GEN,
+        spans::SOURCE_STUDIO,
+        payload.get("model_used").and_then(Value::as_str).unwrap_or("unknown"),
+        payload.get("provider").and_then(Value::as_str),
+        None,
+        None,
+        payload.get("duration_ms").and_then(Value::as_u64).unwrap_or(0),
+        "ok",
+    );
+
     Json(json!({
         "created": chrono::Utc::now().timestamp(),
         "data": data,
@@ -701,6 +778,8 @@ mod tests {
                 1_700_000_000,
                 &mut chat_id,
                 &mut model,
+                &mut None,
+                &mut false,
             ));
         }
         let text = String::from_utf8(out.concat()).unwrap();
@@ -732,6 +811,8 @@ mod tests {
                 1_700_000_000,
                 &mut chat_id,
                 &mut model,
+                &mut None,
+                &mut false,
             ));
         }
         let text = String::from_utf8(out.concat()).unwrap();
@@ -753,7 +834,16 @@ mod tests {
         let mut chat_id = String::new();
         let mut model = String::new();
         let line = b"data: {\"type\":\"error\",\"error\":{\"message\":\"boom\",\"code\":\"x\"}}\n";
-        let out = translate_sse_line(line, 1, &mut chat_id, &mut model);
+        let mut tokens = None;
+        let mut errored = false;
+        let out = translate_sse_line(line, 1, &mut chat_id, &mut model, &mut tokens, &mut errored);
+        let line_text = String::from_utf8_lossy(line);
+        if line_text.contains("completed") {
+            assert_eq!(tokens, Some(5));
+        }
+        if line_text.contains("error") {
+            assert!(errored);
+        }
         let text = String::from_utf8(out.concat()).unwrap();
         assert!(text.contains("\"error\":{\"message\":\"boom\""));
         assert!(text.ends_with("data: [DONE]\n\n"));
@@ -764,7 +854,15 @@ mod tests {
         let mut chat_id = String::new();
         let mut model = String::new();
         for line in ["", ": ping", "event: message", "data: ping"] {
-            assert!(translate_sse_line(line.as_bytes(), 1, &mut chat_id, &mut model).is_empty());
+            assert!(translate_sse_line(
+                line.as_bytes(),
+                1,
+                &mut chat_id,
+                &mut model,
+                &mut None,
+                &mut false,
+            )
+            .is_empty());
         }
     }
 

@@ -16,6 +16,7 @@ pub mod auth;
 pub mod collections;
 pub mod llm_gateway;
 pub mod routes;
+pub mod spans;
 pub mod store;
 pub mod ws;
 
@@ -109,6 +110,9 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
     let db_path = config.data_dir.join("mofa-studio.db");
     let store = store::Store::open(&db_path)?;
     let jwt_secret = store.get_or_create_secret();
+
+    // PLAT-15: prune expired spans at startup (default 90-day retention).
+    spans::prune_spans(&store);
 
     let state = Arc::new(AppState {
         store,

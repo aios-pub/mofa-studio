@@ -22,6 +22,7 @@ export default function ConversationPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [model, setModel] = useState<string>(AUTO_MODEL);
+  const [deepThinking, setDeepThinking] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const [newConversationTitle, setNewConversationTitle] = useState("");
   const [selectedAgentForNew, setSelectedAgentForNew] = useState<
@@ -195,6 +196,7 @@ export default function ConversationPage() {
             model: model === AUTO_MODEL ? undefined : model,
             temperature: 0.7,
             stream: true,
+            params: deepThinking ? { enable_thinking: true } : undefined,
           },
           (chunk, done) => {
             if (done) return;
@@ -212,12 +214,33 @@ export default function ConversationPage() {
             });
           },
           abortRef.current?.signal,
+          (thinkingChunk) => {
+            setSelectedConversation((prev) => {
+              if (!prev) return prev;
+              return {
+                ...prev,
+                messages: prev.messages.map((m) =>
+                  m.id === assistantId
+                    ? {
+                        ...m,
+                        thinking: {
+                          content: (m.thinking?.content ?? "") + thinkingChunk,
+                        },
+                      }
+                    : m,
+                ),
+              };
+            });
+          },
         );
 
         patchAssistant({
           content: completion.content,
           status: "completed",
           tokens: completion.tokens,
+          ...(completion.thinking !== undefined
+            ? { thinking: { content: completion.thinking } }
+            : {}),
         });
 
         // Persist token totals on the conversation object.
@@ -242,7 +265,7 @@ export default function ConversationPage() {
         abortRef.current = null;
       }
     },
-    [selectedConversation, isLoading, model],
+    [selectedConversation, isLoading, model, deepThinking],
   );
 
   // Abort an in-flight generation; the partial answer stays in the transcript
@@ -278,6 +301,8 @@ export default function ConversationPage() {
           model={model}
           onModelChange={setModel}
           onStopGeneration={handleStopGeneration}
+          deepThinking={deepThinking}
+          onDeepThinkingChange={setDeepThinking}
         />
       </div>
 

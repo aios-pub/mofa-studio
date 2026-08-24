@@ -36,6 +36,7 @@ async fn mock_invoke(Json(req): Json<Value>) -> Response {
     );
     Json(json!({
         "text": MOCK_TEXT,
+        "reasoning": "mock reasoning trace",
         "file": null,
         "model_used": "mock/mock-model",
         "provider": "mock",
@@ -52,6 +53,7 @@ async fn mock_invoke(Json(req): Json<Value>) -> Response {
 async fn mock_invoke_stream() -> Response {
     let body = concat!(
         "data: {\"type\":\"started\",\"request_id\":\"req-42\",\"model_used\":\"mock/mock-model\",\"provider\":\"mock\"}\n\n",
+        "data: {\"type\":\"thinking\",\"delta\":\"thinking hard\"}\n\n",
         "data: {\"type\":\"text\",\"delta\":\"Hel\"}\n\n",
         "data: {\"type\":\"text\",\"delta\":\"lo\"}\n\n",
         "data: {\"type\":\"completed\",\"duration_ms\":9,\"tokens_used\":5,\"file\":null,\"fallback_used\":false,\"routing_reason\":null}\n\n",
@@ -158,6 +160,10 @@ async fn non_streaming_chat_wraps_engine_response_in_openai_shape() {
         body["choices"][0]["message"]["content"],
         "hello from mock engine"
     );
+    assert_eq!(
+        body["choices"][0]["message"]["reasoning_content"],
+        "mock reasoning trace"
+    );
     assert_eq!(body["choices"][0]["finish_reason"], "stop");
     assert_eq!(body["usage"]["completion_tokens"], 12);
     assert_eq!(body["usage"]["total_tokens"], 12);
@@ -177,8 +183,12 @@ async fn streaming_chat_translates_engine_chunks_to_openai_sse() {
     let body = body_string(response).await;
 
     // Deltas arrive as OpenAI chunks, in order.
+    let thinking = body
+        .find("\"reasoning_content\":\"thinking hard\"")
+        .expect("thinking delta");
     let hello = body.find("\"content\":\"Hel\"").expect("first delta");
     let lo = body.find("\"content\":\"lo\"").expect("second delta");
+    assert!(thinking < hello, "thinking must stream ahead of the answer");
     assert!(hello < lo, "text deltas must preserve engine order");
     // Key order inside JSON objects is not guaranteed; assert per-field.
     assert!(body.contains("\"role\":\"assistant\""));

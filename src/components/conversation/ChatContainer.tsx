@@ -17,6 +17,7 @@ import {
   PaperClipOutlined,
   CloseOutlined,
   SettingOutlined,
+  BulbOutlined,
 } from "@ant-design/icons";
 import {
   Select,
@@ -61,6 +62,9 @@ interface ChatContainerProps {
   onModelChange?: (model: string) => void;
   /** Abort an in-flight streaming generation (keeps partial content). */
   onStopGeneration?: () => void;
+  /** Deep-thinking mode: ask reasoning-capable models for a thinking trace. */
+  deepThinking?: boolean;
+  onDeepThinkingChange?: (enabled: boolean) => void;
 }
 
 export default function ChatContainer({
@@ -74,6 +78,8 @@ export default function ChatContainer({
   model,
   onModelChange,
   onStopGeneration,
+  deepThinking = false,
+  onDeepThinkingChange,
 }: ChatContainerProps) {
   const [input, setInput] = useState("");
   const [attachments, setAttachments] = useState<MessageAttachment[]>([]);
@@ -349,7 +355,7 @@ export default function ChatContainer({
         ) : (
           <div className="max-w-3xl mx-auto space-y-4">
             {conversation.messages.map((msg) => (
-              <MessageItem key={msg.id} title={msg} />
+              <MessageItem key={msg.id} message={msg} />
             ))}
 
             {/* Loading */}
@@ -422,6 +428,22 @@ export default function ChatContainer({
               <PaperClipOutlined />
             </button>
           </Upload>
+
+          {onDeepThinkingChange && (
+            <button
+              onClick={() => onDeepThinkingChange(!deepThinking)}
+              className={`px-3 py-2 border rounded-lg transition-colors flex items-center gap-1 text-sm ${
+                deepThinking
+                  ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)]"
+                  : "bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-(--color-border) hover:text-[var(--color-text-primary)]"
+              }`}
+              title="深度思考：让推理模型先思考再作答，思考链单独折叠展示"
+              aria-pressed={deepThinking}
+            >
+              <BulbOutlined />
+              <span className="hidden md:inline">深度思考</span>
+            </button>
+          )}
 
           <textarea
             ref={textareaRef}
@@ -500,8 +522,10 @@ export default function ChatContainer({
 
 // Message item component
 function MessageItem({ message }: { message: Message }) {
-  const [showThinking, setShowThinking] = useState(false);
   const isUser = message.role === "user";
+  const streaming = message.status === "pending";
+  // Auto-expand the thinking trace while it streams in; the user can fold it.
+  const [showThinking, setShowThinking] = useState(streaming);
 
   return (
     <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
@@ -530,7 +554,7 @@ function MessageItem({ message }: { message: Message }) {
               <DownOutlined
                 className={`text-xs transition-transform ${showThinking ? "rotate-180" : ""}`}
               />
-              思考过程
+              {streaming ? "思考中..." : "思考过程"}
             </button>
             {showThinking && (
               <div className="mt-1 p-3 bg-(--color-bg-tertiary) rounded-lg text-sm text-[var(--color-text-secondary)] italic">

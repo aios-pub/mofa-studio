@@ -69,6 +69,13 @@ async fn chat_completions(State(state): State<Arc<AppState>>, Json(body): Json<V
     if let Some(m) = body.get("max_tokens").and_then(Value::as_u64) {
         params["max_tokens"] = json!(m);
     }
+    // Generic provider params (e.g. `enable_thinking` for hybrid reasoning
+    // models) pass through verbatim; providers forward what they understand.
+    if let Some(extra) = body.get("params").and_then(Value::as_object) {
+        for (key, value) in extra {
+            params[key.as_str()] = value.clone();
+        }
+    }
     engine_req["params"] = params;
 
     let stream = body.get("stream").and_then(Value::as_bool).unwrap_or(false);
@@ -143,6 +150,10 @@ async fn chat_completions_blocking(state: Arc<AppState>, engine_req: Value) -> R
         .get("tokens_used")
         .and_then(Value::as_u64)
         .unwrap_or(0);
+    let reasoning = payload
+        .get("reasoning")
+        .and_then(Value::as_str)
+        .filter(|r| !r.is_empty());
     Json(json!({
         "id": format!("chatcmpl-{}", payload.get("request_id").and_then(Value::as_str).unwrap_or("unknown")),
         "object": "chat.completion",
@@ -150,7 +161,12 @@ async fn chat_completions_blocking(state: Arc<AppState>, engine_req: Value) -> R
         "model": payload.get("model_used").and_then(Value::as_str).unwrap_or("unknown"),
         "choices": [{
             "index": 0,
-            "message": { "role": "assistant", "content": text },
+            "message": {
+                "role": "assistant",
+                "content": text,
+                // DeepSeek-R1 style reasoning trace, when the model emits one.
+                "reasoning_content": reasoning,
+            },
             "finish_reason": "stop",
         }],
         "usage": {
@@ -295,6 +311,24 @@ fn translate_sse_line(
                     "choices": [{
                         "index": 0,
                         "delta": { "content": delta },
+                        "finish_reason": null,
+                    }],
+                })));
+            }
+        }
+        "thinking" => {
+            // Reasoning trace (DeepSeek-R1 style): forwarded as
+            // `reasoning_content` so OpenAI-compatible clients can render it
+            // in a separate collapsible area.
+            if let Some(delta) = chunk.get("delta").and_then(Value::as_str) {
+                frames.push(sse_frame(json!({
+                    "id": chat_id,
+                    "object": "chat.completion.chunk",
+                    "created": created,
+                    "model": model,
+                    "choices": [{
+                        "index": 0,
+                        "delta": { "reasoning_content": delta },
                         "finish_reason": null,
                     }],
                 })));
@@ -467,6 +501,38 @@ mod tests {
             "model_used": "mock-model",
             "provider": "mock",
         })
+    }
+
+    #[test]
+    fn translates_thinking_chunks_as_reasoning_content() {
+        let mut chat_id = String::new();
+        let mut model = String::new();
+        let mut out = Vec::new();
+        for chunk in [
+            started(),
+            json!({"type":"thinking","delta":"先想"}),
+            json!({"type":"thinking","delta":"再想"}),
+            json!({"type":"text","delta":"答案"}),
+            json!({"type":"completed","duration_ms":9,"tokens_used":5,
+                   "file":null,"fallback_used":false,"routing_reason":null}),
+        ] {
+            let line = format!("data: {chunk}\n");
+            out.extend(translate_sse_line(
+                line.as_bytes(),
+                1_700_000_000,
+                &mut chat_id,
+                &mut model,
+            ));
+        }
+        let text = String::from_utf8(out.concat()).unwrap();
+        assert!(text.contains("\"reasoning_content\":\"先想\""));
+        assert!(text.contains("\"reasoning_content\":\"再想\""));
+        assert!(text.contains("\"content\":\"答案\""));
+        // Thinking deltas must not be folded into the answer content field.
+        let answer_start = text.find("\"content\":\"答案\"").expect("answer delta");
+        let first_thinking = text.find("\"reasoning_content\"").expect("thinking delta");
+        assert!(first_thinking < answer_start);
+        assert!(text.ends_with("data: [DONE]\n\n"));
     }
 
     #[test]

@@ -16,6 +16,9 @@ export interface APIConfig {
 // Streaming response callback
 export type StreamCallback = (chunk: string, done: boolean) => void;
 
+// Streaming thinking/reasoning callback (DeepSeek-R1 style reasoning_content)
+export type ThinkingCallback = (chunk: string) => void;
+
 // Conversation request parameters
 export interface ChatRequest {
   messages: Array<{
@@ -26,12 +29,16 @@ export interface ChatRequest {
   temperature?: number;
   maxTokens?: number;
   stream?: boolean;
+  /** Extra provider params passed through the gateway (e.g. enable_thinking). */
+  params?: Record<string, unknown>;
 }
 
 // Conversation response
 export interface ChatResponse {
   id: string;
   content: string;
+  /** Reasoning trace, when the model exposes one. */
+  thinking?: string;
   tokens?: {
     input: number;
     output: number;
@@ -79,10 +86,14 @@ class ChatService {
     if (request.model) body.model = request.model;
     if (request.temperature !== undefined) body.temperature = request.temperature;
     if (request.maxTokens !== undefined) body.max_tokens = request.maxTokens;
+    if (request.params) body.params = request.params;
 
     const data = await apiClient.post<{
       id?: string;
-      choices?: Array<{ message?: { content?: string }; finish_reason?: string }>;
+      choices?: Array<{
+        message?: { content?: string; reasoning_content?: string };
+        finish_reason?: string;
+      }>;
       content?: string;
       usage?: { prompt_tokens?: number; completion_tokens?: number };
     }>("/v1/chat/completions", body);
@@ -90,6 +101,8 @@ class ChatService {
     return {
       id: data.id ?? `chat-${Date.now()}`,
       content: data.choices?.[0]?.message?.content ?? data.content ?? "",
+      thinking:
+        data.choices?.[0]?.message?.reasoning_content || undefined,
       tokens: data.usage
         ? { input: data.usage.prompt_tokens ?? 0, output: data.usage.completion_tokens ?? 0 }
         : undefined,
@@ -104,6 +117,7 @@ class ChatService {
     request: ChatRequest,
     onChunk: StreamCallback,
     signal?: AbortSignal,
+    onThinking?: ThinkingCallback,
   ): Promise<ChatResponse> {
     const baseURL = apiClient.getBaseUrl?.() ?? "";
     const url = `${baseURL}/v1/chat/completions`;
@@ -115,6 +129,7 @@ class ChatService {
     if (request.model) body.model = request.model;
     if (request.temperature !== undefined) body.temperature = request.temperature;
     if (request.maxTokens !== undefined) body.max_tokens = request.maxTokens;
+    if (request.params) body.params = request.params;
 
     const response = await fetch(url, {
       method: "POST",
@@ -131,6 +146,7 @@ class ChatService {
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let fullContent = "";
+    let thinkingContent = "";
     let chatId = `chat-${Date.now()}`;
     let aborted = false;
     // SSE frames can split across network chunks; buffer partial lines so no
@@ -148,7 +164,9 @@ class ChatService {
       let parsed: {
         id?: string;
         error?: { message?: string };
-        choices?: Array<{ delta?: { content?: string } }>;
+        choices?: Array<{
+          delta?: { content?: string; reasoning_content?: string };
+        }>;
       };
       try {
         parsed = JSON.parse(data);
@@ -159,7 +177,13 @@ class ChatService {
       if (parsed.error?.message) {
         throw new Error(parsed.error.message);
       }
-      const delta = parsed.choices?.[0]?.delta?.content ?? "";
+      const streamDelta = parsed.choices?.[0]?.delta;
+      const thinking = streamDelta?.reasoning_content ?? "";
+      if (thinking) {
+        thinkingContent += thinking;
+        onThinking?.(thinking);
+      }
+      const delta = streamDelta?.content ?? "";
       if (delta) {
         fullContent += delta;
         onChunk(delta, false);
@@ -198,6 +222,7 @@ class ChatService {
     return {
       id: chatId,
       content: fullContent,
+      thinking: thinkingContent || undefined,
       finishReason: aborted ? "abort" : "stop",
     };
   }

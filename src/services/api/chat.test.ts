@@ -131,6 +131,48 @@ describe("chatService.chatStream", () => {
     expect(result.content).toBe("部分回答");
   });
 
+  it("collects reasoning_content deltas into a separate thinking trace", async () => {
+    vi.stubGlobal("fetch", fetchMock);
+    fetchMock.mockResolvedValueOnce(
+      sseResponse([
+        'data: {"id":"chatcmpl-9","choices":[{"delta":{"reasoning_content":"先想"}}]}\n\n',
+        'data: {"id":"chatcmpl-9","choices":[{"delta":{"reasoning_content":"再想"}}]}\n\n',
+        'data: {"id":"chatcmpl-9","choices":[{"delta":{"content":"答案"}}]}\n\n',
+        "data: [DONE]\n\n",
+      ]),
+    );
+
+    const thinkingChunks: string[] = [];
+    const result = await chatService.chatStream(
+      { messages: [{ role: "user", content: "hi" }] },
+      () => {},
+      undefined,
+      (thinking) => thinkingChunks.push(thinking),
+    );
+
+    expect(thinkingChunks).toEqual(["先想", "再想"]);
+    expect(result.thinking).toBe("先想再想");
+    expect(result.content).toBe("答案");
+  });
+
+  it("forwards provider params (enable_thinking) in the request body", async () => {
+    vi.stubGlobal("fetch", fetchMock);
+    fetchMock.mockImplementation(() =>
+      Promise.resolve(sseResponse(["data: [DONE]\n\n"])),
+    );
+
+    await chatService.chatStream(
+      {
+        messages: [{ role: "user", content: "hi" }],
+        params: { enable_thinking: true },
+      },
+      () => {},
+    );
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.params).toEqual({ enable_thinking: true });
+  });
+
   it("sends the model only when explicitly set", async () => {
     vi.stubGlobal("fetch", fetchMock);
     fetchMock.mockImplementation(() =>

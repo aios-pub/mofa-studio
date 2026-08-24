@@ -45,6 +45,10 @@ pub(crate) fn llm_routes() -> Router<Arc<AppState>> {
         .route("/v1/images/generations", post(image_generations))
         .route("/v1/models", get(list_models))
         .route("/v1/engine/health", get(engine_health))
+        .route(
+            "/v1/config/providers",
+            get(list_engine_providers).post(add_engine_provider),
+        )
 }
 
 // ==================== Handlers ====================
@@ -582,6 +586,47 @@ async fn image_generations(State(state): State<Arc<AppState>>, Json(body): Json<
         "provider": payload.get("provider").cloned().unwrap_or(Value::Null),
     }))
     .into_response()
+}
+
+/// GET /v1/config/providers — masked provider listing from the engine.
+async fn list_engine_providers(State(state): State<Arc<AppState>>) -> Response {
+    let url = format!("{}/v1/config/providers", state.engine_base_url);
+    match state.http.get(&url).send().await {
+        Ok(resp) if resp.status().is_success() => {
+            let payload: Value = resp.json().await.unwrap_or(Value::Null);
+            Json(payload).into_response()
+        }
+        Ok(resp) => openai_error(
+            map_engine_status(resp.status()),
+            "engine provider listing failed",
+        ),
+        Err(e) => engine_unreachable(&state.engine_base_url, &e),
+    }
+}
+
+/// POST /v1/config/providers — BYOK setup: register a provider on the
+/// engine (persisted there, key stays server-side).
+async fn add_engine_provider(
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<Value>,
+) -> Response {
+    let url = format!("{}/v1/config/providers", state.engine_base_url);
+    let upstream = match state.http.post(&url).json(&body).send().await {
+        Ok(resp) => resp,
+        Err(e) => return engine_unreachable(&state.engine_base_url, &e),
+    };
+    let status = upstream.status();
+    let payload: Value = upstream.json().await.unwrap_or(Value::Null);
+    if !status.is_success() {
+        let msg = payload
+            .pointer("/message")
+            .or_else(|| payload.pointer("/error/message"))
+            .and_then(Value::as_str)
+            .unwrap_or("engine rejected the provider config")
+            .to_string();
+        return openai_error(map_engine_status(status), &msg);
+    }
+    Json(payload).into_response()
 }
 
 // ==================== Error helpers ====================

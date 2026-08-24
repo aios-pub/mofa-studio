@@ -80,8 +80,11 @@ export default function WelcomeFlow({ onFinish }: { onFinish: () => void }) {
   const isLast = step === STEPS.length - 1;
   const current = STEPS[step];
 
-  const finish = () => {
+  const finish = (toKeySetup: boolean) => {
     markOnboarded();
+    if (toKeySetup) {
+      window.location.hash = "#/onboarding/key";
+    }
     onFinish();
   };
 
@@ -120,7 +123,7 @@ export default function WelcomeFlow({ onFinish }: { onFinish: () => void }) {
         </div>
 
         <div className="mt-8 flex items-center justify-between">
-          <Button type="text" onClick={finish} aria-label="跳过引导">
+          <Button type="text" onClick={() => finish(false)} aria-label="跳过引导">
             跳过
           </Button>
           <div className="flex gap-2">
@@ -134,7 +137,7 @@ export default function WelcomeFlow({ onFinish }: { onFinish: () => void }) {
                 type="primary"
                 icon={<KeyOutlined />}
                 iconPosition="start"
-                onClick={finish}
+                onClick={() => finish(true)}
                 aria-label="开始配置"
               >
                 开始配置

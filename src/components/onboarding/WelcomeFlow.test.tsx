@@ -2,7 +2,7 @@
  * Tests for ONBOARD-01: the first-launch welcome flow — three steps,
  * skip/finish persist the flag, and the flag gates a second showing.
  */
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import WelcomeFlow, {
   hasOnboarded,

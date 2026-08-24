@@ -29,6 +29,7 @@ import KnowledgeBaseListPage from './pages/knowledge/KnowledgeBaseList';
 import { InteractiveDocs } from './pages/docs/InteractiveDocs';
 import ImageGenPage from './pages/creation/ImageGenPage';
 import WritingPage from './pages/creation/WritingPage';
+import KeyWizard from './components/onboarding/KeyWizard';
 import { ThemeProvider } from './theme';
 import { useFloatingBridge } from './tauri/useFloatingBridge';
 
@@ -41,6 +42,7 @@ function App() {
       <Routes>
         {/* Public route - Login page */}
         <Route path="/auth/login" element={<LoginPage />} />
+        <Route path="/onboarding/key" element={<KeyWizard onDone={() => window.history.back()} />} />
 
         {/* Protected route */}
         <Route

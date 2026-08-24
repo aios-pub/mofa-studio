@@ -37,6 +37,12 @@ import type { UploadFile } from "antd/es/upload/interface";
 import dayjs from "dayjs";
 import { MarkdownRenderer } from "../common";
 import ModelPicker from "./ModelPicker";
+import {
+  fillTemplate,
+  filterCommands,
+  loadCommands,
+  type SlashCommand,
+} from "@/utils/slashCommands";
 import type {
   Message,
   Conversation,
@@ -93,12 +99,19 @@ export default function ChatContainer({
   onBranch,
 }: ChatContainerProps) {
   const [input, setInput] = useState("");
+  const [slashCommands, setSlashCommands] = useState<SlashCommand[]>([]);
+  const [slotCommand, setSlotCommand] = useState<SlashCommand | null>(null);
+  const [slotValues, setSlotValues] = useState<Record<string, string>>({});
   const [attachments, setAttachments] = useState<MessageAttachment[]>([]);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [showParamModal, setShowParamModal] = useState(false);
   const [paramValues, setParamValues] = useState<Record<string, unknown>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    setSlashCommands(loadCommands());
+  }, []);
 
   // Get the currently selected agent
   const selectedAgent =
@@ -137,6 +150,27 @@ export default function ChatContainer({
   const handleRemoveFile = (file: UploadFile) => {
     setFileList((prev) => prev.filter((f) => f.uid !== file.uid));
     setAttachments((prev) => prev.filter((a) => a.id !== file.uid));
+  };
+
+  // CHAT-09: slash palette appears when the input starts with "/"
+  const slashActive = input.startsWith("/");
+  const palette = slashActive ? filterCommands(slashCommands, input) : [];
+
+  const applyCommand = (command: SlashCommand, values: Record<string, string>) => {
+    const filled = fillTemplate(command.template, values);
+    setInput(filled);
+    setSlotCommand(null);
+    setSlotValues({});
+    textareaRef.current?.focus();
+  };
+
+  const pickCommand = (command: SlashCommand) => {
+    if (command.slots.length === 0) {
+      applyCommand(command, {});
+      return;
+    }
+    setSlotCommand(command);
+    setSlotValues({});
   };
 
   // Send message
@@ -451,6 +485,39 @@ export default function ChatContainer({
             </button>
           </Upload>
 
+          {slashActive && (
+            <div
+              className="absolute bottom-full left-0 right-0 mb-2 max-h-64 overflow-y-auto rounded-xl bg-[var(--color-bg-primary)] border border-(--color-border) shadow-xl z-30"
+              role="listbox"
+              aria-label="快捷指令"
+            >
+              {palette.length === 0 ? (
+                <p className="px-3 py-2 text-xs text-[var(--color-text-tertiary)]">
+                  没有匹配的指令，输入完整内容按 Enter 正常发送
+                </p>
+              ) : (
+                palette.map((command) => (
+                  <button
+                    key={command.id}
+                    onClick={() => pickCommand(command)}
+                    className="w-full text-left px-3 py-2 hover:bg-(--color-bg-tertiary) transition-colors"
+                    role="option"
+                    aria-selected={false}
+                  >
+                    <span className="text-sm font-medium text-[var(--color-text-primary)]">
+                      /{command.name}
+                    </span>
+                    <span className="ml-2 text-xs text-[var(--color-text-tertiary)] line-clamp-1">
+                      {command.slots.length > 0
+                        ? `参数：${command.slots.join("、")}`
+                        : command.template.slice(0, 40)}
+                    </span>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+
           {onDeepThinkingChange && (
             <button
               onClick={() => onDeepThinkingChange(!deepThinking)}
@@ -496,6 +563,32 @@ export default function ChatContainer({
           )}
         </div>
       </div>
+
+      {/* CHAT-09: slash command slot filling */}
+      <Modal
+        title={`填充指令参数：/${slotCommand?.name ?? ""}`}
+        open={slotCommand !== null}
+        onOk={() => slotCommand && applyCommand(slotCommand, slotValues)}
+        onCancel={() => setSlotCommand(null)}
+        okText="填入"
+        cancelText="取消"
+      >
+        <div className="space-y-3">
+          {slotCommand?.slots.map((slot) => (
+            <div key={slot}>
+              <label className="block text-sm font-medium mb-1">{slot}</label>
+              <Input.TextArea
+                value={slotValues[slot] ?? ""}
+                onChange={(e) =>
+                  setSlotValues((prev) => ({ ...prev, [slot]: e.target.value }))
+                }
+                rows={slot.includes("原文") || slot.includes("内容") ? 4 : 1}
+                aria-label={`参数 ${slot}`}
+              />
+            </div>
+          ))}
+        </div>
+      </Modal>
 
       {/* Parameter input modal */}
       <Modal
@@ -625,16 +718,52 @@ function MessageItem({
 
         {/* Attachments */}
         {message.attachments && message.attachments.length > 0 && (
-          <div className="mb-2 flex flex-wrap gap-1">
-            {message.attachments.map((att) => (
-              <div
-                key={att.id}
-                className="inline-flex items-center gap-1 px-2 py-1 bg-(--color-bg-tertiary) rounded text-xs"
-              >
-                <PaperClipOutlined />
-                <span>{att.name}</span>
-              </div>
-            ))}
+          <div className="mb-2 flex flex-wrap gap-2">
+            {message.attachments.map((att) =>
+              att.url && att.type.startsWith("image/") ? (
+                <figure
+                  key={att.id}
+                  className="relative group rounded-xl overflow-hidden border border-(--color-border) max-w-[320px]"
+                >
+                  <img
+                    src={att.url}
+                    alt={att.name}
+                    className="w-full block"
+                  />
+                  <figcaption className="absolute inset-x-0 bottom-0 p-1.5 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-1">
+                    <button
+                      onClick={() => {
+                        const link = document.createElement("a");
+                        link.href = att.url!;
+                        link.download = att.name;
+                        link.click();
+                      }}
+                      className="px-2 py-0.5 rounded text-xs text-white bg-white/20 hover:bg-white/30"
+                      aria-label={`下载图片 ${att.name}`}
+                    >
+                      下载
+                    </button>
+                    <button
+                      onClick={() => {
+                        window.open(att.url, "_blank");
+                      }}
+                      className="px-2 py-0.5 rounded text-xs text-white bg-white/20 hover:bg-white/30"
+                      aria-label={`放大查看 ${att.name}`}
+                    >
+                      放大
+                    </button>
+                  </figcaption>
+                </figure>
+              ) : (
+                <div
+                  key={att.id}
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-(--color-bg-tertiary) rounded text-xs"
+                >
+                  <PaperClipOutlined />
+                  <span>{att.name}</span>
+                </div>
+              ),
+            )}
           </div>
         )}
 

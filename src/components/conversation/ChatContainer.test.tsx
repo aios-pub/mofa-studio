@@ -3,7 +3,7 @@
  * and the regenerate/edit-resend/branch callback wiring.
  */
 
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import ChatContainer from "./ChatContainer";
 import type { Conversation, Message } from "@/types";
@@ -110,5 +110,71 @@ describe("ChatContainer message actions (CHAT-10)", () => {
     renderChat({});
     fireEvent.click(screen.getAllByLabelText("复制消息")[0]);
     await waitFor(() => expect(writeText).toHaveBeenCalledWith("你好"));
+  });
+});
+
+describe("slash command palette (CHAT-09)", () => {
+  function renderForSlash() {
+    return renderChat({});
+  }
+
+  it("opens the palette when input starts with / and filters by name", async () => {
+    renderForSlash();
+    const textarea = screen.getByPlaceholderText(/输入消息/);
+    fireEvent.change(textarea, { target: { value: "/" } });
+    const listbox = await screen.findByRole("listbox", { name: "快捷指令" });
+    // Seeds present
+    expect(within(listbox).getByText("/翻译")).toBeInTheDocument();
+
+    fireEvent.change(textarea, { target: { value: "/小红书" } });
+    expect(within(listbox).getByText("/小红书")).toBeInTheDocument();
+    expect(within(listbox).queryByText("/翻译")).not.toBeInTheDocument();
+  });
+
+  it("picking a command opens the slot modal; filling slots injects the template", async () => {
+    renderForSlash();
+    const textarea = screen.getByPlaceholderText(/输入消息/);
+    fireEvent.change(textarea, { target: { value: "/翻译" } });
+    fireEvent.click(within(screen.getByRole("listbox", { name: "快捷指令" })).getByText("/翻译"));
+
+    const slotInput = await screen.findByLabelText("参数 目标语言");
+    fireEvent.change(slotInput, { target: { value: "英文" } });
+    fireEvent.click(screen.getByRole("button", { name: /填\s*入/ }));
+
+    await waitFor(() => {
+      expect((textarea as HTMLTextAreaElement).value).toContain("翻译成英文");
+      // Unfilled slot stays visible as a placeholder
+      expect((textarea as HTMLTextAreaElement).value).toContain("{{原文}}");
+    });
+  });
+});
+
+describe("image attachment rendering (CHAT-05)", () => {
+  it("renders image attachments with download/enlarge actions", () => {
+    renderChat({
+      conversation: {
+        ...conversation([]),
+        messages: [
+          msg("u1", "user", "画一只橘猫"),
+          {
+            ...msg("a1", "assistant", "画一只橘猫"),
+            attachments: [
+              {
+                id: "img1",
+                name: "橘猫_1024x1024_1.png",
+                type: "image/png",
+                size: 0,
+                url: "data:image/png;base64,QUJD",
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    const img = screen.getByAltText("橘猫_1024x1024_1.png");
+    expect(img).toHaveAttribute("src", "data:image/png;base64,QUJD");
+    expect(screen.getByLabelText("下载图片 橘猫_1024x1024_1.png")).toBeInTheDocument();
+    expect(screen.getByLabelText("放大查看 橘猫_1024x1024_1.png")).toBeInTheDocument();
   });
 });

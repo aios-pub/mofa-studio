@@ -17,6 +17,8 @@ import {
   historyForRegeneration,
   toRequestMessages,
 } from "@/utils/chatHistory";
+import { detectImageIntent, refineImagePrompt } from "@/utils/imageIntent";
+import { exportFilename, imageService } from "@/services/api/image";
 import type { Conversation, Agent, Message, MessageAttachment } from "../../types";
 
 export default function ConversationPage() {
@@ -29,6 +31,8 @@ export default function ConversationPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [model, setModel] = useState<string>(AUTO_MODEL);
   const [deepThinking, setDeepThinking] = useState(false);
+  // CHAT-05: prompt of the last in-chat image, for follow-up edits.
+  const lastImagePromptRef = useRef<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const [newConversationTitle, setNewConversationTitle] = useState("");
   const [selectedAgentForNew, setSelectedAgentForNew] = useState<
@@ -270,9 +274,93 @@ export default function ConversationPage() {
         if (!prev || prev.id !== conversationId) return prev;
         return { ...prev, messages: [...prev.messages, userMessage] };
       });
+
+      // CHAT-05: image intent routes to the image gateway instead of chat.
+      const intent = detectImageIntent(content, lastImagePromptRef.current !== null);
+      if (intent.kind === "image") {
+        const prompt = intent.edit && lastImagePromptRef.current
+          ? refineImagePrompt(lastImagePromptRef.current, content)
+          : content;
+        await runImageGeneration(conversationId, prompt);
+        return;
+      }
+      lastImagePromptRef.current = null;
       await runGeneration(conversationId, history, content);
     },
     [selectedConversation, isLoading, runGeneration],
+  );
+
+  // CHAT-05: generate an image in-conversation; the assistant message
+  // carries the artifact as an image attachment.
+  const runImageGeneration = useCallback(
+    async (conversationId: string, prompt: string) => {
+      setIsLoading(true);
+      const assistantId = `msg-a-img-${Date.now()}`;
+      const placeholder: Message = {
+        id: assistantId,
+        conversationId,
+        role: "assistant",
+        content: "",
+        status: "pending",
+        createdAt: new Date(),
+      };
+      setSelectedConversation((prev) => {
+        if (!prev || prev.id !== conversationId) return prev;
+        return { ...prev, messages: [...prev.messages, placeholder] };
+      });
+      try {
+        const response = await imageService.generate({
+          prompt,
+          n: 1,
+          size: "1024x1024",
+        });
+        if (response.images.length === 0) {
+          throw new Error("引擎没有返回图片，请检查 image_gen 模型配置");
+        }
+        lastImagePromptRef.current = prompt;
+        setSelectedConversation((prev) => {
+          if (!prev || prev.id !== conversationId) return prev;
+          return {
+            ...prev,
+            messages: prev.messages.map((m) =>
+              m.id === assistantId
+                ? {
+                    ...m,
+                    status: "completed",
+                    content: prompt,
+                    attachments: [
+                      {
+                        id: `${assistantId}-img`,
+                        name: exportFilename(prompt, "1024x1024", 1),
+                        type: "image/png",
+                        size: 0,
+                        url: response.images[0],
+                      },
+                    ],
+                  }
+                : m,
+            ),
+          };
+        });
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : String(error);
+        setSelectedConversation((prev) => {
+          if (!prev || prev.id !== conversationId) return prev;
+          return {
+            ...prev,
+            messages: prev.messages.map((m) =>
+              m.id === assistantId
+                ? { ...m, status: "error", content: `生图失败：${detail}` }
+                : m,
+            ),
+          };
+        });
+        message.error("生图失败");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
   );
 
   // CHAT-10: regenerate an assistant reply in place (list is patched, not rebuilt)

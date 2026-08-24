@@ -20,6 +20,9 @@
     "@tanstack/react-router": "^1.168.23",
     "@tauri-apps/api": "^2.10.1",
     "@tauri-apps/plugin-opener": "^2.5.3",
+    "@tiptap/extension-placeholder": "^3.30.3",
+    "@tiptap/react": "^3.30.3",
+    "@tiptap/starter-kit": "^3.30.3",
     "@xyflow/react": "^12.10.1",
     "antd": "^6.3.6",
     "axios": "^1.13.6",
@@ -46,6 +49,7 @@
     "socket.io-client": "^4.8.3",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
+    "tiptap-markdown": "^0.9.0",
     "zustand": "^5.0.11"
   },
   "devDependencies": {

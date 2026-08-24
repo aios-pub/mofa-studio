@@ -33,6 +33,7 @@ import {
   BranchesOutlined,
   DatabaseOutlined,,
   PictureOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { useAppStore, useSettings } from "../../stores";
@@ -66,6 +67,11 @@ const menuItems: MenuProps["items"] = [
     key: "/creation/image-gen",
     icon: <PictureOutlined />,
     label: "图像生成",
+  },
+  {
+    key: "/creation/writing",
+    icon: <EditOutlined />,
+    label: "AI 写作",
   },
   { type: "divider" },
   {

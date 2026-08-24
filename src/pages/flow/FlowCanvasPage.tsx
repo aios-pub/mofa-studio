@@ -4,7 +4,7 @@
  * execution SSE stream, and JSON import/export.
  */
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ReactFlow,
   addEdge,
@@ -49,6 +49,7 @@ import {
   missingDependencies,
   type FlowTemplate,
 } from "@/services/api/flowTemplates";
+import { useSearchParams } from "react-router-dom";
 import { engineService, type EngineModel } from "@/services/api/engine";
 
 const STATUS_COLORS: Record<FlowNodeRunStatus, string> = {
@@ -136,6 +137,10 @@ export default function FlowCanvasPage() {
   const [templateOpen, setTemplateOpen] = useState(false);
   const [engineModels, setEngineModels] = useState<EngineModel[]>([]);
   const counterRef = useRef(0);
+  const [searchParams] = useSearchParams();
+
+  // TASK-21: 灵感广场/模板深链 (?template=<id>) auto-loads the graph once.
+  // (Late-bound via ref so declaration order doesn't matter.)
 
   const openTemplates = useCallback(async () => {
     setTemplateOpen(true);
@@ -291,6 +296,19 @@ export default function FlowCanvasPage() {
     },
     [clearStatuses],
   );
+
+  // TASK-21 deep-link autoload (declared after loadTemplate).
+  const templateLoadedRef = useRef(false);
+  useEffect(() => {
+    if (templateLoadedRef.current) return;
+    const templateId = new URLSearchParams(window.location.search).get("template");
+    if (!templateId) return;
+    const template = BUILTIN_TEMPLATES.find((t) => t.id === templateId);
+    if (!template) return;
+    templateLoadedRef.current = true;
+    loadTemplate(template);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, loadTemplate]);
 
   const importJson = useCallback(
     async (file: File) => {

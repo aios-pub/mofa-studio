@@ -24,6 +24,7 @@ import {
 } from "@/services/api/engineConfig";
 import { engineService } from "@/services/api/engine";
 import { markOnboarded } from "./WelcomeFlow";
+import SearchConfigCard from "./SearchConfigCard";
 
 export default function KeyWizard({ onDone }: { onDone?: () => void }) {
   const vendors = useMemo(
@@ -82,7 +83,9 @@ export default function KeyWizard({ onDone }: { onDone?: () => void }) {
 
   if (done) {
     return (
-      <div className="max-w-md mx-auto mt-20 p-8 rounded-2xl border border-(--color-border) bg-[var(--color-bg-secondary)] text-center space-y-4">
+      <>
+      <SearchConfigCard />
+      <div className="max-w-md mx-auto mt-10 p-8 rounded-2xl border border-(--color-border) bg-[var(--color-bg-secondary)] text-center space-y-4">
         <CheckCircleOutlined className="text-5xl text-green-500" />
         <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
           {vendor.name} 配置完成
@@ -94,6 +97,7 @@ export default function KeyWizard({ onDone }: { onDone?: () => void }) {
           开始使用
         </Button>
       </div>
+      </>
     );
   }
 

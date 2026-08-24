@@ -34,6 +34,7 @@ import {
   BranchesOutlined,
   DatabaseOutlined,
   PictureOutlined,
+  BulbOutlined,
   EditOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
@@ -79,6 +80,11 @@ const coreMenuItems: MenuProps["items"] = [
     key: "/",
     icon: <DashboardOutlined />,
     label: "仪表盘",
+  },
+  {
+    key: "/inspiration",
+    icon: <BulbOutlined />,
+    label: "灵感广场",
   },
   {
     key: "/conversation",

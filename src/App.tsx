@@ -33,6 +33,7 @@ import KeyWizard from './components/onboarding/KeyWizard';
 import GalleryPage from './pages/gallery/GalleryPage';
 import FlowCanvasPage from './pages/flow/FlowCanvasPage';
 import UsagePage from './pages/system/UsagePage';
+import InspirationPage from './pages/inspiration/InspirationPage';
 import { ThemeProvider } from './theme';
 import { useFloatingBridge } from './tauri/useFloatingBridge';
 import { useSettings } from './stores';
@@ -62,6 +63,7 @@ function App() {
                   <Route path="/gallery" element={<GalleryPage />} />
                   <Route path="/flow" element={<FlowCanvasPage />} />
                   <Route path="/usage" element={<UsagePage />} />
+                  <Route path="/inspiration" element={<InspirationPage />} />
 
                   {/* Workbench */}
                   <Route path="/" element={<Dashboard />} />

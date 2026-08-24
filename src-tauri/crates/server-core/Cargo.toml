@@ -14,7 +14,7 @@ path = "src/main.rs"
 
 [dependencies]
 flow-engine = { path = "../flow-engine" }
-axum = { version = "0.8", features = ["ws"] }
+axum = { version = "0.8", features = ["ws", "multipart"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "signal"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -26,6 +26,7 @@ tower-http = { version = "0.6", features = ["cors"] }
 reqwest = { version = "0.12", features = ["json", "stream"] }
 tokio-stream = "0.1"
 base64 = "0.22"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }

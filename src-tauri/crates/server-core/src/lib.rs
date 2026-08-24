@@ -18,6 +18,7 @@ pub mod flow_routes;
 pub mod search;
 pub mod llm_gateway;
 pub mod routes;
+pub mod media;
 pub mod spans;
 pub mod store;
 pub mod video_routes;
@@ -90,6 +91,8 @@ pub(crate) struct AppState {
     pub flow_runner: std::sync::Arc<flow_engine::FlowRunner<flow_engine::HttpEngineClient>>,
     /// Async video generation tasks (TOOL-02).
     pub video_tasks: video_routes::VideoTaskRegistry,
+    /// App data directory (media artifacts live under data/media).
+    pub data_dir: std::path::PathBuf,
 }
 
 // ==================== Response helpers ====================
@@ -138,6 +141,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
             flow_engine::HttpEngineClient::new(engine_base_url),
         )),
         video_tasks: video_routes::VideoTaskRegistry::default(),
+        data_dir: config.data_dir.clone(),
     });
 
     let app = Router::new()
@@ -148,6 +152,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         .merge(flow_routes::flow_routes())
         .merge(search::search_routes())
         .merge(video_routes::video_routes())
+        .merge(media::media_routes())
         .merge(auth::auth_routes())
         .merge(collections::collection_routes())
         .fallback(not_implemented)

@@ -39,6 +39,7 @@ import {
   VideoCameraOutlined,
   FileImageOutlined,
   TableOutlined,
+  ToolOutlined,
   EditOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
@@ -119,6 +120,11 @@ const coreMenuItems: MenuProps["items"] = [
     key: "/creation/sheets",
     icon: <TableOutlined />,
     label: "AI 表格",
+  },
+  {
+    key: "/creation/media",
+    icon: <ToolOutlined />,
+    label: "媒体处理",
   },
   {
     key: "/creation/writing",

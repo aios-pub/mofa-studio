@@ -11,6 +11,12 @@ import { ChatContainer } from "../../components/conversation";
 import ResizableSidebar from "@/components/layout/ResizableSidebar";
 import { chatService } from "@/services/api/chat";
 import { AUTO_MODEL } from "@/services/api/engine";
+import {
+  applyEditResend,
+  branchSnapshot,
+  historyForRegeneration,
+  toRequestMessages,
+} from "@/utils/chatHistory";
 import type { Conversation, Agent, Message, MessageAttachment } from "../../types";
 
 export default function ConversationPage() {
@@ -129,30 +135,13 @@ export default function ConversationPage() {
     }
   }, [selectedConversation]);
 
-  // Send message (streaming through the llm-gateway / mofa-engine)
-  const handleSendMessage = useCallback(
-    async (
-      content: string,
-      _attachments?: MessageAttachment[],
-      _params?: Record<string, unknown>,
-    ) => {
-      if (!selectedConversation || isLoading) return;
-
-      const conversationId = selectedConversation.id;
-      const history = selectedConversation.messages;
+  // Shared streaming core: appends/reuses an assistant placeholder on
+  // `conversationId` and streams one completion over `history` + `content`.
+  const runGeneration = useCallback(
+    async (conversationId: string, history: Message[], content: string) => {
       setIsLoading(true);
       abortRef.current = new AbortController();
 
-      // User message appears immediately.
-      const userMessage: Message = {
-        id: `msg-u-${Date.now()}`,
-        conversationId,
-        role: "user",
-        content,
-        status: "completed",
-        createdAt: new Date(),
-      };
-      // Assistant placeholder streams token-by-token.
       const assistantId = `msg-a-${Date.now() + 1}`;
       const assistantMessage: Message = {
         id: assistantId,
@@ -162,11 +151,10 @@ export default function ConversationPage() {
         status: "pending",
         createdAt: new Date(),
       };
-
-      const appendMessages = (msgs: Message[]) => {
+      const appendAssistant = () => {
         setSelectedConversation((prev) => {
           if (!prev || prev.id !== conversationId) return prev;
-          return { ...prev, messages: [...prev.messages, ...msgs] };
+          return { ...prev, messages: [...prev.messages, assistantMessage] };
         });
       };
       const patchAssistant = (patch: Partial<Message>) => {
@@ -181,18 +169,12 @@ export default function ConversationPage() {
         });
       };
 
-      appendMessages([userMessage, assistantMessage]);
+      appendAssistant();
 
       try {
         const completion = await chatService.chatStream(
           {
-            messages: [
-              ...history.map((m) => ({
-                role: m.role as "system" | "user" | "assistant",
-                content: m.content,
-              })),
-              { role: "user", content },
-            ],
+            messages: [...toRequestMessages(history), { role: "user", content }],
             model: model === AUTO_MODEL ? undefined : model,
             temperature: 0.7,
             stream: true,
@@ -200,7 +182,6 @@ export default function ConversationPage() {
           },
           (chunk, done) => {
             if (done) return;
-            // Incremental append: read current content through the setter.
             setSelectedConversation((prev) => {
               if (!prev) return prev;
               return {
@@ -242,8 +223,6 @@ export default function ConversationPage() {
             ? { thinking: { content: completion.thinking } }
             : {}),
         });
-
-        // Persist token totals on the conversation object.
         setSelectedConversation((prev) => {
           if (!prev || prev.id !== conversationId) return prev;
           return {
@@ -256,16 +235,131 @@ export default function ConversationPage() {
           };
         });
       } catch (error) {
-        console.error("Failed to send message:", error);
+        console.error("Generation failed:", error);
         const detail = error instanceof Error ? error.message : String(error);
         patchAssistant({ status: "error", content: `生成失败：${detail}` });
-        message.error("发送消息失败");
+        message.error("生成失败");
       } finally {
         setIsLoading(false);
         abortRef.current = null;
       }
     },
-    [selectedConversation, isLoading, model, deepThinking],
+    [model, deepThinking],
+  );
+
+  // Send message (streaming through the llm-gateway / mofa-engine)
+  const handleSendMessage = useCallback(
+    async (
+      content: string,
+      _attachments?: MessageAttachment[],
+      _params?: Record<string, unknown>,
+    ) => {
+      if (!selectedConversation || isLoading) return;
+
+      const conversationId = selectedConversation.id;
+      const history = selectedConversation.messages;
+      const userMessage: Message = {
+        id: `msg-u-${Date.now()}`,
+        conversationId,
+        role: "user",
+        content,
+        status: "completed",
+        createdAt: new Date(),
+      };
+      setSelectedConversation((prev) => {
+        if (!prev || prev.id !== conversationId) return prev;
+        return { ...prev, messages: [...prev.messages, userMessage] };
+      });
+      await runGeneration(conversationId, history, content);
+    },
+    [selectedConversation, isLoading, runGeneration],
+  );
+
+  // CHAT-10: regenerate an assistant reply in place (list is patched, not rebuilt)
+  const handleRegenerate = useCallback(
+    async (assistantMessageId: string) => {
+      if (!selectedConversation || isLoading) return;
+      const history = historyForRegeneration(
+        selectedConversation.messages,
+        assistantMessageId,
+      );
+      if (!history) return;
+      const lastUser = [...history].reverse().find((m) => m.role === "user");
+      if (!lastUser) return;
+
+      const conversationId = selectedConversation.id;
+      // Drop this assistant message (and anything after it), keep the rest.
+      setSelectedConversation((prev) => {
+        if (!prev || prev.id !== conversationId) return prev;
+        const idx = prev.messages.findIndex((m) => m.id === assistantMessageId);
+        if (idx === -1) return prev;
+        return { ...prev, messages: prev.messages.slice(0, idx) };
+      });
+      await runGeneration(conversationId, history, lastUser.content);
+    },
+    [selectedConversation, isLoading, runGeneration],
+  );
+
+  // CHAT-10: edit a user message and resend from that point
+  const handleEditResend = useCallback(
+    async (userMessageId: string, newContent: string) => {
+      if (!selectedConversation || isLoading) return;
+      const result = applyEditResend(
+        selectedConversation.messages,
+        userMessageId,
+        newContent,
+      );
+      if (!result) return;
+
+      const conversationId = selectedConversation.id;
+      setSelectedConversation((prev) => {
+        if (!prev || prev.id !== conversationId) return prev;
+        return { ...prev, messages: result.messages };
+      });
+      await runGeneration(
+        conversationId,
+        result.messages.slice(0, -1),
+        newContent,
+      );
+    },
+    [selectedConversation, isLoading, runGeneration],
+  );
+
+  // CHAT-10: branch a new conversation from a message, carrying the parent
+  // context snapshot and a "源自 xx" marker in the title.
+  const handleBranch = useCallback(
+    async (anchorMessageId: string, includeAnchor: boolean) => {
+      if (!selectedConversation) return;
+      const snapshot = branchSnapshot(
+        selectedConversation.messages,
+        anchorMessageId,
+        includeAnchor,
+      );
+      if (!snapshot || snapshot.length === 0) return;
+      try {
+        const branchTitle = `源自「${selectedConversation.title}」`;
+        const branch = await conversationApi.create({
+          agentId: selectedConversation.agentId,
+          title: branchTitle,
+        });
+        const seeded: Conversation = {
+          ...branch,
+          title: branchTitle,
+          messages: snapshot.map((m) => ({
+            ...m,
+            conversationId: branch.id,
+          })),
+        };
+        setConversations((prev) => [seeded, ...prev]);
+        setSelectedConversation(seeded);
+        setSelectedAgentId(seeded.agentId);
+        message.success("已创建分支对话");
+      } catch (error) {
+        console.error("Failed to branch conversation:", error);
+        message.error("创建分支失败");
+      }
+    },
+    [selectedConversation],
   );
 
   // Abort an in-flight generation; the partial answer stays in the transcript
@@ -303,6 +397,9 @@ export default function ConversationPage() {
           onStopGeneration={handleStopGeneration}
           deepThinking={deepThinking}
           onDeepThinkingChange={setDeepThinking}
+          onRegenerate={handleRegenerate}
+          onEditResend={handleEditResend}
+          onBranch={handleBranch}
         />
       </div>
 

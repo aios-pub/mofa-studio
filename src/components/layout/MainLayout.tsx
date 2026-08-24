@@ -18,6 +18,7 @@ import { useSettings, useAppStore } from "../../stores";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import { SettingsDrawer } from "../settings";
 import { RouteLoadingProgress } from "../common";
+import WelcomeFlow, { hasOnboarded } from "../onboarding/WelcomeFlow";
 
 const { Content } = Layout;
 
@@ -42,6 +43,7 @@ interface MainLayoutProps {
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
+  const [showWelcome, setShowWelcome] = useState(() => !hasOnboarded());
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const settings = useSettings();
@@ -62,7 +64,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     checkMobile();
     window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    if (showWelcome) {
+    return <WelcomeFlow onFinish={() => setShowWelcome(false)} />;
+  }
+
+  return () => window.removeEventListener("resize", checkMobile);
   }, [sidebarCollapsed, setSidebarCollapsed]);
 
   const isHorizontal = settings.themeLayout === "horizontal";

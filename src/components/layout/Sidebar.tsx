@@ -36,6 +36,7 @@ import {
   PictureOutlined,
   BulbOutlined,
   HistoryOutlined,
+  VideoCameraOutlined,
   EditOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
@@ -101,6 +102,11 @@ const coreMenuItems: MenuProps["items"] = [
     key: "/creation/history",
     icon: <HistoryOutlined />,
     label: "生成历史",
+  },
+  {
+    key: "/creation/video-gen",
+    icon: <VideoCameraOutlined />,
+    label: "视频生成",
   },
   {
     key: "/creation/writing",

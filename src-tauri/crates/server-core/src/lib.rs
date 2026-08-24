@@ -20,6 +20,7 @@ pub mod llm_gateway;
 pub mod routes;
 pub mod spans;
 pub mod store;
+pub mod video_routes;
 pub mod ws;
 
 use std::io;
@@ -87,6 +88,8 @@ pub(crate) struct AppState {
     pub engine_base_url: String,
     /// Workflow runner (FLOW-04) with its signature cache.
     pub flow_runner: std::sync::Arc<flow_engine::FlowRunner<flow_engine::HttpEngineClient>>,
+    /// Async video generation tasks (TOOL-02).
+    pub video_tasks: video_routes::VideoTaskRegistry,
 }
 
 // ==================== Response helpers ====================
@@ -134,6 +137,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         flow_runner: std::sync::Arc::new(flow_engine::FlowRunner::new(
             flow_engine::HttpEngineClient::new(engine_base_url),
         )),
+        video_tasks: video_routes::VideoTaskRegistry::default(),
     });
 
     let app = Router::new()
@@ -143,6 +147,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         .merge(llm_gateway::llm_routes())
         .merge(flow_routes::flow_routes())
         .merge(search::search_routes())
+        .merge(video_routes::video_routes())
         .merge(auth::auth_routes())
         .merge(collections::collection_routes())
         .fallback(not_implemented)

@@ -35,6 +35,7 @@ import FlowCanvasPage from './pages/flow/FlowCanvasPage';
 import UsagePage from './pages/system/UsagePage';
 import InspirationPage from './pages/inspiration/InspirationPage';
 import ImageHistoryPage from './pages/creation/ImageHistoryPage';
+import VideoGenPage from './pages/creation/VideoGenPage';
 import { ThemeProvider } from './theme';
 import { useFloatingBridge } from './tauri/useFloatingBridge';
 import { useSettings } from './stores';
@@ -62,6 +63,7 @@ function App() {
                   <Route path="/creation/image-gen" element={<ImageGenPage />} />
                   <Route path="/creation/writing" element={<WritingPage />} />
                   <Route path="/creation/history" element={<ImageHistoryPage />} />
+                  <Route path="/creation/video-gen" element={<VideoGenPage />} />
                   <Route path="/gallery" element={<GalleryPage />} />
                   <Route path="/flow" element={<FlowCanvasPage />} />
                   <Route path="/usage" element={<UsagePage />} />

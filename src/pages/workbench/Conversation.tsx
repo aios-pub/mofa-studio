@@ -15,6 +15,7 @@ import {
   applyEditResend,
   branchSnapshot,
   historyForRegeneration,
+  toRequestContent,
   toRequestMessages,
 } from "@/utils/chatHistory";
 import { detectImageIntent, refineImagePrompt } from "@/utils/imageIntent";
@@ -22,7 +23,7 @@ import { exportFilename, imageService } from "@/services/api/image";
 import type { Conversation, Agent, Message, MessageAttachment } from "../../types";
 
 export default function ConversationPage() {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] =
     useState<Conversation | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -142,7 +143,12 @@ export default function ConversationPage() {
   // Shared streaming core: appends/reuses an assistant placeholder on
   // `conversationId` and streams one completion over `history` + `content`.
   const runGeneration = useCallback(
-    async (conversationId: string, history: Message[], content: string) => {
+    async (
+      conversationId: string,
+      history: Message[],
+      content: string,
+      attachments?: MessageAttachment[],
+    ) => {
       setIsLoading(true);
       abortRef.current = new AbortController();
 
@@ -178,7 +184,13 @@ export default function ConversationPage() {
       try {
         const completion = await chatService.chatStream(
           {
-            messages: [...toRequestMessages(history), { role: "user", content }],
+            messages: [
+              ...toRequestMessages(history),
+              {
+                role: "user" as const,
+                content: toRequestContent({ content, attachments }),
+              },
+            ],
             model: model === AUTO_MODEL ? undefined : model,
             temperature: 0.7,
             stream: true,
@@ -255,7 +267,7 @@ export default function ConversationPage() {
   const handleSendMessage = useCallback(
     async (
       content: string,
-      _attachments?: MessageAttachment[],
+      attachments?: MessageAttachment[],
       _params?: Record<string, unknown>,
     ) => {
       if (!selectedConversation || isLoading) return;
@@ -267,6 +279,7 @@ export default function ConversationPage() {
         conversationId,
         role: "user",
         content,
+        attachments: attachments && attachments.length > 0 ? attachments : undefined,
         status: "completed",
         createdAt: new Date(),
       };
@@ -285,7 +298,7 @@ export default function ConversationPage() {
         return;
       }
       lastImagePromptRef.current = null;
-      await runGeneration(conversationId, history, content);
+      await runGeneration(conversationId, history, content, attachments);
     },
     [selectedConversation, isLoading, runGeneration],
   );
@@ -510,7 +523,7 @@ export default function ConversationPage() {
             >
               {agents.map((agent) => (
                 <option key={agent.id} value={agent.id}>
-                  {agent.name}
+                  {agent.agent_name}
                 </option>
               ))}
             </select>

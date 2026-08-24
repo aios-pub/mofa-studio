@@ -30,10 +30,20 @@ async fn mock_invoke(Json(req): Json<Value>) -> Response {
     if req["capability"] == "image_gen" {
         return mock_invoke_image_gen(Json(req)).await;
     }
+    if req["capability"] == "vlm" {
+        // Vision routing must carry the images and the flattened text.
+        assert!(
+            req["messages"][0]["images"]
+                .as_array()
+                .is_some_and(|a| !a.is_empty()),
+            "gateway must forward image parts as message images"
+        );
+        assert_eq!(req["messages"][0]["content"], "图里是什么？");
+    }
     // Echo back what the gateway forwarded so tests can assert the mapping.
-    assert_eq!(
-        req["capability"], "chat",
-        "gateway must request the chat capability"
+    assert!(
+        req["capability"] == "chat" || req["capability"] == "vlm",
+        "gateway must request a chat-family capability"
     );
     assert!(
         req["messages"].as_array().is_some_and(|m| !m.is_empty()),
@@ -403,4 +413,36 @@ async fn image_generations_requires_prompt() {
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
     let body = body_json(response).await;
     assert!(body["error"]["message"].as_str().unwrap().contains("prompt"));
+}
+
+#[tokio::test]
+async fn vision_input_routes_vlm_and_carries_images() {
+    let engine = spawn_mock_engine().await;
+    let app = gateway_router(engine, "vision");
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/v1/chat/completions")
+                .header("content-type", "application/json")
+                .body(Body::from(
+                    json!({
+                        "messages": [{
+                            "role": "user",
+                            "content": [
+                                { "type": "text", "text": "图里是什么？" },
+                                { "type": "image_url", "image_url": { "url": "data:image/png;base64,QUJD" } },
+                            ],
+                        }],
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = body_json(response).await;
+    assert_eq!(body["choices"][0]["message"]["content"], "hello from mock engine");
 }

@@ -59,7 +59,13 @@ async fn chat_completions(State(state): State<Arc<AppState>>, Json(body): Json<V
         Err(msg) => return openai_error(StatusCode::BAD_REQUEST, &msg),
     };
 
-    let mut engine_req = json!({ "capability": "chat", "messages": messages });
+    let has_images = messages
+        .iter()
+        .any(|m| m.get("images").and_then(Value::as_array).is_some_and(|a| !a.is_empty()));
+    // Vision auto-routing: image-bearing requests ask for the vlm capability
+    // so the engine picks a vision-capable model.
+    let capability = if has_images { "vlm" } else { "chat" };
+    let mut engine_req = json!({ "capability": capability, "messages": messages });
     if let Some(model) = body.get("model").and_then(Value::as_str) {
         engine_req["model"] = json!(model);
     }
@@ -104,19 +110,40 @@ fn extract_messages(body: &Value) -> Result<Vec<Value>, String> {
             .and_then(Value::as_str)
             .unwrap_or("user")
             .to_string();
+        let mut images: Vec<String> = Vec::new();
         let content = match msg.get("content") {
             Some(Value::String(s)) => s.clone(),
-            Some(Value::Array(parts)) => parts
-                .iter()
-                .filter_map(|p| p.get("text").and_then(Value::as_str))
-                .collect::<Vec<_>>()
-                .join("\n"),
+            Some(Value::Array(parts)) => {
+                let mut texts = Vec::new();
+                for part in parts {
+                    match part.get("type").and_then(Value::as_str) {
+                        Some("image_url") => {
+                            // Vision parts ride along as message images for
+                            // the engine's multimodal format.
+                            if let Some(url) = part
+                                .pointer("/image_url/url")
+                                .and_then(Value::as_str)
+                            {
+                                images.push(url.to_string());
+                            }
+                        }
+                        _ => {
+                            if let Some(text) = part.get("text").and_then(Value::as_str) {
+                                texts.push(text.to_string());
+                            }
+                        }
+                    }
+                }
+                texts.join("\n")
+            }
             _ => String::new(),
         };
-        out.push(json!({ "role": role, "content": content }));
+        out.push(json!({ "role": role, "content": content, "images": images }));
     }
     Ok(out)
 }
+
+/// Whether any message carries images (vision input).
 
 /// Non-streaming path: one engine `invoke`, wrapped into a single OpenAI
 /// completion object.

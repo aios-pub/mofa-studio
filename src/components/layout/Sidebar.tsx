@@ -31,7 +31,7 @@ import {
   SettingOutlined,
   LinkOutlined,
   BranchesOutlined,
-  DatabaseOutlined,,
+  DatabaseOutlined,
   PictureOutlined,
   EditOutlined,
 } from "@ant-design/icons";

@@ -19,11 +19,16 @@ export type StreamCallback = (chunk: string, done: boolean) => void;
 // Streaming thinking/reasoning callback (DeepSeek-R1 style reasoning_content)
 export type ThinkingCallback = (chunk: string) => void;
 
+/** OpenAI-style multimodal content parts. */
+export type ContentPart =
+  | { type: 'text'; text: string }
+  | { type: 'image_url'; image_url: { url: string } };
+
 // Conversation request parameters
 export interface ChatRequest {
   messages: Array<{
     role: 'system' | 'user' | 'assistant';
-    content: string;
+    content: string | ContentPart[];
   }>;
   model?: string;
   temperature?: number;

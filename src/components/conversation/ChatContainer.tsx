@@ -131,6 +131,51 @@ export default function ChatContainer({
     }
   }, [input]);
 
+  // CHAT-04: encode an image File into a data-URL attachment
+  const addImageFiles = (files: File[] | FileList) => {
+    const images = Array.from(files).filter((f) => f.type.startsWith("image/"));
+    if (images.length === 0) return;
+    for (const file of images) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const url = reader.result as string;
+        const attachment: MessageAttachment = {
+          id: `img-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          url,
+        };
+        setAttachments((prev) => [...prev, attachment]);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // CHAT-04: paste images straight into the input
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const files = e.clipboardData?.files;
+    if (files && files.length > 0) {
+      const hasImage = Array.from(files).some((f) => f.type.startsWith("image/"));
+      if (hasImage) {
+        e.preventDefault();
+        addImageFiles(files);
+      }
+    }
+  };
+
+  // CHAT-04: drop images onto the conversation area
+  const handleDrop = (e: React.DragEvent) => {
+    const files = e.dataTransfer?.files;
+    if (files && files.length > 0) {
+      const hasImage = Array.from(files).some((f) => f.type.startsWith("image/"));
+      if (hasImage) {
+        e.preventDefault();
+        addImageFiles(files);
+      }
+    }
+  };
+
   // Handle file upload
   const handleFileChange = (info: { fileList: UploadFile[] }) => {
     setFileList(info.fileList);
@@ -326,7 +371,13 @@ export default function ChatContainer({
   }
 
   return (
-    <div className="flex flex-col h-full bg-[var(--color-bg-base)]">
+    <div
+      className="flex flex-col h-full bg-[var(--color-bg-base)]"
+      onDragOver={(e) => {
+        if (e.dataTransfer?.types?.includes("Files")) e.preventDefault();
+      }}
+      onDrop={handleDrop}
+    >
       {/* Header - conversation info */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-(--color-border)">
         <RobotOutlined className="text-xl text-[var(--color-primary)]" />
@@ -469,6 +520,38 @@ export default function ChatContainer({
 
       {/* Input area */}
       <div className="p-4 border-t border-(--color-border)">
+        {/* CHAT-04: image thumbnails before send */}
+        {attachments.filter((a) => a.url && a.type.startsWith("image/")).length > 0 && (
+          <div className="max-w-3xl mx-auto mb-2 flex flex-wrap gap-2">
+            {attachments
+              .filter((a) => a.url && a.type.startsWith("image/"))
+              .map((att) => (
+                <div
+                  key={att.id}
+                  className="relative group rounded-lg overflow-hidden border border-(--color-border)"
+                >
+                  <img
+                    src={att.url}
+                    alt={att.name}
+                    className="w-16 h-16 object-cover cursor-zoom-in"
+                    onClick={() => window.open(att.url, "_blank")}
+                  />
+                  <button
+                    onClick={() =>
+                      setAttachments((prev) => prev.filter((a) => a.id !== att.id))
+                    }
+                    className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white text-xs leading-none opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label={`移除图片 ${att.name}`}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            <span className="self-center text-xs text-[var(--color-text-tertiary)]">
+              将随消息一并发送给视觉模型
+            </span>
+          </div>
+        )}
         <div className="max-w-3xl mx-auto flex gap-2">
           {/* File upload button */}
           <Upload
@@ -539,6 +622,7 @@ export default function ChatContainer({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             placeholder="输入消息，按 Enter 发送，Shift+Enter 换行..."
             rows={1}
             className="flex-1 px-4 py-2 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg resize-none focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
@@ -668,7 +752,7 @@ function MessageItem({
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      message.warning("复制失败");
+      console.warn("clipboard write failed");
     }
   };
 

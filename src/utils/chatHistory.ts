@@ -4,6 +4,7 @@
  * so the truncation semantics are unit-testable.
  */
 
+import type { ContentPart } from "@/services/api/chat";
 import type { Message } from "@/types";
 
 /**
@@ -65,13 +66,30 @@ export function branchSnapshot(
   }));
 }
 
-/** Wire messages into the chat request shape. */
+/** Wire messages into the chat request shape; image attachments on a
+ * message become multipart content parts (CHAT-04 vision input). */
 export function toRequestMessages(messages: Message[]): Array<{
   role: "system" | "user" | "assistant";
-  content: string;
+  content: string | ContentPart[];
 }> {
   return messages.map((m) => ({
     role: m.role as "system" | "user" | "assistant",
-    content: m.content,
+    content: toRequestContent(m),
   }));
+}
+
+/** One message's content: plain string, or parts when images are attached. */
+export function toRequestContent(
+  m: Pick<Message, "content" | "attachments">,
+): string | ContentPart[] {
+  const imageUrls = (m.attachments ?? [])
+    .filter((a) => a.url && a.type.startsWith("image/"))
+    .map((a) => a.url!);
+  if (imageUrls.length === 0) return m.content;
+  const parts: ContentPart[] = [];
+  if (m.content) parts.push({ type: "text", text: m.content });
+  for (const url of imageUrls) {
+    parts.push({ type: "image_url", image_url: { url } });
+  }
+  return parts;
 }

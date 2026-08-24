@@ -97,10 +97,13 @@ class ChatService {
     };
   }
 
-  // Streaming chat - read the backend streaming response via SSE
+  // Streaming chat - read the backend streaming response via SSE.
+  // An aborted signal keeps the content accumulated so far (half-generated
+  // messages stay in the transcript instead of being lost).
   async chatStream(
     request: ChatRequest,
     onChunk: StreamCallback,
+    signal?: AbortSignal,
   ): Promise<ChatResponse> {
     const baseURL = apiClient.getBaseUrl?.() ?? "";
     const url = `${baseURL}/v1/chat/completions`;
@@ -117,6 +120,7 @@ class ChatService {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
+      signal,
     });
 
     if (!response.ok || !response.body) {
@@ -128,34 +132,64 @@ class ChatService {
     const decoder = new TextDecoder();
     let fullContent = "";
     let chatId = `chat-${Date.now()}`;
+    let aborted = false;
+    // SSE frames can split across network chunks; buffer partial lines so no
+    // frame is dropped when a `data:` line arrives in pieces.
+    let lineBuffer = "";
+
+    const consumeLine = (rawLine: string) => {
+      const line = rawLine.endsWith("\r") ? rawLine.slice(0, -1) : rawLine;
+      if (!line.startsWith("data: ")) return;
+      const data = line.slice(6).trim();
+      if (data === "[DONE]") {
+        onChunk("", true);
+        return;
+      }
+      let parsed: {
+        id?: string;
+        error?: { message?: string };
+        choices?: Array<{ delta?: { content?: string } }>;
+      };
+      try {
+        parsed = JSON.parse(data);
+      } catch {
+        // Non-JSON keep-alive payload: skip the line
+        return;
+      }
+      if (parsed.error?.message) {
+        throw new Error(parsed.error.message);
+      }
+      const delta = parsed.choices?.[0]?.delta?.content ?? "";
+      if (delta) {
+        fullContent += delta;
+        onChunk(delta, false);
+      }
+      if (parsed.id) chatId = parsed.id;
+    };
 
     try {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const text = decoder.decode(value, { stream: true });
-        const lines = text.split("\n");
-
+        lineBuffer += decoder.decode(value, { stream: true });
+        const lines = lineBuffer.split("\n");
+        // The last element is either "" (buffer ended with \n) or an
+        // incomplete line carried over to the next chunk.
+        lineBuffer = lines.pop() ?? "";
         for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          const data = line.slice(6).trim();
-          if (data === "[DONE]") {
-            onChunk("", true);
-            continue;
-          }
-          try {
-            const parsed = JSON.parse(data);
-            const delta = parsed.choices?.[0]?.delta?.content ?? "";
-            if (delta) {
-              fullContent += delta;
-              onChunk(delta, false);
-            }
-            if (parsed.id) chatId = parsed.id;
-          } catch {
-            // Ignore parse errors and continue with the next line
-          }
+          consumeLine(line);
         }
+      }
+      // Flush a trailing frame if the stream closed without a final newline.
+      if (lineBuffer) {
+        consumeLine(lineBuffer);
+      }
+    } catch (streamError) {
+      if (signal?.aborted || (streamError instanceof DOMException && streamError.name === "AbortError")) {
+        aborted = true;
+      } else {
+        throw streamError;
       }
     } finally {
       reader.releaseLock();
@@ -164,7 +198,7 @@ class ChatService {
     return {
       id: chatId,
       content: fullContent,
-      finishReason: "stop",
+      finishReason: aborted ? "abort" : "stop",
     };
   }
 }

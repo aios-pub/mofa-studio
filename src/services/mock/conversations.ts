@@ -197,7 +197,8 @@ export const conversationApi = {
   // Send message
   async sendMessage(
     conversationId: string,
-    content: string
+    content: string,
+    _model?: string
   ): Promise<{ userMessage: Message; assistantMessage: Message }> {
     await delay(800);
 

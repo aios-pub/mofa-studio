@@ -6,6 +6,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   SendOutlined,
+  StopOutlined,
   RobotOutlined,
   UserOutlined,
   LoadingOutlined,
@@ -32,6 +33,7 @@ import {
 import type { UploadFile } from "antd/es/upload/interface";
 import dayjs from "dayjs";
 import { MarkdownRenderer } from "../common";
+import ModelPicker from "./ModelPicker";
 import type {
   Message,
   Conversation,
@@ -54,6 +56,11 @@ interface ChatContainerProps {
   agents?: Agent[];
   selectedAgentId?: string;
   isLoading?: boolean;
+  /** Selected engine model id (empty/AUTO_MODEL = engine auto-route). */
+  model?: string;
+  onModelChange?: (model: string) => void;
+  /** Abort an in-flight streaming generation (keeps partial content). */
+  onStopGeneration?: () => void;
 }
 
 export default function ChatContainer({
@@ -64,6 +71,9 @@ export default function ChatContainer({
   agents = [],
   selectedAgentId,
   isLoading = false,
+  model,
+  onModelChange,
+  onStopGeneration,
 }: ChatContainerProps) {
   const [input, setInput] = useState("");
   const [attachments, setAttachments] = useState<MessageAttachment[]>([]);
@@ -279,6 +289,11 @@ export default function ChatContainer({
           </p>
         </div>
 
+        {/* Engine model picker (mofa-engine via llm-gateway) */}
+        {onModelChange && (
+          <ModelPicker value={model} onChange={onModelChange} />
+        )}
+
         {/* Agent selector */}
         {onSelectAgent && agents.length > 0 && (
           <Select
@@ -418,13 +433,23 @@ export default function ChatContainer({
             className="flex-1 px-4 py-2 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg resize-none focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
             style={{ minHeight: "44px", maxHeight: "200px" }}
           />
-          <button
-            onClick={handleSend}
-            disabled={!input.trim() || isLoading}
-            className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <SendOutlined />
-          </button>
+          {isLoading && onStopGeneration ? (
+            <button
+              onClick={onStopGeneration}
+              className="px-4 py-2 bg-[var(--color-bg-tertiary)] border border-(--color-border) rounded-lg hover:bg-(--color-border) transition-colors flex items-center gap-1"
+              title="停止生成"
+            >
+              <StopOutlined aria-label="停止生成" />
+            </button>
+          ) : (
+            <button
+              onClick={handleSend}
+              disabled={!input.trim() || isLoading}
+              className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <SendOutlined />
+            </button>
+          )}
         </div>
       </div>
 

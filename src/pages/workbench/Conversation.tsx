@@ -3,13 +3,15 @@
  * Supports agent selection, file upload and context clearing
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Modal, Input, message } from "antd";
 import { conversationApi, agentApi } from "@/services";
 import { ConversationList } from "../../components/common";
 import { ChatContainer } from "../../components/conversation";
 import ResizableSidebar from "@/components/layout/ResizableSidebar";
-import type { Conversation, Agent, MessageAttachment } from "../../types";
+import { chatService } from "@/services/api/chat";
+import { AUTO_MODEL } from "@/services/api/engine";
+import type { Conversation, Agent, Message, MessageAttachment } from "../../types";
 
 export default function ConversationPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -19,6 +21,8 @@ export default function ConversationPage() {
   const [selectedAgentId, setSelectedAgentId] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [model, setModel] = useState<string>(AUTO_MODEL);
+  const abortRef = useRef<AbortController | null>(null);
   const [newConversationTitle, setNewConversationTitle] = useState("");
   const [selectedAgentForNew, setSelectedAgentForNew] = useState<
     string | undefined
@@ -124,58 +128,127 @@ export default function ConversationPage() {
     }
   }, [selectedConversation]);
 
-  // Send message
+  // Send message (streaming through the llm-gateway / mofa-engine)
   const handleSendMessage = useCallback(
     async (
       content: string,
       _attachments?: MessageAttachment[],
       _params?: Record<string, unknown>,
     ) => {
-      if (!selectedConversation) return;
+      if (!selectedConversation || isLoading) return;
 
+      const conversationId = selectedConversation.id;
+      const history = selectedConversation.messages;
       setIsLoading(true);
+      abortRef.current = new AbortController();
 
-      try {
-        const { userMessage, assistantMessage } =
-          await conversationApi.sendMessage(selectedConversation.id, content);
+      // User message appears immediately.
+      const userMessage: Message = {
+        id: `msg-u-${Date.now()}`,
+        conversationId,
+        role: "user",
+        content,
+        status: "completed",
+        createdAt: new Date(),
+      };
+      // Assistant placeholder streams token-by-token.
+      const assistantId = `msg-a-${Date.now() + 1}`;
+      const assistantMessage: Message = {
+        id: assistantId,
+        conversationId,
+        role: "assistant",
+        content: "",
+        status: "pending",
+        createdAt: new Date(),
+      };
 
-        // Update the current conversation
+      const appendMessages = (msgs: Message[]) => {
         setSelectedConversation((prev) => {
-          if (!prev) return null;
-          const newMessages = [...prev.messages, userMessage, assistantMessage];
+          if (!prev || prev.id !== conversationId) return prev;
+          return { ...prev, messages: [...prev.messages, ...msgs] };
+        });
+      };
+      const patchAssistant = (patch: Partial<Message>) => {
+        setSelectedConversation((prev) => {
+          if (!prev) return prev;
           return {
             ...prev,
-            messages: newMessages,
-            totalTokens: newMessages.reduce(
-              (sum, m) =>
-                sum + (m.tokens?.input || 0) + (m.tokens?.output || 0),
-              0,
+            messages: prev.messages.map((m) =>
+              m.id === assistantId ? { ...m, ...patch } : m,
             ),
+          };
+        });
+      };
+
+      appendMessages([userMessage, assistantMessage]);
+
+      try {
+        const completion = await chatService.chatStream(
+          {
+            messages: [
+              ...history.map((m) => ({
+                role: m.role as "system" | "user" | "assistant",
+                content: m.content,
+              })),
+              { role: "user", content },
+            ],
+            model: model === AUTO_MODEL ? undefined : model,
+            temperature: 0.7,
+            stream: true,
+          },
+          (chunk, done) => {
+            if (done) return;
+            // Incremental append: read current content through the setter.
+            setSelectedConversation((prev) => {
+              if (!prev) return prev;
+              return {
+                ...prev,
+                messages: prev.messages.map((m) =>
+                  m.id === assistantId
+                    ? { ...m, content: m.content + chunk }
+                    : m,
+                ),
+              };
+            });
+          },
+          abortRef.current?.signal,
+        );
+
+        patchAssistant({
+          content: completion.content,
+          status: "completed",
+          tokens: completion.tokens,
+        });
+
+        // Persist token totals on the conversation object.
+        setSelectedConversation((prev) => {
+          if (!prev || prev.id !== conversationId) return prev;
+          return {
+            ...prev,
+            totalTokens:
+              prev.totalTokens +
+              (completion.tokens?.input ?? 0) +
+              (completion.tokens?.output ?? 0),
             updatedAt: new Date(),
           };
         });
-
-        // Update conversation list
-        setConversations((prev) =>
-          prev.map((c) =>
-            c.id === selectedConversation.id
-              ? {
-                  ...c,
-                  messages: [...c.messages, userMessage, assistantMessage],
-                  updatedAt: new Date(),
-                }
-              : c,
-          ),
-        );
       } catch (error) {
         console.error("Failed to send message:", error);
+        const detail = error instanceof Error ? error.message : String(error);
+        patchAssistant({ status: "error", content: `生成失败：${detail}` });
         message.error("发送消息失败");
       } finally {
         setIsLoading(false);
+        abortRef.current = null;
       }
     },
-    [selectedConversation],
+    [selectedConversation, isLoading, model],
   );
+
+  // Abort an in-flight generation; the partial answer stays in the transcript
+  const handleStopGeneration = useCallback(() => {
+    abortRef.current?.abort();
+  }, []);
 
   return (
     <div className="flex h-full">
@@ -202,6 +275,9 @@ export default function ConversationPage() {
           agents={agents}
           selectedAgentId={selectedAgentId}
           isLoading={isLoading}
+          model={model}
+          onModelChange={setModel}
+          onStopGeneration={handleStopGeneration}
         />
       </div>
 

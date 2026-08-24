@@ -5,12 +5,16 @@
     "build": "deno run --allow-all --node-modules-dir=auto npm:vite build",
     "preview": "deno run --allow-all --node-modules-dir=auto npm:vite preview",
     "tauri-dev": "deno run --allow-all npm:@tauri-apps/cli dev",
-    "tauri-build": "deno run --allow-all npm:@tauri-apps/cli build"
+    "tauri-build": "deno run --allow-all npm:@tauri-apps/cli build",
+    "test": "deno run --allow-all --node-modules-dir=auto npm:vitest run"
   },
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "react"
   },
   "nodeModulesDir": "auto",
-  "unstable": ["bare-node-builtins", "byonm"]
+  "unstable": [
+    "bare-node-builtins",
+    "byonm"
+  ]
 }

@@ -106,11 +106,45 @@ export const conversationRealApi = {
 
   /** Send message */
   async sendMessage(
-    _conversationId: string,
+    conversationId: string,
     content: string,
+    model?: string,
   ): Promise<{ userMessage: Message; assistantMessage: Message }> {
-    return apiClient.post("/v1/chat/completions", {
+    // Non-streaming path through the llm-gateway (mofa-engine). The gateway
+    // answers in OpenAI chat-completion shape; build the Message pair here.
+    const body: Record<string, unknown> = {
       messages: [{ role: "user", content }],
-    });
+    };
+    if (model) body.model = model;
+    const completion = await apiClient.post<{
+      id?: string;
+      model?: string;
+      choices?: Array<{ message?: { content?: string }; finish_reason?: string }>;
+      usage?: { prompt_tokens?: number; completion_tokens?: number };
+    }>("/v1/chat/completions", body);
+
+    const now = new Date();
+    const text = completion.choices?.[0]?.message?.content ?? "";
+    const inputTokens = completion.usage?.prompt_tokens ?? 0;
+    const outputTokens = completion.usage?.completion_tokens ?? 0;
+    return {
+      userMessage: {
+        id: `msg-u-${completion.id ?? Date.now()}`,
+        conversationId,
+        role: "user",
+        content,
+        status: "completed",
+        createdAt: now,
+      },
+      assistantMessage: {
+        id: `msg-a-${completion.id ?? Date.now()}`,
+        conversationId,
+        role: "assistant",
+        content: text,
+        status: "completed",
+        tokens: { input: inputTokens, output: outputTokens },
+        createdAt: now,
+      },
+    };
   },
 };

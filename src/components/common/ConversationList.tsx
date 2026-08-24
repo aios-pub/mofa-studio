@@ -10,9 +10,20 @@ import {
   MessageOutlined,
   DeleteOutlined,
   EditOutlined,
+  PushpinOutlined,
+  InboxOutlined,
+  DownloadOutlined,
+  CheckSquareOutlined,
 } from "@ant-design/icons";
 import { conversationApi, agentApi } from "@/services";
 import type { Conversation, Agent } from "../../types";
+import {
+  conversationToExportJson,
+  conversationToMarkdown,
+  downloadText,
+  exportFilename,
+  sortAndFilterConversations,
+} from "@/utils/conversationManage";
 
 interface ConversationListProps {
   onSelectConversation?: (conversation: Conversation) => void;
@@ -36,6 +47,9 @@ export default function ConversationList({
   } | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [showArchived, setShowArchived] = useState(false);
+  const [batchMode, setBatchMode] = useState(false);
+  const [checked, setChecked] = useState<Set<string>>(new Set());
 
   // Load conversation list
   useEffect(() => {
@@ -84,10 +98,11 @@ export default function ConversationList({
     }
   };
 
-  // Filter conversations
-  const filteredConversations = conversations.filter((c) =>
-    c.title.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  // CHAT-13: pinned-first ordering + archive/search filtering
+  const filteredConversations = sortAndFilterConversations(conversations, {
+    query: searchQuery,
+    showArchived,
+  });
 
   // Group by agent
   const groupedConversations = agents.map((agent) => ({
@@ -112,6 +127,64 @@ export default function ConversationList({
     } catch (error) {
       console.error("Failed to rename conversation:", error);
     }
+  };
+
+  // CHAT-13: persist pin/archive flags on the conversation doc
+  const patchConversation = async (
+    id: string,
+    patch: { pinned?: boolean; archived?: boolean },
+  ) => {
+    setConversations((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+    );
+    try {
+      await conversationApi.update(id, patch);
+    } catch (error) {
+      console.error("Failed to persist conversation flags:", error);
+    }
+  };
+
+  const handleExport = (id: string, format: "md" | "json") => {
+    const conversation = conversations.find((c) => c.id === id);
+    if (!conversation) return;
+    if (format === "md") {
+      downloadText(
+        conversationToMarkdown(conversation),
+        exportFilename(conversation.title, "md"),
+        "text/markdown;charset=utf-8",
+      );
+    } else {
+      downloadText(
+        conversationToExportJson(conversation),
+        exportFilename(conversation.title, "json"),
+        "application/json",
+      );
+    }
+    setContextMenu(null);
+  };
+
+  const handleBatchDelete = async () => {
+    if (checked.size === 0) return;
+    const ids = [...checked];
+    for (const id of ids) {
+      try {
+        await conversationApi.delete(id);
+      } catch (error) {
+        console.error("Failed to delete conversation:", error);
+      }
+    }
+    setConversations((prev) => prev.filter((c) => !checked.has(c.id)));
+    setChecked(new Set());
+    setBatchMode(false);
+  };
+
+  const toggleChecked = (id: string) => {
+    setChecked((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
 
   // Context menu
@@ -148,8 +221,50 @@ export default function ConversationList({
             placeholder="搜索会话..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            aria-label="搜索会话"
             className="w-full pl-9 pr-3 py-2 bg-(--color-bg-tertiary) border border-(--color-border) rounded-lg text-sm focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
           />
+        </div>
+
+        {/* CHAT-13 view controls */}
+        <div className="flex items-center gap-2 text-xs">
+          <button
+            onClick={() => setShowArchived((v) => !v)}
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg border transition-colors ${
+              showArchived
+                ? "border-[var(--color-primary)] text-[var(--color-primary)]"
+                : "border-(--color-border) text-[var(--color-text-tertiary)]"
+            }`}
+            aria-pressed={showArchived}
+            aria-label="显示归档会话"
+          >
+            <InboxOutlined /> 归档
+          </button>
+          <button
+            onClick={() => {
+              setBatchMode((v) => !v);
+              setChecked(new Set());
+            }}
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg border transition-colors ${
+              batchMode
+                ? "border-[var(--color-primary)] text-[var(--color-primary)]"
+                : "border-(--color-border) text-[var(--color-text-tertiary)]"
+            }`}
+            aria-pressed={batchMode}
+            aria-label="批量管理"
+          >
+            <CheckSquareOutlined /> 批量
+          </button>
+          {batchMode && (
+            <button
+              onClick={handleBatchDelete}
+              disabled={checked.size === 0}
+              className="ml-auto px-2 py-1 rounded-lg text-red-500 border border-red-300 disabled:opacity-40"
+              aria-label="删除所选"
+            >
+              删除({checked.size})
+            </button>
+          )}
         </div>
       </div>
 
@@ -196,6 +311,16 @@ export default function ConversationList({
                             : "hover:bg-(--color-bg-tertiary)"
                         }`}
                       >
+                        {batchMode && (
+                          <input
+                            type="checkbox"
+                            checked={checked.has(conversation.id)}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={() => toggleChecked(conversation.id)}
+                            aria-label={`选择会话 ${conversation.title}`}
+                            className="flex-shrink-0"
+                          />
+                        )}
                         <MessageOutlined className="flex-shrink-0 text-[var(--color-text-tertiary)]" />
                         <div className="flex-1 min-w-0">
                           {renamingId === conversation.id ? (
@@ -215,8 +340,20 @@ export default function ConversationList({
                               className="w-full px-1 py-0.5 text-sm bg-[var(--color-bg-base)] border border-(--color-primary) rounded text-[var(--color-text-primary)] focus:outline-none"
                             />
                           ) : (
-                            <div className="text-sm font-medium text-[var(--color-text-primary)] truncate">
-                              {conversation.title}
+                            <div className="text-sm font-medium text-[var(--color-text-primary)] truncate flex items-center gap-1">
+                              {conversation.pinned && (
+                                <PushpinOutlined
+                                  className="text-[var(--color-primary)] text-xs"
+                                  aria-label="已置顶"
+                                />
+                              )}
+                              {conversation.archived && (
+                                <InboxOutlined
+                                  className="text-[var(--color-text-tertiary)] text-xs"
+                                  aria-label="已归档"
+                                />
+                              )}
+                              <span className="truncate">{conversation.title}</span>
                             </div>
                           )}
                           <div className="text-xs text-[var(--color-text-tertiary)]">
@@ -263,6 +400,48 @@ export default function ConversationList({
             <EditOutlined />
             重命名
           </button>
+          {(() => {
+            const conv = conversations.find((c) => c.id === contextMenu.id);
+            if (!conv) return null;
+            return (
+              <>
+                <button
+                  onClick={() => {
+                    void patchConversation(conv.id, { pinned: !conv.pinned });
+                    setContextMenu(null);
+                  }}
+                  className="flex items-center gap-2 w-full px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-(--color-bg-tertiary)"
+                >
+                  <PushpinOutlined />
+                  {conv.pinned ? "取消置顶" : "置顶"}
+                </button>
+                <button
+                  onClick={() => {
+                    void patchConversation(conv.id, { archived: !conv.archived });
+                    setContextMenu(null);
+                  }}
+                  className="flex items-center gap-2 w-full px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-(--color-bg-tertiary)"
+                >
+                  <InboxOutlined />
+                  {conv.archived ? "取消归档" : "归档"}
+                </button>
+                <button
+                  onClick={() => handleExport(conv.id, "md")}
+                  className="flex items-center gap-2 w-full px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-(--color-bg-tertiary)"
+                >
+                  <DownloadOutlined />
+                  导出 Markdown
+                </button>
+                <button
+                  onClick={() => handleExport(conv.id, "json")}
+                  className="flex items-center gap-2 w-full px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-(--color-bg-tertiary)"
+                >
+                  <DownloadOutlined />
+                  导出 JSON
+                </button>
+              </>
+            );
+          })()}
           <button
             onClick={() => handleDeleteConversation(contextMenu.id)}
             className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"

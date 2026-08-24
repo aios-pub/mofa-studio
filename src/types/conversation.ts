@@ -70,6 +70,10 @@ export interface Conversation {
   totalTokens: number;
   createdAt: Date;
   updatedAt: Date;
+  /** CHAT-13: pinned conversations float to the top of the list. */
+  pinned?: boolean;
+  /** CHAT-13: archived conversations hide unless explicitly shown. */
+  archived?: boolean;
 }
 
 /** Conversation groups */

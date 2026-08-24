@@ -24,12 +24,13 @@ import {
   type NodeProps,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Button, message, Tag, Upload } from "antd";
+import { Button, Empty, message, Modal, Tag, Upload } from "antd";
 import {
   PlayCircleOutlined,
   DownloadOutlined,
   UploadOutlined,
   PlusOutlined,
+  AppstoreOutlined,
 } from "@ant-design/icons";
 import {
   NODE_LABELS,
@@ -42,6 +43,13 @@ import {
   type FlowNodeKind,
   type FlowNodeRunStatus,
 } from "@/services/api/flow";
+import {
+  BUILTIN_TEMPLATES,
+  dependencyHint,
+  missingDependencies,
+  type FlowTemplate,
+} from "@/services/api/flowTemplates";
+import { engineService, type EngineModel } from "@/services/api/engine";
 
 const STATUS_COLORS: Record<FlowNodeRunStatus, string> = {
   queued: "#8c8c8c",
@@ -125,7 +133,15 @@ export default function FlowCanvasPage() {
   const [running, setRunning] = useState(false);
   const [summary, setSummary] = useState<string>("");
   const [preview, setPreview] = useState<string[]>([]);
+  const [templateOpen, setTemplateOpen] = useState(false);
+  const [engineModels, setEngineModels] = useState<EngineModel[]>([]);
   const counterRef = useRef(0);
+
+  const openTemplates = useCallback(async () => {
+    setTemplateOpen(true);
+    // FLOW-07: dependency check against the live engine on open.
+    setEngineModels(await engineService.listModels());
+  }, []);
 
   const onNodesChange = useCallback(
     (changes: NodeChange<Node<CanvasNodeData>>[]) =>
@@ -251,6 +267,31 @@ export default function FlowCanvasPage() {
     URL.revokeObjectURL(url);
   }, [nodes, edges]);
 
+  const loadTemplate = useCallback(
+    (template: FlowTemplate) => {
+      setNodes(
+        template.graph.nodes.map((n, index) => ({
+          id: n.id,
+          type: "flow" as const,
+          selected: index === template.graph.nodes.length - 1,
+          position: { x: 120 + index * 60, y: 60 + index * 40 },
+          data: { kind: n.type, params: n.params },
+        })),
+      );
+      setEdges(
+        template.graph.edges.map((e) => ({
+          id: `e-${e.from}-${e.to}`,
+          source: e.from,
+          target: e.to,
+        })),
+      );
+      clearStatuses();
+      setTemplateOpen(false);
+      message.success(`已载入模板「${template.title}」`);
+    },
+    [clearStatuses],
+  );
+
   const importJson = useCallback(
     async (file: File) => {
       try {
@@ -322,6 +363,14 @@ export default function FlowCanvasPage() {
             aria-label="运行工作流"
           >
             运行
+          </Button>
+          <Button
+            block
+            icon={<AppstoreOutlined />}
+            onClick={() => void openTemplates()}
+            aria-label="模板市场"
+          >
+            模板市场
           </Button>
           <Button block icon={<DownloadOutlined />} onClick={exportJson} aria-label="导出 JSON">
             导出 JSON
@@ -422,6 +471,53 @@ export default function FlowCanvasPage() {
           <MiniMap />
         </ReactFlow>
       </div>
+
+      {/* FLOW-07: built-in templates with live dependency detection */}
+      <Modal
+        title="模板市场 · 官方内置"
+        open={templateOpen}
+        onCancel={() => setTemplateOpen(false)}
+        footer={null}
+        width={640}
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto">
+          {BUILTIN_TEMPLATES.length === 0 ? (
+            <Empty description="暂无模板" />
+          ) : (
+            BUILTIN_TEMPLATES.map((template) => {
+              const missing = missingDependencies(template, engineModels);
+              const hint = dependencyHint(missing);
+              return (
+                <button
+                  key={template.id}
+                  onClick={() => loadTemplate(template)}
+                  className="text-left p-3 rounded-xl border border-(--color-border) hover:border-[var(--color-primary)] hover:shadow transition-all"
+                  aria-label={`载入模板 ${template.title}`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-medium text-[var(--color-text-primary)]">
+                      {template.title}
+                    </span>
+                    <Tag>{template.category}</Tag>
+                  </div>
+                  <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+                    {template.description}
+                  </p>
+                  <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+                    {template.graph.nodes.length} 节点
+                    {missing.length === 0 ? (
+                      <span className="ml-2 text-green-500">依赖就绪</span>
+                    ) : (
+                      <span className="ml-2 text-amber-500">缺少依赖</span>
+                    )}
+                  </p>
+                  {hint && <p className="mt-1 text-xs text-amber-500">{hint}</p>}
+                </button>
+              );
+            })
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

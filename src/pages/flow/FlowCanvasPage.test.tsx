@@ -2,7 +2,7 @@
  * Smoke tests for the flow canvas (FLOW-01/02 UI): palette rendering,
  * node addition, run gating, and connection validation messaging.
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import FlowCanvasPage from "./FlowCanvasPage";
@@ -59,5 +59,26 @@ describe("FlowCanvasPage (FLOW UI)", () => {
     fireEvent.click(screen.getByLabelText("添加 图像生成 节点"));
     expect(screen.getByLabelText("尺寸选择")).toBeInTheDocument();
     expect(screen.getByDisplayValue("1024x1024")).toBeInTheDocument();
+  });
+});
+
+describe("FlowCanvas template market (FLOW-07)", () => {
+  it("opens the market and lists the ten built-in templates", async () => {
+    renderPage();
+    fireEvent.click(screen.getByLabelText("模板市场"));
+    const modal = await screen.findByText("模板市场 · 官方内置");
+    expect(modal).toBeInTheDocument();
+    expect(await screen.findByLabelText("载入模板 文生图 · 基础链路")).toBeInTheDocument();
+    // Dependency states render per template.
+    expect(screen.getAllByText("缺少依赖").length).toBeGreaterThan(0);
+  });
+
+  it("loading a template populates the canvas and enables run", async () => {
+    renderPage();
+    fireEvent.click(screen.getByLabelText("模板市场"));
+    fireEvent.click(await screen.findByLabelText("载入模板 文生图 · 基础链路"));
+    await waitFor(() =>
+      expect(screen.getByLabelText("运行工作流")).not.toBeDisabled(),
+    );
   });
 });

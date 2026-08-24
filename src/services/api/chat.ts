@@ -4,6 +4,7 @@
  */
 
 import { apiClient } from "../api/apiClient";
+import type { WebSource } from "@/types";
 
 // API configuration
 export interface APIConfig {
@@ -36,6 +37,8 @@ export interface ChatRequest {
   stream?: boolean;
   /** Extra provider params passed through the gateway (e.g. enable_thinking). */
   params?: Record<string, unknown>;
+  /** CHAT-03: ground the answer in web search results. */
+  webSearch?: boolean;
 }
 
 // Conversation response
@@ -44,6 +47,8 @@ export interface ChatResponse {
   content: string;
   /** Reasoning trace, when the model exposes one. */
   thinking?: string;
+  /** Web citations, when the answer was grounded (CHAT-03). */
+  sources?: WebSource[];
   tokens?: {
     input: number;
     output: number;
@@ -108,6 +113,7 @@ class ChatService {
       content: data.choices?.[0]?.message?.content ?? data.content ?? "",
       thinking:
         data.choices?.[0]?.message?.reasoning_content || undefined,
+      sources: (data as { web_sources?: WebSource[] }).web_sources ?? undefined,
       tokens: data.usage
         ? { input: data.usage.prompt_tokens ?? 0, output: data.usage.completion_tokens ?? 0 }
         : undefined,
@@ -123,6 +129,7 @@ class ChatService {
     onChunk: StreamCallback,
     signal?: AbortSignal,
     onThinking?: ThinkingCallback,
+    onSources?: (sources: WebSource[]) => void,
   ): Promise<ChatResponse> {
     const baseURL = apiClient.getBaseUrl?.() ?? "";
     const url = `${baseURL}/v1/chat/completions`;
@@ -135,6 +142,7 @@ class ChatService {
     if (request.temperature !== undefined) body.temperature = request.temperature;
     if (request.maxTokens !== undefined) body.max_tokens = request.maxTokens;
     if (request.params) body.params = request.params;
+    if (request.webSearch) body.web_search = true;
 
     const response = await fetch(url, {
       method: "POST",
@@ -152,6 +160,7 @@ class ChatService {
     const decoder = new TextDecoder();
     let fullContent = "";
     let thinkingContent = "";
+    let collectedSources: WebSource[] | undefined;
     let chatId = `chat-${Date.now()}`;
     let aborted = false;
     // SSE frames can split across network chunks; buffer partial lines so no
@@ -181,6 +190,12 @@ class ChatService {
       }
       if (parsed.error?.message) {
         throw new Error(parsed.error.message);
+      }
+      // Leading citation frame (CHAT-03): sources arrive before any delta.
+      if (Array.isArray((parsed as { web_sources?: WebSource[] }).web_sources)) {
+        collectedSources = (parsed as { web_sources: WebSource[] }).web_sources;
+        onSources?.(collectedSources);
+        return;
       }
       const streamDelta = parsed.choices?.[0]?.delta;
       const thinking = streamDelta?.reasoning_content ?? "";
@@ -228,6 +243,7 @@ class ChatService {
       id: chatId,
       content: fullContent,
       thinking: thinkingContent || undefined,
+      sources: collectedSources,
       finishReason: aborted ? "abort" : "stop",
     };
   }

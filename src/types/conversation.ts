@@ -25,6 +25,14 @@ export interface ThinkingProcess {
   duration?: number;
 }
 
+/** Web search citation (CHAT-03). */
+export interface WebSource {
+  index?: number;
+  title: string;
+  url: string;
+  snippet: string;
+}
+
 /** Message attachments */
 export interface MessageAttachment {
   id: string;
@@ -44,6 +52,7 @@ export interface Message {
   attachments?: MessageAttachment[];
   status: MessageStatus;
   thinking?: ThinkingProcess;
+  sources?: WebSource[];
   toolCalls?: ToolCall[];
   tokens?: {
     input: number;

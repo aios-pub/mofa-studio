@@ -20,6 +20,7 @@ import {
   BulbOutlined,
   EditOutlined,
   ForkOutlined,
+  GlobalOutlined,
 } from "@ant-design/icons";
 import {
   Select,
@@ -73,6 +74,9 @@ interface ChatContainerProps {
   /** Deep-thinking mode: ask reasoning-capable models for a thinking trace. */
   deepThinking?: boolean;
   onDeepThinkingChange?: (enabled: boolean) => void;
+  /** CHAT-03: ground answers in web search with citations. */
+  webSearch?: boolean;
+  onWebSearchChange?: (enabled: boolean) => void;
   /** CHAT-10: regenerate one assistant reply in place. */
   onRegenerate?: (assistantMessageId: string) => void;
   /** CHAT-10: edit a user message and resend from that point. */
@@ -94,6 +98,8 @@ export default function ChatContainer({
   onStopGeneration,
   deepThinking = false,
   onDeepThinkingChange,
+  webSearch = false,
+  onWebSearchChange,
   onRegenerate,
   onEditResend,
   onBranch,
@@ -601,6 +607,22 @@ export default function ChatContainer({
             </div>
           )}
 
+          {onWebSearchChange && (
+            <button
+              onClick={() => onWebSearchChange(!webSearch)}
+              className={`px-3 py-2 border rounded-lg transition-colors flex items-center gap-1 text-sm ${
+                webSearch
+                  ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)]"
+                  : "bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-(--color-border) hover:text-[var(--color-text-primary)]"
+              }`}
+              title="联网搜索：先检索再作答，回答附带可点击引用"
+              aria-pressed={webSearch}
+            >
+              <GlobalOutlined />
+              <span className="hidden md:inline">联网</span>
+            </button>
+          )}
+
           {onDeepThinkingChange && (
             <button
               onClick={() => onDeepThinkingChange(!deepThinking)}
@@ -907,6 +929,33 @@ function MessageItem({
             />
           )}
         </div>
+
+        {/* CHAT-03: citation list */}
+        {message.sources && message.sources.length > 0 && (
+          <div className="mt-2 p-2 rounded-lg bg-(--color-bg-tertiary) space-y-1">
+            <p className="text-xs font-medium text-[var(--color-text-secondary)]">
+              参考来源（{message.sources.length}）
+            </p>
+            <ol className="space-y-0.5">
+              {message.sources.map((source, index) => (
+                <li key={`${source.url}-${index}`} className="text-xs">
+                  <span className="text-[var(--color-text-tertiary)]">
+                    [{source.index ?? index + 1}]
+                  </span>{" "}
+                  <a
+                    href={source.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[var(--color-primary)] hover:underline"
+                    title={source.snippet}
+                  >
+                    {source.title || source.url}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
 
         {/* Tool call */}
         {message.toolCalls && message.toolCalls.length > 0 && (

@@ -24,7 +24,7 @@ use serde_json::{json, Value};
 use tokio_stream::wrappers::ReceiverStream;
 use tokio_stream::StreamExt;
 
-use crate::{spans, AppState};
+use crate::{search, spans, AppState};
 
 /// Loopback address the stock mofa-engine binary listens on.
 pub(crate) const DEFAULT_ENGINE_URL: &str = "http://127.0.0.1:8420";
@@ -91,11 +91,62 @@ async fn chat_completions(State(state): State<Arc<AppState>>, Json(body): Json<V
     }
     engine_req["params"] = params;
 
+    // CHAT-03 web search: run retrieval first, ground the prompt, and pass
+    // sources through to the UI as citations.
+    let web_search = body.get("web_search").and_then(Value::as_bool).unwrap_or(false);
+    let mut web_sources: Vec<Value> = Vec::new();
+    if web_search {
+        let query = messages
+            .iter()
+            .rev()
+            .find(|m| m.get("role").and_then(Value::as_str) == Some("user"))
+            .and_then(|m| m.get("content").and_then(Value::as_str))
+            .unwrap_or_default()
+            .to_string();
+        match search::run_search(&state, &query, 5).await {
+            Ok(results) if !results.is_empty() => {
+                let numbered: Vec<String> = results
+                    .iter()
+                    .enumerate()
+                    .map(|(index, r)| {
+                        format!("[{}] {} — {}\n{}", index + 1, r.title, r.url, r.snippet)
+                    })
+                    .collect();
+                let grounding = format!(
+                    "以下是联网检索到的参考资料（引用序号与来源列表对应）。回答时优先依据这些资料，并在句末用 [序号] 标注引用：\n\n{}",
+                    numbered.join("\n\n"),
+                );
+                // Prepend as the first system message.
+                let mut grounded = vec![json!({ "role": "system", "content": grounding, "images": [] })];
+                grounded.extend(messages.clone());
+                engine_req["messages"] = Value::Array(grounded);
+                web_sources = results
+                    .iter()
+                    .enumerate()
+                    .map(|(index, r)| {
+                        json!({
+                            "index": index + 1,
+                            "title": r.title,
+                            "url": r.url,
+                            "snippet": r.snippet,
+                        })
+                    })
+                    .collect();
+            }
+            Ok(_) => {}
+            Err(_msg) => {
+                // Unconfigured/failed search surfaces as an in-band note; the
+                // chat itself still answers without grounding.
+                web_sources = vec![json!({ "error": "search_unavailable" })];
+            }
+        }
+    }
+
     let stream = body.get("stream").and_then(Value::as_bool).unwrap_or(false);
     if stream {
-        chat_completions_stream(state, engine_req).await
+        chat_completions_stream(state, engine_req, web_sources).await
     } else {
-        chat_completions_blocking(state, engine_req).await
+        chat_completions_blocking(state, engine_req, web_sources).await
     }
 }
 
@@ -152,7 +203,11 @@ fn extract_messages(body: &Value) -> Result<Vec<Value>, String> {
 
 /// Non-streaming path: one engine `invoke`, wrapped into a single OpenAI
 /// completion object.
-async fn chat_completions_blocking(state: Arc<AppState>, engine_req: Value) -> Response {
+async fn chat_completions_blocking(
+    state: Arc<AppState>,
+    engine_req: Value,
+    web_sources: Vec<Value>,
+) -> Response {
     let url = format!("{}/v1/invoke", state.engine_base_url);
     let upstream = match state.http.post(&url).json(&engine_req).send().await {
         Ok(resp) => resp,
@@ -241,13 +296,19 @@ async fn chat_completions_blocking(state: Arc<AppState>, engine_req: Value) -> R
         // served the request and whether routing fell back.
         "provider": payload.get("provider").cloned().unwrap_or(Value::Null),
         "fallback_used": payload.get("fallback_used").and_then(Value::as_bool).unwrap_or(false),
+        // CHAT-03 citations for web-grounded answers.
+        "web_sources": if web_sources.is_empty() { Value::Null } else { Value::Array(web_sources) },
     }))
     .into_response()
 }
 
 /// Streaming path: relay the engine SSE stream, translating each
 /// `StreamChunk` into an OpenAI `chat.completion.chunk` frame.
-async fn chat_completions_stream(state: Arc<AppState>, engine_req: Value) -> Response {
+async fn chat_completions_stream(
+    state: Arc<AppState>,
+    engine_req: Value,
+    web_sources: Vec<Value>,
+) -> Response {
     let url = format!("{}/v1/invoke/stream", state.engine_base_url);
     let upstream = match state.http.post(&url).json(&engine_req).send().await {
         Ok(resp) => resp,
@@ -271,7 +332,19 @@ async fn chat_completions_stream(state: Arc<AppState>, engine_req: Value) -> Res
     // PLAT-15: one span per streamed call, recorded when the relay ends.
     let span_state = state.clone();
 
+    // Leading frame carries the citation list before any text delta.
+    let leading_frame = if web_sources.is_empty() {
+        None
+    } else {
+        Some(
+            sse_frame(json!({ "web_sources": web_sources })),
+        )
+    };
+
     tokio::spawn(async move {
+        if let Some(frame) = leading_frame {
+            let _ = tx.send(Ok(frame)).await;
+        }
         let mut upstream_stream = Box::pin(upstream.bytes_stream());
         // Partial-line carry: SSE frames may split across network chunks,
         // and splitting at `\n` is UTF-8 safe (0x0A never appears inside a

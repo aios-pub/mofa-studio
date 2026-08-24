@@ -15,6 +15,7 @@
 pub mod auth;
 pub mod collections;
 pub mod flow_routes;
+pub mod search;
 pub mod llm_gateway;
 pub mod routes;
 pub mod spans;
@@ -141,6 +142,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         .merge(routes::extras_routes())
         .merge(llm_gateway::llm_routes())
         .merge(flow_routes::flow_routes())
+        .merge(search::search_routes())
         .merge(auth::auth_routes())
         .merge(collections::collection_routes())
         .fallback(not_implemented)

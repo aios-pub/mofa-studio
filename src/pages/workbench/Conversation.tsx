@@ -251,6 +251,9 @@ export default function ConversationPage() {
               };
             });
           },
+          (sources) => {
+            patchAssistant({ sources });
+          },
         );
 
         patchAssistant({

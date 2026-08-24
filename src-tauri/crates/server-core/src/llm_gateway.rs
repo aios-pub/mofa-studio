@@ -42,6 +42,7 @@ pub(crate) fn resolve_engine_url(configured: Option<String>) -> String {
 pub(crate) fn llm_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/v1/chat/completions", post(chat_completions))
+        .route("/v1/images/generations", post(image_generations))
         .route("/v1/models", get(list_models))
         .route("/v1/engine/health", get(engine_health))
 }
@@ -448,6 +449,112 @@ async fn engine_health(State(state): State<Arc<AppState>>) -> Response {
         }))
         .into_response(),
     }
+}
+
+/// POST /v1/images/generations — OpenAI image API over the engine's
+/// `image_gen` capability. The engine writes artifacts to its output dir
+/// and reports paths (`files`); the gateway reads them off the shared host
+/// and returns base64 payloads in the OpenAI shape.
+async fn image_generations(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> Response {
+    let Some(prompt) = body.get("prompt").and_then(Value::as_str) else {
+        return openai_error(StatusCode::BAD_REQUEST, "field `prompt` is required");
+    };
+
+    let mut engine_req = json!({
+        "capability": "image_gen",
+        "messages": [{ "role": "user", "content": prompt }],
+    });
+    if let Some(model) = body.get("model").and_then(Value::as_str) {
+        engine_req["model"] = json!(model);
+    }
+    let mut params = json!({});
+    if let Some(n) = body.get("n").and_then(Value::as_u64) {
+        params["n"] = json!(n);
+    }
+    if let Some(size) = body.get("size").and_then(Value::as_str) {
+        params["size"] = json!(size);
+    }
+    engine_req["params"] = params;
+
+    let url = format!("{}/v1/invoke", state.engine_base_url);
+    let upstream = match state.http.post(&url).json(&engine_req).send().await {
+        Ok(resp) => resp,
+        Err(e) => return engine_unreachable(&state.engine_base_url, &e),
+    };
+    let status = upstream.status();
+    let payload: Value = match upstream.json().await {
+        Ok(v) => v,
+        Err(e) => {
+            return openai_error(
+                StatusCode::BAD_GATEWAY,
+                &format!("invalid engine response: {e}"),
+            )
+        }
+    };
+    if !status.is_success() {
+        let msg = payload
+            .pointer("/error/message")
+            .or_else(|| payload.get("message"))
+            .and_then(Value::as_str)
+            .unwrap_or("engine rejected the request")
+            .to_string();
+        return openai_error(map_engine_status(status), &msg);
+    }
+
+    // Prefer the full artifact list; fall back to the single `file` mirror.
+    let files: Vec<String> = payload
+        .get("files")
+        .and_then(Value::as_array)
+        .map(|a| {
+            a.iter()
+                .filter_map(Value::as_str)
+                .map(str::to_string)
+                .collect()
+        })
+        .filter(|v: &Vec<String>| !v.is_empty())
+        .unwrap_or_else(|| {
+            payload
+                .get("file")
+                .and_then(Value::as_str)
+                .map(|f| vec![f.to_string()])
+                .unwrap_or_default()
+        });
+
+    let mut data = Vec::with_capacity(files.len());
+    for path in &files {
+        match tokio::fs::read(path).await {
+            Ok(bytes) => {
+                use base64::Engine as _;
+                data.push(json!({
+                    "b64_json": base64::engine::general_purpose::STANDARD.encode(&bytes),
+                }));
+            }
+            Err(e) => {
+                return openai_error(
+                    StatusCode::BAD_GATEWAY,
+                    &format!(
+                        "engine artifact is not readable from the gateway host ({path}: {e}); \
+                         is mofa-engine running on this machine?"
+                    ),
+                );
+            }
+        }
+    }
+    if data.is_empty() {
+        return openai_error(
+            StatusCode::BAD_GATEWAY,
+            "engine returned no image artifacts",
+        );
+    }
+
+    Json(json!({
+        "created": chrono::Utc::now().timestamp(),
+        "data": data,
+        // Engine metadata beyond the OpenAI contract.
+        "model_used": payload.get("model_used").cloned().unwrap_or(Value::Null),
+        "provider": payload.get("provider").cloned().unwrap_or(Value::Null),
+    }))
+    .into_response()
 }
 
 // ==================== Error helpers ====================

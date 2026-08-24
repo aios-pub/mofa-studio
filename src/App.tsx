@@ -27,6 +27,7 @@ import WorkflowListPage from './pages/workflow/WorkflowList';
 import WorkflowEditorPage from './pages/workflow/WorkflowEditor';
 import KnowledgeBaseListPage from './pages/knowledge/KnowledgeBaseList';
 import { InteractiveDocs } from './pages/docs/InteractiveDocs';
+import ImageGenPage from './pages/creation/ImageGenPage';
 import { ThemeProvider } from './theme';
 import { useFloatingBridge } from './tauri/useFloatingBridge';
 
@@ -47,6 +48,9 @@ function App() {
             <RouteGuard>
               <MainLayout>
                 <Routes>
+                  {/* Creation toolbox (创作工坊) */}
+                  <Route path="/creation/image-gen" element={<ImageGenPage />} />
+
                   {/* Workbench */}
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/conversation" element={<Conversation />} />

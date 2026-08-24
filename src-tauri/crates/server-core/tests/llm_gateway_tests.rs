@@ -16,6 +16,7 @@ use axum::routing::{get, post};
 use axum::Router;
 use serde_json::{json, Value};
 use tower::ServiceExt;
+use uuid;
 
 use server_core::ServerConfig;
 
@@ -25,6 +26,10 @@ use server_core::ServerConfig;
 const MOCK_TEXT: &str = "hello from mock engine";
 
 async fn mock_invoke(Json(req): Json<Value>) -> Response {
+    // Image-gen requests get artifact paths on disk; chat keeps the echo.
+    if req["capability"] == "image_gen" {
+        return mock_invoke_image_gen(Json(req)).await;
+    }
     // Echo back what the gateway forwarded so tests can assert the mapping.
     assert_eq!(
         req["capability"], "chat",
@@ -43,6 +48,43 @@ async fn mock_invoke(Json(req): Json<Value>) -> Response {
         "duration_ms": 7,
         "request_id": "req-42",
         "tokens_used": 12,
+        "fallback_used": false,
+        "routing_reason": "capability_default",
+    }))
+    .into_response()
+}
+
+/// Mock engine image_gen: writes PNG artifacts to a temp dir (like the real
+/// engine's output dir) and reports them in `files`.
+async fn mock_invoke_image_gen(Json(req): Json<Value>) -> Response {
+    assert!(
+        req["messages"][0]["content"].as_str().is_some_and(|p| !p.is_empty()),
+        "gateway must forward the prompt as message content"
+    );
+    let n = req["params"]["n"].as_u64().unwrap_or(1) as usize;
+    let dir = std::env::temp_dir().join("mofa-gateway-img-test");
+    let _ = std::fs::create_dir_all(&dir);
+    // 1x1 PNG: header + IHDR chunk of a red pixel.
+    let png: &[u8] = &[
+        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49,
+        0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02,
+        0x00, 0x00, 0x00, 0x90, 0x77, 0x53, 0xDE,
+    ];
+    let mut files: Vec<String> = Vec::new();
+    for i in 0..n.max(1) {
+        let path = dir.join(format!("mock_img_{i}_{}.png", uuid::Uuid::new_v4()));
+        std::fs::write(&path, png).expect("write artifact");
+        files.push(path.to_string_lossy().to_string());
+    }
+    Json(json!({
+        "text": null,
+        "file": files[0],
+        "files": files,
+        "model_used": "mock/mock-image",
+        "provider": "mock",
+        "duration_ms": 12,
+        "request_id": "req-img",
+        "tokens_used": null,
         "fallback_used": false,
         "routing_reason": "capability_default",
     }))
@@ -299,4 +341,66 @@ async fn invalid_body_without_messages_is_rejected() {
         .as_str()
         .unwrap()
         .contains("messages"));
+}
+
+#[tokio::test]
+async fn image_generations_returns_b64_artifacts() {
+    let engine = spawn_mock_engine().await;
+    let app = gateway_router(engine, "images");
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/v1/images/generations")
+                .header("content-type", "application/json")
+                .body(Body::from(
+                    json!({
+                        "prompt": "一只橘猫",
+                        "model": "mock/mock-image",
+                        "n": 2,
+                        "size": "1024x1024",
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = body_json(response).await;
+    let data = body["data"].as_array().expect("data array");
+    assert_eq!(data.len(), 2, "n=2 artifacts come back");
+    assert_eq!(body["model_used"], "mock/mock-image");
+
+    // b64 round-trip preserves the PNG magic.
+    use base64::Engine as _;
+    for item in data {
+        let b64 = item["b64_json"].as_str().expect("b64_json");
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(b64)
+            .expect("valid base64");
+        assert_eq!(&bytes[..4], &[0x89, 0x50, 0x4E, 0x47]);
+    }
+}
+
+#[tokio::test]
+async fn image_generations_requires_prompt() {
+    let engine = spawn_mock_engine().await;
+    let app = gateway_router(engine, "images-400");
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/v1/images/generations")
+                .header("content-type", "application/json")
+                .body(Body::from(json!({ "n": 1 }).to_string()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    let body = body_json(response).await;
+    assert!(body["error"]["message"].as_str().unwrap().contains("prompt"));
 }

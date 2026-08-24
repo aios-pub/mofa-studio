@@ -31,7 +31,8 @@ import {
   SettingOutlined,
   LinkOutlined,
   BranchesOutlined,
-  DatabaseOutlined,
+  DatabaseOutlined,,
+  PictureOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { useAppStore, useSettings } from "../../stores";
@@ -60,6 +61,11 @@ const menuItems: MenuProps["items"] = [
     key: "/conversation",
     icon: <MessageOutlined />,
     label: "对话",
+  },
+  {
+    key: "/creation/image-gen",
+    icon: <PictureOutlined />,
+    label: "图像生成",
   },
   { type: "divider" },
   {

@@ -50,6 +50,8 @@ import {
   type FlowTemplate,
 } from "@/services/api/flowTemplates";
 import { useSearchParams } from "react-router-dom";
+import { flowAppService } from "@/services/api/flowApp";
+import { validateApp } from "@/services/api/flowApp";
 import { engineService, type EngineModel } from "@/services/api/engine";
 
 const STATUS_COLORS: Record<FlowNodeRunStatus, string> = {
@@ -389,6 +391,42 @@ export default function FlowCanvasPage() {
             aria-label="模板市场"
           >
             模板市场
+          </Button>
+          <Button
+            block
+            onClick={() => {
+              const graph = canvasToGraph(nodes, edges);
+              const inputs = nodes
+                .filter((n) => n.data.kind === "prompt_text")
+                .map((n) => ({
+                  nodeId: n.id,
+                  label:
+                    String(n.data.params.text ?? "").slice(0, 12) || "输入",
+                  placeholder: String(n.data.params.text ?? ""),
+                }));
+              const validation = validateApp(graph, inputs);
+              if (!validation.ok) {
+                message.warning(validation.reason);
+                return;
+              }
+              void flowAppService
+                .publish({
+                  name: prompt("应用名称：") || "未命名应用",
+                  description: "从工作流画布发布",
+                  graph,
+                  inputs,
+                })
+                .then((app) => {
+                  if (app) {
+                    message.success(`已发布「${app.name}」——在「应用」页可用`);
+                  } else {
+                    message.error("发布失败");
+                  }
+                });
+            }}
+            aria-label="发布为应用"
+          >
+            发布为应用
           </Button>
           <Button block icon={<DownloadOutlined />} onClick={exportJson} aria-label="导出 JSON">
             导出 JSON

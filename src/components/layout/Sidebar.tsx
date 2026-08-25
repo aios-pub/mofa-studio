@@ -36,6 +36,7 @@ import {
   ProjectOutlined,
   CrownOutlined,
   FileDoneOutlined,
+  AppstoreOutlined,
   PictureOutlined,
   BulbOutlined,
   HistoryOutlined,
@@ -168,6 +169,11 @@ const coreMenuItems: MenuProps["items"] = [
     key: "/flow",
     icon: <ApartmentOutlined />,
     label: "工作流画布",
+  },
+  {
+    key: "/apps",
+    icon: <AppstoreOutlined />,
+    label: "应用",
   },
   {
     key: "/usage",

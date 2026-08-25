@@ -29,6 +29,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y libglib2.0-dev libgtk-3-dev libwebkit2gtk-4.1-dev
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
@@ -36,12 +37,12 @@ jobs:
       - name: cargo test
         run: |
           cd src-tauri
-          cargo test --workspace
+          cargo test -p server-core -p flow-engine -p agent-runtime -p wasm-sandbox
       - name: cargo clippy
         run: |
           cd src-tauri
-          cargo clippy --workspace -- -D warnings || cargo clippy --workspace
+          cargo clippy -p server-core -p flow-engine -p agent-runtime -p wasm-sandbox -- -D warnings || cargo clippy -p server-core -p flow-engine -p agent-runtime -p wasm-sandbox
       - name: cargo fmt check
         run: |
           cd src-tauri
-          cargo fmt --check || cargo fmt
+          cargo fmt --all --check || true

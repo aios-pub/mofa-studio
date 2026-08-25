@@ -43,6 +43,7 @@ import ResearchPage from './pages/creation/ResearchPage';
 import StoragePage from './pages/system/StoragePage';
 import ModelCenterPage from './pages/system/ModelCenterPage';
 import ExpertsPage from './pages/experts/ExpertsPage';
+import ConnectorsPage from './pages/connectors/ConnectorsPage';
 import MemoryPage from './pages/system/MemoryPage';
 import ProjectsPage from './pages/task/ProjectsPage';
 import DeliverablesPage from './pages/task/DeliverablesPage';
@@ -84,6 +85,7 @@ function App() {
                   <Route path="/creation/transcription" element={<TranscriptionPage />} />
                   <Route path="/creation/podcast" element={<PodcastPage />} />
                   <Route path="/experts" element={<ExpertsPage />} />
+                  <Route path="/connectors" element={<ConnectorsPage />} />
                   <Route path="/models" element={<ModelCenterPage />} />
                   <Route path="/storage" element={<StoragePage />} />
                   <Route path="/memory" element={<MemoryPage />} />

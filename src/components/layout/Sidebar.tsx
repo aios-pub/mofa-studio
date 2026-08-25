@@ -203,6 +203,11 @@ const coreMenuItems: MenuProps["items"] = [
     icon: <TeamOutlined />,
     label: "专家",
   },
+  {
+    key: "/connectors",
+    icon: <ApiOutlined />,
+    label: "连接器",
+  },
   { type: "divider" },
   {
     key: "/management/providers",

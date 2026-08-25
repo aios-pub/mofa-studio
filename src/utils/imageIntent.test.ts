@@ -54,7 +54,10 @@ describe("detectImageIntent", () => {
       kind: "image",
       edit: true,
     });
-    expect(detectImageIntent("重新画一版", true).edit).toBe(true);
+    // Narrow the union before reading `edit` (tsc can't narrow a direct call).
+    const followUp = detectImageIntent("重新画一版", true);
+    expect(followUp.kind).toBe("image");
+    expect(followUp.kind === "image" && followUp.edit).toBe(true);
   });
 
   it("empty text is chat", () => {

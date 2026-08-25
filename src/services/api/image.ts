@@ -41,6 +41,31 @@ export interface ImageGenHistoryEntry {
   size: string;
   created_at: string;
   images: string[]; // data URLs
+  /** Which of the three TOOL-01 modes produced this entry. */
+  mode?: ImageMode;
+  /** Reference image data URLs (垫图/局部重绘 keep the inputs for re-runs). */
+  refs?: string[];
+  /** 局部重绘 only: the base image the mask was painted on. */
+  baseImage?: string;
+}
+
+/** TOOL-01's three modes. */
+export type ImageMode = "t2i" | "i2i" | "inpaint";
+
+export interface ImageEditRequest {
+  prompt: string;
+  /** First entry is the edited base; extras are consistency anchors. */
+  images: Blob[];
+  /** Mask PNG blob — transparent areas mark the repaint region. */
+  mask?: Blob;
+  model?: string;
+  size?: string;
+  n?: number;
+}
+
+export interface ImageEditResponse extends ImageGenResponse {
+  /** Gateway signal: a mask was supplied (局部重绘) vs whole-image (垫图). */
+  masked?: boolean;
 }
 
 class ImageService {
@@ -55,6 +80,29 @@ class ImageService {
       "/v1/images/generations",
       body,
     );
+    const images = (data.data ?? []).map((item) => `data:image/png;base64,${item.b64_json}`);
+    return { ...data, images };
+  }
+
+  /**
+   * Edit images (TOOL-01 垫图/局部重绘) over /v1/images/edits: multipart
+   * with every reference plus an optional mask, returning data-URLs the
+   * same shape as generate().
+   */
+  async edit(
+    request: ImageEditRequest,
+  ): Promise<ImageEditResponse & { images: string[] }> {
+    const form = new FormData();
+    request.images.forEach((blob, index) => {
+      form.append("image", blob, index === 0 ? "input.png" : `reference-${index}.png`);
+    });
+    if (request.mask) form.append("mask", request.mask, "mask.png");
+    form.append("prompt", request.prompt);
+    if (request.model) form.append("model", request.model);
+    if (request.size) form.append("size", request.size);
+    if (request.n !== undefined) form.append("n", String(request.n));
+
+    const data = await apiClient.post<ImageEditResponse>("/v1/images/edits", form);
     const images = (data.data ?? []).map((item) => `data:image/png;base64,${item.b64_json}`);
     return { ...data, images };
   }

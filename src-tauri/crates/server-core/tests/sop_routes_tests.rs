@@ -2,7 +2,6 @@
  * Integration tests for SOP templates (TASK-20): create via the generic
  * collection + trigger binding (转自动化流水线).
  */
-
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use axum::response::Response;
@@ -74,13 +73,20 @@ async fn create_then_bind_cron_trigger() {
 
     // The generic list reads the same doc.
     let response = app
-        .oneshot(Request::builder().uri("/api/sop/list").body(Body::empty()).unwrap())
+        .oneshot(
+            Request::builder()
+                .uri("/api/sop/list")
+                .body(Body::empty())
+                .unwrap(),
+        )
         .await
         .unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     let listed = body_json(response).await;
     let items = listed["data"].as_array().unwrap();
-    assert!(items.iter().any(|s| s["id"].as_str() == Some(sop_id.as_str())));
+    assert!(items
+        .iter()
+        .any(|s| s["id"].as_str() == Some(sop_id.as_str())));
 }
 
 #[tokio::test]

@@ -2,7 +2,6 @@
  * SOP template routes (TASK-20): templates live in the generic `sop`
  * collection; trigger binding updates the stored doc (转自动化流水线).
  */
-
 use std::sync::Arc;
 
 use axum::extract::{Path, State};
@@ -16,7 +15,11 @@ use crate::{err_msg, ok_data, AppState};
 
 /// POST /api/sop/create — save a packed template.
 async fn create(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> Response {
-    let name = body.get("name").and_then(Value::as_str).unwrap_or("").trim();
+    let name = body
+        .get("name")
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .trim();
     let steps = body.get("steps").and_then(Value::as_array);
     if name.is_empty() || steps.is_none_or(|s| s.is_empty()) {
         return err_msg(StatusCode::BAD_REQUEST, "name 与 steps（至少一步）必填");
@@ -54,7 +57,10 @@ async fn bind_trigger(
     } else {
         json!({ "kind": "manual" })
     };
-    match state.store.update("sop", &id, &json!({ "trigger": trigger })) {
+    match state
+        .store
+        .update("sop", &id, &json!({ "trigger": trigger }))
+    {
         Some(updated) => ok_data(updated),
         None => err_msg(StatusCode::NOT_FOUND, "SOP 模板不存在"),
     }

@@ -161,6 +161,11 @@ const coreMenuItems: MenuProps["items"] = [
     icon: <LineChartOutlined />,
     label: "用量与日志",
   },
+  {
+    key: "/storage",
+    icon: <DatabaseOutlined />,
+    label: "存储管理",
+  },
   { type: "divider" },
   {
     key: "/management/providers",

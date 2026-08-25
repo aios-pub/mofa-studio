@@ -40,6 +40,7 @@ import PptGenPage from './pages/creation/PptGenPage';
 import SheetsPage from './pages/creation/SheetsPage';
 import MediaPage from './pages/creation/MediaPage';
 import ResearchPage from './pages/creation/ResearchPage';
+import StoragePage from './pages/system/StoragePage';
 import TranscriptionPage from './pages/creation/TranscriptionPage';
 import PodcastPage from './pages/creation/PodcastPage';
 import { ThemeProvider } from './theme';
@@ -76,6 +77,7 @@ function App() {
                   <Route path="/creation/research" element={<ResearchPage />} />
                   <Route path="/creation/transcription" element={<TranscriptionPage />} />
                   <Route path="/creation/podcast" element={<PodcastPage />} />
+                  <Route path="/storage" element={<StoragePage />} />
                   <Route path="/gallery" element={<GalleryPage />} />
                   <Route path="/flow" element={<FlowCanvasPage />} />
                   <Route path="/usage" element={<UsagePage />} />

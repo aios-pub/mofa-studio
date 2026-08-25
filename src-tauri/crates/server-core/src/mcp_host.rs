@@ -345,7 +345,12 @@ mod tests {
         }
         // The mock reads a line, replies by method name; two calls per
         // list_tools/call_tool plus the initialize handshake.
-        let script = "read -r line\nprintf '{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{}}}\\n'\nprintf '{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"echo\",\"description\":\"回声\"}]}}\\n'\nprintf '{\"jsonrpc\":\"2.0\",\"id\":3,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"工具结果\"}],\"isError\":false}}\\n'\n";
+        // Emit all responses up front: the session reads them in order
+        // after each request write. Consuming stdin line-by-line breaks on
+        // Linux (broken pipe when the script exits after one read).
+        let script = "printf '%s' '{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{}}}\n' \
+'{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"echo\",\"description\":\"回声\"}]}}\n' \
+'{\"jsonrpc\":\"2.0\",\"id\":3,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"工具结果\"}],\"isError\":false}}\n'\nsleep 30\n";
         let config = McpServerConfig {
             id: "test".into(),
             name: "mock".into(),

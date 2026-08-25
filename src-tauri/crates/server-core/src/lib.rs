@@ -12,6 +12,7 @@
  * - Local session: login always succeeds with the on-device user, so the
  *   app opens straight to the workbench without a login screen
  */
+pub mod audio_routes;
 pub mod auth;
 pub mod collections;
 pub mod flow_routes;
@@ -153,6 +154,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         .merge(search::search_routes())
         .merge(video_routes::video_routes())
         .merge(media::media_routes())
+        .merge(audio_routes::audio_routes())
         .merge(auth::auth_routes())
         .merge(collections::collection_routes())
         .fallback(not_implemented)

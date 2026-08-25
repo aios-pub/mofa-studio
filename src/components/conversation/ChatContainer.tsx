@@ -21,6 +21,8 @@ import {
   EditOutlined,
   ForkOutlined,
   GlobalOutlined,
+  AudioOutlined,
+  SoundOutlined,
 } from "@ant-design/icons";
 import {
   Select,
@@ -44,6 +46,7 @@ import {
   loadCommands,
   type SlashCommand,
 } from "@/utils/slashCommands";
+import { audioService, recordingSupported } from "@/services/api/audio";
 import type {
   Message,
   Conversation,
@@ -77,6 +80,9 @@ interface ChatContainerProps {
   /** CHAT-03: ground answers in web search with citations. */
   webSearch?: boolean;
   onWebSearchChange?: (enabled: boolean) => void;
+  /** CHAT-08: auto-speak completed assistant replies. */
+  ttsEnabled?: boolean;
+  onTtsEnabledChange?: (enabled: boolean) => void;
   /** CHAT-10: regenerate one assistant reply in place. */
   onRegenerate?: (assistantMessageId: string) => void;
   /** CHAT-10: edit a user message and resend from that point. */
@@ -100,12 +106,20 @@ export default function ChatContainer({
   onDeepThinkingChange,
   webSearch = false,
   onWebSearchChange,
+  ttsEnabled = false,
+  onTtsEnabledChange,
   onRegenerate,
   onEditResend,
   onBranch,
 }: ChatContainerProps) {
   const [input, setInput] = useState("");
   const [slashCommands, setSlashCommands] = useState<SlashCommand[]>([]);
+  // CHAT-08: hold-to-talk recording state.
+  const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const micSupported = recordingSupported();
   const [slotCommand, setSlotCommand] = useState<SlashCommand | null>(null);
   const [slotValues, setSlotValues] = useState<Record<string, string>>({});
   const [attachments, setAttachments] = useState<MessageAttachment[]>([]);
@@ -201,6 +215,55 @@ export default function ChatContainer({
   const handleRemoveFile = (file: UploadFile) => {
     setFileList((prev) => prev.filter((f) => f.uid !== file.uid));
     setAttachments((prev) => prev.filter((a) => a.id !== file.uid));
+  };
+
+  // CHAT-08: hold-to-talk — press to record, release to transcribe.
+  const startRecording = async () => {
+    if (!micSupported || recording || transcribing) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      chunksRef.current = [];
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunksRef.current.push(event.data);
+      };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((track) => track.stop());
+      };
+      recorder.start();
+      recorderRef.current = recorder;
+      setRecording(true);
+    } catch (error) {
+      message.warning("无法访问麦克风，请检查系统权限");
+      console.error(error);
+    }
+  };
+
+  const stopRecording = async () => {
+    const recorder = recorderRef.current;
+    if (!recorder || !recording) return;
+    setRecording(false);
+    await new Promise<void>((resolve) => {
+      recorder.onstop = () => resolve();
+      recorder.stop();
+    });
+    recorderRef.current = null;
+    const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+    if (blob.size === 0) return;
+    setTranscribing(true);
+    try {
+      const text = await audioService.transcribe(blob);
+      if (text) {
+        setInput((prev) => (prev ? `${prev} ${text}` : text));
+      } else {
+        message.info("没有识别到语音内容");
+      }
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      message.error(`语音识别失败：${detail}`);
+    } finally {
+      setTranscribing(false);
+    }
   };
 
   // CHAT-09: slash palette appears when the input starts with "/"
@@ -605,6 +668,48 @@ export default function ChatContainer({
                 ))
               )}
             </div>
+          )}
+
+          {micSupported && (
+            <button
+              onMouseDown={startRecording}
+              onMouseUp={stopRecording}
+              onMouseLeave={() => recording && void stopRecording()}
+              onTouchStart={(e) => {
+                e.preventDefault();
+                void startRecording();
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                void stopRecording();
+              }}
+              disabled={transcribing}
+              className={`px-3 py-2 border rounded-lg transition-colors flex items-center gap-1 text-sm ${
+                recording
+                  ? "bg-red-500 text-white border-red-500 animate-pulse"
+                  : "bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-(--color-border) hover:text-[var(--color-text-primary)]"
+              } disabled:opacity-40`}
+              title={recording ? "松开发送识别" : "按住说话（语音输入）"}
+              aria-label={recording ? "正在录音" : "按住说话"}
+            >
+              <AudioOutlined />
+              {recording && <span className="text-xs">松手识别</span>}
+            </button>
+          )}
+          {onTtsEnabledChange && (
+            <button
+              onClick={() => onTtsEnabledChange(!ttsEnabled)}
+              className={`px-3 py-2 border rounded-lg transition-colors flex items-center gap-1 text-sm ${
+                ttsEnabled
+                  ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)]"
+                  : "bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-(--color-border) hover:text-[var(--color-text-primary)]"
+              }`}
+              title="自动播报：回答完成后自动朗读"
+              aria-pressed={ttsEnabled}
+              aria-label="自动播报开关"
+            >
+              <SoundOutlined />
+            </button>
           )}
 
           {onWebSearchChange && (

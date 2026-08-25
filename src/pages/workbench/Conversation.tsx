@@ -20,6 +20,7 @@ import {
 } from "@/utils/chatHistory";
 import { detectImageIntent, refineImagePrompt } from "@/utils/imageIntent";
 import { exportFilename, imageService } from "@/services/api/image";
+import { audioService } from "@/services/api/audio";
 import { assetService, recordImageAssets } from "@/services/api/assets";
 import type { Conversation, Agent, Message, MessageAttachment } from "../../types";
 
@@ -33,6 +34,10 @@ export default function ConversationPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [model, setModel] = useState<string>(AUTO_MODEL);
   const [deepThinking, setDeepThinking] = useState(false);
+  // CHAT-03: ground answers in web search results.
+  const [webSearch, setWebSearch] = useState(false);
+  // CHAT-08: auto-speak completed replies.
+  const [ttsEnabled, setTtsEnabled] = useState(false);
   // CHAT-05: prompt of the last in-chat image, for follow-up edits.
   const lastImagePromptRef = useRef<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -217,6 +222,7 @@ export default function ConversationPage() {
             temperature: 0.7,
             stream: true,
             params: deepThinking ? { enable_thinking: true } : undefined,
+            webSearch,
           },
           (chunk, done) => {
             if (done) return;
@@ -256,6 +262,12 @@ export default function ConversationPage() {
           },
         );
 
+        if (ttsEnabled && completion.content) {
+          // CHAT-08: fire-and-forget playback; failures surface as a toast.
+          void audioService.speak(completion.content).catch((e) => {
+            message.warning(`自动播报失败：${e instanceof Error ? e.message : e}`);
+          });
+        }
         patchAssistant({
           content: completion.content,
           status: "completed",
@@ -285,7 +297,7 @@ export default function ConversationPage() {
         abortRef.current = null;
       }
     },
-    [model, deepThinking],
+    [model, deepThinking, webSearch, ttsEnabled],
   );
 
   // Send message (streaming through the llm-gateway / mofa-engine)
@@ -536,6 +548,10 @@ export default function ConversationPage() {
           onStopGeneration={handleStopGeneration}
           deepThinking={deepThinking}
           onDeepThinkingChange={setDeepThinking}
+          webSearch={webSearch}
+          onWebSearchChange={setWebSearch}
+          ttsEnabled={ttsEnabled}
+          onTtsEnabledChange={setTtsEnabled}
           onRegenerate={handleRegenerate}
           onEditResend={handleEditResend}
           onBranch={handleBranch}

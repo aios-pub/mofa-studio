@@ -11,6 +11,7 @@ import { ChatContainer } from "../../components/conversation";
 import ResizableSidebar from "@/components/layout/ResizableSidebar";
 import { chatService } from "@/services/api/chat";
 import { AUTO_MODEL } from "@/services/api/engine";
+import { loadPolicy, resolveModel } from "@/services/api/modelPolicy";
 import {
   applyEditResend,
   branchSnapshot,
@@ -224,7 +225,7 @@ export default function ConversationPage() {
                 content: toRequestContent({ content, attachments }),
               },
             ],
-            model: model === AUTO_MODEL ? undefined : model,
+            model: resolveModel("executor", model, loadPolicy()),
             temperature: 0.7,
             stream: true,
             params: deepThinking ? { enable_thinking: true } : undefined,

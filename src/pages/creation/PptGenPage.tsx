@@ -22,6 +22,7 @@ import {
   type SlideOutlineItem,
 } from "@/services/api/ppt";
 import { AUTO_MODEL } from "@/services/api/engine";
+import { loadPolicy, resolveModel } from "@/services/api/modelPolicy";
 import { ModelPicker } from "@/components/conversation";
 
 type Phase = "input" | "outline" | "generating" | "done";
@@ -43,7 +44,7 @@ export default function PptGenPage() {
     setPhase("generating");
     setProgressNote("正在生成大纲…");
     try {
-      const items = await generateOutline(trimmed, pageCount, model === AUTO_MODEL ? undefined : model);
+      const items = await generateOutline(trimmed, pageCount, resolveModel("planner", model, loadPolicy()));
       setOutline(items);
       setDeckTitle(trimmed);
       setPhase("outline");
@@ -58,7 +59,7 @@ export default function PptGenPage() {
     if (phase !== "outline") return;
     setPhase("generating");
     try {
-      const modelArg = model === AUTO_MODEL ? undefined : model;
+      const modelArg = resolveModel("planner", model, loadPolicy());
       const filled: SlideOutlineItem[] = [];
       // Page 0 stays as the cover (outline already carries the overview);
           // pages 1..n get full content generation.
@@ -87,7 +88,7 @@ export default function PptGenPage() {
       const fresh = await generateSlideContent(
         topic.trim(),
         outline[currentSlide],
-        model === AUTO_MODEL ? undefined : model,
+        resolveModel("planner", model, loadPolicy()),
       );
       setOutline((prev) => prev.map((s, i) => (i === currentSlide ? fresh : s)));
       setPhase("done");

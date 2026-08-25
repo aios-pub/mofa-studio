@@ -16,6 +16,7 @@ import {
   type ResearchTier,
 } from "@/services/api/research";
 import { MarkdownRenderer } from "@/components/common";
+import { loadPolicy, resolveModel } from "@/services/api/modelPolicy";
 
 const PHASE_COLORS: Record<ResearchPhase, string> = {
   planning: "processing",

@@ -29,6 +29,7 @@ import {
   type TransformOp,
 } from "@/services/api/writing";
 import { AUTO_MODEL } from "@/services/api/engine";
+import { loadPolicy, resolveModel } from "@/services/api/modelPolicy";
 import { ModelPicker } from "@/components/conversation";
 
 interface FloatingMenu {
@@ -116,7 +117,7 @@ export default function WritingPage() {
     try {
       await streamWriting(
         buildDraftMessages(genre, trimmed, requirements),
-        model === AUTO_MODEL ? undefined : model,
+        resolveModel("planner", model, loadPolicy()),
         (delta) => {
           editor.commands.insertContent(delta);
         },
@@ -168,7 +169,7 @@ export default function WritingPage() {
       try {
         await streamWriting(
           buildTransformMessages(op, selection, fullDoc),
-          model === AUTO_MODEL ? undefined : model,
+          resolveModel("planner", model, loadPolicy()),
           (delta) => {
             editor.commands.insertContentAt(insertPos, delta);
           },

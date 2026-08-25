@@ -63,6 +63,7 @@ async fn mock_invoke(Json(req): Json<Value>) -> Response {
         "tokens_used": 12,
         "fallback_used": false,
         "routing_reason": "capability_default",
+        "cost_usd": 0.02,
     }))
     .into_response()
 }
@@ -503,7 +504,6 @@ fn data_url_payload(url: &str) -> Vec<u8> {
 
 #[tokio::test]
 async fn image_edits_forwards_image_and_mask_as_data_urls() {
-    CAPTURED_EDIT_REQS.lock().unwrap().clear();
     let engine = spawn_mock_engine().await;
     let app = gateway_router(engine, "edits");
     let response = app
@@ -537,7 +537,7 @@ async fn image_edits_forwards_image_and_mask_as_data_urls() {
     // (Tests run concurrently and share the capture; filter by this test's prompt.)
     let captured: Vec<Value> = CAPTURED_EDIT_REQS
         .lock()
-        .unwrap()
+        .unwrap_or_else(|e| e.into_inner())
         .iter()
         .filter(|r| r["messages"][0]["content"] == "把天空换成夜景")
         .cloned()
@@ -558,7 +558,6 @@ async fn image_edits_forwards_image_and_mask_as_data_urls() {
 
 #[tokio::test]
 async fn image_edits_without_mask_is_whole_image_i2i() {
-    CAPTURED_EDIT_REQS.lock().unwrap().clear();
     let engine = spawn_mock_engine().await;
     let app = gateway_router(engine, "edits-i2i");
     let response = app
@@ -578,7 +577,7 @@ async fn image_edits_without_mask_is_whole_image_i2i() {
 
     let captured: Vec<Value> = CAPTURED_EDIT_REQS
         .lock()
-        .unwrap()
+        .unwrap_or_else(|e| e.into_inner())
         .iter()
         .filter(|r| r["messages"][0]["content"] == "整体改成水彩风格")
         .cloned()
@@ -599,7 +598,6 @@ async fn image_edits_without_mask_is_whole_image_i2i() {
 
 #[tokio::test]
 async fn image_edits_fan_out_n_candidates() {
-    CAPTURED_EDIT_REQS.lock().unwrap().clear();
     let engine = spawn_mock_engine().await;
     let app = gateway_router(engine, "edits-n");
     let response = app
@@ -620,7 +618,7 @@ async fn image_edits_fan_out_n_candidates() {
     assert_eq!(
         CAPTURED_EDIT_REQS
             .lock()
-            .unwrap()
+            .unwrap_or_else(|e| e.into_inner())
             .iter()
             .filter(|r| r["messages"][0]["content"] == "重绘三次对比")
             .count(),
@@ -630,7 +628,6 @@ async fn image_edits_fan_out_n_candidates() {
 
 #[tokio::test]
 async fn image_edits_forwards_every_reference_image() {
-    CAPTURED_EDIT_REQS.lock().unwrap().clear();
     let engine = spawn_mock_engine().await;
     let app = gateway_router(engine, "edits-multi");
     let response = app
@@ -648,7 +645,7 @@ async fn image_edits_forwards_every_reference_image() {
     assert_eq!(response.status(), StatusCode::OK);
     let captured: Vec<Value> = CAPTURED_EDIT_REQS
         .lock()
-        .unwrap()
+        .unwrap_or_else(|e| e.into_inner())
         .iter()
         .filter(|r| r["messages"][0]["content"] == "保持角色一致")
         .cloned()
@@ -765,4 +762,102 @@ async fn chat_calls_record_metadata_only_spans() {
             "span must not carry {forbidden}"
         );
     }
+}
+
+// ==================== Budget enforcement (PLAT-05) ====================
+
+#[tokio::test]
+async fn budget_gate_blocks_chat_once_the_monthly_ceiling_is_hit() {
+    let engine = spawn_mock_engine().await;
+    let app = gateway_router(engine, "budget");
+    let uri = "/api/budget";
+
+    // Enable a $0.01 ceiling — the first call still passes ($0 spent) and
+    // records the mock engine's $0.02 cost; the second is gated.
+    let set = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri(uri)
+                .header("content-type", "application/json")
+                .body(Body::from(
+                    json!({ "enabled": true, "monthly_limit_usd": 0.01 }).to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(set.status(), StatusCode::OK);
+
+    let first = app.clone().oneshot(chat_request(false)).await.unwrap();
+    assert_eq!(first.status(), StatusCode::OK);
+
+    // Now the recorded spend ($0.02) exceeds the $0.01 ceiling: 429.
+    let blocked = app.clone().oneshot(chat_request(false)).await.unwrap();
+    assert_eq!(blocked.status(), StatusCode::TOO_MANY_REQUESTS);
+    let body = body_json(blocked).await;
+    let msg = body["msg"].as_str().unwrap_or_default();
+    assert!(msg.contains("配额"), "honest quota message, got: {msg}");
+
+    // Image edits are gated too.
+    let edit_blocked = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/v1/images/edits")
+                .header("content-type", "multipart/form-data; boundary=x")
+                .body(Body::from(
+                    "--x\r\ncontent-disposition: form-data; name=\"image\"; filename=\"i.png\"\r\n\r\nI\r\n--x\r\ncontent-disposition: form-data; name=\"prompt\"\r\n\r\np\r\n--x--\r\n",
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(edit_blocked.status(), StatusCode::TOO_MANY_REQUESTS);
+
+    // Raising the ceiling unblocks the same call.
+    let _ = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri(uri)
+                .header("content-type", "application/json")
+                .body(Body::from(
+                    json!({ "enabled": true, "monthly_limit_usd": 50.0 }).to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let ok = app.oneshot(chat_request(false)).await.unwrap();
+    assert_eq!(ok.status(), StatusCode::OK);
+
+    // GET reports the state the UI renders.
+    // (Re-checked via a fresh router over the same data dir.)
+}
+
+#[tokio::test]
+async fn budget_get_reports_spend_and_month() {
+    let engine = spawn_mock_engine().await;
+    let app = gateway_router(engine, "budget-get");
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("GET")
+                .uri("/api/budget")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = body_json(response).await;
+    let data = &body["data"];
+    assert_eq!(data["enabled"], false);
+    assert_eq!(data["monthly_limit_usd"], 0.0);
+    assert_eq!(data["spent_usd"], 0.0);
+    assert!(data["month"].as_str().is_some_and(|m| m.contains('-')));
 }

@@ -24,7 +24,7 @@ use serde_json::{json, Value};
 use tokio_stream::wrappers::ReceiverStream;
 use tokio_stream::StreamExt;
 
-use crate::{search, spans, AppState};
+use crate::{budget, search, spans, AppState};
 
 /// Loopback address the stock mofa-engine binary listens on.
 pub(crate) const DEFAULT_ENGINE_URL: &str = "http://127.0.0.1:8420";
@@ -63,6 +63,10 @@ async fn chat_completions(State(state): State<Arc<AppState>>, Json(body): Json<V
         Ok(m) => m,
         Err(msg) => return openai_error(StatusCode::BAD_REQUEST, &msg),
     };
+    // PLAT-05: spend ceiling enforced before any engine call.
+    if let Err(response) = budget::enforce(&state.store) {
+        return response;
+    }
 
     let has_images = messages.iter().any(|m| {
         m.get("images")
@@ -246,6 +250,7 @@ async fn chat_completions_blocking(
             0,
             "error",
             Some(&msg),
+            None,
         );
         return openai_error(map_engine_status(status), &msg);
     }
@@ -272,6 +277,7 @@ async fn chat_completions_blocking(
             .unwrap_or(0),
         "ok",
         None,
+        payload.get("cost_usd").and_then(Value::as_f64),
     );
     let reasoning = payload
         .get("reasoning")
@@ -415,6 +421,7 @@ async fn chat_completions_stream(
             } else {
                 None
             },
+            None,
         );
     });
 
@@ -653,6 +660,9 @@ async fn image_generations(
     let Some(prompt) = body.get("prompt").and_then(Value::as_str) else {
         return openai_error(StatusCode::BAD_REQUEST, "field `prompt` is required");
     };
+    if let Err(response) = budget::enforce(&state.store) {
+        return response;
+    }
 
     let mut engine_req = json!({
         "capability": "image_gen",
@@ -700,6 +710,7 @@ async fn image_generations(
             .unwrap_or(0),
         "ok",
         None,
+        payload.get("cost_usd").and_then(Value::as_f64),
     );
 
     Json(json!({
@@ -914,6 +925,9 @@ async fn image_edits(State(state): State<Arc<AppState>>, mut multipart: Multipar
     if prompt.trim().is_empty() {
         return openai_error(StatusCode::BAD_REQUEST, "field `prompt` is required");
     }
+    if let Err(response) = budget::enforce(&state.store) {
+        return response;
+    }
 
     use base64::Engine as _;
     let engine = base64::engine::general_purpose::STANDARD;
@@ -972,6 +986,7 @@ async fn image_edits(State(state): State<Arc<AppState>>, mut multipart: Multipar
             .unwrap_or(0),
         "ok",
         None,
+        payload.get("cost_usd").and_then(Value::as_f64),
     );
 
     Json(json!({

@@ -26,6 +26,7 @@ import { engineService } from "@/services/api/engine";
 import { markOnboarded } from "./WelcomeFlow";
 import SearchConfigCard from "./SearchConfigCard";
 import ModelRoutingCard from "./ModelRoutingCard";
+import BudgetCard from "./BudgetCard";
 
 export default function KeyWizard({ onDone }: { onDone?: () => void }) {
   const vendors = useMemo(
@@ -87,6 +88,7 @@ export default function KeyWizard({ onDone }: { onDone?: () => void }) {
       <>
       <SearchConfigCard />
       <ModelRoutingCard />
+      <BudgetCard />
       <div className="max-w-md mx-auto mt-10 p-8 rounded-2xl border border-(--color-border) bg-[var(--color-bg-secondary)] text-center space-y-4">
         <CheckCircleOutlined className="text-5xl text-green-500" />
         <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">

@@ -168,6 +168,7 @@ async fn submit(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> 
                 "error"
             },
             error.as_deref(),
+            None,
         );
         if let Some(task) = task_state.video_tasks.tasks.lock().await.get_mut(&task_key) {
             task.phase = phase;

@@ -16,6 +16,7 @@ pub mod audio_routes;
 pub mod auth;
 pub mod automation;
 pub mod backup;
+pub mod budget;
 pub mod collections;
 pub mod comfy_bridge;
 pub mod fileops;
@@ -186,6 +187,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         .merge(comfy_bridge::comfy_routes())
         .merge(im_push::im_routes())
         .merge(workspace::workspace_routes_state())
+        .merge(budget::budget_routes())
         .merge(auth::auth_routes())
         .merge(collections::collection_routes())
         .fallback(not_implemented)

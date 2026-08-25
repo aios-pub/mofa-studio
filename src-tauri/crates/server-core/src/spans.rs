@@ -24,6 +24,7 @@ pub(crate) const SOURCE_CHAT: &str = "chat";
 pub(crate) const SOURCE_STUDIO: &str = "studio";
 
 /// Insert one span row. Never fails the caller: tracing complaints only.
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn record_span(
     store: &Store,
     kind: &str,
@@ -35,6 +36,7 @@ pub(crate) fn record_span(
     duration_ms: u64,
     status: &str,
     detail: Option<&str>,
+    cost_usd: Option<f64>,
 ) {
     let id = format!("span-{}", uuid::Uuid::new_v4());
     let created_at = chrono::Utc::now()
@@ -52,6 +54,9 @@ pub(crate) fn record_span(
         "status": status,
         // Error reason for failed calls (PLAT-15 失败请求详情); metadata only.
         "detail": detail,
+        // Engine-reported spend for this call (PLAT-05 budget accounting);
+        // None when the provider has no price configured.
+        "cost_usd": cost_usd,
         "created_at": created_at,
     });
     if let Err(e) = store.insert("span", &id, doc) {
@@ -109,6 +114,7 @@ mod tests {
             1200,
             "ok",
             None,
+            Some(0.0123),
         );
         let spans = store.list("span");
         assert_eq!(spans.len(), 1);
@@ -118,6 +124,7 @@ mod tests {
         assert_eq!(span["model"], "mock/mock-chat");
         assert_eq!(span["tokens_out"], 34);
         assert_eq!(span["status"], "ok");
+        assert_eq!(span["cost_usd"], 0.0123);
         // Privacy: no prompt/content fields exist on the span shape.
         for forbidden in ["prompt", "content", "messages", "text"] {
             assert!(
@@ -141,6 +148,7 @@ mod tests {
             None,
             1,
             "ok",
+            None,
             None,
         );
         let old_id = "span-old";

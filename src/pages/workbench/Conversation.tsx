@@ -12,6 +12,8 @@ import ResizableSidebar from "@/components/layout/ResizableSidebar";
 import { chatService } from "@/services/api/chat";
 import { AUTO_MODEL } from "@/services/api/engine";
 import { loadPolicy, resolveModel } from "@/services/api/modelPolicy";
+import GuidanceCard from "@/components/common/GuidanceCard";
+import { fireGuidance, GUIDANCES, type GuidanceId } from "@/utils/progressiveDisclosure";
 import {
   applyEditResend,
   branchSnapshot,
@@ -39,6 +41,10 @@ export default function ConversationPage() {
   const [deepThinking, setDeepThinking] = useState(false);
   // CHAT-03: ground answers in web search results.
   const [webSearch, setWebSearch] = useState(false);
+  // ONBOARD-04: contextual guidance fired at capability boundaries.
+  const [guidance, setGuidance] = useState<GuidanceId | null>(null);
+  const regenerateCountRef = useRef(0);
+  const branchCountRef = useRef(0);
   // CHAT-08: auto-speak completed replies.
   const [ttsEnabled, setTtsEnabled] = useState(false);
   // CHAT-05: prompt of the last in-chat image, for follow-up edits.
@@ -279,6 +285,10 @@ export default function ConversationPage() {
           content: completion.content,
           status: "completed",
           tokens: completion.tokens,
+          // ONBOARD-04: first successful output → Skill guidance.
+          ...(fireGuidance("first-output-skill")
+            ? (setGuidance("first-output-skill"), {})
+            : {}),
           ...(completion.thinking !== undefined
             ? { thinking: { content: completion.thinking } }
             : {}),
@@ -297,6 +307,10 @@ export default function ConversationPage() {
       } catch (error) {
         console.error("Generation failed:", error);
         const detail = error instanceof Error ? error.message : String(error);
+        if (webSearch && detail.includes("联网搜索未配置")) {
+          const fired = fireGuidance("search-unconfigured-connector");
+          if (fired) setGuidance("search-unconfigured-connector");
+        }
         patchAssistant({ status: "error", content: `生成失败：${detail}` });
         message.error("生成失败");
       } finally {
@@ -536,6 +550,11 @@ export default function ConversationPage() {
   const handleRegenerate = useCallback(
     async (assistantMessageId: string) => {
       if (!selectedConversation || isLoading) return;
+      regenerateCountRef.current += 1;
+      if (regenerateCountRef.current === 3) {
+        const fired = fireGuidance("rerun-often-expert");
+        if (fired) setGuidance("rerun-often-expert");
+      }
       const history = historyForRegeneration(
         selectedConversation.messages,
         assistantMessageId,
@@ -587,6 +606,11 @@ export default function ConversationPage() {
   const handleBranch = useCallback(
     async (anchorMessageId: string, includeAnchor: boolean) => {
       if (!selectedConversation) return;
+      branchCountRef.current += 1;
+      if (branchCountRef.current === 3) {
+        const fired = fireGuidance("branch-many-experts");
+        if (fired) setGuidance("branch-many-experts");
+      }
       const snapshot = branchSnapshot(
         selectedConversation.messages,
         anchorMessageId,
@@ -640,7 +664,9 @@ export default function ConversationPage() {
       </ResizableSidebar>
 
       {/* Right conversation area */}
-      <div className="flex-1">
+      <div className="flex-1 flex flex-col">
+        {guidance && <GuidanceCard guidance={GUIDANCES[guidance]} />}
+        <div className="flex-1 min-h-0">
         <ChatContainer
           conversation={selectedConversation}
           onSendMessage={handleSendMessage}
@@ -662,6 +688,7 @@ export default function ConversationPage() {
           onEditResend={handleEditResend}
           onBranch={handleBranch}
         />
+        </div>
       </div>
 
       {/* Create conversation modal */}

@@ -36,6 +36,7 @@ pub mod storage;
 pub mod store;
 pub mod task_routes;
 pub mod video_routes;
+pub mod workspace;
 pub mod ws;
 
 use std::io;
@@ -184,6 +185,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         .merge(fileops::fileops_routes())
         .merge(comfy_bridge::comfy_routes())
         .merge(im_push::im_routes())
+        .merge(workspace::workspace_routes_state())
         .merge(auth::auth_routes())
         .merge(collections::collection_routes())
         .fallback(not_implemented)

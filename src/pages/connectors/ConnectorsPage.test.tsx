@@ -9,7 +9,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import ConnectorsPage from "./ConnectorsPage";
 import {
   CONNECTOR_CATALOG,
-  connectorService,
   matchesCatalog,
   type Connector,
 } from "@/services/api/connectors";

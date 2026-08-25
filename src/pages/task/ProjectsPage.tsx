@@ -25,7 +25,10 @@ import {
   CloseOutlined,
   RedoOutlined,
   DeleteOutlined,
+  SaveOutlined,
+  ClockCircleOutlined,
 } from "@ant-design/icons";
+import { sopService, projectToSop, templateSlots } from "@/services/api/sop";
 import {
   PHASE_COLORS,
   PHASE_LABELS,
@@ -64,6 +67,11 @@ export default function ProjectsPage() {
   const [draftFormat, setDraftFormat] = useState("markdown");
   const [draftSteps, setDraftSteps] = useState<DraftStep[]>([]);
   const [running, setRunning] = useState(false);
+  // TASK-20: SOP persistence + automation conversion.
+  const [sopPrompt, setSopPrompt] = useState(false);
+  const [cronPrompt, setCronPrompt] = useState(false);
+  const [cronValue, setCronValue] = useState("0 9 * * 1");
+  const [savedSopId, setSavedSopId] = useState<string | null>(null);
 
   const loadList = useCallback(async () => {
     setLoading(true);
@@ -180,6 +188,34 @@ export default function ProjectsPage() {
     [selected],
   );
 
+  const saveAsSop = useCallback(async () => {
+    if (!selected) return;
+    const packed = projectToSop(selected);
+    const saved = await sopService.save(packed);
+    if (saved) {
+      setSavedSopId(saved.id);
+      message.success(`已沉淀为 SOP「${saved.name}」（${saved.steps.length} 步）`);
+      setSopPrompt(false);
+      setCronPrompt(true);
+    } else {
+      message.error("SOP 保存失败");
+    }
+  }, [selected]);
+
+  const toAutomation = useCallback(async () => {
+    if (!savedSopId) return;
+    const bound = await sopService.bindTrigger(savedSopId, {
+      kind: "cron",
+      cron: cronValue,
+    });
+    if (bound) {
+      message.success(`已转为自动化流水线（cron: ${cronValue}）`);
+      setCronPrompt(false);
+    } else {
+      message.error("触发器绑定失败");
+    }
+  }, [savedSopId, cronValue]);
+
   const patchDraft = (index: number, patch: Partial<DraftStep>) => {
     setDraftSteps((prev) =>
       prev.map((s, i) => (i === index ? { ...s, ...patch } : s)),
@@ -281,6 +317,15 @@ export default function ProjectsPage() {
               <Button onClick={savePlan} disabled={draftSteps.length === 0} aria-label="保存计划">
                 保存计划
               </Button>
+              {selected.phase === "delivered" && (
+                <Button
+                  icon={<SaveOutlined />}
+                  onClick={() => setSopPrompt(true)}
+                  aria-label="存为 SOP"
+                >
+                  存为 SOP
+                </Button>
+              )}
             </div>
 
             {/* Step list (live statuses + review actions) */}
@@ -416,6 +461,54 @@ export default function ProjectsPage() {
           </div>
         )}
       </div>
+
+      {/* TASK-20: 存为 SOP */}
+      <Modal
+        title="沉淀为 SOP 模板"
+        open={sopPrompt}
+        onOk={() => void saveAsSop()}
+        onCancel={() => setSopPrompt(false)}
+        okText="沉淀"
+        cancelText="取消"
+      >
+        {selected && (
+          <div className="space-y-2 text-sm">
+            <p>
+              将把 <b>{selected.steps.length}</b> 个步骤（含策略配置）打包为可复用模板。
+            </p>
+            {templateSlots({ ...projectToSop(selected), id: "", created_at: "" }).length > 0 && (
+              <p className="text-xs text-[var(--color-text-tertiary)]">
+                检测到参数化占位符：
+                {templateSlots({ ...projectToSop(selected), id: "", created_at: "" }).join("、")}
+                ——自动化时将作为输入绑定。
+              </p>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      {/* TASK-20→05: 转自动化流水线 */}
+      <Modal
+        title="转为自动化流水线"
+        open={cronPrompt}
+        onOk={() => void toAutomation()}
+        onCancel={() => setCronPrompt(false)}
+        okText="绑定触发器"
+        cancelText="以后再说"
+      >
+        <div className="space-y-2">
+          <p className="text-sm">
+            绑定定时触发器后，该 SOP 将按计划无人值守执行（结果推送桌面通知）。
+          </p>
+          <Input
+            value={cronValue}
+            onChange={(e) => setCronValue(e.target.value)}
+            placeholder="cron 表达式，如 0 9 * * 1（每周一 9 点）"
+            aria-label="cron 表达式"
+            prefix={<ClockCircleOutlined />}
+          />
+        </div>
+      </Modal>
 
       {/* 立项 dialog */}
       <Modal

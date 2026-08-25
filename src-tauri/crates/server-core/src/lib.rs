@@ -23,6 +23,7 @@ pub mod rag;
 pub mod research;
 pub mod routes;
 pub mod search;
+pub mod sop_routes;
 pub mod spans;
 pub mod storage;
 pub mod store;
@@ -168,6 +169,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         .merge(podcast::podcast_routes())
         .merge(storage::storage_routes())
         .merge(task_routes::task_routes())
+        .merge(sop_routes::sop_routes())
         .merge(auth::auth_routes())
         .merge(collections::collection_routes())
         .fallback(not_implemented)

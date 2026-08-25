@@ -629,6 +629,40 @@ async fn image_edits_fan_out_n_candidates() {
 }
 
 #[tokio::test]
+async fn image_edits_forwards_every_reference_image() {
+    CAPTURED_EDIT_REQS.lock().unwrap().clear();
+    let engine = spawn_mock_engine().await;
+    let app = gateway_router(engine, "edits-multi");
+    let response = app
+        .oneshot(edits_request(
+            "mofa-multi-boundary",
+            &[
+                ("image", Some("base.png"), Some("image/png"), "BASE"),
+                ("image", Some("ref.png"), Some("image/png"), "REF1"),
+                ("prompt", None, None, "保持角色一致"),
+            ],
+        ))
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let captured: Vec<Value> = CAPTURED_EDIT_REQS
+        .lock()
+        .unwrap()
+        .iter()
+        .filter(|r| r["messages"][0]["content"] == "保持角色一致")
+        .cloned()
+        .collect();
+    assert_eq!(captured.len(), 1);
+    let urls = captured[0]["messages"][0]["images"]
+        .as_array()
+        .expect("images array");
+    assert_eq!(urls.len(), 2, "base + one reference anchor");
+    assert_eq!(data_url_payload(urls[0].as_str().unwrap()), b"BASE");
+    assert_eq!(data_url_payload(urls[1].as_str().unwrap()), b"REF1");
+}
+
+#[tokio::test]
 async fn image_edits_requires_image_and_prompt() {
     let engine = spawn_mock_engine().await;
     let app = gateway_router(engine, "edits-400");

@@ -845,7 +845,9 @@ async fn artifacts_to_data(files: &[String]) -> Result<Vec<Value>, Response> {
 /// Uploads are forwarded inline as base64 data URLs; nothing is written to
 /// the gateway's disk.
 async fn image_edits(State(state): State<Arc<AppState>>, mut multipart: Multipart) -> Response {
-    let mut image: Option<(Vec<u8>, String)> = None;
+    // Repeated `image` fields = multi-reference consistency (TOOL-01): the
+    // first is the edited base, the rest are anchors.
+    let mut images: Vec<(Vec<u8>, String)> = Vec::new();
     let mut mask: Option<(Vec<u8>, String)> = None;
     let mut prompt = String::new();
     let mut model: Option<String> = None;
@@ -872,12 +874,11 @@ async fn image_edits(State(state): State<Arc<AppState>>, mut multipart: Multipar
                         &format!("field `{name}` is empty"),
                     );
                 }
-                let slot = if name == "image" {
-                    &mut image
+                if name == "image" {
+                    images.push((bytes, mime));
                 } else {
-                    &mut mask
-                };
-                *slot = Some((bytes, mime));
+                    mask = Some((bytes, mime));
+                }
             }
             "prompt" => {
                 if let Ok(text) = field.text().await {
@@ -907,19 +908,22 @@ async fn image_edits(State(state): State<Arc<AppState>>, mut multipart: Multipar
         }
     }
 
-    let Some((image_bytes, image_mime)) = image else {
+    if images.is_empty() {
         return openai_error(StatusCode::BAD_REQUEST, "field `image` is required");
-    };
+    }
     if prompt.trim().is_empty() {
         return openai_error(StatusCode::BAD_REQUEST, "field `prompt` is required");
     }
 
     use base64::Engine as _;
     let engine = base64::engine::general_purpose::STANDARD;
-    let image_url = format!("data:{image_mime};base64,{}", engine.encode(&image_bytes));
+    let image_urls: Vec<String> = images
+        .iter()
+        .map(|(bytes, mime)| format!("data:{mime};base64,{}", engine.encode(bytes)))
+        .collect();
     let mut engine_req = json!({
         "capability": "image_edit",
-        "messages": [{ "role": "user", "content": prompt, "images": [image_url] }],
+        "messages": [{ "role": "user", "content": prompt, "images": image_urls }],
     });
     if let Some(m) = &model {
         engine_req["model"] = json!(m);

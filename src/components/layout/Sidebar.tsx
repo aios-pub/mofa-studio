@@ -34,6 +34,7 @@ import {
   BranchesOutlined,
   DatabaseOutlined,
   ProjectOutlined,
+  CrownOutlined,
   PictureOutlined,
   BulbOutlined,
   HistoryOutlined,
@@ -171,6 +172,11 @@ const coreMenuItems: MenuProps["items"] = [
     key: "/storage",
     icon: <DatabaseOutlined />,
     label: "存储管理",
+  },
+  {
+    key: "/memory",
+    icon: <CrownOutlined />,
+    label: "记忆",
   },
   { type: "divider" },
   {

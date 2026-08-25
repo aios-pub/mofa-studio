@@ -19,6 +19,7 @@ pub mod collections;
 pub mod flow_routes;
 pub mod llm_gateway;
 pub mod media;
+pub mod memory_routes;
 pub mod podcast;
 pub mod rag;
 pub mod research;
@@ -172,6 +173,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         .merge(task_routes::task_routes())
         .merge(sop_routes::sop_routes())
         .merge(automation::automation_routes())
+        .merge(memory_routes::memory_routes())
         .merge(auth::auth_routes())
         .merge(collections::collection_routes())
         .fallback(not_implemented)

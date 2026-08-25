@@ -54,6 +54,11 @@ import {
   defaultPreselect,
   type CapabilityId,
 } from "@/utils/intentRouter";
+import {
+  capabilitiesInScope,
+  filterCommandsByScope,
+  type ToolScope,
+} from "@/utils/toolScope";
 import { audioService, recordingSupported } from "@/services/api/audio";
 import { ragService, ragSupports } from "@/services/api/rag";
 import type {
@@ -92,6 +97,9 @@ interface ChatContainerProps {
   /** TASK-14: summoned expert persona active on this conversation. */
   expertName?: string;
   onExpertDismiss?: () => void;
+  /** TASK-10: pinned tool scope for this conversation (null = unrestricted). */
+  toolScope?: ToolScope;
+  onToolScopeChange?: (scope: ToolScope) => void;
   /** CHAT-08: auto-speak completed assistant replies. */
   ttsEnabled?: boolean;
   onTtsEnabledChange?: (enabled: boolean) => void;
@@ -120,6 +128,8 @@ export default function ChatContainer({
   onWebSearchChange,
   expertName,
   onExpertDismiss,
+  toolScope = null,
+  onToolScopeChange,
   ttsEnabled = false,
   onTtsEnabledChange,
   onRegenerate,
@@ -312,7 +322,9 @@ export default function ChatContainer({
 
   // CHAT-09: slash palette appears when the input starts with "/"
   const slashActive = input.startsWith("/");
-  const palette = slashActive ? filterCommands(slashCommands, input) : [];
+  // TASK-10: the pinned scope hides out-of-scope commands from the palette.
+  const scopedCommands = filterCommandsByScope(slashCommands, toolScope);
+  const palette = slashActive ? filterCommands(scopedCommands, input) : [];
 
   const applyCommand = (command: SlashCommand, values: Record<string, string>) => {
     const filled = fillTemplate(command.template, values);
@@ -411,6 +423,33 @@ export default function ChatContainer({
           视频生成路由（本次发送）
         </Checkbox>
       </div>
+      {onToolScopeChange && (
+        <div className="pt-1 border-t border-(--color-border) space-y-1">
+          <p className="text-xs font-medium">本会话工具范围（TASK-10）</p>
+          <div className="flex flex-wrap gap-x-3 gap-y-1">
+            {CAPABILITIES.map((c) => (
+              <Checkbox
+                key={c.id}
+                checked={toolScope?.includes(c.id) ?? false}
+                onChange={(e) => {
+                  const next = new Set(toolScope ?? []);
+                  if (e.target.checked) next.add(c.id);
+                  else next.delete(c.id);
+                  onToolScopeChange(next.size > 0 ? [...next] : null);
+                }}
+                aria-label={`范围-${c.label}`}
+              >
+                {c.label}
+              </Checkbox>
+            ))}
+          </div>
+          <p className="text-xs text-[var(--color-text-tertiary)]">
+            {toolScope === null
+              ? "未限定：全部工具可用"
+              : `已限定 ${toolScope.length} 项——范围外指令不再出现在面板`}
+          </p>
+        </div>
+      )}
       <div className="flex flex-wrap gap-1 pt-1 border-t border-(--color-border)">
         {CAPABILITIES.filter((c) => c.action.kind === "slash").map((c) => (
           <Button

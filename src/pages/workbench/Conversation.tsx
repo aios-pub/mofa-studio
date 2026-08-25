@@ -34,6 +34,7 @@ import {
   loadMyExperts,
   type Expert,
 } from "@/utils/experts";
+import type { ToolScope } from "@/utils/toolScope";
 
 export default function ConversationPage() {
   const [, setConversations] = useState<Conversation[]>([]);
@@ -59,6 +60,8 @@ export default function ConversationPage() {
   const [newConversationTitle, setNewConversationTitle] = useState("");
   // TASK-14: summoned expert (persona injected as leading system message).
   const [expert, setExpert] = useState<Expert | null>(null);
+  // TASK-10: pinned tool scope for the active conversation.
+  const [toolScope, setToolScope] = useState<ToolScope>(null);
   const [selectedAgentForNew, setSelectedAgentForNew] = useState<
     string | undefined
   >();
@@ -710,6 +713,8 @@ export default function ConversationPage() {
           onWebSearchChange={setWebSearch}
           expertName={expert?.name}
           onExpertDismiss={() => setExpert(null)}
+          toolScope={toolScope}
+          onToolScopeChange={setToolScope}
           ttsEnabled={ttsEnabled}
           onTtsEnabledChange={setTtsEnabled}
           onRegenerate={handleRegenerate}

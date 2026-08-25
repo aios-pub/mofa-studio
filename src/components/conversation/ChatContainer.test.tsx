@@ -258,3 +258,25 @@ describe("capability panel (TASK-06 路由 v1)", () => {
     ).not.toHaveProperty("force_route");
   });
 });
+
+describe("conversation tool scope (TASK-10)", () => {
+  it("pinning a scope reports the selection and gates the palette", async () => {
+    const onToolScopeChange = vi.fn();
+    renderChat({ toolScope: null, onToolScopeChange });
+
+    // Pin 翻译 only via the capability panel.
+    fireEvent.click(screen.getByLabelText("能力面板"));
+    fireEvent.click(await screen.findByLabelText("范围-翻译"));
+    expect(onToolScopeChange).toHaveBeenCalledWith(["translate"]);
+  });
+
+  it("a pinned scope hides out-of-scope slash commands from the palette", async () => {
+    renderChat({ toolScope: ["translate"] });
+    const textarea = screen.getByPlaceholderText(/输入消息/);
+    fireEvent.change(textarea, { target: { value: "/" } });
+    const listbox = await screen.findByRole("listbox", { name: "快捷指令" });
+    expect(within(listbox).getByText("/翻译")).toBeInTheDocument();
+    expect(within(listbox).queryByText("/总结")).not.toBeInTheDocument();
+    expect(within(listbox).queryByText("/润色")).not.toBeInTheDocument();
+  });
+});

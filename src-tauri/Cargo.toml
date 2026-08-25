@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/server-core", "crates/flow-engine", "crates/agent-runtime"]
+members = ["crates/server-core", "crates/flow-engine", "crates/agent-runtime", "crates/wasm-sandbox"]
 
 [package]
 name = "mofa-studio"

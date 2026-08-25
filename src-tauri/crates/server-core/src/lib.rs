@@ -20,6 +20,7 @@ pub mod collections;
 pub mod comfy_bridge;
 pub mod fileops;
 pub mod flow_routes;
+pub mod im_push;
 pub mod llm_gateway;
 pub mod mcp_host;
 pub mod media;
@@ -182,6 +183,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         .merge(backup::backup_routes())
         .merge(fileops::fileops_routes())
         .merge(comfy_bridge::comfy_routes())
+        .merge(im_push::im_routes())
         .merge(auth::auth_routes())
         .merge(collections::collection_routes())
         .fallback(not_implemented)

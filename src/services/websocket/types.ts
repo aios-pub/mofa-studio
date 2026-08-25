@@ -3,7 +3,7 @@
  */
 
 /** Connection mode */
-export type ConnectionMode = 'socketio' | 'wss';
+export type ConnectionMode = 'native' | 'wss';
 
 /** Connection state */
 export type ConnectionState = 'connecting' | 'connected' | 'disconnected' | 'error';

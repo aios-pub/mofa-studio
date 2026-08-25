@@ -72,8 +72,8 @@ function getStatusText(state: ConnectionState): string {
 /** Get mode text */
 function getModeText(mode: ConnectionMode): string {
   switch (mode) {
-    case 'socketio':
-      return 'Socket.IO';
+    case 'native':
+      return '原生 WebSocket';
     case 'wss':
       return 'WSS';
     default:
@@ -150,7 +150,7 @@ export default function ConnectionSwitcher({
         optionType="button"
         buttonStyle="solid"
       >
-        <Radio.Button value="socketio">
+        <Radio.Button value="native">
           <Tooltip title="Socket.IO 模式 - 支持回退和重连">
             <Space size={4}>
               <ApiOutlined />

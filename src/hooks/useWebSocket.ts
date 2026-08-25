@@ -77,7 +77,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
   const { authToken, autoConnect = true, mode: initialMode } = options;
 
   const [state, setState] = useState<ConnectionState>('disconnected');
-  const [mode, setMode] = useState<ConnectionMode>(initialMode ?? 'socketio');
+  const [mode, setMode] = useState<ConnectionMode>(initialMode ?? 'native');
   const managerRef = useRef<WebSocketManager | null>(null);
 
   // Initialize manager

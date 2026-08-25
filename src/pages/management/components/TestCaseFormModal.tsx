@@ -11,7 +11,6 @@ import { testSetRealApi } from "@/services/real/testsets";
 import { WorkflowTestBuilder } from "@/components/test/WorkflowTestBuilder";
 import { WebSocketTestBuilder } from "@/components/test/WebSocketTestBuilder";
 import { SSETestBuilder } from "@/components/test/SSETestBuilder";
-import { SocketIOTestBuilder } from "@/components/test/SocketIOTestBuilder";
 import { ScriptEditor } from "@/components/test/ScriptEditor";
 import { ResponseViewer } from "@/components/test/ResponseViewer";
 import { DataDrivenTestConfig } from "@/components/test/DataDrivenTestConfig";
@@ -22,7 +21,6 @@ import type {
   WorkflowRequestConfig,
   WebSocketRequestConfig,
   SSERequestConfig,
-  SocketIORequestConfig,
 } from "@/types/testrequest";
 import { replaceVariables, replaceVariablesInObject } from "@/utils/envVariables";
 
@@ -46,7 +44,6 @@ const REQUEST_TYPES: { label: string; value: TestCaseRequestType }[] = [
   { label: "HTTP 请求", value: "http" },
   { label: "WebSocket", value: "websocket" },
   { label: "SSE", value: "sse" },
-  { label: "Socket.IO", value: "socketio" },
   { label: "工作流", value: "workflow" },
 ];
 
@@ -62,7 +59,6 @@ export function TestCaseFormModal({
   const [httpConfig, setHttpConfig] = useState<HttpRequestConfig>();
   const [webSocketConfig, setWebSocketConfig] = useState<WebSocketRequestConfig>();
   const [sseConfig, setSSEConfig] = useState<SSERequestConfig>();
-  const [socketIOConfig, setSocketIOConfig] = useState<SocketIORequestConfig>();
   const [workflowConfig, setWorkflowConfig] = useState<WorkflowRequestConfig>();
 
   // Advanced feature state
@@ -114,7 +110,6 @@ export function TestCaseFormModal({
       setHttpConfig(undefined);
       setWebSocketConfig(undefined);
       setSSEConfig(undefined);
-      setSocketIOConfig(undefined);
       setWorkflowConfig(undefined);
       setHttpTestResult(null);
 
@@ -169,9 +164,6 @@ export function TestCaseFormModal({
         }
 
         // If the request type is Socket.IO, set Socket.IO config
-        if (reqType === "socketio" && testCase.requestConfig) {
-          setSocketIOConfig(testCase.requestConfig as unknown as SocketIORequestConfig);
-        }
 
         // If the request type is workflow, set workflow config
         if (reqType === "workflow" && testCase.requestConfig) {
@@ -249,15 +241,6 @@ export function TestCaseFormModal({
         }
         submitData.requestConfig = configWithDdt as unknown as Record<string, unknown>;
         submitData.input = sseConfig.url;
-      } else if (requestType === "socketio" && socketIOConfig) {
-        const configWithDdt = { ...socketIOConfig };
-        if (dataDrivenEnabled && dataDrivenConfig) {
-          (configWithDdt as any).dataDrivenConfig = dataDrivenConfig;
-        } else {
-          delete (configWithDdt as any).dataDrivenConfig;
-        }
-        submitData.requestConfig = configWithDdt as unknown as Record<string, unknown>;
-        submitData.input = socketIOConfig.url;
       } else if (requestType === "workflow" && workflowConfig) {
         const configWithDdt = { ...workflowConfig };
         if (dataDrivenEnabled && dataDrivenConfig) {
@@ -380,16 +363,6 @@ export function TestCaseFormModal({
         maxDuration: 30000,
       });
     }
-    if (newType === "socketio" && !socketIOConfig) {
-      // Initialize default Socket.IO config
-      setSocketIOConfig({
-        url: "",
-        namespace: "/",
-        auth: {},
-        eventsToEmit: [],
-        eventsToListen: [],
-      });
-    }
     if (newType === "workflow" && !workflowConfig) {
       // Initialize default workflow config
       setWorkflowConfig({
@@ -509,18 +482,6 @@ export function TestCaseFormModal({
             <SSETestBuilder
               value={sseConfig}
               onChange={setSSEConfig}
-            />
-          </div>
-        )}
-
-        {requestType === "socketio" && (
-          <div className="space-y-4">
-            <div className="text-sm text-gray-500 mb-2">
-              配置Socket.IO请求详情
-            </div>
-            <SocketIOTestBuilder
-              value={socketIOConfig}
-              onChange={setSocketIOConfig}
             />
           </div>
         )}

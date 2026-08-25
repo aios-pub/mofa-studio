@@ -12,6 +12,5 @@ export type { WebSocketManagerConfig } from './manager';
 
 // Adapter
 export { NativeWebSocketAdapter } from './adapters/wss';
-export { SocketIOAdapter } from './adapters/socketio';
 export type { WebSocketAdapter } from './base';
 export { BaseWebSocketAdapter } from './base';

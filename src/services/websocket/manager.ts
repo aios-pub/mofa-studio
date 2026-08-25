@@ -11,7 +11,6 @@ import type {
 } from "./types";
 import type { WebSocketAdapter } from "./base";
 import { NativeWebSocketAdapter } from "./adapters/wss";
-import { SocketIOAdapter } from "./adapters/socketio";
 
 /** WebSocket manager configuration */
 export interface WebSocketManagerConfig extends Partial<WebSocketConfig> {
@@ -38,7 +37,7 @@ export class WebSocketManager {
     this.config = config;
     // Read mode from storage or use the configured default
     this._mode =
-      this.loadMode() ?? config.defaultMode ?? config.mode ?? "socketio";
+      this.loadMode() ?? config.defaultMode ?? config.mode ?? "native";
   }
 
   /**
@@ -199,11 +198,9 @@ export class WebSocketManager {
     };
 
     switch (mode) {
-      case "wss":
-        return new NativeWebSocketAdapter(adapterConfig);
-      case "socketio":
+      case "native":
       default:
-        return new SocketIOAdapter(adapterConfig);
+        return new NativeWebSocketAdapter(adapterConfig);
     }
   }
 
@@ -213,7 +210,7 @@ export class WebSocketManager {
   private loadMode(): ConnectionMode | null {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved === "socketio" || saved === "wss") {
+      if (saved === "native" || saved === "wss") {
         return saved;
       }
     } catch {

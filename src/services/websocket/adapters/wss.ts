@@ -11,7 +11,7 @@ import type {
 import { BaseWebSocketAdapter } from '../base';
 
 export class NativeWebSocketAdapter extends BaseWebSocketAdapter {
-  readonly mode: ConnectionMode = 'wss';
+  readonly mode: ConnectionMode = 'native';
   private socket: WebSocket | null = null;
   private heartbeatTimer?: ReturnType<typeof setInterval>;
 

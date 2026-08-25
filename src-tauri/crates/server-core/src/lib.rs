@@ -18,6 +18,7 @@ pub mod automation;
 pub mod collections;
 pub mod flow_routes;
 pub mod llm_gateway;
+pub mod mcp_host;
 pub mod media;
 pub mod memory_routes;
 pub mod podcast;
@@ -174,6 +175,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         .merge(sop_routes::sop_routes())
         .merge(automation::automation_routes())
         .merge(memory_routes::memory_routes())
+        .merge(mcp_host::mcp_routes())
         .merge(auth::auth_routes())
         .merge(collections::collection_routes())
         .fallback(not_implemented)

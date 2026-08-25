@@ -2,7 +2,6 @@
  * Integration tests for long-term memory (TASK-19): the four privacy
  * powers (可见/可编辑/可删除/总开关) plus retrieval gating.
  */
-
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use axum::response::Response;
@@ -55,11 +54,20 @@ async fn four_privacy_powers_end_to_end() {
     let id = created["data"]["id"].as_str().unwrap().to_string();
     let response = app
         .clone()
-        .oneshot(Request::builder().uri("/api/memory/list").body(Body::empty()).unwrap())
+        .oneshot(
+            Request::builder()
+                .uri("/api/memory/list")
+                .body(Body::empty())
+                .unwrap(),
+        )
         .await
         .unwrap();
     let listed = body_json(response).await;
-    assert!(listed["data"].as_array().unwrap().iter().any(|m| m["id"].as_str() == Some(id.as_str())));
+    assert!(listed["data"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|m| m["id"].as_str() == Some(id.as_str())));
 
     // 可编辑.
     let response = app
@@ -69,7 +77,9 @@ async fn four_privacy_powers_end_to_end() {
                 .method("PUT")
                 .uri(format!("/api/memory/{id}"))
                 .header("content-type", "application/json")
-                .body(Body::from(json!({ "content": "用户偏好英文回复" }).to_string()))
+                .body(Body::from(
+                    json!({ "content": "用户偏好英文回复" }).to_string(),
+                ))
                 .unwrap(),
         )
         .await
@@ -131,17 +141,17 @@ async fn master_switch_gates_retrieval_not_management() {
     assert_eq!(toggled["data"]["enabled"], false);
 
     // Retrieval is gated off but listing (可见) still works.
-    let (_, gated) = post_json(
-        &app,
-        "/api/memory/retrieve",
-        json!({ "query": "橘猫" }),
-    )
-    .await;
+    let (_, gated) = post_json(&app, "/api/memory/retrieve", json!({ "query": "橘猫" })).await;
     assert_eq!(gated["data"]["disabled"], true);
     assert!(gated["data"]["hits"].as_array().unwrap().is_empty());
 
     let response = app
-        .oneshot(Request::builder().uri("/api/memory/status").body(Body::empty()).unwrap())
+        .oneshot(
+            Request::builder()
+                .uri("/api/memory/status")
+                .body(Body::empty())
+                .unwrap(),
+        )
         .await
         .unwrap();
     let status = body_json(response).await;

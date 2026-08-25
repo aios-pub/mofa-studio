@@ -6,7 +6,6 @@
  * Retrieval v1 is CJK-bigram keyword scoring (same honest basis as the
  * RAG module); sqlite-vec embeddings are the documented upgrade path.
  */
-
 use std::sync::Arc;
 
 use axum::extract::{Path, State};
@@ -42,7 +41,12 @@ fn score_entry(query: &str, content: &str) -> u64 {
         }
     }
     for word in q.split_whitespace() {
-        if word.len() > 1 && word.chars().all(|ch| ch.is_ascii_alphanumeric() || ch == '-') && c.contains(word) {
+        if word.len() > 1
+            && word
+                .chars()
+                .all(|ch| ch.is_ascii_alphanumeric() || ch == '-')
+            && c.contains(word)
+        {
             score += 3;
         }
     }
@@ -53,13 +57,23 @@ fn score_entry(query: &str, content: &str) -> u64 {
 
 /// POST /api/memory/create {content, kind?}
 async fn create(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> Response {
-    let content = body.get("content").and_then(Value::as_str).unwrap_or("").trim();
+    let content = body
+        .get("content")
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .trim();
     if content.is_empty() {
         return err_msg(StatusCode::BAD_REQUEST, "content 不能为空");
     }
-    let kind = body.get("kind").and_then(Value::as_str).unwrap_or("preference");
+    let kind = body
+        .get("kind")
+        .and_then(Value::as_str)
+        .unwrap_or("preference");
     if !["preference", "context", "decision"].contains(&kind) {
-        return err_msg(StatusCode::BAD_REQUEST, "kind 必须是 preference / context / decision");
+        return err_msg(
+            StatusCode::BAD_REQUEST,
+            "kind 必须是 preference / context / decision",
+        );
     }
     let id = format!("mem-{}", uuid::Uuid::new_v4());
     let doc = json!({
@@ -83,11 +97,18 @@ async fn update(
     Path(id): Path<String>,
     Json(body): Json<Value>,
 ) -> Response {
-    let content = body.get("content").and_then(Value::as_str).unwrap_or("").trim();
+    let content = body
+        .get("content")
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .trim();
     if content.is_empty() {
         return err_msg(StatusCode::BAD_REQUEST, "content 不能为空");
     }
-    match state.store.update(MEMORY_COLLECTION, &id, &json!({ "content": content })) {
+    match state
+        .store
+        .update(MEMORY_COLLECTION, &id, &json!({ "content": content }))
+    {
         Some(updated) => ok_data(updated),
         None => err_msg(StatusCode::NOT_FOUND, "记忆条目不存在"),
     }
@@ -105,7 +126,9 @@ async fn remove(State(state): State<Arc<AppState>>, Path(id): Path<String>) -> R
 /// POST /api/memory/toggle {enabled} — 总开关一键停用.
 async fn toggle(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> Response {
     let enabled = body.get("enabled").and_then(Value::as_bool).unwrap_or(true);
-    state.store.set_meta(SWITCH_KEY, if enabled { "true" } else { "false" });
+    state
+        .store
+        .set_meta(SWITCH_KEY, if enabled { "true" } else { "false" });
     ok_data(json!({ "enabled": enabled }))
 }
 
@@ -126,7 +149,11 @@ async fn retrieve(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -
     if query.trim().is_empty() {
         return err_msg(StatusCode::BAD_REQUEST, "query 不能为空");
     }
-    let top_k = body.get("top_k").and_then(Value::as_u64).unwrap_or(3).min(10) as usize;
+    let top_k = body
+        .get("top_k")
+        .and_then(Value::as_u64)
+        .unwrap_or(3)
+        .min(10) as usize;
     let mut scored: Vec<(u64, Value)> = state
         .store
         .list(MEMORY_COLLECTION)
@@ -151,7 +178,10 @@ pub(crate) fn memory_routes() -> Router<Arc<AppState>> {
         .route("/api/memory/create", post(create))
         .route("/api/memory/list", get(list))
         .route("/api/memory/status", get(status))
-        .route("/api/memory/{id}", axum::routing::put(update).delete(remove))
+        .route(
+            "/api/memory/{id}",
+            axum::routing::put(update).delete(remove),
+        )
         .route("/api/memory/toggle", post(toggle))
         .route("/api/memory/retrieve", post(retrieve))
 }
@@ -162,7 +192,10 @@ mod tests {
 
     #[test]
     fn scoring_favors_relevant_content() {
-        assert!(score_entry("橘猫 习性", "橘猫的习性是白天睡觉") > score_entry("橘猫 习性", "量子计算原理"));
+        assert!(
+            score_entry("橘猫 习性", "橘猫的习性是白天睡觉")
+                > score_entry("橘猫 习性", "量子计算原理")
+        );
         assert!(score_entry("rust async", "rust async runtime notes") > 0);
     }
 }

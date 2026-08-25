@@ -21,6 +21,7 @@ import {
 import { detectImageIntent, refineImagePrompt } from "@/utils/imageIntent";
 import { exportFilename, imageService } from "@/services/api/image";
 import { audioService } from "@/services/api/audio";
+import { buildRagContext, ragService, type RagHit } from "@/services/api/rag";
 import { assetService, recordImageAssets } from "@/services/api/assets";
 import type { Conversation, Agent, Message, MessageAttachment } from "../../types";
 
@@ -175,6 +176,7 @@ export default function ConversationPage() {
       history: Message[],
       content: string,
       attachments?: MessageAttachment[],
+      ragContext?: string,
     ) => {
       setIsLoading(true);
       abortRef.current = new AbortController();
@@ -212,6 +214,9 @@ export default function ConversationPage() {
         const completion = await chatService.chatStream(
           {
             messages: [
+              ...(ragContext
+                ? [{ role: "system" as const, content: ragContext }]
+                : []),
               ...toRequestMessages(history),
               {
                 role: "user" as const,
@@ -344,7 +349,30 @@ export default function ConversationPage() {
         return;
       }
       lastImagePromptRef.current = null;
-      await runGeneration(conversationId, history, content, mergedAttachments);
+      // CHAT-11: retrieve cited chunks from attached documents.
+      const ragDocIds = (mergedAttachments ?? [])
+        .filter((a) => a.type === "rag/doc")
+        .map((a) => a.id);
+      let ragContext: string | undefined;
+      if (ragDocIds.length > 0) {
+        try {
+          const allHits: RagHit[] = [];
+          for (const docId of ragDocIds) {
+            const { hits } = await ragService.query(docId, content, 4);
+            allHits.push(...hits);
+          }
+          ragContext = buildRagContext(allHits) ?? undefined;
+        } catch (error) {
+          console.error("RAG retrieval failed:", error);
+        }
+      }
+      await runGeneration(
+        conversationId,
+        history,
+        content,
+        mergedAttachments,
+        ragContext,
+      );
     },
     [selectedConversation, isLoading, runGeneration, pendingAttachment],
   );

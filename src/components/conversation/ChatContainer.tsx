@@ -47,6 +47,7 @@ import {
   type SlashCommand,
 } from "@/utils/slashCommands";
 import { audioService, recordingSupported } from "@/services/api/audio";
+import { ragService, ragSupports } from "@/services/api/rag";
 import type {
   Message,
   Conversation,
@@ -196,19 +197,45 @@ export default function ChatContainer({
     }
   };
 
+  // CHAT-11: route uploads — images become vision attachments, documents
+  // go through the RAG pipeline and attach as citation sources.
+  const handleFilesRouted = async (files: File[]) => {
+    for (const file of files) {
+      if (file.type.startsWith("image/")) {
+        addImageFiles([file]);
+        continue;
+      }
+      if (ragSupports(file.name)) {
+        try {
+          message.info(`正在解析「${file.name}」…`);
+          const doc = await ragService.upload(file);
+          setAttachments((prev) => [
+            ...prev,
+            {
+              id: doc.doc_id,
+              name: file.name,
+              type: "rag/doc",
+              size: file.size,
+            },
+          ]);
+          message.success(`已索引「${file.name}」（${doc.chunks} 段）`);
+        } catch (error) {
+          const detail = error instanceof Error ? error.message : String(error);
+          message.error(`文档解析失败：${detail}`);
+        }
+      } else {
+        message.warning("暂不支持该格式——建议先转换为 PDF 后再上传");
+      }
+    }
+  };
+
   // Handle file upload
   const handleFileChange = (info: { fileList: UploadFile[] }) => {
     setFileList(info.fileList);
-    const newAttachments: MessageAttachment[] = info.fileList
+    const files = info.fileList
       .filter((file) => file.originFileObj)
-      .map((file) => ({
-        id: file.uid,
-        name: file.name,
-        type: file.type || "application/octet-stream",
-        size: file.size || 0,
-        file: file.originFileObj,
-      }));
-    setAttachments(newAttachments);
+      .map((file) => file.originFileObj as File);
+    void handleFilesRouted(files);
   };
 
   // Remove attachment

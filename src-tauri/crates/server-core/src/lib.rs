@@ -20,6 +20,7 @@ pub mod search;
 pub mod llm_gateway;
 pub mod routes;
 pub mod media;
+pub mod rag;
 pub mod spans;
 pub mod store;
 pub mod video_routes;
@@ -155,6 +156,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         .merge(video_routes::video_routes())
         .merge(media::media_routes())
         .merge(audio_routes::audio_routes())
+        .merge(rag::rag_routes())
         .merge(auth::auth_routes())
         .merge(collections::collection_routes())
         .fallback(not_implemented)

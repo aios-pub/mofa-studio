@@ -132,6 +132,11 @@ const coreMenuItems: MenuProps["items"] = [
     label: "深入研究",
   },
   {
+    key: "/creation/transcription",
+    icon: <AudioOutlined />,
+    label: "录音转写",
+  },
+  {
     key: "/creation/writing",
     icon: <EditOutlined />,
     label: "AI 写作",

@@ -40,6 +40,7 @@ import PptGenPage from './pages/creation/PptGenPage';
 import SheetsPage from './pages/creation/SheetsPage';
 import MediaPage from './pages/creation/MediaPage';
 import ResearchPage from './pages/creation/ResearchPage';
+import TranscriptionPage from './pages/creation/TranscriptionPage';
 import { ThemeProvider } from './theme';
 import { useFloatingBridge } from './tauri/useFloatingBridge';
 import { useSettings } from './stores';
@@ -72,6 +73,7 @@ function App() {
                   <Route path="/creation/sheets" element={<SheetsPage />} />
                   <Route path="/creation/media" element={<MediaPage />} />
                   <Route path="/creation/research" element={<ResearchPage />} />
+                  <Route path="/creation/transcription" element={<TranscriptionPage />} />
                   <Route path="/gallery" element={<GalleryPage />} />
                   <Route path="/flow" element={<FlowCanvasPage />} />
                   <Route path="/usage" element={<UsagePage />} />

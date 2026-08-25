@@ -8,9 +8,13 @@
  * transition log the host (server-core) persists.
  */
 pub mod executor;
+pub mod team;
 pub mod types;
 
 pub use executor::{approve, reject, run_project, EchoModel, RunError, StepModel, StepOutcome};
+pub use team::{
+    attach_team_result, run_team, Assignment, Expert, ExpertResult, TeamModel, TeamPolicy, TeamRun,
+};
 pub use types::{step, Project, ProjectPhase, Step, StepStatus, StepStrategy};
 
 #[cfg(test)]

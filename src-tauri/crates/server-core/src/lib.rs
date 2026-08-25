@@ -26,6 +26,7 @@ pub mod llm_gateway;
 pub mod mcp_host;
 pub mod media;
 pub mod memory_routes;
+pub mod model_center;
 pub mod podcast;
 pub mod rag;
 pub mod research;
@@ -111,6 +112,8 @@ pub(crate) struct AppState {
     pub data_dir: std::path::PathBuf,
     /// Deep-research runs (TOOL-09).
     pub research: research::ResearchRegistry,
+    /// Local-model pulls (FLOW-05 model center, Ollama proxy).
+    pub model_pulls: model_center::PullRegistry,
 }
 
 // ==================== Response helpers ====================
@@ -161,6 +164,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         video_tasks: video_routes::VideoTaskRegistry::default(),
         data_dir: config.data_dir.clone(),
         research: research::ResearchRegistry::default(),
+        model_pulls: model_center::PullRegistry::default(),
     });
 
     let app = Router::new()
@@ -188,6 +192,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         .merge(im_push::im_routes())
         .merge(workspace::workspace_routes_state())
         .merge(budget::budget_routes())
+        .merge(model_center::model_center_routes())
         .merge(auth::auth_routes())
         .merge(collections::collection_routes())
         .fallback(not_implemented)

@@ -41,6 +41,7 @@ import SheetsPage from './pages/creation/SheetsPage';
 import MediaPage from './pages/creation/MediaPage';
 import ResearchPage from './pages/creation/ResearchPage';
 import StoragePage from './pages/system/StoragePage';
+import ModelCenterPage from './pages/system/ModelCenterPage';
 import MemoryPage from './pages/system/MemoryPage';
 import ProjectsPage from './pages/task/ProjectsPage';
 import DeliverablesPage from './pages/task/DeliverablesPage';
@@ -81,6 +82,7 @@ function App() {
                   <Route path="/creation/research" element={<ResearchPage />} />
                   <Route path="/creation/transcription" element={<TranscriptionPage />} />
                   <Route path="/creation/podcast" element={<PodcastPage />} />
+                  <Route path="/models" element={<ModelCenterPage />} />
                   <Route path="/storage" element={<StoragePage />} />
                   <Route path="/memory" element={<MemoryPage />} />
                   <Route path="/projects" element={<ProjectsPage />} />

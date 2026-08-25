@@ -7,6 +7,9 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { Layout, Menu, Button, Switch } from "antd";
 import {
+  CloudDownloadOutlined,
+  SearchOutlined,
+  AudioOutlined,
   RobotOutlined,
   LeftOutlined,
   RightOutlined,
@@ -179,6 +182,11 @@ const coreMenuItems: MenuProps["items"] = [
     key: "/usage",
     icon: <LineChartOutlined />,
     label: "用量与日志",
+  },
+  {
+    key: "/models",
+    icon: <CloudDownloadOutlined />,
+    label: "模型中心",
   },
   {
     key: "/storage",

@@ -43,6 +43,7 @@ import ResearchPage from './pages/creation/ResearchPage';
 import StoragePage from './pages/system/StoragePage';
 import MemoryPage from './pages/system/MemoryPage';
 import ProjectsPage from './pages/task/ProjectsPage';
+import DeliverablesPage from './pages/task/DeliverablesPage';
 import TranscriptionPage from './pages/creation/TranscriptionPage';
 import PodcastPage from './pages/creation/PodcastPage';
 import { ThemeProvider } from './theme';
@@ -82,6 +83,7 @@ function App() {
                   <Route path="/storage" element={<StoragePage />} />
                   <Route path="/memory" element={<MemoryPage />} />
                   <Route path="/projects" element={<ProjectsPage />} />
+                  <Route path="/deliverables" element={<DeliverablesPage />} />
                   <Route path="/gallery" element={<GalleryPage />} />
                   <Route path="/flow" element={<FlowCanvasPage />} />
                   <Route path="/usage" element={<UsagePage />} />

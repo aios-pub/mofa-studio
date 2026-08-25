@@ -35,6 +35,7 @@ import {
   DatabaseOutlined,
   ProjectOutlined,
   CrownOutlined,
+  FileDoneOutlined,
   PictureOutlined,
   BulbOutlined,
   HistoryOutlined,
@@ -102,6 +103,11 @@ const coreMenuItems: MenuProps["items"] = [
     key: "/projects",
     icon: <ProjectOutlined />,
     label: "项目",
+  },
+  {
+    key: "/deliverables",
+    icon: <FileDoneOutlined />,
+    label: "产物中心",
   },
   {
     key: "/creation/image-gen",

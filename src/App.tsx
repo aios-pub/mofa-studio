@@ -41,6 +41,7 @@ import SheetsPage from './pages/creation/SheetsPage';
 import MediaPage from './pages/creation/MediaPage';
 import ResearchPage from './pages/creation/ResearchPage';
 import TranscriptionPage from './pages/creation/TranscriptionPage';
+import PodcastPage from './pages/creation/PodcastPage';
 import { ThemeProvider } from './theme';
 import { useFloatingBridge } from './tauri/useFloatingBridge';
 import { useSettings } from './stores';
@@ -74,6 +75,7 @@ function App() {
                   <Route path="/creation/media" element={<MediaPage />} />
                   <Route path="/creation/research" element={<ResearchPage />} />
                   <Route path="/creation/transcription" element={<TranscriptionPage />} />
+                  <Route path="/creation/podcast" element={<PodcastPage />} />
                   <Route path="/gallery" element={<GalleryPage />} />
                   <Route path="/flow" element={<FlowCanvasPage />} />
                   <Route path="/usage" element={<UsagePage />} />

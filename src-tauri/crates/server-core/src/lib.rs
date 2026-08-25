@@ -20,6 +20,7 @@ pub mod search;
 pub mod llm_gateway;
 pub mod routes;
 pub mod media;
+pub mod podcast;
 pub mod rag;
 pub mod research;
 pub mod spans;
@@ -162,6 +163,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         .merge(audio_routes::audio_routes())
         .merge(rag::rag_routes())
         .merge(research::research_routes())
+        .merge(podcast::podcast_routes())
         .merge(auth::auth_routes())
         .merge(collections::collection_routes())
         .fallback(not_implemented)

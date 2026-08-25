@@ -137,6 +137,11 @@ const coreMenuItems: MenuProps["items"] = [
     label: "录音转写",
   },
   {
+    key: "/creation/podcast",
+    icon: <AudioOutlined />,
+    label: "播客工坊",
+  },
+  {
     key: "/creation/writing",
     icon: <EditOutlined />,
     label: "AI 写作",

@@ -326,7 +326,7 @@ export default function ConversationPage() {
     async (
       content: string,
       attachments?: MessageAttachment[],
-      _params?: Record<string, unknown>,
+      params?: Record<string, unknown>,
     ) => {
       if (!selectedConversation || isLoading) return;
 
@@ -355,14 +355,21 @@ export default function ConversationPage() {
         return { ...prev, messages: [...prev.messages, userMessage] };
       });
 
+      // TASK-06: an explicit capability-panel route wins over heuristic
+      // detection (the user preselected the tool for this send).
+      const forcedRoute = params?.force_route;
+
       // CHAT-06: video intent routes to the async video task pipeline.
-      if (detectVideoIntent(content)) {
+      if (forcedRoute === "video" || detectVideoIntent(content)) {
         await runVideoGeneration(conversationId, content);
         return;
       }
 
       // CHAT-05: image intent routes to the image gateway instead of chat.
-      const intent = detectImageIntent(content, lastImagePromptRef.current !== null);
+      const intent =
+        forcedRoute === "image"
+          ? ({ kind: "image", edit: false } as const)
+          : detectImageIntent(content, lastImagePromptRef.current !== null);
       if (intent.kind === "image") {
         const prompt = intent.edit && lastImagePromptRef.current
           ? refineImagePrompt(lastImagePromptRef.current, content)

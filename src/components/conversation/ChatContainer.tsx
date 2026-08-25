@@ -21,6 +21,7 @@ import {
   EditOutlined,
   ForkOutlined,
   GlobalOutlined,
+  AppstoreOutlined,
   AudioOutlined,
   SoundOutlined,
 } from "@ant-design/icons";
@@ -35,6 +36,8 @@ import {
   DatePicker,
   message,
   Popconfirm,
+  Popover,
+  Checkbox,
 } from "antd";
 import type { UploadFile } from "antd/es/upload/interface";
 import dayjs from "dayjs";
@@ -46,6 +49,11 @@ import {
   loadCommands,
   type SlashCommand,
 } from "@/utils/slashCommands";
+import {
+  CAPABILITIES,
+  defaultPreselect,
+  type CapabilityId,
+} from "@/utils/intentRouter";
 import { audioService, recordingSupported } from "@/services/api/audio";
 import { ragService, ragSupports } from "@/services/api/rag";
 import type {
@@ -127,6 +135,10 @@ export default function ChatContainer({
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [showParamModal, setShowParamModal] = useState(false);
   const [paramValues, setParamValues] = useState<Record<string, unknown>>({});
+  // TASK-06 能力面板: intent-route flags applied to the NEXT send only.
+  const [routeCaps, setRouteCaps] = useState<Set<"image_gen" | "video_gen">>(
+    new Set(),
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -314,6 +326,106 @@ export default function ChatContainer({
     setSlotValues({});
   };
 
+  // TASK-06 能力面板: rule-based suggestions for the current input.
+  const suggestions = defaultPreselect(input);
+  const capabilityById = (id: CapabilityId) =>
+    CAPABILITIES.find((c) => c.id === id);
+
+  const applySuggestions = () => {
+    for (const id of suggestions) {
+      const action = capabilityById(id)?.action;
+      if (!action) continue;
+      if (action.kind === "toggle" && action.key === "web_search") {
+        onWebSearchChange?.(true);
+      } else if (action.kind === "toggle" && action.key === "deep_thinking") {
+        onDeepThinkingChange?.(true);
+      } else if (action.kind === "route") {
+        setRouteCaps((prev) => new Set(prev).add(action.target === "image" ? "image_gen" : "video_gen"));
+      } else if (action.kind === "slash") {
+        const command = slashCommands.find((c) => c.name === action.command);
+        if (command) pickCommand(command);
+      }
+    }
+  };
+
+  const toggleRouteCap = (id: "image_gen" | "video_gen", checked: boolean) => {
+    setRouteCaps((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const capabilityPanel = (
+    <div className="w-64 space-y-2" data-testid="capability-panel">
+      {suggestions.length > 0 ? (
+        <div className="flex items-center justify-between gap-2 text-xs text-[var(--color-text-secondary)]">
+          <span className="truncate">
+            按输入建议：
+            {suggestions.map((id) => capabilityById(id)?.label ?? id).join("、")}
+          </span>
+          <Button size="small" type="link" onClick={applySuggestions} aria-label="预选建议能力">
+            预选
+          </Button>
+        </div>
+      ) : (
+        <p className="text-xs text-[var(--color-text-tertiary)]">
+          输入内容后按意图预选；也可手动勾选
+        </p>
+      )}
+      <div className="flex flex-col gap-1">
+        <Checkbox
+          checked={webSearch}
+          disabled={!onWebSearchChange}
+          onChange={(e) => onWebSearchChange?.(e.target.checked)}
+          aria-label="能力-联网搜索"
+        >
+          联网搜索
+        </Checkbox>
+        <Checkbox
+          checked={deepThinking}
+          disabled={!onDeepThinkingChange}
+          onChange={(e) => onDeepThinkingChange?.(e.target.checked)}
+          aria-label="能力-深度思考"
+        >
+          深度思考
+        </Checkbox>
+        <Checkbox
+          checked={routeCaps.has("image_gen")}
+          onChange={(e) => toggleRouteCap("image_gen", e.target.checked)}
+          aria-label="能力-图像生成"
+        >
+          图像生成路由（本次发送）
+        </Checkbox>
+        <Checkbox
+          checked={routeCaps.has("video_gen")}
+          onChange={(e) => toggleRouteCap("video_gen", e.target.checked)}
+          aria-label="能力-视频生成"
+        >
+          视频生成路由（本次发送）
+        </Checkbox>
+      </div>
+      <div className="flex flex-wrap gap-1 pt-1 border-t border-(--color-border)">
+        {CAPABILITIES.filter((c) => c.action.kind === "slash").map((c) => (
+          <Button
+            key={c.id}
+            size="small"
+            onClick={() => {
+              const command = slashCommands.find(
+                (cmd) => cmd.name === (c.action as { command: string }).command,
+              );
+              if (command) pickCommand(command);
+            }}
+            aria-label={`命令工具-${c.label}`}
+          >
+            {c.label}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+
   // Send message
   const handleSend = () => {
     if (!input.trim() || isLoading) return;
@@ -335,10 +447,22 @@ export default function ChatContainer({
       }
     }
 
+    // TASK-06: apply the capability panel's selections for this send —
+    // toggles flip the real composer state, routes ride along as params.
+    const sendParams: Record<string, unknown> = { ...paramValues };
+    if (routeCaps.size > 0) {
+      sendParams.force_route = routeCaps.has("image_gen")
+        ? "image"
+        : routeCaps.has("video_gen")
+          ? "video"
+          : undefined;
+      setRouteCaps(new Set());
+    }
+
     onSendMessage(
       input.trim(),
       attachments.length > 0 ? attachments : undefined,
-      paramValues,
+      sendParams,
     );
     setInput("");
     setFileList([]);
@@ -739,6 +863,21 @@ export default function ChatContainer({
             </button>
           )}
 
+          <Popover content={capabilityPanel} trigger="click" placement="topLeft">
+            <button
+              className={`px-3 py-2 border rounded-lg transition-colors flex items-center gap-1 text-sm ${
+                routeCaps.size > 0
+                  ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)]"
+                  : "bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-(--color-border) hover:text-[var(--color-text-primary)]"
+              }`}
+              title="能力面板：按意图预选本次可用的工具（TASK-06 路由 v1）"
+              aria-label="能力面板"
+            >
+              <AppstoreOutlined />
+              <span className="hidden md:inline">能力</span>
+            </button>
+          </Popover>
+
           {onWebSearchChange && (
             <button
               onClick={() => onWebSearchChange(!webSearch)}
@@ -794,6 +933,7 @@ export default function ChatContainer({
             <button
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
+              aria-label="发送"
               className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <SendOutlined />

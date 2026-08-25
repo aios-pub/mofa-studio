@@ -200,3 +200,58 @@ describe("video attachment rendering (CHAT-06)", () => {
     expect(screen.getByLabelText("下载视频 橘猫.mp4")).toBeInTheDocument();
   });
 });
+
+describe("capability panel (TASK-06 路由 v1)", () => {
+  it("suggests capabilities from the typed input and preselect applies them", async () => {
+    const onWebSearchChange = vi.fn();
+    const props = renderChat({
+      onWebSearchChange,
+      onDeepThinkingChange: vi.fn(),
+    });
+
+    // Type an intent-bearing input, then open the panel.
+    fireEvent.change(screen.getByRole("textbox"), {
+      target: { value: "查一下最新的AI新闻" },
+    });
+    fireEvent.click(screen.getByLabelText("能力面板"));
+
+    // The suggestion line names the top capability.
+    const panel = await screen.findByTestId("capability-panel");
+    expect(panel.textContent).toContain("联网搜索");
+    fireEvent.click(screen.getByLabelText("预选建议能力"));
+    expect(onWebSearchChange).toHaveBeenCalledWith(true);
+
+    // Manual route checkboxes ride along as force_route on the next send.
+    fireEvent.click(screen.getByLabelText("能力-图像生成"));
+    fireEvent.click(screen.getByRole("button", { name: /发送/ }));
+    await waitFor(() => {
+      expect(props.onSendMessage).toHaveBeenCalled();
+    });
+    const params = props.onSendMessage.mock.calls[0][2] as Record<string, unknown>;
+    expect(params.force_route).toBe("image");
+  });
+
+  it("route flags reset after one send", async () => {
+    const props = renderChat({});
+    fireEvent.click(screen.getByLabelText("能力面板"));
+    fireEvent.click(await screen.findByLabelText("能力-视频生成"));
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "你好" } });
+    fireEvent.click(screen.getByRole("button", { name: /发送/ }));
+    await waitFor(() => {
+      expect(props.onSendMessage).toHaveBeenCalled();
+    });
+    expect(
+      (props.onSendMessage.mock.calls[0][2] as Record<string, unknown>).force_route,
+    ).toBe("video");
+
+    // Second send carries no stale route.
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "再来一条" } });
+    fireEvent.click(screen.getByRole("button", { name: /发送/ }));
+    await waitFor(() => {
+      expect(props.onSendMessage).toHaveBeenCalledTimes(2);
+    });
+    expect(
+      props.onSendMessage.mock.calls[1][2] as Record<string, unknown>,
+    ).not.toHaveProperty("force_route");
+  });
+});

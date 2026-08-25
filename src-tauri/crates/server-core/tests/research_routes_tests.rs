@@ -4,7 +4,6 @@
  * metadata with a token estimate, the status endpoint walks
  * planning→searching→synthesizing→done, and the report carries citations.
  */
-
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use axum::response::{IntoResponse, Response};
@@ -94,7 +93,11 @@ async fn configure_mock_search(app: &Router) {
         )
         .await
         .unwrap();
-    assert_eq!(response.status(), StatusCode::OK, "mock search config accepted");
+    assert_eq!(
+        response.status(),
+        StatusCode::OK,
+        "mock search config accepted"
+    );
 }
 
 #[tokio::test]
@@ -122,7 +125,10 @@ async fn full_research_run_with_mock_search() {
     let data = &started["data"];
     let research_id = data["research_id"].as_str().expect("id").to_string();
     assert_eq!(data["sources_target"], 3, "quick tier targets 3 sources");
-    assert!(data["estimated_tokens"].as_u64().unwrap() > 0, "token estimate present");
+    assert!(
+        data["estimated_tokens"].as_u64().unwrap() > 0,
+        "token estimate present"
+    );
 
     // Poll to terminal.
     let mut final_status = Value::Null;
@@ -172,7 +178,9 @@ async fn start_validates_topic_and_tier() {
                 .method("POST")
                 .uri("/api/research/start")
                 .header("content-type", "application/json")
-                .body(Body::from(json!({ "topic": "", "tier": "quick" }).to_string()))
+                .body(Body::from(
+                    json!({ "topic": "", "tier": "quick" }).to_string(),
+                ))
                 .unwrap(),
         )
         .await
@@ -185,7 +193,9 @@ async fn start_validates_topic_and_tier() {
                 .method("POST")
                 .uri("/api/research/start")
                 .header("content-type", "application/json")
-                .body(Body::from(json!({ "topic": "x", "tier": "extreme" }).to_string()))
+                .body(Body::from(
+                    json!({ "topic": "x", "tier": "extreme" }).to_string(),
+                ))
                 .unwrap(),
         )
         .await

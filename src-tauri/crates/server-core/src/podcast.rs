@@ -4,7 +4,6 @@
  * export MP3. Arg builders are pure so tests verify the filter graphs
  * without running ffmpeg.
  */
-
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -24,10 +23,7 @@ pub(crate) fn build_concat_args(inputs: &[String], output: &str) -> Vec<String> 
         args.push("-i".into());
         args.push(input.clone());
     }
-    let filter = format!(
-        "concat=n={}:v=0:a=1[out]",
-        inputs.len()
-    );
+    let filter = format!("concat=n={}:v=0:a=1[out]", inputs.len());
     args.extend([
         "-filter_complex".into(),
         filter,
@@ -75,23 +71,24 @@ pub(crate) fn build_bgm_mix_args(
 }
 
 fn ffmpeg_path() -> Option<String> {
-    ["ffmpeg", "/usr/local/bin/ffmpeg", "/opt/homebrew/bin/ffmpeg"]
-        .iter()
-        .find(|c| {
-            std::process::Command::new(c)
-                .arg("-version")
-                .output()
-                .map(|o| o.status.success())
-                .unwrap_or(false)
-        })
-        .map(|c| c.to_string())
+    [
+        "ffmpeg",
+        "/usr/local/bin/ffmpeg",
+        "/opt/homebrew/bin/ffmpeg",
+    ]
+    .iter()
+    .find(|c| {
+        std::process::Command::new(c)
+            .arg("-version")
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false)
+    })
+    .map(|c| c.to_string())
 }
 
 fn decode_to_file(dir: &std::path::Path, stem: &str, data_url: &str) -> Result<PathBuf, String> {
-    let payload = data_url
-        .split_once(",")
-        .map(|(_, p)| p)
-        .unwrap_or(data_url);
+    let payload = data_url.split_once(",").map(|(_, p)| p).unwrap_or(data_url);
     use base64::Engine as _;
     let bytes = base64::engine::general_purpose::STANDARD
         .decode(payload.trim())
@@ -112,7 +109,10 @@ async fn render(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> 
     };
     let dir = state.data_dir.join("podcast");
     if let Err(e) = tokio::fs::create_dir_all(&dir).await {
-        return err_msg(StatusCode::INTERNAL_SERVER_ERROR, &format!("创建目录失败: {e}"));
+        return err_msg(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            &format!("创建目录失败: {e}"),
+        );
     }
 
     // Decode turn audio to temp files (blocking pool for base64 + IO).
@@ -144,7 +144,10 @@ async fn render(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> 
     );
 
     let Some(ffmpeg) = ffmpeg_path() else {
-        return err_msg(StatusCode::UNPROCESSABLE_ENTITY, "未找到 ffmpeg：请安装 ffmpeg 后重试");
+        return err_msg(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "未找到 ffmpeg：请安装 ffmpeg 后重试",
+        );
     };
     let ffmpeg_for_concat = ffmpeg.clone();
     let concat_output = tokio::task::spawn_blocking(move || {
@@ -167,19 +170,23 @@ async fn render(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> 
 
     // Optional BGM bed over the concatenated voice.
     let bgm_data = body.get("bgm").and_then(Value::as_str);
-    let bgm_volume = body.get("bgm_volume").and_then(Value::as_f64).unwrap_or(0.25) as f32;
+    let bgm_volume = body
+        .get("bgm_volume")
+        .and_then(Value::as_f64)
+        .unwrap_or(0.25) as f32;
     let final_path = if let Some(bgm) = bgm_data.filter(|s| !s.is_empty()) {
         let dir2 = dir.clone();
         let bgm_owned = bgm.to_string();
-        let bgm_file = match tokio::task::spawn_blocking(move || {
-            decode_to_file(&dir2, "bgm", &bgm_owned)
-        })
-        .await
-        {
-            Ok(Ok(f)) => f,
-            Ok(Err(e)) => return err_msg(StatusCode::BAD_REQUEST, &e),
-            Err(e) => return err_msg(StatusCode::INTERNAL_SERVER_ERROR, &format!("任务失败: {e}")),
-        };
+        let bgm_file =
+            match tokio::task::spawn_blocking(move || decode_to_file(&dir2, "bgm", &bgm_owned))
+                .await
+            {
+                Ok(Ok(f)) => f,
+                Ok(Err(e)) => return err_msg(StatusCode::BAD_REQUEST, &e),
+                Err(e) => {
+                    return err_msg(StatusCode::INTERNAL_SERVER_ERROR, &format!("任务失败: {e}"))
+                }
+            };
         let mixed_out = dir.join(format!("episode_{}.mp3", uuid::Uuid::new_v4()));
         let mix_args = build_bgm_mix_args(
             &concat_out.to_string_lossy(),
@@ -197,7 +204,10 @@ async fn render(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> 
                 let stderr = String::from_utf8_lossy(&out.stderr);
                 return err_msg(
                     StatusCode::UNPROCESSABLE_ENTITY,
-                    &format!("BGM 混音失败: {}", stderr.chars().take(200).collect::<String>()),
+                    &format!(
+                        "BGM 混音失败: {}",
+                        stderr.chars().take(200).collect::<String>()
+                    ),
                 );
             }
             _ => return err_msg(StatusCode::INTERNAL_SERVER_ERROR, "ffmpeg 执行失败"),
@@ -216,7 +226,10 @@ async fn render(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> 
                 "size": bytes.len(),
             }))
         }
-        Err(e) => err_msg(StatusCode::INTERNAL_SERVER_ERROR, &format!("读取产物失败: {e}")),
+        Err(e) => err_msg(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            &format!("读取产物失败: {e}"),
+        ),
     }
 }
 

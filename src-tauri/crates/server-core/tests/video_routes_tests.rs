@@ -1,11 +1,10 @@
+use axum::body::Body;
 /**
  * Integration tests for async video tasks (TOOL-02): submit returns a task
  * id immediately; polling walks running → succeeded with a data-URL video
  * read from the engine's artifact path.
  */
-
 use axum::extract::State;
-use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::post;
@@ -28,7 +27,10 @@ async fn mock_invoke(
     Json(req): Json<Value>,
 ) -> Response {
     state.invocations.lock().unwrap().push(req.clone());
-    assert_eq!(req["capability"], "video_gen", "video tasks hit the video capability");
+    assert_eq!(
+        req["capability"], "video_gen",
+        "video tasks hit the video capability"
+    );
 
     // Write an "mp4" artifact like the real engine would.
     let dir = std::env::temp_dir().join("mofa-video-gw-test");
@@ -136,16 +138,20 @@ async fn video_task_lifecycle_submit_then_poll_to_success() {
         }
         tokio::time::sleep(std::time::Duration::from_millis(50)).await;
     }
-    assert_eq!(final_status["status"], "succeeded", "status: {final_status}");
+    assert_eq!(
+        final_status["status"], "succeeded",
+        "status: {final_status}"
+    );
     let video = final_status["video"].as_str().expect("video data url");
-    assert!(video.starts_with("data:video/mp4;base64,"), "video: {video}");
+    assert!(
+        video.starts_with("data:video/mp4;base64,"),
+        "video: {video}"
+    );
 
     // The engine saw the mapped request.
     let invocations = mock.invocations.lock().unwrap();
     assert_eq!(invocations.len(), 1);
-    assert_eq!(
-        invocations[0]["messages"][0]["content"], "一只橘猫追激光笔"
-    );
+    assert_eq!(invocations[0]["messages"][0]["content"], "一只橘猫追激光笔");
     assert_eq!(invocations[0]["params"]["size"], "1280x720");
     assert_eq!(invocations[0]["params"]["duration"], 5);
 }

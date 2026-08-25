@@ -3,7 +3,6 @@
  * keys persisted server-side in the meta store — never in the frontend.
  * Search results feed chat as grounding context and UI citations.
  */
-
 use std::sync::Arc;
 
 use axum::extract::State;
@@ -77,7 +76,11 @@ pub(crate) async fn run_search(
     }
 }
 
-async fn tavily(api_key: &str, query: &str, max_results: usize) -> Result<Vec<SearchResult>, String> {
+async fn tavily(
+    api_key: &str,
+    query: &str,
+    max_results: usize,
+) -> Result<Vec<SearchResult>, String> {
     let client = reqwest::Client::builder()
         .no_proxy()
         .build()
@@ -94,23 +97,41 @@ async fn tavily(api_key: &str, query: &str, max_results: usize) -> Result<Vec<Se
         .await
         .map_err(|e| format!("Tavily 请求失败: {e}"))?;
     if !resp.status().is_success() {
-        return Err(format!("Tavily HTTP {}: 请检查 Key 是否有效或欠费", resp.status()));
+        return Err(format!(
+            "Tavily HTTP {}: 请检查 Key 是否有效或欠费",
+            resp.status()
+        ));
     }
-    let payload: Value = resp.json().await.map_err(|e| format!("Tavily 响应解析失败: {e}"))?;
+    let payload: Value = resp
+        .json()
+        .await
+        .map_err(|e| format!("Tavily 响应解析失败: {e}"))?;
     let mut out = Vec::new();
     if let Some(items) = payload.get("results").and_then(Value::as_array) {
         for item in items.iter().take(max_results) {
             out.push(SearchResult {
-                title: item.get("title").and_then(Value::as_str).unwrap_or("").into(),
+                title: item
+                    .get("title")
+                    .and_then(Value::as_str)
+                    .unwrap_or("")
+                    .into(),
                 url: item.get("url").and_then(Value::as_str).unwrap_or("").into(),
-                snippet: item.get("content").and_then(Value::as_str).unwrap_or("").into(),
+                snippet: item
+                    .get("content")
+                    .and_then(Value::as_str)
+                    .unwrap_or("")
+                    .into(),
             });
         }
     }
     Ok(out)
 }
 
-async fn bocha(api_key: &str, query: &str, max_results: usize) -> Result<Vec<SearchResult>, String> {
+async fn bocha(
+    api_key: &str,
+    query: &str,
+    max_results: usize,
+) -> Result<Vec<SearchResult>, String> {
     let client = reqwest::Client::builder()
         .no_proxy()
         .build()
@@ -123,9 +144,15 @@ async fn bocha(api_key: &str, query: &str, max_results: usize) -> Result<Vec<Sea
         .await
         .map_err(|e| format!("博查请求失败: {e}"))?;
     if !resp.status().is_success() {
-        return Err(format!("博查 HTTP {}: 请检查 Key 是否有效或欠费", resp.status()));
+        return Err(format!(
+            "博查 HTTP {}: 请检查 Key 是否有效或欠费",
+            resp.status()
+        ));
     }
-    let payload: Value = resp.json().await.map_err(|e| format!("博查响应解析失败: {e}"))?;
+    let payload: Value = resp
+        .json()
+        .await
+        .map_err(|e| format!("博查响应解析失败: {e}"))?;
     // {"code":200,"data":{"webPages":{"value":[{"name","url","snippet","summary"}]}}}
     let mut out = Vec::new();
     if let Some(items) = payload
@@ -152,7 +179,11 @@ async fn bocha(api_key: &str, query: &str, max_results: usize) -> Result<Vec<Sea
     Ok(out)
 }
 
-async fn zhipu(api_key: &str, query: &str, max_results: usize) -> Result<Vec<SearchResult>, String> {
+async fn zhipu(
+    api_key: &str,
+    query: &str,
+    max_results: usize,
+) -> Result<Vec<SearchResult>, String> {
     let client = reqwest::Client::builder()
         .no_proxy()
         .build()
@@ -169,22 +200,36 @@ async fn zhipu(api_key: &str, query: &str, max_results: usize) -> Result<Vec<Sea
         .await
         .map_err(|e| format!("智谱请求失败: {e}"))?;
     if !resp.status().is_success() {
-        return Err(format!("智谱 HTTP {}: 请检查 Key 是否有效或欠费", resp.status()));
+        return Err(format!(
+            "智谱 HTTP {}: 请检查 Key 是否有效或欠费",
+            resp.status()
+        ));
     }
-    let payload: Value = resp.json().await.map_err(|e| format!("智谱响应解析失败: {e}"))?;
+    let payload: Value = resp
+        .json()
+        .await
+        .map_err(|e| format!("智谱响应解析失败: {e}"))?;
     // {"search_result":[{"title","link","content"}]}
     let mut out = Vec::new();
     if let Some(items) = payload.get("search_result").and_then(Value::as_array) {
         for item in items.iter().take(max_results) {
             out.push(SearchResult {
-                title: item.get("title").and_then(Value::as_str).unwrap_or("").into(),
+                title: item
+                    .get("title")
+                    .and_then(Value::as_str)
+                    .unwrap_or("")
+                    .into(),
                 url: item
                     .get("link")
                     .or_else(|| item.get("url"))
                     .and_then(Value::as_str)
                     .unwrap_or("")
                     .into(),
-                snippet: item.get("content").and_then(Value::as_str).unwrap_or("").into(),
+                snippet: item
+                    .get("content")
+                    .and_then(Value::as_str)
+                    .unwrap_or("")
+                    .into(),
             });
         }
     }
@@ -205,9 +250,17 @@ async fn get_config(State(state): State<Arc<AppState>>) -> Response {
 async fn set_config(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> Response {
     let provider = body.get("provider").and_then(Value::as_str).unwrap_or("");
     if !["tavily", "bocha", "zhipu", "mock"].contains(&provider) {
-        return err_msg(StatusCode::BAD_REQUEST, "provider 必须是 tavily / bocha / zhipu");
+        return err_msg(
+            StatusCode::BAD_REQUEST,
+            "provider 必须是 tavily / bocha / zhipu",
+        );
     }
-    let api_key = body.get("api_key").and_then(Value::as_str).unwrap_or("").trim().to_string();
+    let api_key = body
+        .get("api_key")
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .trim()
+        .to_string();
     if api_key.len() < 8 {
         return err_msg(StatusCode::BAD_REQUEST, "api_key 看起来太短");
     }
@@ -222,11 +275,19 @@ async fn set_config(State(state): State<Arc<AppState>>, Json(body): Json<Value>)
 }
 
 async fn search_handler(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> Response {
-    let query = body.get("query").and_then(Value::as_str).unwrap_or("").trim();
+    let query = body
+        .get("query")
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .trim();
     if query.is_empty() {
         return err_msg(StatusCode::BAD_REQUEST, "query 不能为空");
     }
-    let max = body.get("max_results").and_then(Value::as_u64).unwrap_or(5).min(10) as usize;
+    let max = body
+        .get("max_results")
+        .and_then(Value::as_u64)
+        .unwrap_or(5)
+        .min(10) as usize;
     match run_search(&state, query, max).await {
         Ok(results) => ok_data(json!({ "query": query, "results": results })),
         Err(msg) => err_msg(StatusCode::SERVICE_UNAVAILABLE, &msg),

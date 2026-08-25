@@ -2,7 +2,6 @@
  * Integration tests for the RAG endpoints (CHAT-11): upload → chunk →
  * retrieve with citation sources.
  */
-
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use axum::response::Response;
@@ -40,9 +39,7 @@ async fn upload_chunks_and_query_citations() {
 
     // A document long enough to chunk, with a distinctive fact in the middle.
     let filler = "这是一段与问题无关的填充内容，用于把文档撑到多个分块。".repeat(60);
-    let content = format!(
-        "{filler}\n橘猫的习性是白天睡觉晚上活动，喜欢晒太阳。\n{filler}"
-    );
+    let content = format!("{filler}\n橘猫的习性是白天睡觉晚上活动，喜欢晒太阳。\n{filler}");
     let response = app
         .clone()
         .oneshot(
@@ -74,7 +71,8 @@ async fn upload_chunks_and_query_citations() {
                 .uri("/api/rag/query")
                 .header("content-type", "application/json")
                 .body(Body::from(
-                    json!({ "doc_id": doc_id, "query": "橘猫的习性是什么", "top_k": 2 }).to_string(),
+                    json!({ "doc_id": doc_id, "query": "橘猫的习性是什么", "top_k": 2 })
+                        .to_string(),
                 ))
                 .unwrap(),
         )
@@ -87,7 +85,10 @@ async fn upload_chunks_and_query_citations() {
     // The top hit contains the fact and carries a citation source.
     assert!(hits[0]["text"].as_str().unwrap().contains("白天睡觉"));
     assert!(
-        hits[0]["source"].as_str().unwrap().contains("猫科资料.txt 第"),
+        hits[0]["source"]
+            .as_str()
+            .unwrap()
+            .contains("猫科资料.txt 第"),
         "source: {hits:?}"
     );
 }

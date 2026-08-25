@@ -4,7 +4,6 @@
  * target-size binary quality search. Video ops run through an ffmpeg
  * sidecar; image compression uses the native `image` encoders (PRD 09 §6).
  */
-
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::Arc;
@@ -50,27 +49,44 @@ impl TranscodeProfile {
 
 /// Build the two-pass GIF args (palettegen → paletteuse) for an input.
 /// Pure: tests assert the exact vectors without running ffmpeg.
-pub(crate) fn build_gif_args(input: &str, palette: &str, output: &str, fps: u32, width: u32) -> Vec<Vec<String>> {
+pub(crate) fn build_gif_args(
+    input: &str,
+    palette: &str,
+    output: &str,
+    fps: u32,
+    width: u32,
+) -> Vec<Vec<String>> {
     let scale = format!("scale={width}:-1:flags=lanczos");
     vec![
         vec![
-            "-i".into(), input.into(),
-            "-vf".into(), format!("{},palettegen=stats_mode=diff", scale),
-            "-y".into(), palette.into(),
+            "-i".into(),
+            input.into(),
+            "-vf".into(),
+            format!("{},palettegen=stats_mode=diff", scale),
+            "-y".into(),
+            palette.into(),
         ],
         vec![
-            "-i".into(), input.into(),
-            "-i".into(), palette.into(),
+            "-i".into(),
+            input.into(),
+            "-i".into(),
+            palette.into(),
             "-lavfi".into(),
             format!("paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle"),
-            "-framerate".into(), fps.to_string(),
-            "-y".into(), output.into(),
+            "-framerate".into(),
+            fps.to_string(),
+            "-y".into(),
+            output.into(),
         ],
     ]
 }
 
 /// Build transcode args for a profile. Pure.
-pub(crate) fn build_transcode_args(input: &str, output: &str, profile: TranscodeProfile) -> Vec<String> {
+pub(crate) fn build_transcode_args(
+    input: &str,
+    output: &str,
+    profile: TranscodeProfile,
+) -> Vec<String> {
     let (scale, fps, x264) = match profile {
         TranscodeProfile::Web1080 => ("scale='min(1920,iw)':-2", 30u32, "crf=20"),
         TranscodeProfile::Web720 => ("scale='min(1280,iw)':-2", 30, "crf=23"),
@@ -102,21 +118,25 @@ pub(crate) fn build_transcode_args(input: &str, output: &str, profile: Transcode
 }
 
 fn ffmpeg_path() -> Option<String> {
-    let candidates = ["ffmpeg", "/usr/local/bin/ffmpeg", "/opt/homebrew/bin/ffmpeg"];
+    let candidates = [
+        "ffmpeg",
+        "/usr/local/bin/ffmpeg",
+        "/opt/homebrew/bin/ffmpeg",
+    ];
     candidates
         .iter()
-        .find(|c| Command::new(c)
-            .arg("-version")
-            .output()
-            .map(|o| o.status.success())
-            .unwrap_or(false))
+        .find(|c| {
+            Command::new(c)
+                .arg("-version")
+                .output()
+                .map(|o| o.status.success())
+                .unwrap_or(false)
+        })
         .map(|c| c.to_string())
 }
 
 fn artifacts_dir(state: &AppState) -> PathBuf {
-    state
-        .data_dir
-        .join("media")
+    state.data_dir.join("media")
 }
 
 fn unique_path(dir: &Path, stem: &str, ext: &str) -> PathBuf {
@@ -132,7 +152,10 @@ async fn run_ffmpeg(passes: &[Vec<String>]) -> Result<(), String> {
             .map_err(|e| format!("ffmpeg 启动失败: {e}"))?;
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(format!("ffmpeg 失败: {}", stderr.chars().take(300).collect::<String>()));
+            return Err(format!(
+                "ffmpeg 失败: {}",
+                stderr.chars().take(300).collect::<String>()
+            ));
         }
     }
     Ok(())
@@ -140,10 +163,7 @@ async fn run_ffmpeg(passes: &[Vec<String>]) -> Result<(), String> {
 
 /// Image compression with target size (KB): binary search over JPEG quality.
 /// Native encoder path per PRD 09 §6 (ffmpeg is the cold-format fallback).
-pub(crate) fn compress_image_bytes(
-    bytes: &[u8],
-    target_kb: u64,
-) -> Result<(Vec<u8>, u8), String> {
+pub(crate) fn compress_image_bytes(bytes: &[u8], target_kb: u64) -> Result<(Vec<u8>, u8), String> {
     let img = image::load_from_memory(bytes).map_err(|e| format!("图片解码失败: {e}"))?;
     let target = target_kb.saturating_mul(1024).max(8 * 1024);
     let mut low = 5u8;
@@ -178,7 +198,10 @@ pub(crate) fn compress_image_bytes(
 async fn upload(State(state): State<Arc<AppState>>, mut multipart: Multipart) -> Response {
     let dir = artifacts_dir(&state);
     if let Err(e) = tokio::fs::create_dir_all(&dir).await {
-        return err_msg(StatusCode::INTERNAL_SERVER_ERROR, &format!("创建目录失败: {e}"));
+        return err_msg(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            &format!("创建目录失败: {e}"),
+        );
     }
     while let Some(field) = multipart.next_field().await.unwrap_or(None) {
         let filename = field.file_name().unwrap_or("upload.bin").to_string();
@@ -213,7 +236,10 @@ async fn file_data_response(path: &str, mime: &str) -> Response {
                 "size": bytes.len(),
             }))
         }
-        Err(e) => err_msg(StatusCode::INTERNAL_SERVER_ERROR, &format!("读取产物失败: {e}")),
+        Err(e) => err_msg(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            &format!("读取产物失败: {e}"),
+        ),
     }
 }
 
@@ -223,13 +249,27 @@ async fn to_gif(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> 
     if input.is_empty() || !Path::new(input).exists() {
         return err_msg(StatusCode::BAD_REQUEST, "输入文件不存在");
     }
-    let fps = body.get("fps").and_then(Value::as_u64).unwrap_or(12).clamp(1, 30) as u32;
-    let width = body.get("width").and_then(Value::as_u64).unwrap_or(480).clamp(120, 1280) as u32;
+    let fps = body
+        .get("fps")
+        .and_then(Value::as_u64)
+        .unwrap_or(12)
+        .clamp(1, 30) as u32;
+    let width = body
+        .get("width")
+        .and_then(Value::as_u64)
+        .unwrap_or(480)
+        .clamp(120, 1280) as u32;
     let dir = artifacts_dir(&state);
     let _ = tokio::fs::create_dir_all(&dir).await;
     let palette = unique_path(&dir, "palette", "png");
     let output = unique_path(&dir, "video", "gif");
-    let passes = build_gif_args(input, &palette.to_string_lossy(), &output.to_string_lossy(), fps, width);
+    let passes = build_gif_args(
+        input,
+        &palette.to_string_lossy(),
+        &output.to_string_lossy(),
+        fps,
+        width,
+    );
     if let Err(e) = run_ffmpeg(&passes).await {
         return err_msg(StatusCode::UNPROCESSABLE_ENTITY, &e);
     }
@@ -243,9 +283,15 @@ async fn transcode(State(state): State<Arc<AppState>>, Json(body): Json<Value>) 
     if input.is_empty() || !Path::new(input).exists() {
         return err_msg(StatusCode::BAD_REQUEST, "输入文件不存在");
     }
-    let profile_name = body.get("profile").and_then(Value::as_str).unwrap_or("web_720");
+    let profile_name = body
+        .get("profile")
+        .and_then(Value::as_str)
+        .unwrap_or("web_720");
     let Some(profile) = TranscodeProfile::from_str_loose(profile_name) else {
-        return err_msg(StatusCode::BAD_REQUEST, "未知 profile，可选 web_1080/web_720/social_vertical/gif_friendly");
+        return err_msg(
+            StatusCode::BAD_REQUEST,
+            "未知 profile，可选 web_1080/web_720/social_vertical/gif_friendly",
+        );
     };
     let dir = artifacts_dir(&state);
     let _ = tokio::fs::create_dir_all(&dir).await;
@@ -263,7 +309,11 @@ async fn compress_image(Json(body): Json<Value>) -> Response {
     if input.is_empty() || !Path::new(input).exists() {
         return err_msg(StatusCode::BAD_REQUEST, "输入文件不存在");
     }
-    let target_kb = body.get("target_kb").and_then(Value::as_u64).unwrap_or(200).clamp(5, 10_000);
+    let target_kb = body
+        .get("target_kb")
+        .and_then(Value::as_u64)
+        .unwrap_or(200)
+        .clamp(5, 10_000);
     let bytes = match tokio::fs::read(input).await {
         Ok(b) => b,
         Err(e) => return err_msg(StatusCode::INTERNAL_SERVER_ERROR, &format!("读取失败: {e}")),
@@ -336,15 +386,26 @@ mod tests {
         // 600x600 noise compresses poorly; target generous so a mid quality fits.
         let mut img = image::RgbImage::new(600, 600);
         for (x, pixel) in img.pixels_mut().enumerate() {
-            *pixel = image::Rgb([(x % 255) as u8, ((x / 7) % 255) as u8, ((x * 3) % 255) as u8]);
+            *pixel = image::Rgb([
+                (x % 255) as u8,
+                ((x / 7) % 255) as u8,
+                ((x * 3) % 255) as u8,
+            ]);
         }
         let mut png = Vec::new();
         image::DynamicImage::ImageRgb8(img)
             .write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png)
             .unwrap();
         let (jpeg, quality) = compress_image_bytes(&png, 80).expect("compression works");
-        assert!(jpeg.len() as u64 <= 80 * 1024, "size {} over target", jpeg.len());
-        assert!(quality > 5, "should find a non-floor quality, got {quality}");
+        assert!(
+            jpeg.len() as u64 <= 80 * 1024,
+            "size {} over target",
+            jpeg.len()
+        );
+        assert!(
+            quality > 5,
+            "should find a non-floor quality, got {quality}"
+        );
     }
 
     #[test]

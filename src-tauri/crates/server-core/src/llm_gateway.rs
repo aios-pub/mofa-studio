@@ -93,7 +93,10 @@ async fn chat_completions(State(state): State<Arc<AppState>>, Json(body): Json<V
 
     // CHAT-03 web search: run retrieval first, ground the prompt, and pass
     // sources through to the UI as citations.
-    let web_search = body.get("web_search").and_then(Value::as_bool).unwrap_or(false);
+    let web_search = body
+        .get("web_search")
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
     let mut web_sources: Vec<Value> = Vec::new();
     if web_search {
         let query = messages
@@ -117,7 +120,8 @@ async fn chat_completions(State(state): State<Arc<AppState>>, Json(body): Json<V
                     numbered.join("\n\n"),
                 );
                 // Prepend as the first system message.
-                let mut grounded = vec![json!({ "role": "system", "content": grounding, "images": [] })];
+                let mut grounded =
+                    vec![json!({ "role": "system", "content": grounding, "images": [] })];
                 grounded.extend(messages.clone());
                 engine_req["messages"] = Value::Array(grounded);
                 web_sources = results
@@ -336,9 +340,7 @@ async fn chat_completions_stream(
     let leading_frame = if web_sources.is_empty() {
         None
     } else {
-        Some(
-            sse_frame(json!({ "web_sources": web_sources })),
-        )
+        Some(sse_frame(json!({ "web_sources": web_sources })))
     };
 
     tokio::spawn(async move {
@@ -407,7 +409,11 @@ async fn chat_completions_stream(
             tokens_seen,
             0,
             status,
-            if saw_error { Some("stream failed in-band") } else { None },
+            if saw_error {
+                Some("stream failed in-band")
+            } else {
+                None
+            },
         );
     });
 

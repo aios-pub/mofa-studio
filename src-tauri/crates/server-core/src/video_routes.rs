@@ -4,7 +4,6 @@
  * POST returns a task id immediately, GET polls the state, and the video
  * arrives base64-encoded when done.
  */
-
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -80,17 +79,26 @@ async fn submit(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> 
         VideoTask {
             phase: TaskPhase::Running,
             prompt: prompt.clone(),
-            model: body.get("model").and_then(Value::as_str).map(str::to_string),
+            model: body
+                .get("model")
+                .and_then(Value::as_str)
+                .map(str::to_string),
             error: None,
             video: None,
-            created_at: chrono::Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string(),
+            created_at: chrono::Utc::now()
+                .format("%Y-%m-%dT%H:%M:%S%.3fZ")
+                .to_string(),
         },
     );
 
     // Drive the engine call in the background; the task card polls status.
     let task_state = state.clone();
     let task_key = task_id.clone();
-    let request_model = engine_req.get("model").and_then(Value::as_str).unwrap_or("auto").to_string();
+    let request_model = engine_req
+        .get("model")
+        .and_then(Value::as_str)
+        .unwrap_or("auto")
+        .to_string();
     tokio::spawn(async move {
         let url = format!("{}/v1/invoke", task_state.engine_base_url);
         let started = std::time::Instant::now();
@@ -100,7 +108,11 @@ async fn submit(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> 
                 Ok(payload) => {
                     let file = payload.get("file").and_then(Value::as_str).unwrap_or("");
                     if file.is_empty() {
-                        (TaskPhase::Failed, None, Some("engine returned no video file".to_string()))
+                        (
+                            TaskPhase::Failed,
+                            None,
+                            Some("engine returned no video file".to_string()),
+                        )
                     } else {
                         match tokio::fs::read(file).await {
                             Ok(bytes) => {
@@ -120,14 +132,26 @@ async fn submit(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> 
                         }
                     }
                 }
-                Err(e) => (TaskPhase::Failed, None, Some(format!("invalid engine response: {e}"))),
+                Err(e) => (
+                    TaskPhase::Failed,
+                    None,
+                    Some(format!("invalid engine response: {e}")),
+                ),
             },
             Ok(resp) => {
                 let status = resp.status();
                 let text = resp.text().await.unwrap_or_default();
-                (TaskPhase::Failed, None, Some(format!("engine HTTP {status}: {text}")))
+                (
+                    TaskPhase::Failed,
+                    None,
+                    Some(format!("engine HTTP {status}: {text}")),
+                )
             }
-            Err(e) => (TaskPhase::Failed, None, Some(format!("engine unreachable: {e}"))),
+            Err(e) => (
+                TaskPhase::Failed,
+                None,
+                Some(format!("engine unreachable: {e}")),
+            ),
         };
         spans::record_span(
             &task_state.store,
@@ -138,7 +162,11 @@ async fn submit(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> 
             None,
             None,
             started.elapsed().as_millis() as u64,
-            if phase == TaskPhase::Succeeded { "ok" } else { "error" },
+            if phase == TaskPhase::Succeeded {
+                "ok"
+            } else {
+                "error"
+            },
             error.as_deref(),
         );
         if let Some(task) = task_state.video_tasks.tasks.lock().await.get_mut(&task_key) {

@@ -16,16 +16,17 @@ pub mod audio_routes;
 pub mod auth;
 pub mod collections;
 pub mod flow_routes;
-pub mod search;
 pub mod llm_gateway;
-pub mod routes;
 pub mod media;
 pub mod podcast;
 pub mod rag;
 pub mod research;
+pub mod routes;
+pub mod search;
 pub mod spans;
 pub mod storage;
 pub mod store;
+pub mod task_routes;
 pub mod video_routes;
 pub mod ws;
 
@@ -166,6 +167,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         .merge(research::research_routes())
         .merge(podcast::podcast_routes())
         .merge(storage::storage_routes())
+        .merge(task_routes::task_routes())
         .merge(auth::auth_routes())
         .merge(collections::collection_routes())
         .fallback(not_implemented)

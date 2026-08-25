@@ -2,7 +2,6 @@
  * Integration tests for the audio endpoints (CHAT-08): ASR upload → text
  * and TTS text → audio bytes, against a mock engine.
  */
-
 use axum::body::Body;
 use axum::http::{header, Request, StatusCode};
 use axum::response::{IntoResponse, Response};
@@ -94,7 +93,10 @@ async fn transcriptions_stage_audio_and_return_text() {
             Request::builder()
                 .method("POST")
                 .uri("/v1/audio/transcriptions")
-                .header("content-type", format!("multipart/form-data; boundary={boundary}"))
+                .header(
+                    "content-type",
+                    format!("multipart/form-data; boundary={boundary}"),
+                )
                 .body(Body::from(body))
                 .unwrap(),
         )
@@ -104,7 +106,10 @@ async fn transcriptions_stage_audio_and_return_text() {
     let text = body_string(response).await;
     let parsed: Value = serde_json::from_str(&text).expect("json");
     let recognized = parsed["text"].as_str().expect("text");
-    assert!(recognized.starts_with("识别自:"), "recognized: {recognized}");
+    assert!(
+        recognized.starts_with("识别自:"),
+        "recognized: {recognized}"
+    );
     // The staged file lived under the app data dir and was cleaned up.
     assert!(recognized.contains("asr_"));
 }
@@ -128,7 +133,10 @@ async fn speech_returns_audio_mpeg_bytes() {
         .await
         .unwrap();
     assert_eq!(response.status(), StatusCode::OK);
-    assert_eq!(response.headers().get(header::CONTENT_TYPE).unwrap(), "audio/mpeg");
+    assert_eq!(
+        response.headers().get(header::CONTENT_TYPE).unwrap(),
+        "audio/mpeg"
+    );
     let body = body_string(response).await;
     assert_eq!(body, "AUDIO(你好世界)");
 }

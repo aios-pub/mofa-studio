@@ -4,7 +4,6 @@
  * keyword scoring. Chunks persist in the generic store; every retrieved
  * chunk carries a「xx 文档 第n段」source description for citation.
  */
-
 use std::sync::Arc;
 
 use axum::extract::{Multipart, State};
@@ -44,21 +43,18 @@ pub(crate) fn extract_text(filename: &str, bytes: &[u8]) -> Result<String, Strin
         .to_ascii_lowercase();
     match ext.as_str() {
         "txt" | "md" | "csv" => Ok(String::from_utf8_lossy(bytes).to_string()),
-        "pdf" => pdf_extract::extract_text_from_mem(bytes)
-            .map_err(|e| format!("PDF 解析失败: {e}")),
+        "pdf" => {
+            pdf_extract::extract_text_from_mem(bytes).map_err(|e| format!("PDF 解析失败: {e}"))
+        }
         "xlsx" => {
-            let mut workbook =
-                calamine::open_workbook_auto_from_rs(std::io::Cursor::new(bytes))
-                    .map_err(|e| format!("xlsx 打开失败: {e}"))?;
+            let mut workbook = calamine::open_workbook_auto_from_rs(std::io::Cursor::new(bytes))
+                .map_err(|e| format!("xlsx 打开失败: {e}"))?;
             let mut out = String::new();
             for name in workbook.sheet_names().to_vec() {
                 if let Ok(range) = workbook.worksheet_range(&name) {
                     out.push_str(&format!("[工作表: {}]\n", name));
                     for row in range.rows() {
-                        let cells: Vec<String> = row
-                            .iter()
-                            .map(|cell| cell.to_string())
-                            .collect();
+                        let cells: Vec<String> = row.iter().map(|cell| cell.to_string()).collect();
                         out.push_str(&cells.join("\t"));
                         out.push('\n');
                     }
@@ -70,8 +66,8 @@ pub(crate) fn extract_text(filename: &str, bytes: &[u8]) -> Result<String, Strin
             // docx is a zip; the document body is word/document.xml — pull
             // the text runs (w:t elements) without a full XML parser.
             let cursor = std::io::Cursor::new(bytes);
-            let mut zip = zip::ZipArchive::new(cursor)
-                .map_err(|e| format!("docx 打开失败: {e}"))?;
+            let mut zip =
+                zip::ZipArchive::new(cursor).map_err(|e| format!("docx 打开失败: {e}"))?;
             let mut xml = String::new();
             use std::io::Read;
             zip.by_name("word/document.xml")
@@ -96,9 +92,7 @@ pub(crate) fn extract_text(filename: &str, bytes: &[u8]) -> Result<String, Strin
             }
             Ok(text)
         }
-        other => Err(format!(
-            "暂不支持 .{other} 文件——建议先转换为 PDF 后再上传"
-        )),
+        other => Err(format!("暂不支持 .{other} 文件——建议先转换为 PDF 后再上传")),
     }
 }
 
@@ -161,11 +155,7 @@ pub(crate) fn score_chunk(query: &str, chunk_text: &str) -> u64 {
     score
 }
 
-pub(crate) fn top_chunks(
-    chunks: &[Value],
-    query: &str,
-    top_k: usize,
-) -> Vec<Value> {
+pub(crate) fn top_chunks(chunks: &[Value], query: &str, top_k: usize) -> Vec<Value> {
     let mut scored: Vec<(u64, &Value)> = chunks
         .iter()
         .map(|chunk| {
@@ -174,11 +164,13 @@ pub(crate) fn top_chunks(
         })
         .filter(|(score, _)| *score > 0)
         .collect();
-    scored.sort_by(|a, b| b.0.cmp(&a.0).then_with(|| {
-        let sa = a.1.get("seq").and_then(Value::as_u64).unwrap_or(0);
-        let sb = b.1.get("seq").and_then(Value::as_u64).unwrap_or(0);
-        sa.cmp(&sb)
-    }));
+    scored.sort_by(|a, b| {
+        b.0.cmp(&a.0).then_with(|| {
+            let sa = a.1.get("seq").and_then(Value::as_u64).unwrap_or(0);
+            let sb = b.1.get("seq").and_then(Value::as_u64).unwrap_or(0);
+            sa.cmp(&sb)
+        })
+    });
     scored
         .into_iter()
         .take(top_k)
@@ -266,7 +258,11 @@ async fn query(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> R
     if doc_id.is_empty() || query_text.trim().is_empty() {
         return err_msg(StatusCode::BAD_REQUEST, "doc_id 与 query 均为必填");
     }
-    let top_k = body.get("top_k").and_then(Value::as_u64).unwrap_or(4).min(10) as usize;
+    let top_k = body
+        .get("top_k")
+        .and_then(Value::as_u64)
+        .unwrap_or(4)
+        .min(10) as usize;
     let chunks: Vec<Value> = state
         .store
         .list("rag_chunk")
@@ -366,6 +362,8 @@ mod tests {
         let top = top_chunks(&chunks, "橘猫习性", 2);
         assert_eq!(top.len(), 2);
         // Same score → lower seq first.
-        assert!(top.iter().all(|c| c["text"].as_str().unwrap().contains("橘猫")));
+        assert!(top
+            .iter()
+            .all(|c| c["text"].as_str().unwrap().contains("橘猫")));
     }
 }

@@ -4,7 +4,6 @@
  * dedup, and a citation-numbered markdown report. Progress is observable
  * per query (检索路径树) through the status endpoint.
  */
-
 use std::collections::HashSet;
 use std::sync::Arc;
 
@@ -87,9 +86,14 @@ pub(crate) fn parse_queries(reply: &str) -> Vec<String> {
     if queries.is_empty() {
         queries = trimmed
             .lines()
-            .map(|line| line.trim().trim_start_matches(['-', '·', '*', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.', ' '])
-            .trim()
-            .to_string())
+            .map(|line| {
+                line.trim()
+                    .trim_start_matches([
+                        '-', '·', '*', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.', ' ',
+                    ])
+                    .trim()
+                    .to_string()
+            })
             .filter(|line| !line.is_empty())
             .collect();
     }
@@ -110,7 +114,13 @@ pub(crate) fn synthesis_messages(topic: &str, sources: &[SearchResult]) -> Vec<V
         .iter()
         .enumerate()
         .map(|(index, source)| {
-            format!("[{}] {} — {}\n{}", index + 1, source.title, source.url, source.snippet)
+            format!(
+                "[{}] {} — {}\n{}",
+                index + 1,
+                source.title,
+                source.url,
+                source.snippet
+            )
         })
         .collect();
     vec![
@@ -151,10 +161,7 @@ pub(crate) struct ResearchRegistry {
 
 // ==================== Engine chat helper ====================
 
-async fn engine_chat(
-    state: &AppState,
-    messages: &[Value],
-) -> Result<String, String> {
+async fn engine_chat(state: &AppState, messages: &[Value]) -> Result<String, String> {
     let url = format!("{}/v1/invoke", state.engine_base_url);
     let body = json!({
         "capability": "chat",
@@ -171,7 +178,10 @@ async fn engine_chat(
     if !resp.status().is_success() {
         return Err(format!("引擎 HTTP {}", resp.status()));
     }
-    let payload: Value = resp.json().await.map_err(|e| format!("响应解析失败: {e}"))?;
+    let payload: Value = resp
+        .json()
+        .await
+        .map_err(|e| format!("响应解析失败: {e}"))?;
     Ok(payload
         .get("text")
         .and_then(Value::as_str)
@@ -183,7 +193,11 @@ async fn engine_chat(
 
 /// POST /api/research/start {topic, tier}
 async fn start(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> Response {
-    let topic = body.get("topic").and_then(Value::as_str).unwrap_or("").trim();
+    let topic = body
+        .get("topic")
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .trim();
     if topic.is_empty() {
         return err_msg(StatusCode::BAD_REQUEST, "topic 不能为空");
     }
@@ -193,7 +207,10 @@ async fn start(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> R
         .unwrap_or("standard")
         .to_string();
     let Some(tier) = Tier::from_str_loose(&tier_name) else {
-        return err_msg(StatusCode::BAD_REQUEST, "tier 必须是 quick / standard / deep");
+        return err_msg(
+            StatusCode::BAD_REQUEST,
+            "tier 必须是 quick / standard / deep",
+        );
     };
 
     let research_id = format!("rs-{}", uuid::Uuid::new_v4());
@@ -254,8 +271,7 @@ async fn start(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> R
             let sources = dedup_results(std::mem::take(&mut all_results));
             all_results = sources;
         }
-        let sources: Vec<SearchResult> =
-            all_results.into_iter().take(tier.sources()).collect();
+        let sources: Vec<SearchResult> = all_results.into_iter().take(tier.sources()).collect();
         run.sources = sources.len();
 
         // 3. Synthesize with citations.
@@ -354,9 +370,21 @@ mod tests {
     #[test]
     fn dedup_keeps_first_seen_urls() {
         let results = vec![
-            SearchResult { title: "a".into(), url: "u1".into(), snippet: String::new() },
-            SearchResult { title: "b".into(), url: "u2".into(), snippet: String::new() },
-            SearchResult { title: "a-dup".into(), url: "u1".into(), snippet: String::new() },
+            SearchResult {
+                title: "a".into(),
+                url: "u1".into(),
+                snippet: String::new(),
+            },
+            SearchResult {
+                title: "b".into(),
+                url: "u2".into(),
+                snippet: String::new(),
+            },
+            SearchResult {
+                title: "a-dup".into(),
+                url: "u1".into(),
+                snippet: String::new(),
+            },
         ];
         let deduped = dedup_results(results);
         assert_eq!(deduped.len(), 2);
@@ -366,8 +394,16 @@ mod tests {
     #[test]
     fn synthesis_prompt_numbers_every_source() {
         let sources = vec![
-            SearchResult { title: "t1".into(), url: "https://a".into(), snippet: "s1".into() },
-            SearchResult { title: "t2".into(), url: "https://b".into(), snippet: "s2".into() },
+            SearchResult {
+                title: "t1".into(),
+                url: "https://a".into(),
+                snippet: "s1".into(),
+            },
+            SearchResult {
+                title: "t2".into(),
+                url: "https://b".into(),
+                snippet: "s2".into(),
+            },
         ];
         let messages = synthesis_messages("主题", &sources);
         let user_content = messages[1]["content"].as_str().unwrap();

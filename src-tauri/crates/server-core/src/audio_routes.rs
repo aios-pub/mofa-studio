@@ -3,7 +3,6 @@
  * engine asr via input_file) and TTS (text → engine tts → audio/mpeg
  * bytes). Local-first: uploads land under the app data dir.
  */
-
 use std::sync::Arc;
 
 use axum::body::Body;
@@ -26,7 +25,10 @@ pub(crate) fn audio_routes() -> Router<Arc<AppState>> {
 async fn transcribe(State(state): State<Arc<AppState>>, mut multipart: Multipart) -> Response {
     let dir = state.data_dir.join("audio");
     if let Err(e) = tokio::fs::create_dir_all(&dir).await {
-        return err_msg(StatusCode::INTERNAL_SERVER_ERROR, &format!("创建目录失败: {e}"));
+        return err_msg(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            &format!("创建目录失败: {e}"),
+        );
     }
     while let Some(field) = multipart.next_field().await.unwrap_or(None) {
         if field.name() != Some("file") {
@@ -107,7 +109,12 @@ async fn speech(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> 
     let status = upstream.status();
     let payload: Value = match upstream.json().await {
         Ok(v) => v,
-        Err(e) => return err_msg(StatusCode::BAD_GATEWAY, &format!("invalid engine response: {e}")),
+        Err(e) => {
+            return err_msg(
+                StatusCode::BAD_GATEWAY,
+                &format!("invalid engine response: {e}"),
+            )
+        }
     };
     if !status.is_success() {
         let msg = payload

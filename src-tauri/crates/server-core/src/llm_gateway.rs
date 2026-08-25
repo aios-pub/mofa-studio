@@ -15,7 +15,7 @@
 use std::sync::Arc;
 
 use axum::body::Body;
-use axum::extract::State;
+use axum::extract::{Multipart, State};
 use axum::http::{header, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
@@ -43,6 +43,7 @@ pub(crate) fn llm_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/v1/chat/completions", post(chat_completions))
         .route("/v1/images/generations", post(image_generations))
+        .route("/v1/images/edits", post(image_edits))
         .route("/v1/models", get(list_models))
         .route("/v1/engine/health", get(engine_health))
         .route(
@@ -642,7 +643,9 @@ async fn engine_health(State(state): State<Arc<AppState>>) -> Response {
 /// POST /v1/images/generations — OpenAI image API over the engine's
 /// `image_gen` capability. The engine writes artifacts to its output dir
 /// and reports paths (`files`); the gateway reads them off the shared host
-/// and returns base64 payloads in the OpenAI shape.
+/// and returns base64 payloads in the OpenAI shape. `n` candidates come
+/// from `n` concurrent engine invokes (the engine itself always yields one
+/// image per call).
 async fn image_generations(
     State(state): State<Arc<AppState>>,
     Json(body): Json<Value>,
@@ -659,78 +662,20 @@ async fn image_generations(
         engine_req["model"] = json!(model);
     }
     let mut params = json!({});
-    if let Some(n) = body.get("n").and_then(Value::as_u64) {
-        params["n"] = json!(n);
-    }
     if let Some(size) = body.get("size").and_then(Value::as_str) {
         params["size"] = json!(size);
     }
     engine_req["params"] = params;
 
-    let url = format!("{}/v1/invoke", state.engine_base_url);
-    let upstream = match state.http.post(&url).json(&engine_req).send().await {
-        Ok(resp) => resp,
-        Err(e) => return engine_unreachable(&state.engine_base_url, &e),
-    };
-    let status = upstream.status();
-    let payload: Value = match upstream.json().await {
+    let n = body.get("n").and_then(Value::as_u64).unwrap_or(1);
+    let (payload, files) = match fan_out_image_jobs(&state, engine_req, n).await {
         Ok(v) => v,
-        Err(e) => {
-            return openai_error(
-                StatusCode::BAD_GATEWAY,
-                &format!("invalid engine response: {e}"),
-            )
-        }
+        Err(resp) => return resp,
     };
-    if !status.is_success() {
-        let msg = payload
-            .pointer("/error/message")
-            .or_else(|| payload.get("message"))
-            .and_then(Value::as_str)
-            .unwrap_or("engine rejected the request")
-            .to_string();
-        return openai_error(map_engine_status(status), &msg);
-    }
-
-    // Prefer the full artifact list; fall back to the single `file` mirror.
-    let files: Vec<String> = payload
-        .get("files")
-        .and_then(Value::as_array)
-        .map(|a| {
-            a.iter()
-                .filter_map(Value::as_str)
-                .map(str::to_string)
-                .collect()
-        })
-        .filter(|v: &Vec<String>| !v.is_empty())
-        .unwrap_or_else(|| {
-            payload
-                .get("file")
-                .and_then(Value::as_str)
-                .map(|f| vec![f.to_string()])
-                .unwrap_or_default()
-        });
-
-    let mut data = Vec::with_capacity(files.len());
-    for path in &files {
-        match tokio::fs::read(path).await {
-            Ok(bytes) => {
-                use base64::Engine as _;
-                data.push(json!({
-                    "b64_json": base64::engine::general_purpose::STANDARD.encode(&bytes),
-                }));
-            }
-            Err(e) => {
-                return openai_error(
-                    StatusCode::BAD_GATEWAY,
-                    &format!(
-                        "engine artifact is not readable from the gateway host ({path}: {e}); \
-                         is mofa-engine running on this machine?"
-                    ),
-                );
-            }
-        }
-    }
+    let data = match artifacts_to_data(&files).await {
+        Ok(d) => d,
+        Err(resp) => return resp,
+    };
     if data.is_empty() {
         return openai_error(
             StatusCode::BAD_GATEWAY,
@@ -763,6 +708,276 @@ async fn image_generations(
         // Engine metadata beyond the OpenAI contract.
         "model_used": payload.get("model_used").cloned().unwrap_or(Value::Null),
         "provider": payload.get("provider").cloned().unwrap_or(Value::Null),
+    }))
+    .into_response()
+}
+
+/// One engine image job (`image_gen` / `image_edit`) → its response payload
+/// plus the artifact paths it produced. Prefers the full artifact list,
+/// falling back to the single `file` mirror. `Err` carries the ready-to-serve
+/// error response.
+async fn engine_image_artifacts(
+    state: &Arc<AppState>,
+    engine_req: &Value,
+) -> Result<(Value, Vec<String>), Response> {
+    let url = format!("{}/v1/invoke", state.engine_base_url);
+    let upstream = match state.http.post(&url).json(engine_req).send().await {
+        Ok(resp) => resp,
+        Err(e) => return Err(engine_unreachable(&state.engine_base_url, &e)),
+    };
+    let status = upstream.status();
+    let payload: Value = match upstream.json().await {
+        Ok(v) => v,
+        Err(e) => {
+            return Err(openai_error(
+                StatusCode::BAD_GATEWAY,
+                &format!("invalid engine response: {e}"),
+            ))
+        }
+    };
+    if !status.is_success() {
+        let msg = payload
+            .pointer("/error/message")
+            .or_else(|| payload.get("message"))
+            .and_then(Value::as_str)
+            .unwrap_or("engine rejected the request")
+            .to_string();
+        return Err(openai_error(map_engine_status(status), &msg));
+    }
+
+    let files: Vec<String> = payload
+        .get("files")
+        .and_then(Value::as_array)
+        .map(|a| {
+            a.iter()
+                .filter_map(Value::as_str)
+                .map(str::to_string)
+                .collect()
+        })
+        .filter(|v: &Vec<String>| !v.is_empty())
+        .unwrap_or_else(|| {
+            payload
+                .get("file")
+                .and_then(Value::as_str)
+                .map(|f| vec![f.to_string()])
+                .unwrap_or_default()
+        });
+    Ok((payload, files))
+}
+
+/// Run one image job `n` times concurrently (the engine yields a single
+/// artifact per invoke), collecting every artifact. `n` is clamped to
+/// `[1, 4]` — the four-grid candidate ceiling (TOOL-01). The first failure
+/// fails the whole batch with that error.
+async fn fan_out_image_jobs(
+    state: &Arc<AppState>,
+    engine_req: Value,
+    n: u64,
+) -> Result<(Value, Vec<String>), Response> {
+    let n = n.clamp(1, 4) as usize;
+    let handles: Vec<_> = (0..n)
+        .map(|_| {
+            let state = state.clone();
+            let req = engine_req.clone();
+            tokio::spawn(async move { engine_image_artifacts(&state, &req).await })
+        })
+        .collect();
+    let mut first: Option<Value> = None;
+    let mut files = Vec::new();
+    for handle in handles {
+        match handle.await {
+            Ok(Ok((payload, mut paths))) => {
+                if first.is_none() {
+                    first = Some(payload);
+                }
+                files.append(&mut paths);
+            }
+            Ok(Err(resp)) => return Err(resp),
+            Err(e) => {
+                return Err(openai_error(
+                    StatusCode::BAD_GATEWAY,
+                    &format!("image job task failed: {e}"),
+                ))
+            }
+        }
+    }
+    first
+        .ok_or_else(|| {
+            openai_error(
+                StatusCode::BAD_GATEWAY,
+                "engine returned no image artifacts",
+            )
+        })
+        .map(|payload| (payload, files))
+}
+
+/// Read engine artifact paths off the shared host into OpenAI `b64_json`
+/// entries. Artifacts live on the engine's machine — the honest error says
+/// so when a path is unreadable.
+async fn artifacts_to_data(files: &[String]) -> Result<Vec<Value>, Response> {
+    let mut data = Vec::with_capacity(files.len());
+    for path in files {
+        match tokio::fs::read(path).await {
+            Ok(bytes) => {
+                use base64::Engine as _;
+                data.push(json!({
+                    "b64_json": base64::engine::general_purpose::STANDARD.encode(&bytes),
+                }));
+            }
+            Err(e) => {
+                return Err(openai_error(
+                    StatusCode::BAD_GATEWAY,
+                    &format!(
+                        "engine artifact is not readable from the gateway host ({path}: {e}); \
+                         is mofa-engine running on this machine?"
+                    ),
+                ));
+            }
+        }
+    }
+    Ok(data)
+}
+
+/// POST /v1/images/edits — the OpenAI image-edits contract over the engine's
+/// `image_edit` capability (TOOL-01 垫图 I2I / 局部重绘). Multipart fields:
+/// `image` (file, required), `mask` (file, optional — its fully transparent
+/// areas mark the regions to regenerate), `prompt`, `model?`, `size?`, `n?`.
+/// Uploads are forwarded inline as base64 data URLs; nothing is written to
+/// the gateway's disk.
+async fn image_edits(State(state): State<Arc<AppState>>, mut multipart: Multipart) -> Response {
+    let mut image: Option<(Vec<u8>, String)> = None;
+    let mut mask: Option<(Vec<u8>, String)> = None;
+    let mut prompt = String::new();
+    let mut model: Option<String> = None;
+    let mut size: Option<String> = None;
+    let mut n: u64 = 1;
+
+    while let Ok(Some(field)) = multipart.next_field().await {
+        let name = field.name().unwrap_or("").to_string();
+        match name.as_str() {
+            "image" | "mask" => {
+                let mime = field.content_type().unwrap_or("image/png").to_string();
+                let bytes = match field.bytes().await {
+                    Ok(b) => b.to_vec(),
+                    Err(e) => {
+                        return openai_error(
+                            StatusCode::BAD_REQUEST,
+                            &format!("reading upload `{name}` failed: {e}"),
+                        )
+                    }
+                };
+                if bytes.is_empty() {
+                    return openai_error(
+                        StatusCode::BAD_REQUEST,
+                        &format!("field `{name}` is empty"),
+                    );
+                }
+                let slot = if name == "image" {
+                    &mut image
+                } else {
+                    &mut mask
+                };
+                *slot = Some((bytes, mime));
+            }
+            "prompt" => {
+                if let Ok(text) = field.text().await {
+                    prompt = text;
+                }
+            }
+            "model" => {
+                if let Ok(text) = field.text().await {
+                    if !text.trim().is_empty() {
+                        model = Some(text);
+                    }
+                }
+            }
+            "size" => {
+                if let Ok(text) = field.text().await {
+                    if !text.trim().is_empty() {
+                        size = Some(text);
+                    }
+                }
+            }
+            "n" => {
+                if let Ok(text) = field.text().await {
+                    n = text.trim().parse().unwrap_or(1);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    let Some((image_bytes, image_mime)) = image else {
+        return openai_error(StatusCode::BAD_REQUEST, "field `image` is required");
+    };
+    if prompt.trim().is_empty() {
+        return openai_error(StatusCode::BAD_REQUEST, "field `prompt` is required");
+    }
+
+    use base64::Engine as _;
+    let engine = base64::engine::general_purpose::STANDARD;
+    let image_url = format!("data:{image_mime};base64,{}", engine.encode(&image_bytes));
+    let mut engine_req = json!({
+        "capability": "image_edit",
+        "messages": [{ "role": "user", "content": prompt, "images": [image_url] }],
+    });
+    if let Some(m) = &model {
+        engine_req["model"] = json!(m);
+    }
+    if let Some((mask_bytes, mask_mime)) = &mask {
+        engine_req["input_mask"] = json!(format!(
+            "data:{mask_mime};base64,{}",
+            engine.encode(mask_bytes)
+        ));
+    }
+    let mut params = json!({});
+    if let Some(s) = &size {
+        params["size"] = json!(s);
+    }
+    engine_req["params"] = params;
+
+    let (payload, files) = match fan_out_image_jobs(&state, engine_req, n).await {
+        Ok(v) => v,
+        Err(resp) => return resp,
+    };
+    let data = match artifacts_to_data(&files).await {
+        Ok(d) => d,
+        Err(resp) => return resp,
+    };
+    if data.is_empty() {
+        return openai_error(
+            StatusCode::BAD_GATEWAY,
+            "engine returned no image artifacts",
+        );
+    }
+
+    spans::record_span(
+        &state.store,
+        spans::KIND_IMAGE_EDIT,
+        spans::SOURCE_STUDIO,
+        payload
+            .get("model_used")
+            .and_then(Value::as_str)
+            .unwrap_or("unknown"),
+        payload.get("provider").and_then(Value::as_str),
+        None,
+        None,
+        payload
+            .get("duration_ms")
+            .and_then(Value::as_u64)
+            .unwrap_or(0),
+        "ok",
+        None,
+    );
+
+    Json(json!({
+        "created": chrono::Utc::now().timestamp(),
+        "data": data,
+        // Engine metadata beyond the OpenAI contract.
+        "model_used": payload.get("model_used").cloned().unwrap_or(Value::Null),
+        "provider": payload.get("provider").cloned().unwrap_or(Value::Null),
+        // Honest signal for the UI: a mask was supplied → 局部重绘, else I2I.
+        "masked": json!(!mask.is_none()),
     }))
     .into_response()
 }

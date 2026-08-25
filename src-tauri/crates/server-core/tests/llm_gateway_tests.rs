@@ -30,6 +30,9 @@ async fn mock_invoke(Json(req): Json<Value>) -> Response {
     if req["capability"] == "image_gen" {
         return mock_invoke_image_gen(Json(req)).await;
     }
+    if req["capability"] == "image_edit" {
+        return mock_invoke_image_edit(Json(req)).await;
+    }
     if req["capability"] == "vlm" {
         // Vision routing must carry the images and the flattened text.
         assert!(
@@ -96,6 +99,37 @@ async fn mock_invoke_image_gen(Json(req): Json<Value>) -> Response {
         "provider": "mock",
         "duration_ms": 12,
         "request_id": "req-img",
+        "tokens_used": null,
+        "fallback_used": false,
+        "routing_reason": "capability_default",
+    }))
+    .into_response()
+}
+
+/// Captured `/v1/invoke` bodies with `capability == "image_edit"`, so tests
+/// can assert what the gateway forwarded to the engine.
+static CAPTURED_EDIT_REQS: std::sync::Mutex<Vec<Value>> = std::sync::Mutex::new(Vec::new());
+
+/// Mock engine image_edit: like the real engine, resolves the input image
+/// from `messages[0].images[0]` and writes one artifact per call.
+async fn mock_invoke_image_edit(Json(req): Json<Value>) -> Response {
+    CAPTURED_EDIT_REQS.lock().unwrap().push(req.clone());
+    let dir = std::env::temp_dir().join("mofa-gateway-img-test");
+    let _ = std::fs::create_dir_all(&dir);
+    let png: &[u8] = &[
+        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44,
+        0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02, 0x00, 0x00, 0x00, 0x90,
+        0x77, 0x53, 0xDE,
+    ];
+    let path = dir.join(format!("mock_edit_{}.png", uuid::Uuid::new_v4()));
+    std::fs::write(&path, png).expect("write artifact");
+    Json(json!({
+        "text": null,
+        "file": path.to_string_lossy(),
+        "model_used": "mock/mock-edit",
+        "provider": "mock",
+        "duration_ms": 15,
+        "request_id": "req-edit",
         "tokens_used": null,
         "fallback_used": false,
         "routing_reason": "capability_default",
@@ -415,6 +449,212 @@ async fn image_generations_requires_prompt() {
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
     let body = body_json(response).await;
     assert!(body["error"]["message"]
+        .as_str()
+        .unwrap()
+        .contains("prompt"));
+}
+
+// ==================== Image edits (TOOL-01 I2I / 局部重绘) ====================
+
+/// Hand-roll a multipart/form-data body with a fixed boundary. Field specs:
+/// `(name, optional filename, optional content-type, value)`.
+fn multipart_body(boundary: &str, fields: &[(&str, Option<&str>, Option<&str>, &str)]) -> Body {
+    let mut body = String::new();
+    for (name, filename, content_type, value) in fields {
+        body.push_str(&format!(
+            "--{boundary}\r\ncontent-disposition: form-data; name=\"{name}\""
+        ));
+        if let Some(filename) = filename {
+            body.push_str(&format!("; filename=\"{filename}\""));
+        }
+        body.push_str("\r\n");
+        if let Some(ct) = content_type {
+            body.push_str(&format!("content-type: {ct}\r\n"));
+        }
+        body.push_str(&format!("\r\n{value}\r\n"));
+    }
+    body.push_str(&format!("--{boundary}--\r\n"));
+    Body::from(body)
+}
+
+fn edits_request(
+    boundary: &str,
+    fields: &[(&str, Option<&str>, Option<&str>, &str)],
+) -> Request<Body> {
+    Request::builder()
+        .method("POST")
+        .uri("/v1/images/edits")
+        .header(
+            "content-type",
+            format!("multipart/form-data; boundary={boundary}"),
+        )
+        .body(multipart_body(boundary, fields))
+        .unwrap()
+}
+
+/// Decode the data-URL payload the gateway forwarded (base64 after the comma).
+fn data_url_payload(url: &str) -> Vec<u8> {
+    use base64::Engine as _;
+    let payload = url.split(',').nth(1).expect("data url payload");
+    base64::engine::general_purpose::STANDARD
+        .decode(payload)
+        .expect("valid base64")
+}
+
+#[tokio::test]
+async fn image_edits_forwards_image_and_mask_as_data_urls() {
+    CAPTURED_EDIT_REQS.lock().unwrap().clear();
+    let engine = spawn_mock_engine().await;
+    let app = gateway_router(engine, "edits");
+    let response = app
+        .oneshot(edits_request(
+            "mofa-edits-boundary",
+            &[
+                ("image", Some("input.png"), Some("image/png"), "INPUTPNG"),
+                ("mask", Some("mask.png"), Some("image/png"), "MASKPNG"),
+                ("prompt", None, None, "把天空换成夜景"),
+                ("model", None, None, "mock/mock-edit"),
+                ("size", None, None, "1024x1024"),
+                ("n", None, None, "1"),
+            ],
+        ))
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = body_json(response).await;
+    assert_eq!(body["masked"], true, "mask present → 局部重绘");
+    assert_eq!(body["model_used"], "mock/mock-edit");
+    let data = body["data"].as_array().expect("data array");
+    assert_eq!(data.len(), 1);
+    let bytes = data_url_payload(&format!(
+        "data:image/png;base64,{}",
+        data[0]["b64_json"].as_str().unwrap()
+    ));
+    assert_eq!(&bytes[..4], &[0x89, 0x50, 0x4E, 0x47]);
+
+    // What the engine actually received: uploads inlined as data URLs.
+    // (Tests run concurrently and share the capture; filter by this test's prompt.)
+    let captured: Vec<Value> = CAPTURED_EDIT_REQS
+        .lock()
+        .unwrap()
+        .iter()
+        .filter(|r| r["messages"][0]["content"] == "把天空换成夜景")
+        .cloned()
+        .collect();
+    assert_eq!(captured.len(), 1);
+    let req = &captured[0];
+    assert_eq!(req["capability"], "image_edit");
+    assert_eq!(req["model"], "mock/mock-edit");
+    assert_eq!(req["messages"][0]["content"], "把天空换成夜景");
+    let image_url = req["messages"][0]["images"][0].as_str().unwrap();
+    assert!(image_url.starts_with("data:image/png;base64,"));
+    assert_eq!(data_url_payload(image_url), b"INPUTPNG");
+    let mask_url = req["input_mask"].as_str().unwrap();
+    assert!(mask_url.starts_with("data:image/png;base64,"));
+    assert_eq!(data_url_payload(mask_url), b"MASKPNG");
+    assert_eq!(req["params"]["size"], "1024x1024");
+}
+
+#[tokio::test]
+async fn image_edits_without_mask_is_whole_image_i2i() {
+    CAPTURED_EDIT_REQS.lock().unwrap().clear();
+    let engine = spawn_mock_engine().await;
+    let app = gateway_router(engine, "edits-i2i");
+    let response = app
+        .oneshot(edits_request(
+            "mofa-i2i-boundary",
+            &[
+                ("image", Some("ref.jpg"), Some("image/jpeg"), "JPEGREF"),
+                ("prompt", None, None, "整体改成水彩风格"),
+            ],
+        ))
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = body_json(response).await;
+    assert_eq!(body["masked"], false, "no mask → whole-image I2I");
+
+    let captured: Vec<Value> = CAPTURED_EDIT_REQS
+        .lock()
+        .unwrap()
+        .iter()
+        .filter(|r| r["messages"][0]["content"] == "整体改成水彩风格")
+        .cloned()
+        .collect();
+    assert_eq!(captured.len(), 1);
+    let req = &captured[0];
+    let image_url = req["messages"][0]["images"][0].as_str().unwrap();
+    assert!(
+        image_url.starts_with("data:image/jpeg;base64,"),
+        "upload mime preserved"
+    );
+    assert_eq!(data_url_payload(image_url), b"JPEGREF");
+    assert!(
+        req.get("input_mask").is_none(),
+        "mask must be absent, not null/empty"
+    );
+}
+
+#[tokio::test]
+async fn image_edits_fan_out_n_candidates() {
+    CAPTURED_EDIT_REQS.lock().unwrap().clear();
+    let engine = spawn_mock_engine().await;
+    let app = gateway_router(engine, "edits-n");
+    let response = app
+        .oneshot(edits_request(
+            "mofa-n-boundary",
+            &[
+                ("image", Some("input.png"), Some("image/png"), "INPUTPNG"),
+                ("prompt", None, None, "重绘三次对比"),
+                ("n", None, None, "3"),
+            ],
+        ))
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = body_json(response).await;
+    assert_eq!(body["data"].as_array().unwrap().len(), 3);
+    assert_eq!(
+        CAPTURED_EDIT_REQS
+            .lock()
+            .unwrap()
+            .iter()
+            .filter(|r| r["messages"][0]["content"] == "重绘三次对比")
+            .count(),
+        3
+    );
+}
+
+#[tokio::test]
+async fn image_edits_requires_image_and_prompt() {
+    let engine = spawn_mock_engine().await;
+    let app = gateway_router(engine, "edits-400");
+    let no_image = app
+        .clone()
+        .oneshot(edits_request(
+            "mofa-400a-boundary",
+            &[("prompt", None, None, "缺图")],
+        ))
+        .await
+        .unwrap();
+    assert_eq!(no_image.status(), StatusCode::BAD_REQUEST);
+    assert!(body_json(no_image).await["error"]["message"]
+        .as_str()
+        .unwrap()
+        .contains("image"));
+
+    let no_prompt = app
+        .oneshot(edits_request(
+            "mofa-400b-boundary",
+            &[("image", Some("input.png"), Some("image/png"), "INPUTPNG")],
+        ))
+        .await
+        .unwrap();
+    assert_eq!(no_prompt.status(), StatusCode::BAD_REQUEST);
+    assert!(body_json(no_prompt).await["error"]["message"]
         .as_str()
         .unwrap()
         .contains("prompt"));

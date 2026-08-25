@@ -17,6 +17,7 @@ const DEFAULT_RETENTION_DAYS: i64 = 90;
 /// What kind of gateway call produced this span.
 pub(crate) const KIND_LLM: &str = "llm_call";
 pub(crate) const KIND_IMAGE_GEN: &str = "image_gen_call";
+pub(crate) const KIND_IMAGE_EDIT: &str = "image_edit_call";
 
 /// Which surface triggered the call (chat / creation studio).
 pub(crate) const SOURCE_CHAT: &str = "chat";

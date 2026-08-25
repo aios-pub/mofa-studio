@@ -89,6 +89,9 @@ interface ChatContainerProps {
   /** CHAT-03: ground answers in web search with citations. */
   webSearch?: boolean;
   onWebSearchChange?: (enabled: boolean) => void;
+  /** TASK-14: summoned expert persona active on this conversation. */
+  expertName?: string;
+  onExpertDismiss?: () => void;
   /** CHAT-08: auto-speak completed assistant replies. */
   ttsEnabled?: boolean;
   onTtsEnabledChange?: (enabled: boolean) => void;
@@ -115,6 +118,8 @@ export default function ChatContainer({
   onDeepThinkingChange,
   webSearch = false,
   onWebSearchChange,
+  expertName,
+  onExpertDismiss,
   ttsEnabled = false,
   onTtsEnabledChange,
   onRegenerate,
@@ -860,6 +865,17 @@ export default function ChatContainer({
               aria-label="自动播报开关"
             >
               <SoundOutlined />
+            </button>
+          )}
+
+          {expertName && (
+            <button
+              onClick={() => onExpertDismiss?.()}
+              className="px-3 py-2 border rounded-lg transition-colors flex items-center gap-1 text-sm bg-[var(--color-primary)]/10 border-[var(--color-primary)] text-[var(--color-primary)]"
+              title={`已召唤专家「${expertName}」，点击解除`}
+              aria-label={`当前专家 ${expertName}，点击解除`}
+            >
+              🧑‍🏫 {expertName} ✕
             </button>
           )}
 

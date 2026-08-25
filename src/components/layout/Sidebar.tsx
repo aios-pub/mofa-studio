@@ -198,6 +198,11 @@ const coreMenuItems: MenuProps["items"] = [
     icon: <CrownOutlined />,
     label: "记忆",
   },
+  {
+    key: "/experts",
+    icon: <TeamOutlined />,
+    label: "专家",
+  },
   { type: "divider" },
   {
     key: "/management/providers",

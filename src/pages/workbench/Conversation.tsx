@@ -28,6 +28,12 @@ import { videoService } from "@/services/api/video";
 import { buildRagContext, ragService, type RagHit } from "@/services/api/rag";
 import { assetService, recordImageAssets } from "@/services/api/assets";
 import type { Conversation, Agent, Message, MessageAttachment } from "../../types";
+import {
+  BUILTIN_EXPERTS,
+  expertSystemPrompt,
+  loadMyExperts,
+  type Expert,
+} from "@/utils/experts";
 
 export default function ConversationPage() {
   const [, setConversations] = useState<Conversation[]>([]);
@@ -51,9 +57,19 @@ export default function ConversationPage() {
   const lastImagePromptRef = useRef<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const [newConversationTitle, setNewConversationTitle] = useState("");
+  // TASK-14: summoned expert (persona injected as leading system message).
+  const [expert, setExpert] = useState<Expert | null>(null);
   const [selectedAgentForNew, setSelectedAgentForNew] = useState<
     string | undefined
   >();
+
+  // TASK-14: summon via /?expert=<id> (from the experts page).
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("expert");
+    if (!id) return;
+    const found = [...loadMyExperts(), ...BUILTIN_EXPERTS].find((e) => e.id === id);
+    if (found) setExpert(found);
+  }, []);
 
   // Load agent list
   useEffect(() => {
@@ -222,6 +238,9 @@ export default function ConversationPage() {
         const completion = await chatService.chatStream(
           {
             messages: [
+              ...(expert
+                ? [{ role: "system" as const, content: expertSystemPrompt(expert) }]
+                : []),
               ...(ragContext
                 ? [{ role: "system" as const, content: ragContext }]
                 : []),
@@ -318,7 +337,7 @@ export default function ConversationPage() {
         abortRef.current = null;
       }
     },
-    [model, deepThinking, webSearch, ttsEnabled],
+    [model, deepThinking, webSearch, ttsEnabled, expert],
   );
 
   // Send message (streaming through the llm-gateway / mofa-engine)
@@ -403,7 +422,7 @@ export default function ConversationPage() {
         ragContext,
       );
     },
-    [selectedConversation, isLoading, runGeneration, pendingAttachment],
+    [selectedConversation, isLoading, runGeneration, pendingAttachment, expert],
   );
 
   // CHAT-05: generate an image in-conversation; the assistant message
@@ -689,6 +708,8 @@ export default function ConversationPage() {
           onDeepThinkingChange={setDeepThinking}
           webSearch={webSearch}
           onWebSearchChange={setWebSearch}
+          expertName={expert?.name}
+          onExpertDismiss={() => setExpert(null)}
           ttsEnabled={ttsEnabled}
           onTtsEnabledChange={setTtsEnabled}
           onRegenerate={handleRegenerate}

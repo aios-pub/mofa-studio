@@ -18,9 +18,10 @@ import {
   toRequestContent,
   toRequestMessages,
 } from "@/utils/chatHistory";
-import { detectImageIntent, refineImagePrompt } from "@/utils/imageIntent";
+import { detectImageIntent, detectVideoIntent, refineImagePrompt } from "@/utils/imageIntent";
 import { exportFilename, imageService } from "@/services/api/image";
 import { audioService } from "@/services/api/audio";
+import { videoService } from "@/services/api/video";
 import { buildRagContext, ragService, type RagHit } from "@/services/api/rag";
 import { assetService, recordImageAssets } from "@/services/api/assets";
 import type { Conversation, Agent, Message, MessageAttachment } from "../../types";
@@ -339,6 +340,12 @@ export default function ConversationPage() {
         return { ...prev, messages: [...prev.messages, userMessage] };
       });
 
+      // CHAT-06: video intent routes to the async video task pipeline.
+      if (detectVideoIntent(content)) {
+        await runVideoGeneration(conversationId, content);
+        return;
+      }
+
       // CHAT-05: image intent routes to the image gateway instead of chat.
       const intent = detectImageIntent(content, lastImagePromptRef.current !== null);
       if (intent.kind === "image") {
@@ -447,6 +454,76 @@ export default function ConversationPage() {
           };
         });
         message.error("生图失败");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
+
+  // CHAT-06: in-chat video — async task card as a message that fills in
+  // with the finished clip (attachment type video/mp4).
+  const runVideoGeneration = useCallback(
+    async (conversationId: string, prompt: string) => {
+      setIsLoading(true);
+      const assistantId = `msg-a-video-${Date.now()}`;
+      const placeholder: Message = {
+        id: assistantId,
+        conversationId,
+        role: "assistant",
+        content: prompt,
+        status: "pending",
+        createdAt: new Date(),
+      };
+      setSelectedConversation((prev) => {
+        if (!prev || prev.id !== conversationId) return prev;
+        return { ...prev, messages: [...prev.messages, placeholder] };
+      });
+      const patch = (patchFields: Partial<Message>) => {
+        setSelectedConversation((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            messages: prev.messages.map((m) =>
+              m.id === assistantId ? { ...m, ...patchFields } : m,
+            ),
+          };
+        });
+      };
+      try {
+        const submitted = await videoService.submit({ prompt });
+        patch({ content: `视频生成中…（任务 ${submitted.task_id.slice(0, 10)}）` });
+        setIsLoading(false);
+        const final = await videoService.pollUntilTerminal(
+          submitted.task_id,
+          () => {},
+          3000,
+          200,
+        );
+        if (final.status === "succeeded" && final.video) {
+          patch({
+            status: "completed",
+            content: prompt,
+            attachments: [
+              {
+                id: `${assistantId}-video`,
+                name: `${prompt.slice(0, 20)}.mp4`,
+                type: "video/mp4",
+                size: 0,
+                url: final.video,
+              },
+            ],
+          });
+          message.success("视频已生成");
+        } else {
+          patch({
+            status: "error",
+            content: `视频生成失败：${final.error ?? "未知错误"}`,
+          });
+        }
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : String(error);
+        patch({ status: "error", content: `视频生成失败：${detail}` });
       } finally {
         setIsLoading(false);
       }

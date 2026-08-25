@@ -958,7 +958,30 @@ function MessageItem({
         {message.attachments && message.attachments.length > 0 && (
           <div className="mb-2 flex flex-wrap gap-2">
             {message.attachments.map((att) =>
-              att.url && att.type.startsWith("image/") ? (
+              att.url && att.type.startsWith("video/") ? (
+                <figure
+                  key={att.id}
+                  className="rounded-xl overflow-hidden border border-(--color-border) max-w-[360px]"
+                >
+                  <video src={att.url} controls className="w-full block" aria-label={att.name} />
+                  <figcaption className="flex items-center justify-between px-2 py-1 text-xs text-[var(--color-text-tertiary)]">
+                    <span className="truncate">{att.name}</span>
+                    <button
+                      onClick={() => {
+                        const link = document.createElement("a");
+                        link.href = att.url!;
+                        link.download = att.name;
+                        link.click();
+                      }}
+                      className="text-[var(--color-primary)]"
+                      aria-label={`下载视频 ${att.name}`}
+                    >
+                      下载
+                    </button>
+                  </figcaption>
+                </figure>
+              ) : att.url && att.type.startsWith("image/") ? (
+
                 <figure
                   key={att.id}
                   className="relative group rounded-xl overflow-hidden border border-(--color-border) max-w-[320px]"

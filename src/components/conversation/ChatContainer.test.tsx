@@ -178,3 +178,25 @@ describe("image attachment rendering (CHAT-05)", () => {
     expect(screen.getByLabelText("放大查看 橘猫_1024x1024_1.png")).toBeInTheDocument();
   });
 });
+
+describe("video attachment rendering (CHAT-06)", () => {
+  it("renders video attachments with a player and download", () => {
+    renderChat({
+      conversation: {
+        ...conversation([]),
+        messages: [
+          msg("u1", "user", "生成一段视频"),
+          {
+            ...msg("a1", "assistant", "生成一段视频"),
+            attachments: [
+              { id: "v1", name: "橘猫.mp4", type: "video/mp4", size: 0, url: "data:video/mp4;base64,QUJD" },
+            ],
+          },
+        ],
+      },
+    });
+    const video = screen.getByLabelText("橘猫.mp4");
+    expect(video).toHaveAttribute("src", "data:video/mp4;base64,QUJD");
+    expect(screen.getByLabelText("下载视频 橘猫.mp4")).toBeInTheDocument();
+  });
+});

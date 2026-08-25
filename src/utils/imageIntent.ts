@@ -28,6 +28,28 @@ const EN_PATTERNS = [
   /\b(an?|some) (image|picture|illustration)s?\b.*\b(please|for me)\b/i,
 ];
 
+/** Video-generation verbs (CHAT-06). */
+const VIDEO_VERBS = [
+  "生成视频", "生成一段视频", "做一段视频", "做个视频", "做一个视频",
+  "来一段视频", "来个视频", "拍一段", "文生视频", "视频生成",
+  "做个短片", "生成动效", "做动图视频", "一段动画",
+];
+
+/** English video phrasings. */
+const EN_VIDEO = /\b(generate|create|make)\b[^.?!]{0,24}\b(video|clip|animation)\b/i;
+
+/** Detect an explicit video-generation request (checked before image). */
+export function detectVideoIntent(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) return false;
+  if (/^\/(video|视频)\s/i.test(trimmed)) return true;
+  if (VIDEO_VERBS.some((verb) => trimmed.includes(verb))) return true;
+  if (EN_VIDEO.test(trimmed)) return true;
+  // 「画」+ 视频词也算（画一段视频）
+  if (/画.+视频/.test(trimmed)) return true;
+  return false;
+}
+
 /** Edit-intent markers when the previous turn already produced an image. */
 const EDIT_MARKERS = [
   "换成", "改成", "变一下", "换背景", "调一下", "再改",
@@ -36,6 +58,7 @@ const EDIT_MARKERS = [
 
 export type ChatIntent =
   | { kind: "image"; edit: boolean }
+  | { kind: "video" }
   | { kind: "chat" };
 
 /**

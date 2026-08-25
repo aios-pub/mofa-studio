@@ -3,7 +3,7 @@
  * 生图意图召回率抽检 ≥90%).
  */
 import { describe, expect, it } from "vitest";
-import { detectImageIntent, refineImagePrompt } from "./imageIntent";
+import { detectImageIntent, detectVideoIntent, refineImagePrompt } from "./imageIntent";
 
 const IMAGE_EXAMPLES = [
   "画一只橘猫",
@@ -71,5 +71,36 @@ describe("refineImagePrompt", () => {
     expect(refineImagePrompt("一只橘猫坐在窗台", "换成夜景")).toBe(
       "一只橘猫坐在窗台（调整：换成夜景）",
     );
+  });
+});
+
+describe("detectVideoIntent (CHAT-06)", () => {
+  const VIDEO_EXAMPLES = [
+    "生成一段视频：橘猫追激光笔",
+    "做一个视频 樱花飘落",
+    "文生视频 赛博朋克城市",
+    "来一段视频",
+    "帮我做个短片：产品展示",
+    "拍一段 猫咪玩耍",
+    "make a video of ocean waves",
+    "create an animation of a bouncing ball",
+    "/video 橘猫跳舞",
+    "画一段视频：云海日出",
+  ];
+  const CHAT_EXAMPLES = [
+    "生成一张图片",
+    "画一只橘猫",
+    "视频网站有哪些推荐",
+    "怎么剪辑视频",
+  ];
+
+  it.each(VIDEO_EXAMPLES)("routes to video: %s", (text) => {
+    expect(detectVideoIntent(text)).toBe(true);
+  });
+
+  it("chat examples do not trigger video", () => {
+    for (const text of CHAT_EXAMPLES) {
+      expect(detectVideoIntent(text), text).toBe(false);
+    }
   });
 });

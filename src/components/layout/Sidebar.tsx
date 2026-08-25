@@ -33,6 +33,7 @@ import {
   LinkOutlined,
   BranchesOutlined,
   DatabaseOutlined,
+  ProjectOutlined,
   PictureOutlined,
   BulbOutlined,
   HistoryOutlined,
@@ -95,6 +96,11 @@ const coreMenuItems: MenuProps["items"] = [
     key: "/conversation",
     icon: <MessageOutlined />,
     label: "对话",
+  },
+  {
+    key: "/projects",
+    icon: <ProjectOutlined />,
+    label: "项目",
   },
   {
     key: "/creation/image-gen",

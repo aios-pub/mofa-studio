@@ -127,6 +127,11 @@ const coreMenuItems: MenuProps["items"] = [
     label: "媒体处理",
   },
   {
+    key: "/creation/research",
+    icon: <SearchOutlined />,
+    label: "深入研究",
+  },
+  {
     key: "/creation/writing",
     icon: <EditOutlined />,
     label: "AI 写作",

@@ -39,6 +39,7 @@ import VideoGenPage from './pages/creation/VideoGenPage';
 import PptGenPage from './pages/creation/PptGenPage';
 import SheetsPage from './pages/creation/SheetsPage';
 import MediaPage from './pages/creation/MediaPage';
+import ResearchPage from './pages/creation/ResearchPage';
 import { ThemeProvider } from './theme';
 import { useFloatingBridge } from './tauri/useFloatingBridge';
 import { useSettings } from './stores';
@@ -70,6 +71,7 @@ function App() {
                   <Route path="/creation/ppt" element={<PptGenPage />} />
                   <Route path="/creation/sheets" element={<SheetsPage />} />
                   <Route path="/creation/media" element={<MediaPage />} />
+                  <Route path="/creation/research" element={<ResearchPage />} />
                   <Route path="/gallery" element={<GalleryPage />} />
                   <Route path="/flow" element={<FlowCanvasPage />} />
                   <Route path="/usage" element={<UsagePage />} />

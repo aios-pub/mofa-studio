@@ -21,6 +21,7 @@ pub mod llm_gateway;
 pub mod routes;
 pub mod media;
 pub mod rag;
+pub mod research;
 pub mod spans;
 pub mod store;
 pub mod video_routes;
@@ -95,6 +96,8 @@ pub(crate) struct AppState {
     pub video_tasks: video_routes::VideoTaskRegistry,
     /// App data directory (media artifacts live under data/media).
     pub data_dir: std::path::PathBuf,
+    /// Deep-research runs (TOOL-09).
+    pub research: research::ResearchRegistry,
 }
 
 // ==================== Response helpers ====================
@@ -144,6 +147,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         )),
         video_tasks: video_routes::VideoTaskRegistry::default(),
         data_dir: config.data_dir.clone(),
+        research: research::ResearchRegistry::default(),
     });
 
     let app = Router::new()
@@ -157,6 +161,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         .merge(media::media_routes())
         .merge(audio_routes::audio_routes())
         .merge(rag::rag_routes())
+        .merge(research::research_routes())
         .merge(auth::auth_routes())
         .merge(collections::collection_routes())
         .fallback(not_implemented)

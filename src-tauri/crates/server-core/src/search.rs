@@ -65,6 +65,14 @@ pub(crate) async fn run_search(
         "tavily" => tavily(&config.api_key, query, max_results).await,
         "bocha" => bocha(&config.api_key, query, max_results).await,
         "zhipu" => zhipu(&config.api_key, query, max_results).await,
+        // Deterministic offline provider for tests and demos.
+        "mock" => Ok((1..=max_results)
+            .map(|i| SearchResult {
+                title: format!("{query} 结果{i}"),
+                url: format!("https://mock.test/{query}/{i}"),
+                snippet: format!("关于「{query}」的第 {i} 条参考内容。"),
+            })
+            .collect()),
         other => Err(format!("未知搜索 provider: {other}")),
     }
 }
@@ -196,7 +204,7 @@ async fn get_config(State(state): State<Arc<AppState>>) -> Response {
 
 async fn set_config(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> Response {
     let provider = body.get("provider").and_then(Value::as_str).unwrap_or("");
-    if !["tavily", "bocha", "zhipu"].contains(&provider) {
+    if !["tavily", "bocha", "zhipu", "mock"].contains(&provider) {
         return err_msg(StatusCode::BAD_REQUEST, "provider 必须是 tavily / bocha / zhipu");
     }
     let api_key = body.get("api_key").and_then(Value::as_str).unwrap_or("").trim().to_string();

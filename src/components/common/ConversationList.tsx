@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   PlusOutlined,
   SearchOutlined,
@@ -14,8 +15,11 @@ import {
   InboxOutlined,
   DownloadOutlined,
   CheckSquareOutlined,
+  RocketOutlined,
 } from "@ant-design/icons";
+import { message } from "antd";
 import { conversationApi, agentApi } from "@/services";
+import { taskService } from "@/services/api/task";
 import type { Conversation, Agent } from "../../types";
 import {
   conversationToExportJson,
@@ -24,6 +28,7 @@ import {
   exportFilename,
   sortAndFilterConversations,
 } from "@/utils/conversationManage";
+import { conversationToProjectFields } from "@/utils/chatHistory";
 
 interface ConversationListProps {
   onSelectConversation?: (conversation: Conversation) => void;
@@ -36,6 +41,7 @@ export default function ConversationList({
   selectedId,
   onCreateConversation,
 }: ConversationListProps) {
+  const navigate = useNavigate();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -141,6 +147,19 @@ export default function ConversationList({
       await conversationApi.update(id, patch);
     } catch (error) {
       console.error("Failed to persist conversation flags:", error);
+    }
+  };
+
+  // TASK-03: seed a project from this conversation and jump to the workbench.
+  const convertToProject = async (conversation: Conversation) => {
+    const fields = conversationToProjectFields(conversation);
+    try {
+      const project = await taskService.create(fields);
+      message.success(`已立项「${project.title ?? fields.title}」，可在项目工作台继续`);
+      navigate("/projects");
+    } catch (error) {
+      console.error("Failed to convert conversation to project:", error);
+      message.error("立项失败，请稍后重试");
     }
   };
 
@@ -366,6 +385,7 @@ export default function ConversationList({
                             e.stopPropagation();
                             handleContextMenu(e, conversation.id);
                           }}
+                          aria-label="更多操作"
                           className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[var(--color-bg-base)] rounded transition-opacity"
                         >
                           <MoreOutlined className="text-[var(--color-text-tertiary)]" />
@@ -438,6 +458,17 @@ export default function ConversationList({
                 >
                   <DownloadOutlined />
                   导出 JSON
+                </button>
+                {/* TASK-03 助理模式: 复杂化时一键升级为项目工作台. */}
+                <button
+                  onClick={() => {
+                    void convertToProject(conv);
+                    setContextMenu(null);
+                  }}
+                  className="flex items-center gap-2 w-full px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-(--color-bg-tertiary)"
+                >
+                  <RocketOutlined />
+                  转为项目
                 </button>
               </>
             );

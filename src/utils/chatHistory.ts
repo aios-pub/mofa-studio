@@ -93,3 +93,23 @@ export function toRequestContent(
   }
   return parts;
 }
+
+/**
+ * TASK-03 助理模式: derive project 立项 seeds from a conversation for the
+ * 「转为项目」 action — the title carries over and the first user request
+ * becomes the goal draft (the workbench's goal editor refines it).
+ */
+export function conversationToProjectFields(conversation: {
+  title?: string;
+  messages?: Array<{ role: string; content: string }>;
+}): { title: string; goal: string } {
+  const firstUser =
+    conversation.messages?.find((m) => m.role === "user")?.content?.trim() ?? "";
+  const goal = firstUser.slice(0, 200) || "（从对话转入，待补充项目目标）";
+  const title = (
+    conversation.title?.trim() ||
+    firstUser.slice(0, 20) ||
+    "来自对话的项目"
+  ).slice(0, 50);
+  return { title, goal };
+}

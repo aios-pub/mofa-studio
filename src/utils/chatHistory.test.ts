@@ -7,6 +7,7 @@ import type { Message } from "@/types";
 import type { ContentPart } from "@/services/api/chat";
 import {
   applyEditResend,
+  conversationToProjectFields,
   branchSnapshot,
   historyForRegeneration,
   toRequestContent,
@@ -143,5 +144,38 @@ describe("toRequestContent (CHAT-04 vision input)", () => {
     const parts = toRequestContent(m) as ContentPart[];
     expect(parts).toHaveLength(1);
     expect(parts[0].type).toBe("image_url");
+  });
+});
+
+describe("conversationToProjectFields (TASK-03)", () => {
+  it("seeds title and goal from the first user message", () => {
+    const fields = conversationToProjectFields({
+      title: "营销讨论",
+      messages: [
+        { role: "assistant", content: "你好" },
+        { role: "user", content: "帮我策划一场新品发布会" },
+        { role: "assistant", content: "好的" },
+      ],
+    });
+    expect(fields.title).toBe("营销讨论");
+    expect(fields.goal).toBe("帮我策划一场新品发布会");
+  });
+
+  it("falls back to the first request when the title is empty", () => {
+    const fields = conversationToProjectFields({
+      title: "  ",
+      messages: [{ role: "user", content: "整理季度销售数据并出报告" }],
+    });
+    expect(fields.title).toBe("整理季度销售数据并出报告");
+  });
+
+  it("caps lengths and degrades honestly with no user content", () => {
+    const long = conversationToProjectFields({
+      messages: [{ role: "user", content: "长".repeat(300) }],
+    });
+    expect(long.goal.length).toBe(200);
+    const empty = conversationToProjectFields({ title: "", messages: [] });
+    expect(empty.title).toBe("来自对话的项目");
+    expect(empty.goal).toContain("待补充");
   });
 });

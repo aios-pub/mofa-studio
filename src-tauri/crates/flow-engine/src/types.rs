@@ -17,6 +17,8 @@ pub enum NodeType {
     LlmText,
     /// Terminal output; the host records the payload as an asset.
     Output,
+    /// External HTTP service call (FLOW-10 阶段一: 外置 HTTP 服务).
+    HttpRequest,
 }
 
 impl NodeType {
@@ -27,6 +29,7 @@ impl NodeType {
             Self::ImageGen => "image_gen",
             Self::LlmText => "llm_text",
             Self::Output => "output",
+            Self::HttpRequest => "http_request",
         }
     }
 }

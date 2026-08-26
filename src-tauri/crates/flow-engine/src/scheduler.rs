@@ -132,7 +132,7 @@ pub fn validate(graph: &FlowGraph) -> Result<(), GraphError> {
     let upstream = upstream_map(graph);
     for node in &graph.nodes {
         match node.node_type {
-            NodeType::ImageGen | NodeType::LlmText | NodeType::Output => {
+            NodeType::ImageGen | NodeType::LlmText | NodeType::Output | NodeType::HttpRequest => {
                 if upstream.get(&node.id).map(Vec::is_empty).unwrap_or(true) {
                     return Err(GraphError::MissingInput(
                         node.id.clone(),

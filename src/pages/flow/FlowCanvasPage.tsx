@@ -75,6 +75,7 @@ const PALETTE: FlowNodeKind[] = [
   "constant",
   "llm_text",
   "image_gen",
+  "http_request",
   "output",
 ];
 
@@ -90,6 +91,11 @@ function paramSummary(kind: FlowNodeKind, params: Record<string, unknown>): stri
       return typeof params.model === "string" ? params.model : "自动 · 引擎路由";
     case "image_gen":
       return typeof params.size === "string" ? params.size : "1024×1024";
+    case "http_request": {
+      const method = typeof params.method === "string" ? params.method : "GET";
+      const url = typeof params.url === "string" ? params.url : "（未设置 URL）";
+      return `${method} ${url.slice(0, 18)}`;
+    }
     case "output":
       return "终点";
   }
@@ -352,6 +358,14 @@ export default function FlowCanvasPage() {
     selected?.data.kind === "image_gen"
       ? String(selected.data.params.size ?? "1024x1024")
       : "";
+  const selectedHttp =
+    selected?.data.kind === "http_request"
+      ? {
+          url: String(selected.data.params.url ?? ""),
+          method: String(selected.data.params.method ?? "GET"),
+          body: String(selected.data.params.body ?? ""),
+        }
+      : null;
 
   return (
     <div className="flex h-full">
@@ -482,6 +496,59 @@ export default function FlowCanvasPage() {
                 className="w-full px-2 py-1.5 bg-(--color-bg-secondary) border border-(--color-border) rounded-lg text-xs resize-y focus:outline-none"
                 aria-label="提示词编辑"
               />
+            </div>
+          )}
+          {selectedHttp && (
+            <div className="space-y-2">
+              <div>
+                <label className="block text-xs mb-1">服务 URL</label>
+                <input
+                  value={selectedHttp.url}
+                  onChange={(e) =>
+                    updateSelectedParams({
+                      params: { ...selected.data.params, url: e.target.value },
+                    })
+                  }
+                  placeholder="https://api.example.com/endpoint"
+                  className="w-full px-2 py-1.5 bg-(--color-bg-secondary) border border-(--color-border) rounded-lg text-xs"
+                  aria-label="HTTP 服务 URL"
+                />
+              </div>
+              <div>
+                <label className="block text-xs mb-1">方法</label>
+                <select
+                  value={selectedHttp.method}
+                  onChange={(e) =>
+                    updateSelectedParams({
+                      params: { ...selected.data.params, method: e.target.value },
+                    })
+                  }
+                  className="w-full px-2 py-1.5 bg-(--color-bg-secondary) border border-(--color-border) rounded-lg text-xs"
+                  aria-label="HTTP 方法"
+                >
+                  {["GET", "POST", "PUT", "DELETE"].map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs mb-1">
+                  请求体模板（{"{{upstream}}"} 注入上游文本）
+                </label>
+                <textarea
+                  value={selectedHttp.body}
+                  onChange={(e) =>
+                    updateSelectedParams({
+                      params: { ...selected.data.params, body: e.target.value },
+                    })
+                  }
+                  rows={5}
+                  className="w-full px-2 py-1.5 bg-(--color-bg-secondary) border border-(--color-border) rounded-lg text-xs resize-y"
+                  aria-label="HTTP 请求体模板"
+                />
+              </div>
             </div>
           )}
           {selected.data.kind === "image_gen" && (

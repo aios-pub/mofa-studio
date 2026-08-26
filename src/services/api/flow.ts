@@ -11,7 +11,8 @@ export type FlowNodeKind =
   | "constant"
   | "llm_text"
   | "image_gen"
-  | "output";
+  | "output"
+  | "http_request";
 
 export interface FlowGraphPayload {
   nodes: Array<{
@@ -65,6 +66,7 @@ export const NODE_LABELS: Record<FlowNodeKind, string> = {
   llm_text: "LLM 文本",
   image_gen: "图像生成",
   output: "输出",
+  http_request: "HTTP 服务",
 };
 
 /** Convert canvas nodes + xyflow edges into the engine graph payload. */

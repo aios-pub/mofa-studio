@@ -22,3 +22,4 @@ chrono = "0.4"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync", "time"] }
+axum = "0.8"

@@ -8,6 +8,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Layout, Menu, Button, Switch } from "antd";
 import {
   CloudDownloadOutlined,
+  CustomerServiceOutlined,
   SearchOutlined,
   AudioOutlined,
   RobotOutlined,
@@ -127,6 +128,11 @@ const coreMenuItems: MenuProps["items"] = [
     key: "/creation/video-gen",
     icon: <VideoCameraOutlined />,
     label: "视频生成",
+  },
+  {
+    key: "/creation/music",
+    icon: <CustomerServiceOutlined />,
+    label: "音乐生成",
   },
   {
     key: "/creation/ppt",

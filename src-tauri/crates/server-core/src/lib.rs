@@ -27,6 +27,7 @@ pub mod mcp_host;
 pub mod media;
 pub mod memory_routes;
 pub mod model_center;
+pub mod music_routes;
 pub mod podcast;
 pub mod rag;
 pub mod research;
@@ -114,6 +115,8 @@ pub(crate) struct AppState {
     pub research: research::ResearchRegistry,
     /// Local-model pulls (FLOW-05 model center, Ollama proxy).
     pub model_pulls: model_center::PullRegistry,
+    /// Async music generation tasks (TOOL-10).
+    pub music_tasks: music_routes::MusicTaskRegistry,
 }
 
 // ==================== Response helpers ====================
@@ -165,6 +168,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         data_dir: config.data_dir.clone(),
         research: research::ResearchRegistry::default(),
         model_pulls: model_center::PullRegistry::default(),
+        music_tasks: music_routes::MusicTaskRegistry::default(),
     });
 
     let app = Router::new()
@@ -193,6 +197,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         .merge(workspace::workspace_routes_state())
         .merge(budget::budget_routes())
         .merge(model_center::model_center_routes())
+        .merge(music_routes::music_routes())
         .merge(auth::auth_routes())
         .merge(collections::collection_routes())
         .fallback(not_implemented)

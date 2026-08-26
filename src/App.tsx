@@ -45,6 +45,7 @@ import ModelCenterPage from './pages/system/ModelCenterPage';
 import ExpertsPage from './pages/experts/ExpertsPage';
 import ConnectorsPage from './pages/connectors/ConnectorsPage';
 import SkillsPage from './pages/skills/SkillsPage';
+import MusicGenPage from './pages/creation/MusicGenPage';
 import MemoryPage from './pages/system/MemoryPage';
 import ProjectsPage from './pages/task/ProjectsPage';
 import DeliverablesPage from './pages/task/DeliverablesPage';
@@ -81,6 +82,7 @@ function App() {
                   <Route path="/creation/video-gen" element={<VideoGenPage />} />
                   <Route path="/creation/ppt" element={<PptGenPage />} />
                   <Route path="/creation/sheets" element={<SheetsPage />} />
+                  <Route path="/creation/music" element={<MusicGenPage />} />
                   <Route path="/creation/media" element={<MediaPage />} />
                   <Route path="/creation/research" element={<ResearchPage />} />
                   <Route path="/creation/transcription" element={<TranscriptionPage />} />

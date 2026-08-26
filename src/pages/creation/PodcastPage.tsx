@@ -3,7 +3,8 @@
  * 多音色 TTS 合成 → BGM 混音（人声优先）→ MP3 导出 + RSS 输出。
  */
 
-import { useCallback, useState } from "react";
+import { useEffect, useCallback, useState } from "react";
+import { takePendingPodcastBgm } from "@/services/api/music";
 import { Button, Empty, Input, InputNumber, Select, Tag, Upload, message } from "antd";
 import {
   AudioOutlined,
@@ -37,6 +38,15 @@ export default function PodcastPage() {
   const [episode, setEpisode] = useState<PodcastEpisode | null>(null);
   const [turns, setTurns] = useState<TurnState[]>([]);
   const [bgm, setBgm] = useState<string | null>(null);
+
+  // TOOL-10 联动: a clip queued from the music page becomes the BGM here.
+  useEffect(() => {
+    const pending = takePendingPodcastBgm();
+    if (pending) {
+      setBgm(pending);
+      message.info("已载入来自音乐生成的 BGM");
+    }
+  }, []);
   const [busy, setBusy] = useState<"script" | "synth" | "render" | number | null>(null);
   const [result, setResult] = useState<string | null>(null);
 

@@ -55,7 +55,21 @@ import TranscriptionPage from './pages/creation/TranscriptionPage';
 import PodcastPage from './pages/creation/PodcastPage';
 import { ThemeProvider } from './theme';
 import { useFloatingBridge } from './tauri/useFloatingBridge';
-import { useSettings } from './stores';
+import { useAppStore, useSettings } from './stores';
+import i18n from './i18n';
+import type { SupportedLanguage } from './stores/useAppStore';
+
+// Align the persisted store language and i18next on boot. First run adopts
+// the detector's choice (navigator); afterwards the saved key wins for both.
+(() => {
+  const saved = localStorage.getItem('mofa-studio-language');
+  if (saved && saved !== i18n.language) {
+    void i18n.changeLanguage(saved);
+  }
+  const resolved = (i18n.resolvedLanguage ?? i18n.language) as string;
+  const language: SupportedLanguage = resolved.startsWith('zh') ? 'zh-CN' : 'en-US';
+  useAppStore.setState({ language });
+})();
 
 function App() {
   useFloatingBridge();

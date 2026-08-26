@@ -4,6 +4,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import i18n from "../i18n";
 import type { ThemeMode, WindowMode } from "../types";
 
 export type SupportedLanguage = "zh-CN" | "en-US";
@@ -44,7 +45,12 @@ export const useAppStore = create<AppState>()(
 
       // Language
       language: "zh-CN",
-      setLanguage: (language) => set({ language }),
+      setLanguage: (language) => {
+        // The store alone does not translate anything — i18next must switch
+        // (the detector then caches the choice for the next boot)
+        void i18n.changeLanguage(language);
+        set({ language });
+      },
 
       // Window mode
       windowMode: "full",

@@ -831,8 +831,11 @@ async fn artifacts_to_data(files: &[String]) -> Result<Vec<Value>, Response> {
         match tokio::fs::read(path).await {
             Ok(bytes) => {
                 use base64::Engine as _;
+                // 07 §3.1: tag generated PNGs as AI-generated.
+                let final_bytes =
+                    crate::png_meta::tag_ai_generated(&bytes).unwrap_or_else(|_| bytes.clone());
                 data.push(json!({
-                    "b64_json": base64::engine::general_purpose::STANDARD.encode(&bytes),
+                    "b64_json": base64::engine::general_purpose::STANDARD.encode(&final_bytes),
                 }));
             }
             Err(e) => {

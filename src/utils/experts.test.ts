@@ -96,3 +96,26 @@ describe("builtin catalog", () => {
     }
   });
 });
+
+describe("CHAT-12 compliance (07 §3.2)", () => {
+  it("expert system prompt carries the AI-generated declaration and dependency intervention", () => {
+    const card2: Expert = {
+      ...card,
+      persona: "你是一个温暖的倾听者。",
+    };
+    const prompt = expertSystemPrompt(card2);
+    expect(prompt).toContain("AI 生成");
+    expect(prompt).toContain("不是真人");
+    expect(prompt).toContain("情感依赖");
+    expect(prompt).toContain("建议寻求真人社交");
+    expect(prompt).toContain("不进行真人拟人陪伴");
+  });
+
+  it("every builtin expert carries the compliance block", () => {
+    for (const expert of BUILTIN_EXPERTS) {
+      const prompt = expertSystemPrompt(expert);
+      expect(prompt).toContain("【合规声明】");
+      expect(prompt).toContain("AI 生成");
+    }
+  });
+});

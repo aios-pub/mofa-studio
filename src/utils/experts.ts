@@ -115,6 +115,10 @@ export function expertSystemPrompt(expert: Expert): string {
     `人设：${expert.persona}`,
     `工作方法：${expert.methodology}`,
     "请始终以该身份回答；超出专业范围时如实说明。",
+    // 07 §3.2 拟人智能体合规红线
+    "【合规声明】你是 AI 生成的专家角色，不是真人。如果对话出现情感依赖、"
+      + "孤独倾诉或把 AI 当陪伴对象的迹象，温和提醒用户你是 AI 工具，建议寻"
+      + "求真人社交或专业帮助。不进行真人拟人陪伴式对话。",
   ].join("\n");
 }
 

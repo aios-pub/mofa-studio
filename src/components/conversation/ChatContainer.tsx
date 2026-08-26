@@ -998,9 +998,9 @@ export default function ChatContainer({
               onClick={() => onExpertDismiss?.()}
               className="px-3 py-2 border rounded-lg transition-colors flex items-center gap-1 text-sm bg-[var(--color-primary)]/10 border-[var(--color-primary)] text-[var(--color-primary)]"
               title={`已召唤专家「${expertName}」，点击解除`}
-              aria-label={`当前专家 ${expertName}，点击解除`}
+              aria-label={`当前专家 ${expertName}（AI 生成），点击解除`}
             >
-              🧑‍🏫 {expertName} ✕
+              🧑‍🏫 {expertName} <span className="text-[10px] opacity-70">AI 生成</span> ✕
             </button>
           )}
 

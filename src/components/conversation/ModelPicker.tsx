@@ -2,10 +2,10 @@ import { useTranslation } from "react-i18next";
 /**
  * Model picker for the assistant chat toolbar.
  *
- * Lists chat-capable models served by the llm-gateway (mofa-engine) with an
- * "engine auto-route" default, and surfaces an inline setup hint when the
- * engine is not reachable (install Ollama / add a provider key / start the
- * engine binary) instead of failing silently at send time.
+ * Lists chat-capable models served by the embedded llm-gateway (mofa-engine
+ * running in-process) with an "engine auto-route" default, and surfaces an
+ * inline setup hint when no model provider is configured yet (add a provider
+ * key in settings) instead of failing silently at send time.
  */
 
 import { useEffect, useMemo, useState } from "react";
@@ -31,7 +31,7 @@ export default function ModelPicker({ value, onChange }: ModelPickerProps) {  co
 
   useEffect(() => {
     // Load once on mount; a manual refresh happens every time the dropdown
-    // reopens so newly started engines appear without an app restart.
+    // reopens so newly added providers appear without an app restart.
     let cancelled = false;
     const load = async () => {
       const [h, m] = await Promise.all([
@@ -69,13 +69,19 @@ export default function ModelPicker({ value, onChange }: ModelPickerProps) {  co
   );
 
   const engineOk = health?.reachable ?? false;
+  const providerCount =
+    health?.providers_configured ?? (models.length > 0 ? 1 : 0);
 
   return (
     <Tooltip
       title={
-        engineOk
-          ? `mofa-engine ${health?.version ?? ""} · ${models.length} 个对话模型`
-          : "mofa-engine 未运行：启动引擎（cargo run --release）并确保 Ollama 或任一厂商 API Key 可用，或设置 MOFA_ENGINE_URL"
+        !engineOk
+          ? t("引擎不可用")
+          : models.length === 0
+            ? t(
+                "内置推理引擎已就绪 · 尚未配置模型提供商，可在设置中添加 API Key",
+              )
+            : `mofa-engine · ${providerCount} 个提供商 · ${models.length} 个对话模型`
       }
     >
       <Select

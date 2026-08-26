@@ -2,9 +2,10 @@
  * mofa-engine gateway service
  *
  * Thin client for the OpenAI-compatible endpoints the embedded server-core
- * exposes on top of mofa-engine: model listing (`GET /v1/models`) and engine
- * liveness (`GET /v1/engine/health`). The chat endpoints are served by
- * `chatService` in `chat.ts`.
+ * exposes on top of mofa-engine (linked in-process behind server-core's
+ * engine bridge): model listing (`GET /v1/models`) and engine status
+ * (`GET /v1/engine/health`). The chat endpoints are served by `chatService`
+ * in `chat.ts`.
  */
 
 import { apiClient } from "../api/apiClient";
@@ -22,12 +23,16 @@ export interface EngineModel {
   context_window?: number;
 }
 
-/** Engine liveness as reported by the gateway's `/v1/engine/health`. */
+/** Engine status as reported by the gateway's `/v1/engine/health`. */
 export interface EngineHealth {
   engine_url: string;
   reachable: boolean;
   status: string;
   version?: string;
+  /** True when the engine runs in-process (no external daemon). */
+  embedded?: boolean;
+  /** Number of configured providers; 0 means BYOK setup is pending. */
+  providers_configured?: number;
 }
 
 /** Sentinel id for "let the engine route by capability". */

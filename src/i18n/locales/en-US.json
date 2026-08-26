@@ -1917,6 +1917,8 @@
   "草稿不是合法 JSON": "Draft is not valid JSON",
   "草稿已生成，确认后安装": "Draft generated; confirm to install",
   "获取模型列表失败": "Failed to fetch model list",
+  "引擎不可用": "Engine unavailable",
+  "内置推理引擎已就绪 · 尚未配置模型提供商，可在设置中添加 API Key": "Built-in engine ready · No model provider configured yet — add an API key in Settings",
   "菜单": "Menu",
   "菜单名称（英文）": "Menu name (English)",
   "菜单描述（可选）": "Menu description (optional)",

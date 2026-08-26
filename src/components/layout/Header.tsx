@@ -174,12 +174,11 @@ export default function Header({
         {/* Left slot - for logo or other content */}
         {leftSlot}
 
-        {/* Mobile menu button */}
+        {/* Sidebar toggle — the single collapse control at every width */}
         <Button
           type="text"
           icon={<MenuOutlined />}
           onClick={toggleSidebar}
-          className="lg:hidden"
         />
 
         {/* Breadcrumb */}

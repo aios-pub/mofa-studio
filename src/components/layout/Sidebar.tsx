@@ -13,8 +13,6 @@ import {
   SearchOutlined,
   AudioOutlined,
   RobotOutlined,
-  LeftOutlined,
-  RightOutlined,
   DashboardOutlined,
   MessageOutlined,
   FileTextOutlined,
@@ -478,23 +476,6 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           data-window-drag-region
           className="flex-1 self-stretch"
           onClick={(e) => e.stopPropagation()}
-        />
-
-        <Button
-          type="text"
-          size="small"
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleSidebar();
-          }}
-          className="!absolute !right-0 translate-x-1/2 !w-7 !h-7 !rounded-full !border !border-[var(--color-border)] !bg-[var(--color-bg-base)] hover:!bg-[var(--color-bg-secondary)] z-10 flex items-center justify-center"
-          icon={
-            isMini ? (
-              <RightOutlined className="text-xs" />
-            ) : (
-              <LeftOutlined className="text-xs" />
-            )
-          }
         />
       </div>
 

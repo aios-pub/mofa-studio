@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 use axum::extract::{Multipart, State};
 use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
+use axum::response::{Response};
 use axum::routing::post;
 use axum::{Json, Router};
 use serde_json::{json, Value};
@@ -294,7 +294,6 @@ async fn query(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> R
     // PLAT-07: vector retrieval first; keyword scoring remains the honest
     // fallback when no embedding model is configured.
     let mut retrieval = "keyword";
-    let hits: Vec<Value>;
     let vector_try = crate::embeddings::embed(&state, &[query_text.to_string()])
         .await
         .and_then(|rows| rows.first().cloned())

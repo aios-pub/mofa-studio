@@ -10,7 +10,7 @@ use std::sync::Arc;
 
 use axum::extract::{Multipart, State};
 use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
+use axum::response::{Response};
 use axum::routing::post;
 use axum::{Json, Router};
 use serde_json::{json, Value};
@@ -34,15 +34,6 @@ impl TranscodeProfile {
             "social_vertical" => Some(Self::SocialVertical),
             "gif_friendly" => Some(Self::GifFriendly),
             _ => None,
-        }
-    }
-
-    fn label(&self) -> &'static str {
-        match self {
-            Self::Web1080 => "1080p Web (H.264/AAC)",
-            Self::Web720 => "720p Web (H.264/AAC)",
-            Self::SocialVertical => "竖屏 9:16 (抖音/视频号)",
-            Self::GifFriendly => "GIF 友好 (小尺寸高帧率源)",
         }
     }
 }

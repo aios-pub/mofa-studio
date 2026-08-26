@@ -11,7 +11,7 @@ use std::sync::Arc;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::Response;
-use axum::routing::{get, post};
+use axum::routing::{post};
 use axum::{Json, Router};
 use serde_json::{json, Value};
 

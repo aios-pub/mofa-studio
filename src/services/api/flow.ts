@@ -117,6 +117,21 @@ export function parseFlowJson(raw: string): { title: string; graph: FlowGraphPay
   return { title: parsed.title ?? "导入的工作流", graph: parsed.graph };
 }
 
+/** Parse a bare `{nodes, edges}` graph (the shape the gateway embeds into
+ * PNG snapshots — no mofa-flow envelope). Throws with a readable reason. */
+export function parseBareGraph(raw: string): FlowGraphPayload {
+  const parsed = JSON.parse(raw) as FlowGraphPayload;
+  if (!parsed || !Array.isArray(parsed.nodes)) {
+    throw new Error("快照不含 nodes 数组");
+  }
+  for (const node of parsed.nodes) {
+    if (!node.id || !(node.type in NODE_LABELS)) {
+      throw new Error(`未知节点类型: ${String(node.type)}`);
+    }
+  }
+  return parsed;
+}
+
 class FlowService {
   /** Blocking execution: returns the aggregate result. */
   async execute(graph: FlowGraphPayload): Promise<FlowExecutionResult> {
@@ -195,3 +210,110 @@ class FlowService {
 }
 
 export const flowService = new FlowService();
+
+// ==================== FLOW-06: 图片元数据恢复 + 版本历史 ====================
+
+/**
+ * Extract the workflow snapshot a generated PNG carries (tEXt chunk,
+ * keyword `mofa_workflow`, base64 JSON — the gateway embeds it on execute).
+ * `null` when the image has no snapshot.
+ */
+export function extractWorkflowFromPng(bytes: Uint8Array): string | null {
+  const SIG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  if (bytes.length < 8 || SIG.some((b, i) => bytes[i] !== b)) return null;
+  const KEYWORD = "mofa_workflow";
+  let offset = 8;
+  while (offset + 8 <= bytes.length) {
+    const length =
+      ((bytes[offset] << 24) | (bytes[offset + 1] << 16) | (bytes[offset + 2] << 8) | bytes[offset + 3]) >>> 0;
+    const kind = String.fromCharCode(...bytes.slice(offset + 4, offset + 8));
+    const start = offset + 8;
+    const end = start + length;
+    if (end + 4 > bytes.length) return null;
+    if (kind === "tEXt") {
+      const data = bytes.slice(start, end);
+      const zero = data.indexOf(0);
+      if (zero > 0) {
+        const keyword = String.fromCharCode(...data.slice(0, zero));
+        if (keyword === KEYWORD) {
+          const b64 = String.fromCharCode(...data.slice(zero + 1));
+          try {
+            const binary = atob(b64);
+            const json = new TextDecoder().decode(
+              Uint8Array.from(binary, (c) => c.charCodeAt(0)),
+            );
+            return json;
+          } catch {
+            return null;
+          }
+        }
+      }
+    }
+    offset = end + 4;
+  }
+  return null;
+}
+
+export interface FlowDocSummary {
+  id: string;
+  name: string;
+  latest_version: number;
+  updated_at: string;
+}
+
+export interface FlowVersionIndex {
+  id: string;
+  doc_id: string;
+  version_index: number;
+  created_at: string;
+}
+
+class FlowDocService {
+  async save(input: { id?: string; name: string; graph: unknown }): Promise<{ id: string; version: number } | null> {
+    try {
+      const data = await apiClient.post<{ data?: { id?: string; version?: number } }>(
+        "/api/flow/docs",
+        input,
+      );
+      if (data?.data?.id && data.data.version !== undefined) {
+        return { id: data.data.id, version: data.data.version };
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  async list(): Promise<FlowDocSummary[]> {
+    try {
+      const data = await apiClient.get<{ data?: FlowDocSummary[] }>("/api/flow/docs");
+      return data?.data ?? [];
+    } catch {
+      return [];
+    }
+  }
+
+  async versions(docId: string): Promise<FlowVersionIndex[]> {
+    try {
+      const data = await apiClient.get<{ data?: FlowVersionIndex[] }>(
+        `/api/flow/docs/${docId}/versions`,
+      );
+      return data?.data ?? [];
+    } catch {
+      return [];
+    }
+  }
+
+  async version(docId: string, index: number): Promise<unknown | null> {
+    try {
+      const data = await apiClient.get<{ data?: unknown }>(
+        `/api/flow/docs/${docId}/versions/${index}`,
+      );
+      return data?.data ?? null;
+    } catch {
+      return null;
+    }
+  }
+}
+
+export const flowDocService = new FlowDocService();

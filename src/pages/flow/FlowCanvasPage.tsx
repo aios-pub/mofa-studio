@@ -31,11 +31,18 @@ import {
   UploadOutlined,
   PlusOutlined,
   AppstoreOutlined,
+  SaveOutlined,
+  HistoryOutlined,
 } from "@ant-design/icons";
 import {
   NODE_LABELS,
   acceptsInput,
   canvasToGraph,
+  extractWorkflowFromPng,
+  parseBareGraph,
+  flowDocService,
+  type FlowGraphPayload,
+  type FlowVersionIndex,
   exportFlowJson,
   flowService,
   parseFlowJson,
@@ -318,35 +325,110 @@ export default function FlowCanvasPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, loadTemplate]);
 
+  /** Apply a parsed graph onto the canvas (shared by all import paths). */
+  const applyGraph = useCallback(
+    (graph: FlowGraphPayload, label: string) => {
+      counterRef.current += 1;
+      setNodes(
+        graph.nodes.map((n, index) => ({
+          id: n.id,
+          type: "flow" as const,
+          position: { x: 120 + index * 60, y: 80 + index * 40 },
+          data: { kind: n.type, params: n.params },
+        })),
+      );
+      setEdges(
+        graph.edges.map((e) => ({
+          id: `e-${e.from}-${e.to}`,
+          source: e.from,
+          target: e.to,
+        })),
+      );
+      clearStatuses();
+      message.success(`${label}（${graph.nodes.length} 节点）`);
+    },
+    [clearStatuses],
+  );
+
   const importJson = useCallback(
     async (file: File) => {
       try {
         const raw = await file.text();
         const { graph } = parseFlowJson(raw);
-        counterRef.current += 1;
-        setNodes(
-          graph.nodes.map((n, index) => ({
-            id: n.id,
-            type: "flow" as const,
-            position: { x: 120 + index * 60, y: 80 + index * 40 },
-            data: { kind: n.type, params: n.params },
-          })),
-        );
-        setEdges(
-          graph.edges.map((e) => ({
-            id: `e-${e.from}-${e.to}`,
-            source: e.from,
-            target: e.to,
-          })),
-        );
-        clearStatuses();
-        message.success(`已导入「${file.name}」（${graph.nodes.length} 节点）`);
+        applyGraph(graph, `已导入「${file.name}」`);
       } catch (error) {
         const detail = error instanceof Error ? error.message : String(error);
         message.error(detail);
       }
     },
-    [clearStatuses],
+    [applyGraph],
+  );
+
+  // FLOW-06: restore a workflow from one of its own output PNGs (the
+  // gateway embeds the graph snapshot into every generated image).
+  const importImage = useCallback(
+    async (file: File) => {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const workflow = extractWorkflowFromPng(bytes);
+      if (!workflow) {
+        message.error("这张图片没有携带工作流快照（仅本产品生成的图片可恢复）");
+        return;
+      }
+      try {
+        const graph = parseBareGraph(workflow);
+        applyGraph(graph, `已从图片恢复「${file.name}」`);
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : String(error);
+        message.error(`图片内快照无法解析：${detail}`);
+      }
+    },
+    [applyGraph],
+  );
+
+  // FLOW-06: save with version history.
+  const [docId, setDocId] = useState<string | null>(null);
+  const [docName, setDocName] = useState("");
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [versions, setVersions] = useState<FlowVersionIndex[]>([]);
+
+  const saveDoc = useCallback(async () => {
+    const graph = canvasToGraph(nodes, edges);
+    const saved = await flowDocService.save({
+      id: docId ?? undefined,
+      name: docName || `工作流 ${new Date().toLocaleDateString()}`,
+      graph,
+    });
+    if (!saved) {
+      message.error("保存失败");
+      return;
+    }
+    setDocId(saved.id);
+    setDocName(docName || `工作流 ${new Date().toLocaleDateString()}`);
+    message.success(`已保存为版本 v${saved.version}`);
+  }, [nodes, edges, docId, docName]);
+
+  const openHistory = useCallback(async () => {
+    setHistoryOpen(true);
+    setVersions(docId ? await flowDocService.versions(docId) : []);
+  }, [docId]);
+
+  const restoreVersion = useCallback(
+    async (index: number) => {
+      if (!docId) return;
+      const graph = await flowDocService.version(docId, index);
+      if (!graph) {
+        message.error("该版本读取失败");
+        return;
+      }
+      try {
+        const parsed = parseBareGraph(JSON.stringify(graph));
+        applyGraph(parsed, `已恢复 v${index}`);
+        setHistoryOpen(false);
+      } catch {
+        message.error("版本数据无法解析");
+      }
+    },
+    [docId, applyGraph],
   );
 
   const selected = nodes.find((n) => n.selected);
@@ -446,17 +528,38 @@ export default function FlowCanvasPage() {
             导出 JSON
           </Button>
           <Upload
-            accept=".json"
+            accept=".json,.png"
             showUploadList={false}
             beforeUpload={(file) => {
-              void importJson(file);
+              if (file.name.toLowerCase().endsWith(".png")) {
+                void importImage(file);
+              } else {
+                void importJson(file);
+              }
               return false;
             }}
           >
-            <Button block icon={<UploadOutlined />} aria-label="导入 JSON">
-              导入 JSON
+            <Button block icon={<UploadOutlined />} aria-label="导入 JSON 或图片">
+              导入 JSON / 图片
             </Button>
           </Upload>
+          <Button
+            block
+            icon={<SaveOutlined />}
+            onClick={() => void saveDoc()}
+            aria-label="保存工作流"
+          >
+            保存（含版本历史）
+          </Button>
+          <Button
+            block
+            icon={<HistoryOutlined />}
+            onClick={() => void openHistory()}
+            disabled={!docId}
+            aria-label="版本历史"
+          >
+            版本历史
+          </Button>
         </div>
 
         {summary && (
@@ -577,6 +680,34 @@ export default function FlowCanvasPage() {
           </p>
         </div>
       )}
+
+      {/* FLOW-06 版本历史抽屉 */}
+      <Modal
+        title={`版本历史${docId ? `（${docId}）` : ""}`}
+        open={historyOpen}
+        footer={null}
+        onCancel={() => setHistoryOpen(false)}
+      >
+        {versions.length === 0 ? (
+          <p className="text-xs text-[var(--color-text-tertiary)]">暂无历史版本</p>
+        ) : (
+          <div className="space-y-2">
+            {versions.map((version) => (
+              <div
+                key={version.id}
+                className="flex items-center gap-2 rounded-lg border border-(--color-border) p-2"
+              >
+                <span className="text-xs font-medium flex-1">
+                  v{version.version_index} · {version.created_at?.slice(0, 19).replace("T", " ")}
+                </span>
+                <Button size="small" onClick={() => void restoreVersion(version.version_index)} aria-label={`恢复版本 ${version.version_index}`}>
+                  恢复
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </Modal>
 
       {/* Canvas */}
       <div className="flex-1">

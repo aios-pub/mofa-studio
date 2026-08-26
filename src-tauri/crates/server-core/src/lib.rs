@@ -28,6 +28,7 @@ pub mod media;
 pub mod memory_routes;
 pub mod model_center;
 pub mod music_routes;
+pub mod png_meta;
 pub mod podcast;
 pub mod rag;
 pub mod research;

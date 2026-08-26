@@ -224,3 +224,233 @@ async fn invalid_graph_reports_honestly() {
         .unwrap()
         .contains("requires at least one upstream"));
 }
+
+// ==================== FLOW-06: PNG metadata recovery + version history ====================
+
+/// A minimal structurally-valid PNG (the embed path only splices chunks).
+fn minimal_png_bytes() -> Vec<u8> {
+    fn chunk(kind: &[u8], data: &[u8]) -> Vec<u8> {
+        fn crc32(data: &[u8]) -> u32 {
+            let mut table = [0u32; 256];
+            for (i, entry) in table.iter_mut().enumerate() {
+                let mut c = i as u32;
+                for _ in 0..8 {
+                    c = if c & 1 != 0 {
+                        0xEDB8_8320 ^ (c >> 1)
+                    } else {
+                        c >> 1
+                    };
+                }
+                *entry = c;
+            }
+            let mut crc = 0xFFFF_FFFFu32;
+            for &b in data {
+                crc = table[((crc ^ b as u32) & 0xFF) as usize] ^ (crc >> 8);
+            }
+            crc ^ 0xFFFF_FFFF
+        }
+        let mut crc_input = Vec::new();
+        crc_input.extend_from_slice(kind);
+        crc_input.extend_from_slice(data);
+        let mut out = Vec::new();
+        out.extend_from_slice(&(data.len() as u32).to_be_bytes());
+        out.extend_from_slice(&crc_input);
+        out.extend_from_slice(&crc32(&crc_input).to_be_bytes());
+        out
+    }
+    let mut png = vec![0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+    png.extend_from_slice(&chunk(b"IHDR", &[0; 13]));
+    png.extend_from_slice(&chunk(b"IDAT", b"z"));
+    png.extend_from_slice(&chunk(b"IEND", &[]));
+    png
+}
+
+#[tokio::test]
+async fn execute_embeds_workflow_into_output_pngs() {
+    use base64::Engine as _;
+    let png_b64 = base64::engine::general_purpose::STANDARD.encode(minimal_png_bytes());
+    let app_engine = Router::new().route(
+        "/v1/images/generations",
+        post(move |Json(body): Json<Value>| {
+            let prompt = body["prompt"].as_str().unwrap_or("").to_string();
+            let b64 = png_b64.clone();
+            async move {
+                Json(json!({
+                    "created": 1,
+                    "data": [{ "b64_json": b64, "prompt_echo": prompt }],
+                    "model_used": "mock/mock-image",
+                }))
+            }
+        }),
+    );
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    tokio::spawn(async move {
+        axum::serve(listener, app_engine).await.unwrap();
+    });
+
+    let data_dir = std::env::temp_dir().join("mofa-flow-png-meta-test");
+    let _ = std::fs::remove_dir_all(&data_dir);
+    let mut config = ServerConfig::for_data_dir(data_dir);
+    config.engine_base_url = Some(format!("http://{addr}"));
+    let app = server_core::build_router(&config).unwrap();
+
+    let graph = json!({
+        "nodes": [
+            { "id": "p", "type": "prompt_text", "params": { "text": "橘猫" } },
+            { "id": "i", "type": "image_gen", "params": {} },
+            { "id": "o", "type": "output", "params": {} },
+        ],
+        "edges": [
+            { "from": "p", "to": "i" },
+            { "from": "i", "to": "o" },
+        ],
+    });
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/flow/execute")
+                .header("content-type", "application/json")
+                .body(Body::from(graph.to_string()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let result: Value = serde_json::from_slice(&bytes).unwrap();
+
+    // Every image output now carries the workflow snapshot.
+    let outputs = result["node_outputs"].as_object().unwrap();
+    let mut checked = 0;
+    for output in outputs.values() {
+        let Some(images) = output.get("images").and_then(Value::as_array) else {
+            continue;
+        };
+        for image in images {
+            let b64 = image.as_str().unwrap();
+            let decoded = base64::engine::general_purpose::STANDARD
+                .decode(b64)
+                .unwrap();
+            let workflow = server_core::png_meta::extract_workflow(&decoded)
+                .expect("workflow snapshot embedded");
+            let parsed: Value = serde_json::from_str(&workflow).unwrap();
+            assert_eq!(parsed["nodes"].as_array().unwrap().len(), 3);
+            checked += 1;
+        }
+    }
+    assert!(checked >= 1, "no image outputs found: {result}");
+}
+
+#[tokio::test]
+async fn flow_doc_version_history_round_trip() {
+    let engine = spawn_mock_engine().await;
+    let data_dir = std::env::temp_dir().join("mofa-flow-docs-test");
+    let _ = std::fs::remove_dir_all(&data_dir);
+    let mut config = ServerConfig::for_data_dir(data_dir);
+    config.engine_base_url = Some(engine);
+    let app = server_core::build_router(&config).unwrap();
+
+    let graph_v1 = json!({ "nodes": [{ "id": "a", "type": "prompt_text", "params": {"text": "v1"} }], "edges": [] });
+    let graph_v2 = json!({ "nodes": [{ "id": "a", "type": "prompt_text", "params": {"text": "v2"} }], "edges": [] });
+
+    // Save twice under one doc id.
+    let save = |app: &Router, id: &str, name: &str, graph: Value| {
+        let app = app.clone();
+        let uri = "/api/flow/docs".to_string();
+        let body = json!({ "id": id, "name": name, "graph": graph }).to_string();
+        async move {
+            app.oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri(uri)
+                    .header("content-type", "application/json")
+                    .body(Body::from(body))
+                    .unwrap(),
+            )
+            .await
+            .unwrap()
+        }
+    };
+    let first = save(&app, "doc-1", "我的工作流", graph_v1.clone()).await;
+    assert_eq!(first.status(), StatusCode::OK);
+    let second = save(&app, "doc-1", "我的工作流", graph_v2.clone()).await;
+    assert_eq!(second.status(), StatusCode::OK);
+
+    // Listing shows the doc with latest_version=2.
+    let list = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/api/flow/docs")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let docs: Value = serde_json::from_slice(
+        &axum::body::to_bytes(list.into_body(), usize::MAX)
+            .await
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(docs["data"][0]["latest_version"], 2);
+
+    // Version index (newest first) omits graph payloads.
+    let versions = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/api/flow/docs/doc-1/versions")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let idx: Value = serde_json::from_slice(
+        &axum::body::to_bytes(versions.into_body(), usize::MAX)
+            .await
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(idx["data"].as_array().unwrap().len(), 2);
+    assert_eq!(idx["data"][0]["version_index"], 2);
+    assert!(idx["data"][0].get("graph").is_none());
+
+    // Each version fetches its exact graph.
+    for (index, expected) in [(1u64, &graph_v1), (2u64, &graph_v2)] {
+        let fetch = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri(format!("/api/flow/docs/doc-1/versions/{index}"))
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        let body: Value = serde_json::from_slice(
+            &axum::body::to_bytes(fetch.into_body(), usize::MAX)
+                .await
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(body["data"], *expected, "version {index}");
+    }
+
+    // Unknown doc/version → honest 404s.
+    for uri in [
+        "/api/flow/docs/nope/versions",
+        "/api/flow/docs/doc-1/versions/99",
+    ] {
+        let missing = app
+            .clone()
+            .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(missing.status(), StatusCode::NOT_FOUND, "{uri}");
+    }
+}

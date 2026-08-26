@@ -15,6 +15,7 @@ use axum::routing::{get, post};
 use axum::{Json, Router};
 use serde_json::{json, Value};
 
+use crate::vector::VectorBackend;
 use crate::{err_msg, ok_data, AppState};
 
 const MEMORY_COLLECTION: &str = "memory";
@@ -83,6 +84,13 @@ async fn create(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> 
         "created_at": chrono::Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string(),
     });
     let _ = state.store.insert(MEMORY_COLLECTION, &id, doc.clone());
+    // PLAT-07: index for vector retrieval when embeddings are reachable;
+    // the keyword path keeps serving otherwise.
+    if let Some(rows) = crate::embeddings::embed(&state, &[content.to_string()]).await {
+        if let Some(vector) = rows.first() {
+            let _ = state.vectors.upsert("memory", &id, vector);
+        }
+    }
     ok_data(doc)
 }
 
@@ -154,23 +162,50 @@ async fn retrieve(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -
         .and_then(Value::as_u64)
         .unwrap_or(3)
         .min(10) as usize;
-    let mut scored: Vec<(u64, Value)> = state
-        .store
-        .list(MEMORY_COLLECTION)
-        .into_iter()
-        .map(|entry| {
-            let content = entry.get("content").and_then(Value::as_str).unwrap_or("");
-            (score_entry(query, content), entry)
+    // PLAT-07: vector retrieval first; keyword scoring stays the fallback.
+    let entries = state.store.list(MEMORY_COLLECTION);
+    let by_id: std::collections::HashMap<String, Value> = entries
+        .iter()
+        .filter_map(|e| {
+            e.get("id")
+                .and_then(Value::as_str)
+                .map(|id| (id.to_string(), e.clone()))
         })
-        .filter(|(score, _)| *score > 0)
         .collect();
-    scored.sort_by(|a, b| b.0.cmp(&a.0));
-    let hits: Vec<Value> = scored
-        .into_iter()
-        .take(top_k)
-        .map(|(_, entry)| entry)
-        .collect();
-    ok_data(json!({ "disabled": false, "hits": hits }))
+    let vector_hits = crate::embeddings::embed(&state, &[query.to_string()])
+        .await
+        .and_then(|rows| rows.first().cloned())
+        .and_then(|query_vector| state.vectors.query("memory", &query_vector, top_k).ok())
+        .map(|knn| {
+            knn.iter()
+                .filter_map(|(id, _distance)| by_id.get(id).cloned())
+                .collect::<Vec<Value>>()
+        })
+        .filter(|hits: &Vec<Value>| !hits.is_empty());
+
+    let (retrieval, hits) = match vector_hits {
+        Some(hits) => ("vector", hits),
+        None => {
+            let mut scored: Vec<(u64, Value)> = entries
+                .into_iter()
+                .map(|entry| {
+                    let content = entry.get("content").and_then(Value::as_str).unwrap_or("");
+                    (score_entry(query, content), entry)
+                })
+                .filter(|(score, _)| *score > 0)
+                .collect();
+            scored.sort_by(|a, b| b.0.cmp(&a.0));
+            (
+                "keyword",
+                scored
+                    .into_iter()
+                    .take(top_k)
+                    .map(|(_, entry)| entry)
+                    .collect(),
+            )
+        }
+    };
+    ok_data(json!({ "disabled": false, "retrieval": retrieval, "hits": hits }))
 }
 
 pub(crate) fn memory_routes() -> Router<Arc<AppState>> {

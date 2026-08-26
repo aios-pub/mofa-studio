@@ -131,6 +131,7 @@ async fn monitoring_metrics() -> Response {
 /// proxy), merged into the router by `build_router`.
 pub(crate) fn extras_routes() -> Router<Arc<AppState>> {
     Router::new()
+        .route("/api/search", get(global_search))
         .route("/api/analytics/overview", get(analytics_overview))
         .route("/api/analytics/daily", get(empty_array))
         .route("/api/analytics/hourly", get(empty_array))
@@ -140,4 +141,29 @@ pub(crate) fn extras_routes() -> Router<Arc<AppState>> {
         .route("/api/monitoring/events", get(empty_array))
         .route("/api/monitoring/metrics", get(monitoring_metrics))
         .route("/api/monitoring/alerts", get(empty_array))
+}
+
+/// GET /api/search?q=&limit= — PLAT-07 FTS5 全文检索 across 会话/文档.
+/// Both collections live in the generic document store, so one FTS5 index
+/// serves the cross-domain query with per-collection sections.
+async fn global_search(
+    State(state): State<Arc<AppState>>,
+    axum::extract::Query(params): axum::extract::Query<std::collections::HashMap<String, String>>,
+) -> Response {
+    use serde_json::json;
+    let query = params.get("q").map(String::as_str).unwrap_or("");
+    let limit = params
+        .get("limit")
+        .and_then(|v| v.parse::<usize>().ok())
+        .unwrap_or(20)
+        .clamp(1, 50);
+    if query.trim().is_empty() {
+        return crate::ok_data(json!({ "conversations": [], "documents": [] }));
+    }
+    let conversations = state.store.search("conversation", query, limit);
+    let documents = state.store.search("rag_doc", query, limit);
+    crate::ok_data(json!({
+        "conversations": conversations,
+        "documents": documents,
+    }))
 }

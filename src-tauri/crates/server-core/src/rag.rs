@@ -15,6 +15,7 @@ use serde_json::{json, Value};
 
 use calamine::Reader;
 
+use crate::vector::VectorBackend;
 use crate::{err_msg, ok_data, AppState};
 
 const MAX_UPLOAD_BYTES: usize = 50 * 1024 * 1024;
@@ -241,11 +242,24 @@ async fn upload(State(state): State<Arc<AppState>>, mut multipart: Multipart) ->
                 "created_at": chrono::Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string(),
             }),
         );
+        // PLAT-07 向量检索: index the chunks when an embedding model is
+        // reachable; without one the keyword path keeps serving queries.
+        let texts: Vec<String> = chunks.iter().map(|c| c.text.clone()).collect();
+        let mut indexed = 0usize;
+        if let Some(vectors) = crate::embeddings::embed(&state, &texts).await {
+            for (index, embedding) in vectors.iter().enumerate() {
+                let chunk_id = format!("{doc_id}-c{index}");
+                if state.vectors.upsert("rag", &chunk_id, embedding).is_ok() {
+                    indexed += 1;
+                }
+            }
+        }
         return ok_data(json!({
             "doc_id": doc_id,
             "name": filename,
             "chunks": total,
             "chars": text.chars().count(),
+            "vector_indexed": indexed,
         }));
     }
     err_msg(StatusCode::BAD_REQUEST, "multipart 中没有文件字段")
@@ -277,10 +291,45 @@ async fn query(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> R
         .and_then(|c| c.get("doc_name"))
         .cloned()
         .unwrap_or(Value::String(doc_id.to_string()));
-    let hits = top_chunks(&chunks, query_text, top_k);
+    // PLAT-07: vector retrieval first; keyword scoring remains the honest
+    // fallback when no embedding model is configured.
+    let mut retrieval = "keyword";
+    let hits: Vec<Value>;
+    let vector_try = crate::embeddings::embed(&state, &[query_text.to_string()])
+        .await
+        .and_then(|rows| rows.first().cloned())
+        .and_then(|query_vector| {
+            let knn = state.vectors.query("rag", &query_vector, 50).ok()?;
+            let by_id: std::collections::HashMap<String, &Value> = chunks
+                .iter()
+                .filter_map(|c| {
+                    c.get("id")
+                        .and_then(Value::as_str)
+                        .map(|id| (id.to_string(), c))
+                })
+                .collect();
+            let selected: Vec<&Value> = knn
+                .iter()
+                .filter_map(|(chunk_id, _distance)| by_id.get(chunk_id).copied())
+                .take(top_k)
+                .collect();
+            if selected.is_empty() {
+                None
+            } else {
+                Some(selected.into_iter().cloned().collect())
+            }
+        });
+    let hits = match vector_try {
+        Some(vector_hits) => {
+            retrieval = "vector";
+            vector_hits
+        }
+        None => top_chunks(&chunks, query_text, top_k),
+    };
     ok_data(json!({
         "doc_id": doc_id,
         "doc_name": doc_name,
+        "retrieval": retrieval,
         "hits": hits.iter().map(|h| json!({
             "seq": h.get("seq").cloned().unwrap_or(Value::Null),
             "text": h.get("text").cloned().unwrap_or(Value::Null),

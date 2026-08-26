@@ -19,6 +19,7 @@ pub mod backup;
 pub mod budget;
 pub mod collections;
 pub mod comfy_bridge;
+pub mod embeddings;
 pub mod fileops;
 pub mod flow_routes;
 pub mod im_push;
@@ -39,6 +40,7 @@ pub mod spans;
 pub mod storage;
 pub mod store;
 pub mod task_routes;
+pub mod vector;
 pub mod video_routes;
 pub mod workspace;
 pub mod ws;
@@ -118,6 +120,8 @@ pub(crate) struct AppState {
     pub model_pulls: model_center::PullRegistry,
     /// Async music generation tasks (TOOL-10).
     pub music_tasks: music_routes::MusicTaskRegistry,
+    /// Vector retrieval backend (PLAT-07 sqlite-vec).
+    pub vectors: vector::SqliteVecBackend,
 }
 
 // ==================== Response helpers ====================
@@ -142,6 +146,8 @@ pub(crate) fn err_msg(status: StatusCode, msg: &str) -> Response {
 /// database under `config.data_dir`.
 pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
     std::fs::create_dir_all(&config.data_dir)?;
+    // sqlite-vec registers process-wide before the first connection opens.
+    vector::SqliteVecBackend::register_extension();
     let db_path = config.data_dir.join("mofa-studio.db");
     let store = store::Store::open(&db_path)?;
     let jwt_secret = store.get_or_create_secret();
@@ -170,6 +176,10 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
         research: research::ResearchRegistry::default(),
         model_pulls: model_center::PullRegistry::default(),
         music_tasks: music_routes::MusicTaskRegistry::default(),
+        vectors: vector::SqliteVecBackend::new(rusqlite::Connection::open(&db_path).map_err(
+            |e| std::io::Error::new(std::io::ErrorKind::Other, format!("vector db: {e}")),
+        )?)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?,
     });
 
     let app = Router::new()

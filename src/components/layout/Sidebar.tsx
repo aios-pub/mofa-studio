@@ -8,6 +8,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Layout, Menu, Button, Switch } from "antd";
 import {
   CloudDownloadOutlined,
+  SolutionOutlined,
   CustomerServiceOutlined,
   SearchOutlined,
   AudioOutlined,
@@ -158,6 +159,11 @@ const coreMenuItems: MenuProps["items"] = [
     key: "/creation/transcription",
     icon: <AudioOutlined />,
     label: "录音转写",
+  },
+  {
+    key: "/creation/solver",
+    icon: <SolutionOutlined />,
+    label: "解题答疑",
   },
   {
     key: "/creation/podcast",

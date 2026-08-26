@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Modal, Input, message } from "antd";
+import { Button, Modal, Input, message } from "antd";
 import { conversationApi, agentApi } from "@/services";
 import { ConversationList } from "../../components/common";
 import { ChatContainer } from "../../components/conversation";
@@ -35,6 +35,13 @@ import {
   type Expert,
 } from "@/utils/experts";
 import type { ToolScope } from "@/utils/toolScope";
+import {
+  callReducer,
+  initialCallState,
+  type CallEvent,
+} from "@/utils/voiceCall";
+import VoiceCallOverlay from "@/components/conversation/VoiceCallOverlay";
+import { PhoneOutlined } from "@ant-design/icons";
 
 export default function ConversationPage() {
   const [, setConversations] = useState<Conversation[]>([]);
@@ -62,6 +69,13 @@ export default function ConversationPage() {
   const [expert, setExpert] = useState<Expert | null>(null);
   // TASK-10: pinned tool scope for the active conversation.
   const [toolScope, setToolScope] = useState<ToolScope>(null);
+  // CHAT-07: live voice call (VAD → ASR → chat → TTS with barge-in).
+  const [call, setCall] = useState(initialCallState);
+  const stopSpeakRef = useRef<(() => void) | null>(null);
+
+  const dispatchCall = useCallback((event: CallEvent) => {
+    setCall((state) => callReducer(state, event));
+  }, []);
   const [selectedAgentForNew, setSelectedAgentForNew] = useState<
     string | undefined
   >();
@@ -297,11 +311,21 @@ export default function ConversationPage() {
           },
         );
 
-        if (ttsEnabled && completion.content) {
-          // CHAT-08: fire-and-forget playback; failures surface as a toast.
-          void audioService.speak(completion.content).catch((e) => {
-            message.warning(`自动播报失败：${e instanceof Error ? e.message : e}`);
-          });
+        if ((ttsEnabled || call.phase !== "idle") && completion.content) {
+          // CHAT-08 fire-and-forget; CHAT-07 call mode also auto-plays and
+          // tracks the stop handle so barge-in can cut playback.
+          dispatchCall({ type: "reply-started" });
+          void audioService
+            .speak(completion.content, undefined, () =>
+              dispatchCall({ type: "reply-finished" }),
+            )
+            .then((stop) => {
+              stopSpeakRef.current = stop;
+            })
+            .catch((e) => {
+              message.warning(`自动播报失败：${e instanceof Error ? e.message : e}`);
+              dispatchCall({ type: "reply-finished" });
+            });
         }
         patchAssistant({
           content: completion.content,
@@ -340,8 +364,13 @@ export default function ConversationPage() {
         abortRef.current = null;
       }
     },
-    [model, deepThinking, webSearch, ttsEnabled, expert],
+    [model, deepThinking, webSearch, ttsEnabled, expert, call.phase, dispatchCall],
   );
+
+  // Stable bridge so the voice-call callback never goes stale.
+  const handleSendMessageRef = useRef<
+    (content: string) => Promise<void>
+  >(async () => {});
 
   // Send message (streaming through the llm-gateway / mofa-engine)
   const handleSendMessage = useCallback(
@@ -426,6 +455,29 @@ export default function ConversationPage() {
       );
     },
     [selectedConversation, isLoading, runGeneration, pendingAttachment, expert],
+  );
+  handleSendMessageRef.current = async (content: string) => {
+    await handleSendMessage(content);
+  };
+
+  // CHAT-07: a VAD-ended utterance rides ASR then enters the conversation.
+  const handleUtteranceBlob = useCallback(
+    async (blob: Blob) => {
+      dispatchCall({ type: "utterance-ended" });
+      try {
+        const text = await audioService.transcribe(blob);
+        dispatchCall({ type: "transcript", text });
+        if (text.trim()) {
+          await handleSendMessageRef.current(text);
+        }
+      } catch (error) {
+        dispatchCall({
+          type: "error",
+          message: `语音识别失败：${error instanceof Error ? error.message : error}`,
+        });
+      }
+    },
+    [dispatchCall],
   );
 
   // CHAT-05: generate an image in-conversation; the assistant message
@@ -696,6 +748,25 @@ export default function ConversationPage() {
       <div className="flex-1 flex flex-col">
         {guidance && <GuidanceCard guidance={GUIDANCES[guidance]} />}
         <div className="flex-1 min-h-0">
+        <div className="flex items-center gap-2 pb-2">
+          <Button
+            size="small"
+            icon={<PhoneOutlined />}
+            onClick={() =>
+              call.phase === "idle"
+                ? dispatchCall({ type: "dial" })
+                : dispatchCall({ type: "hang-up" })
+            }
+            aria-label={call.phase === "idle" ? "语音通话" : "挂断通话"}
+            type={call.phase === "idle" ? "default" : "primary"}
+            danger={call.phase !== "idle"}
+          >
+            {call.phase === "idle" ? "语音通话" : "通话中…"}
+          </Button>
+          <span className="text-xs text-[var(--color-text-tertiary)]">
+            实时语音：说完停顿自动发送，回答播放中开口可打断
+          </span>
+        </div>
         <ChatContainer
           conversation={selectedConversation}
           onSendMessage={handleSendMessage}
@@ -722,6 +793,24 @@ export default function ConversationPage() {
           onBranch={handleBranch}
         />
         </div>
+
+        {/* CHAT-07 实时语音通话浮层 */}
+        <VoiceCallOverlay
+          phase={call.phase}
+          bargeIns={call.bargeIns}
+          lastError={call.lastError}
+          onUtteranceBlob={(blob) => void handleUtteranceBlob(blob)}
+          onBargeIn={() => {
+            stopSpeakRef.current?.();
+            stopSpeakRef.current = null;
+            dispatchCall({ type: "barge-in" });
+          }}
+          onHangUp={() => {
+            stopSpeakRef.current?.();
+            stopSpeakRef.current = null;
+            dispatchCall({ type: "hang-up" });
+          }}
+        />
       </div>
 
       {/* Create conversation modal */}

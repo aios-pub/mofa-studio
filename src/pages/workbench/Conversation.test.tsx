@@ -44,6 +44,37 @@ vi.mock("@/services/api/engine", () => ({
 }));
 
 vi.mock("@/services/api/assets", () => ({ recordImageAssets: vi.fn() }));
+
+const mockedTranscribe = vi.fn();
+const mockedSpeak = vi.fn();
+const speakEndedRef = { current: null as (() => void) | null };
+
+vi.mock("@/services/api/audio", () => ({
+  recordingSupported: () => false,
+  audioService: {
+    transcribe: (...a: unknown[]) => mockedTranscribe(...a),
+    speak: (text: string, _voice?: string, onEnded?: () => void) => {
+      speakEndedRef.current = onEnded ?? null;
+      return mockedSpeak(text);
+    },
+  },
+}));
+
+// Capture the overlay's props so tests can drive the call wiring.
+let overlayProps: {
+  onUtteranceBlob: (blob: Blob) => void;
+  onBargeIn: () => void;
+  onHangUp: () => void;
+  phase: string;
+  bargeIns: number;
+} | null = null;
+vi.mock("@/components/conversation/VoiceCallOverlay", () => ({
+  default: (props: unknown) => {
+    overlayProps = props as typeof overlayProps;
+    if ((props as { phase: string }).phase === "idle") return null;
+    return <div data-testid="voice-call-overlay" data-phase={props.phase} />;
+  },
+}));
 vi.mock("@/components/onboarding/FirstRunGuide", () => ({ FirstOutputDialog: () => null }));
 vi.mock("@/components/onboarding/firstRunCases", async (o) => ({
   ...(await o<typeof import("@/components/onboarding/firstRunCases")>()),
@@ -141,5 +172,81 @@ describe("Conversation expert summon (TASK-14)", () => {
     await waitFor(() => expect(mockedChatStream).toHaveBeenCalled());
     const request = mockedChatStream.mock.calls[0][0];
     expect(request.messages.every((m: { role: string }) => m.role !== "system")).toBe(true);
+  });
+});
+
+describe("live voice call (CHAT-07)", () => {
+  it("dial opens the call and an utterance rides ASR into the conversation", async () => {
+    mockedTranscribe.mockResolvedValueOnce("今天天气怎么样");
+    mockedSpeak.mockResolvedValueOnce(() => {});
+    mockedChatStream.mockImplementation((_req, onChunk, _s, _t, onDone) => {
+      onChunk?.("晴", false);
+      onDone?.();
+      return Promise.resolve({ content: "晴" } as never);
+    });
+
+    await renderConversation();
+    fireEvent.click(screen.getByLabelText("语音通话"));
+    expect(await screen.findByTestId("voice-call-overlay")).toHaveAttribute(
+      "data-phase",
+      "listening",
+    );
+
+    // Drive the utterance pipeline as the overlay would.
+    overlayProps!.onUtteranceBlob(new Blob(["audio"], { type: "audio/webm" }));
+    await waitFor(() => expect(mockedTranscribe).toHaveBeenCalled());
+    await waitFor(() => {
+      const call = mockedChatStream.mock.calls.find((c) =>
+        c[0].messages.at(-1)?.content === "今天天气怎么样",
+      );
+      expect(call).toBeTruthy();
+    });
+
+    // The reply auto-plays in call mode and its completion returns to listening.
+    await waitFor(() => expect(mockedSpeak).toHaveBeenCalledWith("晴"));
+    speakEndedRef.current?.();
+    await waitFor(() =>
+      expect(screen.getByTestId("voice-call-overlay")).toHaveAttribute(
+        "data-phase",
+        "listening",
+      ),
+    );
+  });
+
+  it("barge-in stops the playback and is counted", async () => {
+    mockedTranscribe.mockResolvedValue("接着说");
+    mockedSpeak.mockResolvedValueOnce(() => {});
+    mockedChatStream.mockImplementation((_req, onChunk, _s, _t, onDone) => {
+      onChunk?.("答", false);
+      onDone?.();
+      return Promise.resolve({ content: "答" } as never);
+    });
+
+    await renderConversation();
+    fireEvent.click(screen.getByLabelText("语音通话"));
+    overlayProps!.onUtteranceBlob(new Blob(["x"]));
+    await waitFor(() =>
+      expect(screen.getByTestId("voice-call-overlay")).toHaveAttribute(
+        "data-phase",
+        "replying",
+      ),
+    );
+
+    overlayProps!.onBargeIn();
+    await waitFor(() => {
+      const overlay = screen.getByTestId("voice-call-overlay");
+      expect(overlay).toHaveAttribute("data-phase", "listening");
+      expect(overlayProps!.bargeIns).toBe(1);
+    });
+  });
+
+  it("hang-up closes the call", async () => {
+    await renderConversation();
+    fireEvent.click(screen.getByLabelText("语音通话"));
+    await screen.findByTestId("voice-call-overlay");
+    fireEvent.click(screen.getByLabelText("挂断通话"));
+    await waitFor(() =>
+      expect(screen.queryByTestId("voice-call-overlay")).not.toBeInTheDocument(),
+    );
   });
 });

@@ -25,7 +25,7 @@ class AudioService {
 
   /** Synthesize speech and play it; resolves when playback starts.
    * Returns a stop function. */
-  async speak(text: string, voice?: string): Promise<() => void> {
+  async speak(text: string, voice?: string, onEnded?: () => void): Promise<() => void> {
     const baseURL = apiClient.getBaseUrl?.() ?? "";
     const response = await fetch(`${baseURL}/v1/audio/speech`, {
       method: "POST",
@@ -38,7 +38,11 @@ class AudioService {
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
-    audio.addEventListener("ended", () => URL.revokeObjectURL(url));
+    audio.addEventListener("ended", () => {
+      URL.revokeObjectURL(url);
+      // CHAT-07: playback completion drives the call state machine.
+      onEnded?.();
+    });
     await audio.play();
     return () => {
       audio.pause();

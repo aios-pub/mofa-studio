@@ -1,16 +1,12 @@
 /**
- * llm-gateway — OpenAI-compatible proxy in front of mofa-engine.
+ * llm-gateway — OpenAI-compatible surface over the embedded mofa-engine.
  *
- * mofa-engine (https://github.com/mofa-org/mofa-engine) is the default LLM
- * inference engine for mofa-studio: capability routing, local-first model
- * selection, auto-failover and circuit breaking all live there. This module
- * exposes the OpenAI wire format the frontend already speaks
- * (`POST /v1/chat/completions`, `GET /v1/models`) and translates to the
- * engine's `POST /v1/invoke` / `POST /v1/invoke/stream` contract, so the
- * webview never talks to providers directly.
- *
- * Engine address resolution: `ServerConfig::engine_base_url` (tests, CLI
- * flag) → `MOFA_ENGINE_URL` env → default `http://127.0.0.1:8420`.
+ * mofa-engine is linked into this process (`crate::engine_bridge`): capability
+ * routing, local-first model selection, auto-failover and circuit breaking all
+ * live there. This module exposes the OpenAI wire format the frontend already
+ * speaks (`POST /v1/chat/completions`, `GET /v1/models`) and translates to the
+ * engine's capability-invoke contract, so the webview never talks to providers
+ * directly.
  */
 use std::sync::Arc;
 
@@ -22,23 +18,13 @@ use axum::routing::{get, post};
 use axum::{Json, Router};
 use serde_json::{json, Value};
 use tokio_stream::wrappers::ReceiverStream;
-use tokio_stream::StreamExt;
 
+use crate::engine_bridge::EngineCallError;
 use crate::{budget, search, spans, AppState};
-
-/// Loopback address the stock mofa-engine binary listens on.
-pub(crate) const DEFAULT_ENGINE_URL: &str = "http://127.0.0.1:8420";
-
-/// Resolve the engine base URL from config, environment, then default.
-pub(crate) fn resolve_engine_url(configured: Option<String>) -> String {
-    configured
-        .or_else(|| std::env::var("MOFA_ENGINE_URL").ok())
-        .unwrap_or_else(|| DEFAULT_ENGINE_URL.to_string())
-}
 
 // ==================== Routes ====================
 
-/// OpenAI-compatible gateway routes backed by mofa-engine.
+/// OpenAI-compatible gateway routes backed by the embedded engine.
 pub(crate) fn llm_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/v1/chat/completions", post(chat_completions))
@@ -50,6 +36,14 @@ pub(crate) fn llm_routes() -> Router<Arc<AppState>> {
             "/v1/config/providers",
             get(list_engine_providers).post(add_engine_provider),
         )
+}
+
+// ==================== Error helpers ====================
+
+/// Map a bridge error onto an OpenAI-style error response.
+fn engine_error_response(e: &EngineCallError) -> Response {
+    let status = StatusCode::from_u16(e.status).unwrap_or(StatusCode::BAD_GATEWAY);
+    openai_error(status, &e.message)
 }
 
 // ==================== Handlers ====================
@@ -228,50 +222,32 @@ fn extract_messages(body: &Value) -> Result<Vec<Value>, String> {
 
 /// Whether any message carries images (vision input).
 
-/// Non-streaming path: one engine `invoke`, wrapped into a single OpenAI
+/// Non-streaming path: one engine invoke, wrapped into a single OpenAI
 /// completion object.
 async fn chat_completions_blocking(
     state: Arc<AppState>,
     engine_req: Value,
     web_sources: Vec<Value>,
 ) -> Response {
-    let url = format!("{}/v1/invoke", state.engine_base_url);
-    let upstream = match state.http.post(&url).json(&engine_req).send().await {
-        Ok(resp) => resp,
-        Err(e) => return engine_unreachable(&state.engine_base_url, &e),
-    };
-    let status = upstream.status();
-    let payload: Value = match upstream.json().await {
+    let payload = match state.engine.invoke(engine_req.clone()).await {
         Ok(v) => v,
         Err(e) => {
-            return openai_error(
-                StatusCode::BAD_GATEWAY,
-                &format!("invalid engine response: {e}"),
-            )
+            spans::record_span(
+                &state.store,
+                spans::KIND_LLM,
+                spans::SOURCE_CHAT,
+                body_model(&engine_req),
+                None,
+                None,
+                None,
+                0,
+                "error",
+                Some(&e.message),
+                None,
+            );
+            return engine_error_response(&e);
         }
     };
-    if !status.is_success() {
-        let msg = payload
-            .pointer("/error/message")
-            .or_else(|| payload.get("message"))
-            .and_then(Value::as_str)
-            .unwrap_or("engine rejected the request")
-            .to_string();
-        spans::record_span(
-            &state.store,
-            spans::KIND_LLM,
-            spans::SOURCE_CHAT,
-            body_model(&engine_req),
-            None,
-            None,
-            None,
-            0,
-            "error",
-            Some(&msg),
-            None,
-        );
-        return openai_error(map_engine_status(status), &msg);
-    }
 
     let text = payload.get("text").and_then(Value::as_str).unwrap_or("");
     let tokens = payload
@@ -331,32 +307,20 @@ async fn chat_completions_blocking(
     .into_response()
 }
 
-/// Streaming path: relay the engine SSE stream, translating each
-/// `StreamChunk` into an OpenAI `chat.completion.chunk` frame.
+/// Streaming path: consume the engine's `StreamChunk` relay, translating each
+/// chunk into an OpenAI `chat.completion.chunk` frame.
 async fn chat_completions_stream(
     state: Arc<AppState>,
     engine_req: Value,
     web_sources: Vec<Value>,
 ) -> Response {
-    let url = format!("{}/v1/invoke/stream", state.engine_base_url);
-    let upstream = match state.http.post(&url).json(&engine_req).send().await {
-        Ok(resp) => resp,
-        Err(e) => return engine_unreachable(&state.engine_base_url, &e),
+    let mut rx = match state.engine.invoke_stream(engine_req) {
+        Ok(rx) => rx,
+        Err(e) => return engine_error_response(&e),
     };
-    let status = upstream.status();
-    if !status.is_success() {
-        let payload: Value = upstream.json().await.unwrap_or(Value::Null);
-        let msg = payload
-            .pointer("/error/message")
-            .or_else(|| payload.get("message"))
-            .and_then(Value::as_str)
-            .unwrap_or("engine rejected the request")
-            .to_string();
-        return openai_error(map_engine_status(status), &msg);
-    }
 
     let created = chrono::Utc::now().timestamp();
-    let (tx, rx) = tokio::sync::mpsc::channel::<Result<Vec<u8>, std::io::Error>>(64);
+    let (tx, rx_out) = tokio::sync::mpsc::channel::<Result<Vec<u8>, std::io::Error>>(64);
 
     // PLAT-15: one span per streamed call, recorded when the relay ends.
     let span_state = state.clone();
@@ -372,54 +336,24 @@ async fn chat_completions_stream(
         if let Some(frame) = leading_frame {
             let _ = tx.send(Ok(frame)).await;
         }
-        let mut upstream_stream = Box::pin(upstream.bytes_stream());
-        // Partial-line carry: SSE frames may split across network chunks,
-        // and splitting at `\n` is UTF-8 safe (0x0A never appears inside a
-        // multibyte sequence).
-        let mut buf: Vec<u8> = Vec::new();
         let mut chat_id = String::from("chatcmpl-unknown");
         let mut model = String::from("unknown");
         let mut tokens_seen: Option<u64> = None;
         let mut saw_error = false;
 
-        while let Some(item) = upstream_stream.next().await {
-            let bytes = match item {
-                Ok(b) => b,
-                Err(e) => {
-                    let frame = error_frame(&e.to_string());
-                    let _ = tx.send(Ok(frame)).await;
-                    break;
-                }
-            };
-            buf.extend_from_slice(&bytes);
-            while let Some(pos) = buf.iter().position(|&b| b == b'\n') {
-                let line: Vec<u8> = buf.drain(..=pos).collect();
-                for frame in translate_sse_line(
-                    &line,
-                    created,
-                    &mut chat_id,
-                    &mut model,
-                    &mut tokens_seen,
-                    &mut saw_error,
-                ) {
-                    if tx.send(Ok(frame)).await.is_err() {
-                        // Client disconnected; stop draining the engine.
-                        return;
-                    }
-                }
-            }
-        }
-        // Flush a trailing line if the engine closed without a final newline.
-        if !buf.is_empty() {
-            for frame in translate_sse_line(
-                &buf,
+        while let Some(chunk) = rx.recv().await {
+            for frame in translate_stream_chunk(
+                &chunk,
                 created,
                 &mut chat_id,
                 &mut model,
                 &mut tokens_seen,
                 &mut saw_error,
             ) {
-                let _ = tx.send(Ok(frame)).await;
+                if tx.send(Ok(frame)).await.is_err() {
+                    // Client disconnected; stop draining the engine.
+                    return;
+                }
             }
         }
 
@@ -447,35 +381,21 @@ async fn chat_completions_stream(
         .status(StatusCode::OK)
         .header(header::CONTENT_TYPE, "text/event-stream")
         .header(header::CACHE_CONTROL, "no-cache")
-        .body(Body::from_stream(ReceiverStream::new(rx)))
+        .body(Body::from_stream(ReceiverStream::new(rx_out)))
         .unwrap()
 }
 
-/// Translate one SSE line from the engine into zero or more OpenAI frames.
-/// Each returned Vec is a complete `data: ...\n\n` block ready to send.
-fn translate_sse_line(
-    line: &[u8],
+/// Translate one engine `StreamChunk` (serialized JSON) into zero or more
+/// OpenAI frames. Each returned Vec is a complete `data: ...\n\n` block ready
+/// to send.
+fn translate_stream_chunk(
+    chunk: &Value,
     created: i64,
     chat_id: &mut String,
     model: &mut String,
     tokens_seen: &mut Option<u64>,
     saw_error: &mut bool,
 ) -> Vec<Vec<u8>> {
-    let line = String::from_utf8_lossy(line);
-    let line = line.trim_end_matches(['\n', '\r']);
-    let Some(data) = line.strip_prefix("data:") else {
-        // Comments, keep-alive pings, `event:` lines — pass nothing through.
-        return Vec::new();
-    };
-    let data = data.trim();
-    if data.is_empty() || data == "[DONE]" {
-        return Vec::new();
-    }
-    let chunk: Value = match serde_json::from_str(data) {
-        Ok(v) => v,
-        Err(_) => return Vec::new(), // non-JSON keep-alive payload
-    };
-
     let mut frames = Vec::new();
     let chunk_type = chunk.get("type").and_then(Value::as_str).unwrap_or("");
     match chunk_type {
@@ -519,10 +439,11 @@ fn translate_sse_line(
                 })));
             }
         }
-        "thinking" => {
+        "reasoning" | "thinking" => {
             // Reasoning trace (DeepSeek-R1 style): forwarded as
             // `reasoning_content` so OpenAI-compatible clients can render it
-            // in a separate collapsible area.
+            // in a separate collapsible area. ("thinking" kept as an alias
+            // for engines that still speak the older wire tag.)
             if let Some(delta) = chunk.get("delta").and_then(Value::as_str) {
                 frames.push(sse_frame(json!({
                     "id": chat_id,
@@ -598,71 +519,39 @@ fn error_frame(message: &str) -> Vec<u8> {
 
 /// GET /v1/models — engine capability cards in the OpenAI model-list shape.
 async fn list_models(State(state): State<Arc<AppState>>) -> Response {
-    let url = format!("{}/v1/capabilities", state.engine_base_url);
-    let upstream = match state.http.get(&url).send().await {
-        Ok(resp) => resp,
-        Err(e) => return engine_unreachable(&state.engine_base_url, &e),
-    };
-    let status = upstream.status();
-    let payload: Value = match upstream.json().await {
-        Ok(v) => v,
-        Err(e) => {
-            return openai_error(
-                StatusCode::BAD_GATEWAY,
-                &format!("invalid engine response: {e}"),
-            )
-        }
-    };
-    if !status.is_success() {
-        return openai_error(map_engine_status(status), "engine capabilities unavailable");
-    }
-
-    let cards = payload.as_array().cloned().unwrap_or_default();
+    let cards = state.engine.capabilities().await;
     let data: Vec<Value> = cards
         .iter()
-        .map(|card| json!({
-            "id": card.get("id").cloned().unwrap_or(Value::String("unknown".into())),
-            "object": "model",
-            "created": 0,
-            "owned_by": card.get("provider").cloned().unwrap_or(Value::String("mofa-engine".into())),
-            "capability": card.get("capability").cloned().unwrap_or(Value::Null),
-            "status": card.get("status").cloned().unwrap_or(Value::Null),
-            "cost_tier": card.get("cost_tier").cloned().unwrap_or(Value::Null),
-            "context_window": card.get("context_window").cloned().unwrap_or(Value::Null),
-        }))
+        .map(|card| {
+            json!({
+                "id": card.get("id").cloned().unwrap_or(Value::String("unknown".into())),
+                "object": "model",
+                "created": 0,
+                "owned_by": card.get("provider").cloned().unwrap_or(Value::String("mofa-engine".into())),
+                "capability": card.get("capability").cloned().unwrap_or(Value::Null),
+                "status": card.get("status").cloned().unwrap_or(Value::Null),
+                "cost_tier": card.get("cost_tier").cloned().unwrap_or(Value::Null),
+                "context_window": card.get("context_window").cloned().unwrap_or(Value::Null),
+            })
+        })
         .collect();
     Json(json!({ "object": "list", "data": data })).into_response()
 }
 
-/// GET /v1/engine/health — liveness probe for the configured engine.
-/// Always 200; reachability is reported in the body so the UI can show a
-/// setup hint instead of a failed request.
+/// GET /v1/engine/health — liveness summary of the embedded engine. Always
+/// reachable; an unconfigured provider set is what the UI should surface as a
+/// setup hint instead.
 async fn engine_health(State(state): State<Arc<AppState>>) -> Response {
-    let url = format!("{}/health", state.engine_base_url);
-    let probe = state
-        .http
-        .get(&url)
-        .timeout(std::time::Duration::from_secs(2))
-        .send()
-        .await;
-    match probe {
-        Ok(resp) if resp.status().is_success() => {
-            let body: Value = resp.json().await.unwrap_or(Value::Null);
-            Json(json!({
-                "engine_url": state.engine_base_url,
-                "reachable": true,
-                "status": body.get("status").cloned().unwrap_or(json!("ok")),
-                "version": body.get("version").cloned().unwrap_or(Value::Null),
-            }))
-            .into_response()
-        }
-        _ => Json(json!({
-            "engine_url": state.engine_base_url,
-            "reachable": false,
-            "status": "unreachable",
-        }))
-        .into_response(),
-    }
+    let body = state.engine.health().await;
+    Json(json!({
+        "engine_url": "embedded",
+        "reachable": true,
+        "status": body.get("status").cloned().unwrap_or(json!("ok")),
+        "version": Value::Null,
+        "embedded": true,
+        "providers_configured": body.get("providers").cloned().unwrap_or(json!(0)),
+    }))
+    .into_response()
 }
 
 /// POST /v1/images/generations — OpenAI image API over the engine's
@@ -749,30 +638,11 @@ async fn engine_image_artifacts(
     state: &Arc<AppState>,
     engine_req: &Value,
 ) -> Result<(Value, Vec<String>), Response> {
-    let url = format!("{}/v1/invoke", state.engine_base_url);
-    let upstream = match state.http.post(&url).json(engine_req).send().await {
-        Ok(resp) => resp,
-        Err(e) => return Err(engine_unreachable(&state.engine_base_url, &e)),
-    };
-    let status = upstream.status();
-    let payload: Value = match upstream.json().await {
-        Ok(v) => v,
-        Err(e) => {
-            return Err(openai_error(
-                StatusCode::BAD_GATEWAY,
-                &format!("invalid engine response: {e}"),
-            ))
-        }
-    };
-    if !status.is_success() {
-        let msg = payload
-            .pointer("/error/message")
-            .or_else(|| payload.get("message"))
-            .and_then(Value::as_str)
-            .unwrap_or("engine rejected the request")
-            .to_string();
-        return Err(openai_error(map_engine_status(status), &msg));
-    }
+    let payload = state
+        .engine
+        .invoke(engine_req.clone())
+        .await
+        .map_err(|e| engine_error_response(&e))?;
 
     let files: Vec<String> = payload
         .get("files")
@@ -840,9 +710,9 @@ async fn fan_out_image_jobs(
         .map(|payload| (payload, files))
 }
 
-/// Read engine artifact paths off the shared host into OpenAI `b64_json`
-/// entries. Artifacts live on the engine's machine — the honest error says
-/// so when a path is unreadable.
+/// Read engine artifact paths into OpenAI `b64_json` entries. The engine runs
+/// in this very process, so an unreadable artifact is a filesystem/cleanup
+/// issue, not a "wrong host" situation.
 async fn artifacts_to_data(files: &[String]) -> Result<Vec<Value>, Response> {
     let mut data = Vec::with_capacity(files.len());
     for path in files {
@@ -859,10 +729,7 @@ async fn artifacts_to_data(files: &[String]) -> Result<Vec<Value>, Response> {
             Err(e) => {
                 return Err(openai_error(
                     StatusCode::BAD_GATEWAY,
-                    &format!(
-                        "engine artifact is not readable from the gateway host ({path}: {e}); \
-                         is mofa-engine running on this machine?"
-                    ),
+                    &format!("engine artifact is not readable ({path}: {e})"),
                 ));
             }
         }
@@ -1024,43 +891,20 @@ async fn image_edits(State(state): State<Arc<AppState>>, mut multipart: Multipar
 
 /// GET /v1/config/providers — masked provider listing from the engine.
 async fn list_engine_providers(State(state): State<Arc<AppState>>) -> Response {
-    let url = format!("{}/v1/config/providers", state.engine_base_url);
-    match state.http.get(&url).send().await {
-        Ok(resp) if resp.status().is_success() => {
-            let payload: Value = resp.json().await.unwrap_or(Value::Null);
-            Json(payload).into_response()
-        }
-        Ok(resp) => openai_error(
-            map_engine_status(resp.status()),
-            "engine provider listing failed",
-        ),
-        Err(e) => engine_unreachable(&state.engine_base_url, &e),
-    }
+    Json(state.engine.list_providers().await).into_response()
 }
 
 /// POST /v1/config/providers — BYOK setup: register a provider on the
-/// engine (persisted there, key stays server-side).
+/// embedded engine (persisted into the engine config file, key never lands
+/// in it).
 async fn add_engine_provider(
     State(state): State<Arc<AppState>>,
     Json(body): Json<Value>,
 ) -> Response {
-    let url = format!("{}/v1/config/providers", state.engine_base_url);
-    let upstream = match state.http.post(&url).json(&body).send().await {
-        Ok(resp) => resp,
-        Err(e) => return engine_unreachable(&state.engine_base_url, &e),
-    };
-    let status = upstream.status();
-    let payload: Value = upstream.json().await.unwrap_or(Value::Null);
-    if !status.is_success() {
-        let msg = payload
-            .pointer("/message")
-            .or_else(|| payload.pointer("/error/message"))
-            .and_then(Value::as_str)
-            .unwrap_or("engine rejected the provider config")
-            .to_string();
-        return openai_error(map_engine_status(status), &msg);
+    match state.engine.add_provider_config(&body).await {
+        Ok(payload) => Json(payload).into_response(),
+        Err(e) => engine_error_response(&e),
     }
-    Json(payload).into_response()
 }
 
 // ==================== Error helpers ====================
@@ -1079,27 +923,6 @@ fn openai_error(status: StatusCode, message: &str) -> Response {
         .into_response()
 }
 
-/// Connection-level failure: the engine is not running at the configured URL.
-fn engine_unreachable(url: &str, e: &reqwest::Error) -> Response {
-    openai_error(
-        StatusCode::SERVICE_UNAVAILABLE,
-        &format!(
-            "mofa-engine is not reachable at {url} ({e}). Start it with `cargo run --release` \
-             inside the mofa-engine checkout, or set MOFA_ENGINE_URL to a running engine."
-        ),
-    )
-}
-
-/// Map an upstream engine HTTP status to the status the gateway reports.
-fn map_engine_status(status: StatusCode) -> StatusCode {
-    match status.as_u16() {
-        404 => StatusCode::NOT_FOUND,
-        400 => StatusCode::BAD_REQUEST,
-        503 => StatusCode::SERVICE_UNAVAILABLE,
-        504 => StatusCode::GATEWAY_TIMEOUT,
-        _ => StatusCode::BAD_GATEWAY,
-    }
-}
 
 // ==================== Tests ====================
 
@@ -1117,21 +940,20 @@ mod tests {
     }
 
     #[test]
-    fn translates_thinking_chunks_as_reasoning_content() {
+    fn translates_reasoning_chunks_as_reasoning_content() {
         let mut chat_id = String::new();
         let mut model = String::new();
         let mut out = Vec::new();
         for chunk in [
             started(),
-            json!({"type":"thinking","delta":"先想"}),
-            json!({"type":"thinking","delta":"再想"}),
+            json!({"type":"reasoning","delta":"先想"}),
+            json!({"type":"reasoning","delta":"再想"}),
             json!({"type":"text","delta":"答案"}),
             json!({"type":"completed","duration_ms":9,"tokens_used":5,
                    "file":null,"fallback_used":false,"routing_reason":null}),
         ] {
-            let line = format!("data: {chunk}\n");
-            out.extend(translate_sse_line(
-                line.as_bytes(),
+            out.extend(translate_stream_chunk(
+                &chunk,
                 1_700_000_000,
                 &mut chat_id,
                 &mut model,
@@ -1162,9 +984,8 @@ mod tests {
             json!({"type":"completed","duration_ms":9,"tokens_used":5,
                              "file":null,"fallback_used":false,"routing_reason":null}),
         ] {
-            let line = format!("data: {chunk}\n");
-            out.extend(translate_sse_line(
-                line.as_bytes(),
+            out.extend(translate_stream_chunk(
+                &chunk,
                 1_700_000_000,
                 &mut chat_id,
                 &mut model,
@@ -1190,37 +1011,23 @@ mod tests {
     fn translates_error_chunk_in_band() {
         let mut chat_id = String::new();
         let mut model = String::new();
-        let line = b"data: {\"type\":\"error\",\"error\":{\"message\":\"boom\",\"code\":\"x\"}}\n";
+        // Kernel ErrorInfo serializes inline with internally-tagged enums:
+        // {"type":"error","code":...,"message":...}.
+        let chunk = json!({"type":"error","code":"internal","message":"boom"});
         let mut tokens = None;
         let mut errored = false;
-        let out = translate_sse_line(line, 1, &mut chat_id, &mut model, &mut tokens, &mut errored);
-        let line_text = String::from_utf8_lossy(line);
-        if line_text.contains("completed") {
-            assert_eq!(tokens, Some(5));
-        }
-        if line_text.contains("error") {
-            assert!(errored);
-        }
+        let out = translate_stream_chunk(
+            &chunk,
+            1,
+            &mut chat_id,
+            &mut model,
+            &mut tokens,
+            &mut errored,
+        );
+        assert!(errored);
         let text = String::from_utf8(out.concat()).unwrap();
         assert!(text.contains("\"error\":{\"message\":\"boom\""));
         assert!(text.ends_with("data: [DONE]\n\n"));
-    }
-
-    #[test]
-    fn skips_keepalive_and_non_json_lines() {
-        let mut chat_id = String::new();
-        let mut model = String::new();
-        for line in ["", ": ping", "event: message", "data: ping"] {
-            assert!(translate_sse_line(
-                line.as_bytes(),
-                1,
-                &mut chat_id,
-                &mut model,
-                &mut None,
-                &mut false,
-            )
-            .is_empty());
-        }
     }
 
     #[test]
@@ -1242,11 +1049,5 @@ mod tests {
         assert!(extract_messages(&json!({})).is_err());
         assert!(extract_messages(&json!({"messages": []})).is_err());
         assert!(extract_messages(&json!({"messages": "hi"})).is_err());
-    }
-
-    #[test]
-    fn engine_url_resolution_prefers_config_then_env() {
-        assert_eq!(resolve_engine_url(Some("http://x:1".into())), "http://x:1");
-        assert_eq!(resolve_engine_url(None), DEFAULT_ENGINE_URL);
     }
 }

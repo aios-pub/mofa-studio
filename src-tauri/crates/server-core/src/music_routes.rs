@@ -107,68 +107,43 @@ async fn submit(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> 
         .unwrap_or("auto")
         .to_string();
     tokio::spawn(async move {
-        let url = format!("{}/v1/invoke", task_state.engine_base_url);
         let started = std::time::Instant::now();
-        let result = task_state.http.post(&url).json(&engine_req).send().await;
-        let (phase, audio, label, error) = match result {
-            Ok(resp) if resp.status().is_success() => match resp.json::<Value>().await {
-                Ok(payload) => {
-                    let file = payload.get("file").and_then(Value::as_str).unwrap_or("");
-                    if file.is_empty() {
-                        (
+        let (phase, audio, label, error) = match task_state.engine.invoke(engine_req).await {
+            Ok(payload) => {
+                let file = payload.get("file").and_then(Value::as_str).unwrap_or("");
+                if file.is_empty() {
+                    (
+                        TaskPhase::Failed,
+                        None,
+                        None,
+                        Some("engine returned no audio file".to_string()),
+                    )
+                } else {
+                    match tokio::fs::read(file).await {
+                        Ok(bytes) => {
+                            use base64::Engine as _;
+                            let b64 = base64::engine::general_purpose::STANDARD.encode(&bytes);
+                            let label = payload
+                                .get("text")
+                                .and_then(Value::as_str)
+                                .map(str::to_string);
+                            (
+                                TaskPhase::Succeeded,
+                                Some(format!("data:audio/mpeg;base64,{b64}")),
+                                label,
+                                None,
+                            )
+                        }
+                        Err(e) => (
                             TaskPhase::Failed,
                             None,
                             None,
-                            Some("engine returned no audio file".to_string()),
-                        )
-                    } else {
-                        match tokio::fs::read(file).await {
-                            Ok(bytes) => {
-                                use base64::Engine as _;
-                                let b64 = base64::engine::general_purpose::STANDARD.encode(&bytes);
-                                let label = payload
-                                    .get("text")
-                                    .and_then(Value::as_str)
-                                    .map(str::to_string);
-                                (
-                                    TaskPhase::Succeeded,
-                                    Some(format!("data:audio/mpeg;base64,{b64}")),
-                                    label,
-                                    None,
-                                )
-                            }
-                            Err(e) => (
-                                TaskPhase::Failed,
-                                None,
-                                None,
-                                Some(format!("audio artifact not readable ({file}: {e})")),
-                            ),
-                        }
+                            Some(format!("audio artifact not readable ({file}: {e})")),
+                        ),
                     }
                 }
-                Err(e) => (
-                    TaskPhase::Failed,
-                    None,
-                    None,
-                    Some(format!("invalid engine response: {e}")),
-                ),
-            },
-            Ok(resp) => {
-                let status = resp.status();
-                let text = resp.text().await.unwrap_or_default();
-                (
-                    TaskPhase::Failed,
-                    None,
-                    None,
-                    Some(format!("engine HTTP {status}: {text}")),
-                )
             }
-            Err(e) => (
-                TaskPhase::Failed,
-                None,
-                None,
-                Some(format!("engine unreachable: {e}")),
-            ),
+            Err(e) => (TaskPhase::Failed, None, None, Some(e.message)),
         };
         spans::record_span(
             &task_state.store,

@@ -15,6 +15,8 @@ path = "src/main.rs"
 [dependencies]
 flow-engine = { path = "../flow-engine" }
 agent-runtime = { path = "../agent-runtime" }
+mofa-kernel = { workspace = true }
+mofa-engine-core = { workspace = true }
 axum = { version = "0.8", features = ["ws", "multipart"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "signal"] }
 serde = { version = "1", features = ["derive"] }

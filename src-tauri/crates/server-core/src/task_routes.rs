@@ -34,8 +34,7 @@ async fn save_project(state: &AppState, project: &Project) {
 
 /// The engine chat adapter for step execution.
 struct EngineStepModel {
-    http: reqwest::Client,
-    base_url: String,
+    engine: std::sync::Arc<dyn crate::engine_bridge::LlmEngine>,
     model: Option<String>,
 }
 
@@ -50,20 +49,11 @@ impl StepModel for EngineStepModel {
         if let Some(model) = &self.model {
             body["model"] = json!(model);
         }
-        let resp = self
-            .http
-            .post(format!("{}/v1/invoke", self.base_url))
-            .json(&body)
-            .send()
+        let payload = self
+            .engine
+            .invoke(body)
             .await
-            .map_err(|e| format!("引擎不可达: {e}"))?;
-        if !resp.status().is_success() {
-            return Err(format!("引擎 HTTP {}", resp.status()));
-        }
-        let payload: Value = resp
-            .json()
-            .await
-            .map_err(|e| format!("响应解析失败: {e}"))?;
+            .map_err(|e| e.message)?;
         Ok(payload
             .get("text")
             .and_then(Value::as_str)
@@ -177,8 +167,7 @@ async fn run(
         .and_then(Value::as_str)
         .map(str::to_string);
     let executor_model = EngineStepModel {
-        http: state.http.clone(),
-        base_url: state.engine_base_url.clone(),
+        engine: state.engine.clone(),
         model: model_override,
     };
     let outcome = run_project(&mut project, &executor_model).await;

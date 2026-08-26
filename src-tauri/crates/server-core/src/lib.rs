@@ -21,6 +21,7 @@ pub mod collections;
 pub mod comfy_bridge;
 pub mod content_safety;
 pub mod embeddings;
+pub mod engine_bridge;
 pub mod fileops;
 pub mod flow_routes;
 pub mod im_push;
@@ -75,9 +76,6 @@ pub struct ServerConfig {
     pub port: u16,
     /// Directory holding the SQLite database and generated secrets.
     pub data_dir: PathBuf,
-    /// Base URL of the mofa-engine inference server. `None` falls back to
-    /// the `MOFA_ENGINE_URL` env var, then the default loopback address.
-    pub engine_base_url: Option<String>,
 }
 
 impl ServerConfig {
@@ -87,7 +85,6 @@ impl ServerConfig {
             host: IpAddr::V4(Ipv4Addr::LOCALHOST),
             port: 0,
             data_dir,
-            engine_base_url: None,
         }
     }
 }
@@ -105,12 +102,14 @@ pub(crate) struct AppState {
     pub store: store::Store,
     pub jwt_secret: String,
     pub events: tokio::sync::broadcast::Sender<String>,
-    /// Shared HTTP client for outbound calls to mofa-engine.
+    /// Shared HTTP client for outbound calls to local side services
+    /// (Ollama, ComfyUI, IM webhooks).
     pub http: reqwest::Client,
-    /// Resolved mofa-engine base URL (config → env → default).
-    pub engine_base_url: String,
+    /// Embedded inference engine (mofa-engine linked in-process).
+    pub engine: Arc<dyn engine_bridge::LlmEngine>,
     /// Workflow runner (FLOW-04) with its signature cache.
-    pub flow_runner: std::sync::Arc<flow_engine::FlowRunner<flow_engine::HttpEngineClient>>,
+    pub flow_runner:
+        std::sync::Arc<flow_engine::FlowRunner<engine_bridge::CoreFlowClient>>,
     /// Async video generation tasks (TOOL-02).
     pub video_tasks: video_routes::VideoTaskRegistry,
     /// App data directory (media artifacts live under data/media).
@@ -143,9 +142,19 @@ pub(crate) fn err_msg(status: StatusCode, msg: &str) -> Response {
 
 // ==================== Router ====================
 
-/// Build the complete application router. Opens (and migrates) the SQLite
-/// database under `config.data_dir`.
-pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
+/// Build the complete application router on top of the embedded engine.
+/// Opens (and migrates) the SQLite database under `config.data_dir`.
+pub async fn build_router(config: &ServerConfig) -> io::Result<Router> {
+    let engine = engine_bridge::CoreLlmEngine::boot(&config.data_dir).await?;
+    build_router_with_engine(config, Arc::new(engine))
+}
+
+/// Like [`build_router`], but with the engine supplied by the caller — the
+/// seam integration tests use to inject a stub.
+pub fn build_router_with_engine(
+    config: &ServerConfig,
+    engine: Arc<dyn engine_bridge::LlmEngine>,
+) -> io::Result<Router> {
     std::fs::create_dir_all(&config.data_dir)?;
     // sqlite-vec registers process-wide before the first connection opens.
     vector::SqliteVecBackend::register_extension();
@@ -156,22 +165,21 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
     // PLAT-15: prune expired spans at startup (default 90-day retention).
     spans::prune_spans(&store);
 
-    let engine_base_url = llm_gateway::resolve_engine_url(config.engine_base_url.clone());
     let state = Arc::new(AppState {
         store,
         jwt_secret,
         events: tokio::sync::broadcast::channel(64).0,
-        // The engine is always a local/direct service; never route these
-        // hops through a system HTTP proxy (reqwest would otherwise pick up
-        // e.g. a Clash-style system proxy and break loopback calls).
+        // Side services are local/direct; never route these hops through a
+        // system HTTP proxy (reqwest would otherwise pick up e.g. a
+        // Clash-style system proxy and break loopback calls).
         http: reqwest::Client::builder()
             .no_proxy()
             .build()
             .expect("reqwest client"),
-        engine_base_url: engine_base_url.clone(),
         flow_runner: std::sync::Arc::new(flow_engine::FlowRunner::new(
-            flow_engine::HttpEngineClient::new(engine_base_url),
+            engine_bridge::CoreFlowClient::new(engine.clone()),
         )),
+        engine,
         video_tasks: video_routes::VideoTaskRegistry::default(),
         data_dir: config.data_dir.clone(),
         research: research::ResearchRegistry::default(),
@@ -226,7 +234,7 @@ pub fn build_router(config: &ServerConfig) -> io::Result<Router> {
 /// `port` was 0). Must be called from an async context on a tokio runtime —
 /// inside Tauri use `tauri::async_runtime::block_on(start(..))`.
 pub async fn start(config: ServerConfig) -> io::Result<SocketAddr> {
-    let app = build_router(&config)?;
+    let app = build_router(&config).await?;
     let listener = TcpListener::bind((config.host, config.port)).await?;
     let addr = listener.local_addr()?;
     println!("[server-core] listening on http://{addr}");

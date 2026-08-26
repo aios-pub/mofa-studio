@@ -50,28 +50,18 @@ async fn transcribe(State(state): State<Arc<AppState>>, mut multipart: Multipart
             "input_file": path.to_string_lossy(),
             "messages": [],
         });
-        let url = format!("{}/v1/invoke", state.engine_base_url);
-        let upstream = match state.http.post(&url).json(&engine_req).send().await {
-            Ok(resp) => resp,
+        let payload = match state.engine.invoke(engine_req).await {
+            Ok(v) => v,
             Err(e) => {
                 let _ = tokio::fs::remove_file(&path).await;
                 return err_msg(
-                    StatusCode::SERVICE_UNAVAILABLE,
-                    &format!("mofa-engine 不可达: {e}"),
+                    StatusCode::from_u16(e.status)
+                        .unwrap_or(StatusCode::BAD_GATEWAY),
+                    &e.message,
                 );
             }
         };
         let _ = tokio::fs::remove_file(&path).await;
-        let status = upstream.status();
-        let payload: Value = upstream.json().await.unwrap_or(Value::Null);
-        if !status.is_success() {
-            let msg = payload
-                .pointer("/error/message")
-                .or_else(|| payload.get("message"))
-                .and_then(Value::as_str)
-                .unwrap_or("engine asr failed");
-            return err_msg(StatusCode::BAD_GATEWAY, msg);
-        }
         return Json(json!({ "text": payload.get("text").and_then(Value::as_str).unwrap_or("") }))
             .into_response();
     }
@@ -96,34 +86,15 @@ async fn speech(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> 
         engine_req["model"] = json!(model);
     }
 
-    let url = format!("{}/v1/invoke", state.engine_base_url);
-    let upstream = match state.http.post(&url).json(&engine_req).send().await {
-        Ok(resp) => resp,
-        Err(e) => {
-            return err_msg(
-                StatusCode::SERVICE_UNAVAILABLE,
-                &format!("mofa-engine 不可达: {e}"),
-            )
-        }
-    };
-    let status = upstream.status();
-    let payload: Value = match upstream.json().await {
+    let payload = match state.engine.invoke(engine_req).await {
         Ok(v) => v,
         Err(e) => {
             return err_msg(
-                StatusCode::BAD_GATEWAY,
-                &format!("invalid engine response: {e}"),
+                StatusCode::from_u16(e.status).unwrap_or(StatusCode::BAD_GATEWAY),
+                &e.message,
             )
         }
     };
-    if !status.is_success() {
-        let msg = payload
-            .pointer("/error/message")
-            .or_else(|| payload.get("message"))
-            .and_then(Value::as_str)
-            .unwrap_or("engine tts failed");
-        return err_msg(StatusCode::BAD_GATEWAY, msg);
-    }
     let file = payload.get("file").and_then(Value::as_str).unwrap_or("");
     if file.is_empty() {
         return err_msg(StatusCode::BAD_GATEWAY, "engine returned no audio file");

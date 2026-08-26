@@ -243,32 +243,25 @@ use serde_json::{json, Value};
 use crate::{ok_data, AppState};
 use agent_runtime::{run_project, StepModel};
 
-/// The engine-chat adapter re-used from task_routes (unattended runs use
-/// direct steps only — review gates would block automation, so SOPs with
-/// gates are auto-approved on the tick path).
+/// The engine-chat adapter for unattended runs (direct steps only — review
+/// gates would block automation, so SOPs with gates are auto-approved on the
+/// tick path).
 struct AutoStepModel {
-    http: reqwest::Client,
-    base_url: String,
+    engine: Arc<dyn crate::engine_bridge::LlmEngine>,
 }
 
 #[async_trait::async_trait]
 impl StepModel for AutoStepModel {
     async fn execute(&self, prompt: &str, _step: &agent_runtime::Step) -> Result<String, String> {
-        let resp = self
-            .http
-            .post(format!("{}/v1/invoke", self.base_url))
-            .json(&json!({
+        let payload = self
+            .engine
+            .invoke(json!({
                 "capability": "chat",
                 "messages": [{ "role": "user", "content": prompt }],
                 "params": {},
             }))
-            .send()
             .await
-            .map_err(|e| format!("引擎不可达: {e}"))?;
-        if !resp.status().is_success() {
-            return Err(format!("引擎 HTTP {}", resp.status()));
-        }
-        let payload: Value = resp.json().await.map_err(|e| format!("解析失败: {e}"))?;
+            .map_err(|e| e.message)?;
         Ok(payload
             .get("text")
             .and_then(Value::as_str)
@@ -314,8 +307,7 @@ async fn tick(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> Re
         // Instantiate + run unattended (gates auto-approve).
         let mut project = instantiate_project(&sop, &json!({}));
         let model = AutoStepModel {
-            http: state.http.clone(),
-            base_url: state.engine_base_url.clone(),
+            engine: state.engine.clone(),
         };
         // Unattended runs auto-approve review gates (bounded against
         // pathological gate/rework loops).

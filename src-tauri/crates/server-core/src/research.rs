@@ -162,26 +162,16 @@ pub(crate) struct ResearchRegistry {
 // ==================== Engine chat helper ====================
 
 async fn engine_chat(state: &AppState, messages: &[Value]) -> Result<String, String> {
-    let url = format!("{}/v1/invoke", state.engine_base_url);
     let body = json!({
         "capability": "chat",
         "messages": messages,
         "params": {},
     });
-    let resp = state
-        .http
-        .post(&url)
-        .json(&body)
-        .send()
+    let payload = state
+        .engine
+        .invoke(body)
         .await
-        .map_err(|e| format!("引擎不可达: {e}"))?;
-    if !resp.status().is_success() {
-        return Err(format!("引擎 HTTP {}", resp.status()));
-    }
-    let payload: Value = resp
-        .json()
-        .await
-        .map_err(|e| format!("响应解析失败: {e}"))?;
+        .map_err(|e| e.message)?;
     Ok(payload
         .get("text")
         .and_then(Value::as_str)

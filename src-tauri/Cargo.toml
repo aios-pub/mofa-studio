@@ -1,6 +1,15 @@
 [workspace]
 members = ["crates/server-core", "crates/flow-engine", "crates/agent-runtime", "crates/wasm-sandbox"]
 
+[workspace.dependencies]
+# Embedded inference engine: the mofa-engine workspace's library crates
+# (mofa-kernel traits + mofa-engine-core Engine facade) linked in-process.
+# Pinned to our integration branch that aggregates upstream PRs #12/#14/#15/
+# #16 plus the blocking-response reasoning field; re-point at
+# https://github.com/mofa-org/mofa-engine once those merge upstream.
+mofa-kernel = { git = "https://github.com/amos-aios/mofa-engine", rev = "1a6deef6d07240880a1035132b8c38c8021c52a6" }
+mofa-engine-core = { git = "https://github.com/amos-aios/mofa-engine", rev = "1a6deef6d07240880a1035132b8c38c8021c52a6" }
+
 [package]
 name = "mofa-studio"
 version = "0.1.0"

@@ -39,14 +39,9 @@ async fn run() -> std::io::Result<()> {
                     config.data_dir = PathBuf::from(dir);
                 }
             }
-            "--engine-url" => {
-                if let Some(url) = args.next() {
-                    config.engine_base_url = Some(url);
-                }
-            }
             other => {
                 eprintln!("Unknown argument: {other}");
-                eprintln!("Usage: server-core [--port N] [--data-dir PATH] [--engine-url URL]");
+                eprintln!("Usage: server-core [--port N] [--data-dir PATH]");
                 std::process::exit(1);
             }
         }

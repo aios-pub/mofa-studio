@@ -4,15 +4,17 @@
  * Topological scheduling with signature-cache incremental execution: a
  * node whose (type, params, upstream-signature) hash matches the cache
  * skips re-execution, so editing one late parameter re-runs only that
- * node and its downstream. Node executors call mofa-engine through the
- * gateway's OpenAI-compatible surface via the EngineClient trait.
+ * node and its downstream. Node executors call the inference engine
+ * through the `EngineClient` trait; the host wires in a real client
+ * (server-core's `CoreFlowClient` over the embedded engine) or a test
+ * double.
  */
 pub mod executors;
 pub mod runner;
 pub mod scheduler;
 pub mod types;
 
-pub use executors::{EngineClient, ExecError, HttpEngineClient};
+pub use executors::{EngineClient, ExecError};
 pub use runner::FlowRunner;
 pub use scheduler::GraphError;
 pub use types::{ExecutionResult, FlowEvent, FlowGraph, FlowNode, NodeStatus, NodeType};

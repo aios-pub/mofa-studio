@@ -397,9 +397,9 @@ fn start_embedded_server(app: &tauri::App) -> Result<(), Box<dyn std::error::Err
     let config = server_core::ServerConfig {
         host: IpAddr::V4(Ipv4Addr::LOCALHOST),
         port: 0,
+        // The inference engine boots in-process inside server-core::start,
+        // rooted at <data_dir>/engine (config.toml + artifacts).
         data_dir,
-        // mofa-engine address: MOFA_ENGINE_URL env or default loopback:8420
-        engine_base_url: None,
     };
     let addr = tauri::async_runtime::block_on(server_core::start(config))?;
     println!("[server-core] embedded backend on http://{addr}");

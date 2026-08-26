@@ -1,6 +1,6 @@
-//! Node executors: the engine-facing side of the flow. A trait so tests
-//! run against in-memory doubles while production talks to mofa-engine
-//! over HTTP.
+//! Node executors: the engine-facing side of the flow. A trait so hosts
+//! wire in a real client (server-core's `CoreFlowClient` over the embedded
+//! engine) while tests run against in-memory doubles.
 
 use async_trait::async_trait;
 use serde_json::{json, Value};
@@ -158,96 +158,6 @@ async fn execute_http_node(params: &Value, upstream_text: &str) -> Result<NodeOu
         "text": body,
         "json": json_body,
     })))
-}
-
-/// HTTP EngineClient over mofa-engine's OpenAI-compatible gateway surface.
-pub struct HttpEngineClient {
-    pub base_url: String,
-    pub client: reqwest::Client,
-}
-
-impl HttpEngineClient {
-    pub fn new(base_url: impl Into<String>) -> Self {
-        Self {
-            base_url: base_url.into(),
-            // Local/direct service; never route through a system proxy.
-            client: reqwest::Client::builder()
-                .no_proxy()
-                .build()
-                .expect("reqwest client"),
-        }
-    }
-}
-
-#[async_trait]
-impl EngineClient for HttpEngineClient {
-    async fn chat(&self, prompt: &str, params: &Value) -> Result<String, ExecError> {
-        let mut body = json!({ "messages": [{ "role": "user", "content": prompt }] });
-        if let Some(model) = params.get("model").and_then(Value::as_str) {
-            body["model"] = json!(model);
-        }
-        let resp = self
-            .client
-            .post(format!("{}/v1/chat/completions", self.base_url))
-            .json(&body)
-            .send()
-            .await
-            .map_err(|e| ExecError::Unreachable(e.to_string()))?;
-        if !resp.status().is_success() {
-            return Err(ExecError::Failed(format!("chat HTTP {}", resp.status())));
-        }
-        let payload: Value = resp
-            .json()
-            .await
-            .map_err(|e| ExecError::Failed(format!("bad chat payload: {e}")))?;
-        Ok(payload
-            .pointer("/choices/0/message/content")
-            .and_then(Value::as_str)
-            .unwrap_or("")
-            .to_string())
-    }
-
-    async fn image_gen(&self, prompt: &str, params: &Value) -> Result<Vec<String>, ExecError> {
-        let mut body = json!({ "prompt": prompt });
-        if let Some(n) = params.get("n").and_then(Value::as_u64) {
-            body["n"] = json!(n);
-        }
-        if let Some(size) = params.get("size").and_then(Value::as_str) {
-            body["size"] = json!(size);
-        }
-        let resp = self
-            .client
-            .post(format!("{}/v1/images/generations", self.base_url))
-            .json(&body)
-            .send()
-            .await
-            .map_err(|e| ExecError::Unreachable(e.to_string()))?;
-        if !resp.status().is_success() {
-            return Err(ExecError::Failed(format!(
-                "image gen HTTP {}",
-                resp.status()
-            )));
-        }
-        let payload: Value = resp
-            .json()
-            .await
-            .map_err(|e| ExecError::Failed(format!("bad image payload: {e}")))?;
-        let images = payload
-            .get("data")
-            .and_then(Value::as_array)
-            .map(|items| {
-                items
-                    .iter()
-                    .filter_map(|i| {
-                        i.get("b64_json")
-                            .and_then(Value::as_str)
-                            .map(str::to_string)
-                    })
-                    .collect()
-            })
-            .unwrap_or_default();
-        Ok(images)
-    }
 }
 
 #[cfg(test)]

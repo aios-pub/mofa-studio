@@ -332,7 +332,11 @@ const expertMenuItems: MenuProps["items"] = [
 
 const MIN_WIDTH = 150;
 const MAX_WIDTH = 400;
-const DEFAULT_WIDTH = 224;
+
+// Expanded width adapts to the window (16% of it), clamped to a sane
+// range; a manual drag takes over from the adaptive value.
+const adaptiveWidth = () =>
+  Math.min(240, Math.max(176, Math.round(window.innerWidth * 0.16)));
 
 export default function Sidebar({ isMobile = false }: SidebarProps) {
   const expertMode = useSettings().expertMode;
@@ -370,9 +374,20 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     : settings.themeLayout === "mini" || sidebarCollapsed;
   const isHorizontal = settings.themeLayout === "horizontal";
 
-  const [siderWidth, setSiderWidth] = useState(DEFAULT_WIDTH);
+  const [siderWidth, setSiderWidth] = useState(adaptiveWidth);
   const [isResizing, setIsResizing] = useState(false);
+  // Once the user drags the edge, their width wins over the adaptive one
+  const userResizedRef = useRef(false);
   const siderRef = useRef<HTMLDivElement>(null);
+
+  // Keep the adaptive width in sync with window resizes until overridden
+  useEffect(() => {
+    const onResize = () => {
+      if (!userResizedRef.current) setSiderWidth(adaptiveWidth());
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -386,6 +401,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       if (siderRef.current) {
         const newWidth = e.clientX;
         if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH) {
+          userResizedRef.current = true;
           setSiderWidth(newWidth);
         }
       }

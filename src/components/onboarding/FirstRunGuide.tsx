@@ -28,37 +28,33 @@ export default function FirstRunGuide() {
       className="
         mb-6 rounded-xl overflow-hidden
         border border-[var(--color-border)]
-        bg-[var(--color-bg-primary)]
-        shadow-sm
+        bg-[var(--color-bg-secondary)]/60
       "
       aria-label="首任务引导"
     >
-      {/* Accent top bar */}
-      <div className="h-0.5 bg-gradient-to-r from-[var(--color-primary)] via-[var(--color-primary-light)] to-transparent" />
-
-      <div className="p-5">
+      <div className="p-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="
-              w-7 h-7 rounded-lg flex items-center justify-center
-              bg-[var(--color-primary)]/10
-            ">
-              <RocketOutlined className="text-[var(--color-primary)] text-sm" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-[var(--color-text-primary)] leading-tight">
-                5 分钟拿到第一个成果
-              </h3>
-              <p className="text-xs text-[var(--color-text-tertiary)] mt-0.5">
-                选一个「做同款」，一键启动
-              </p>
-            </div>
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <span
+              className="
+                h-6 w-6 shrink-0 rounded-md flex items-center justify-center
+                bg-[var(--color-primary)]/10
+              "
+            >
+              <RocketOutlined className="text-xs text-[var(--color-primary)]" />
+            </span>
+            <span className="text-sm font-semibold text-[var(--color-text-primary)] whitespace-nowrap">
+              5 分钟拿到第一个成果
+            </span>
+            <span className="hidden md:inline text-xs text-[var(--color-text-tertiary)] truncate">
+              选一个「做同款」，一键启动
+            </span>
           </div>
           <Button
             type="text"
             size="small"
-            className="text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
+            className="text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
             onClick={() => setDismissed(true)}
             aria-label="关闭首任务引导"
           >
@@ -66,50 +62,41 @@ export default function FirstRunGuide() {
           </Button>
         </div>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Compact one-line task cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
           {FIRST_RUN_CASES.map((c, index) => (
             <button
               key={c.id}
               onClick={() => runCase(index)}
               className="
-                group text-left p-4 rounded-lg
+                group flex items-center gap-2.5 text-left p-2.5 rounded-lg
                 border border-[var(--color-border)]
-                bg-[var(--color-bg-secondary)]
-                hover:border-[var(--color-primary)]/40
-                hover:bg-[var(--color-primary)]/5
-                hover:shadow-md
-                transition-all duration-200
-                relative overflow-hidden
+                bg-[var(--color-bg-primary)]
+                hover:border-[var(--color-primary)]/50
+                hover:shadow-sm
+                transition-all duration-150
               "
               aria-label={`做同款：${c.title}`}
             >
-              {/* Hover glow */}
-              <div className="
-                absolute inset-0 rounded-lg
-                bg-gradient-to-br from-[var(--color-primary)]/5 to-transparent
-                opacity-0 group-hover:opacity-100
-                transition-opacity duration-200
-              " />
-
-              <div className="relative">
-                <span className="text-2xl">{c.icon}</span>
-                <p className="mt-2 text-sm font-medium text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors">
+              <span
+                className="
+                  h-8 w-8 shrink-0 rounded-md flex items-center justify-center
+                  bg-[var(--color-bg-tertiary)] text-lg
+                  group-hover:bg-[var(--color-primary)]/10
+                  transition-colors
+                "
+              >
+                {c.icon}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13px] font-medium text-[var(--color-text-primary)] truncate group-hover:text-[var(--color-primary)] transition-colors">
                   {c.title}
-                </p>
-                <p className="mt-1 text-xs text-[var(--color-text-tertiary)] group-hover:text-[var(--color-text-secondary)] transition-colors">
+                </span>
+                <span className="block text-xs text-[var(--color-text-tertiary)] truncate">
                   {c.description}
-                </p>
-                <div className="
-                  mt-3 flex items-center gap-1
-                  text-xs text-[var(--color-primary)]
-                  opacity-0 group-hover:opacity-100
-                  transition-opacity duration-200
-                ">
-                  <span>立即体验</span>
-                  <RightOutlined className="text-[10px]" />
-                </div>
-              </div>
+                </span>
+              </span>
+              <RightOutlined className="shrink-0 text-[10px] text-[var(--color-primary)] opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
           ))}
         </div>

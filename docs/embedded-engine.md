@@ -39,10 +39,13 @@ from setup-hint copy.
 `POST /v1/config/providers` registers a provider at runtime through the
 upstream library API (`Engine::add_provider_config`) and appends a
 `[[providers]]` entry to `config.toml` — mirroring the stock daemon's
-behavior. API keys are deliberately not written to the config file (they
-resolve from the OS keychain/env per upstream's keychain support). The same
-endpoint previously proxied to a route the daemon never implemented, so BYOK
-setup now actually works end-to-end for the first time.
+behavior. API keys never land in the config file: registration stores the
+secret in the OS keychain under `mofa-studio/<provider>` and persists only
+a `keychain:` reference there, which boot-time config loading resolves back
+into a working credential (upstream PR #16 mechanism). Re-registering a
+provider overwrites its keychain entry in place. The endpoint previously
+proxied to a route the daemon never implemented, so BYOK setup now works
+end-to-end for the first time.
 
 ## Upstream dependency
 

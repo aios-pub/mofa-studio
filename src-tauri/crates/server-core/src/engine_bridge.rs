@@ -152,12 +152,18 @@ impl CoreLlmEngine {
 
     /// Append one `[[providers]]` entry to the engine config file, mirroring
     /// what the stock engine daemon does so both setups stay compatible.
-    /// Note: deliberately omits `api_key`; secrets live outside the file
-    /// (keychain/env), never on disk.
+    /// `pc.api_key` may carry a `keychain:` reference (never a plaintext
+    /// secret) — references are safe to persist because they only resolve via
+    /// the OS keychain at load time.
     fn persist_provider(&self, pc: &mofa_engine_core::config::ProviderConfig) -> Result<(), EngineCallError> {
         use std::io::Write;
+        let api_key_line = match &pc.api_key {
+            // Persist the indirect reference so the next boot re-resolves it.
+            Some(key) if key.starts_with("keychain:") => format!("api_key = {key:?}\n"),
+            _ => String::new(),
+        };
         let entry = format!(
-            "\n[[providers]]\nname = {:?}\nkind = {:?}\nbase_url = {:?}\npriority = {}\ncost_tier = {:?}\n",
+            "\n[[providers]]\nname = {:?}\nkind = {:?}\nbase_url = {:?}\n{api_key_line}priority = {}\ncost_tier = {:?}\n",
             pc.name, pc.kind, pc.base_url, pc.priority, pc.cost_tier,
         );
         std::fs::OpenOptions::new()
@@ -236,7 +242,7 @@ impl LlmEngine for CoreLlmEngine {
     }
 
     async fn add_provider_config(&self, provider: &Value) -> Result<Value, EngineCallError> {
-        let pc: mofa_engine_core::config::ProviderConfig =
+        let mut pc: mofa_engine_core::config::ProviderConfig =
             serde_json::from_value(provider.clone())
                 .map_err(|e| EngineCallError::rejected(400, format!("invalid provider config: {e}")))?;
         if pc.name.trim().is_empty() {
@@ -245,16 +251,36 @@ impl LlmEngine for CoreLlmEngine {
         if let Err(e) = pc.provider_kind() {
             return Err(EngineCallError::rejected(400, format!("{e}")));
         }
-        if pc.kind == "openai_compatible"
-            && pc.api_key.as_deref().unwrap_or("").trim().is_empty()
-        {
+        let real_key = pc.api_key.clone().filter(|k| !k.trim().is_empty());
+        if pc.kind == "openai_compatible" && real_key.is_none() {
             return Err(EngineCallError::rejected(
                 400,
                 "openai_compatible providers require an api_key",
             ));
         }
+
+        // BYOK durability: park the secret in the OS keychain and persist
+        // only a `keychain:` reference in the config file. The runtime
+        // registration below still uses the real key (the engine resolves
+        // indirections at config-load time only), so this session works
+        // immediately and the next boot re-resolves from the keychain.
+        // Re-registering the same provider name overwrites its entry.
+        if let Some(key) = &real_key {
+            if !key.starts_with("keychain:") {
+                let account = keychain_account(&pc.name);
+                mofa_engine_core::secrets::store(&account, key).map_err(|e| {
+                    EngineCallError::rejected(
+                        500,
+                        format!("could not store the API key in the OS keychain: {e}"),
+                    )
+                })?;
+                pc.api_key = Some(format!("keychain:{account}"));
+            }
+        }
+
         // Persist before registering so runtime/config never diverge.
         self.persist_provider(&pc)?;
+        pc.api_key = real_key;
         if let Err(e) = self.inner.add_provider_config(&pc) {
             return Err(EngineCallError::from_engine(e));
         }
@@ -282,6 +308,30 @@ impl LlmEngine for CoreLlmEngine {
             .map(|(name, models)| json!({ "name": name, "models": models }))
             .collect();
         json!({ "providers": providers })
+    }
+}
+
+// ==================== Secrets ====================
+
+/// Deterministic keychain account for a provider's secret, namespaced so
+/// entries stay recognizable to other tools and re-registering the same
+/// provider overwrites its entry in place.
+fn keychain_account(provider_name: &str) -> String {
+    let slug: String = provider_name
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || matches!(c, '.' | '-' | '_') {
+                c
+            } else {
+                '-'
+            }
+        })
+        .collect();
+    let slug = slug.trim_matches('-');
+    if slug.is_empty() {
+        "mofa-studio/provider".to_string()
+    } else {
+        format!("mofa-studio/{slug}")
     }
 }
 

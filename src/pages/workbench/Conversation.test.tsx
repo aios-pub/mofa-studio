@@ -69,10 +69,10 @@ let overlayProps: {
   bargeIns: number;
 } | null = null;
 vi.mock("@/components/conversation/VoiceCallOverlay", () => ({
-  default: (props: unknown) => {
+  default: (props: Record<string, unknown>) => {
     overlayProps = props as typeof overlayProps;
-    if ((props as { phase: string }).phase === "idle") return null;
-    return <div data-testid="voice-call-overlay" data-phase={props.phase} />;
+    if (props.phase === "idle") return null;
+    return <div data-testid="voice-call-overlay" data-phase={String(props.phase)} />;
   },
 }));
 vi.mock("@/components/onboarding/FirstRunGuide", () => ({ FirstOutputDialog: () => null }));

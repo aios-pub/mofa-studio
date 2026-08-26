@@ -208,6 +208,11 @@ const coreMenuItems: MenuProps["items"] = [
     icon: <ApiOutlined />,
     label: "连接器",
   },
+  {
+    key: "/skills",
+    icon: <ThunderboltOutlined />,
+    label: "技能",
+  },
   { type: "divider" },
   {
     key: "/management/providers",

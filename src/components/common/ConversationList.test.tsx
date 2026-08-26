@@ -92,3 +92,57 @@ describe("ConversationList 转为项目 (TASK-03)", () => {
     expect(screen.queryByTestId("projects-page")).not.toBeInTheDocument();
   });
 });
+
+const { mockedSearch } = vi.hoisted(() => ({ mockedSearch: vi.fn() }));
+
+vi.mock("@/services/api/globalSearch", () => ({
+  globalSearch: (...a: unknown[]) => mockedSearch(...a),
+}));
+
+describe("ConversationList FTS5 search (PLAT-07)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockedSearch.mockResolvedValue({ conversations: [], documents: [] });
+  });
+
+  it("server-side full-text hits surface conversations the title filter misses", async () => {
+    // The backend FTS5 hit references the loaded conversation's ID even
+    // though the query doesn't match its title (it matched message content).
+    mockedSearch.mockResolvedValue({
+      conversations: [{ id: "c1", title: "发布会策划" }],
+      documents: [],
+    });
+    render(
+      <MemoryRouter>
+        <ConversationList />
+      </MemoryRouter>,
+    );
+    // Type a query whose title won't match but whose content will (via FTS5).
+    fireEvent.change(await screen.findByPlaceholderText(/搜索/), {
+      target: { value: "消息内容里的词" },
+    });
+    // Debounce + fetch resolves; the content-matched conversation surfaces
+    // (the title alone would have been filtered out by the query).
+    await waitFor(
+      () => expect(screen.getByText("发布会策划")).toBeInTheDocument(),
+      { timeout: 2000 },
+    );
+    expect(mockedSearch).toHaveBeenCalledWith("消息内容里的词", 30);
+  });
+
+  it("clearing the search resets to the unfiltered list", async () => {
+    mockedSearch.mockResolvedValue({ conversations: [], documents: [] });
+    render(
+      <MemoryRouter>
+        <ConversationList />
+      </MemoryRouter>,
+    );
+    const input = await screen.findByPlaceholderText(/搜索/);
+    fireEvent.change(input, { target: { value: "关键词" } });
+    await waitFor(() => expect(mockedSearch).toHaveBeenCalled());
+    fireEvent.change(input, { target: { value: "" } });
+    await waitFor(() =>
+      expect(screen.getByText("发布会策划")).toBeInTheDocument(),
+    );
+  });
+});

@@ -29,6 +29,7 @@ import {
   sortAndFilterConversations,
 } from "@/utils/conversationManage";
 import { conversationToProjectFields } from "@/utils/chatHistory";
+import { globalSearch } from "@/services/api/globalSearch";
 
 interface ConversationListProps {
   onSelectConversation?: (conversation: Conversation) => void;
@@ -45,6 +46,8 @@ export default function ConversationList({
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  // PLAT-07 FTS5: backend hits (full-content search incl. message bodies)
+  const [serverHits, setServerHits] = useState<Array<{ id: string; title?: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [contextMenu, setContextMenu] = useState<{
     id: string;
@@ -104,11 +107,38 @@ export default function ConversationList({
     }
   };
 
-  // CHAT-13: pinned-first ordering + archive/search filtering
-  const filteredConversations = sortAndFilterConversations(conversations, {
+  // PLAT-07: debounce the FTS5 search — the server matches message content,
+  // not just the title, so conversations with a body hit still surface even
+  // when their title doesn't match.
+  useEffect(() => {
+    const trimmed = searchQuery.trim();
+    if (!trimmed) {
+      setServerHits([]);
+      return;
+    }
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      const result = await globalSearch(trimmed, 30);
+      if (!cancelled) setServerHits(result.conversations);
+    }, 300);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [searchQuery]);
+
+  // CHAT-13: pinned-first ordering + archive/search filtering.
+  // PLAT-07: server hits (full-text) are unioned with the title matches.
+  const serverIds = new Set(serverHits.map((h) => h.id));
+  const titleFiltered = sortAndFilterConversations(conversations, {
     query: searchQuery,
     showArchived,
   });
+  const serverOnly = conversations.filter(
+    (c) =>
+      serverIds.has(c.id) && !titleFiltered.some((t) => t.id === c.id),
+  );
+  const filteredConversations = [...titleFiltered, ...serverOnly];
 
   // Group by agent
   const groupedConversations = agents.map((agent) => ({

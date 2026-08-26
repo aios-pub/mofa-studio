@@ -22,6 +22,22 @@ const init = async () => {
 
       // Main window entry only handles main window
       if (label === "main") {
+        // Rounded window shell (see globals.css) plus square-off tracking
+        document.documentElement.classList.add("tauri-window");
+        const syncShellChrome = () => {
+          void Promise.all([
+            appWindow.isMaximized(),
+            appWindow.isFullscreen(),
+          ]).then(([maximized, fullscreen]) => {
+            document.documentElement.classList.toggle(
+              "window-maximized",
+              maximized || fullscreen,
+            );
+          });
+        };
+        void appWindow.onResized(syncShellChrome);
+        syncShellChrome();
+
         RootApp = (
           <BrowserRouter>
             <App />

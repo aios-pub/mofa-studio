@@ -20,7 +20,10 @@
         "minWidth": 800,
         "minHeight": 600,
         "visible": false,
-        "center": true
+        "center": true,
+        "decorations": false,
+        "hiddenTitle": true,
+        "transparent": true
       },
       {
         "label": "floating",

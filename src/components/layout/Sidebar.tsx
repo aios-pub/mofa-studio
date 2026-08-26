@@ -55,6 +55,7 @@ import type { MenuProps } from "antd";
 import { useAppStore, useSettings, useSettingActions } from "../../stores";
 import { hasFirstOutput } from "../onboarding/firstRunCases";
 import { useTheme } from "../../hooks";
+import TrafficLights from "./TrafficLights";
 import { useState, useRef, useEffect, useCallback } from "react";
 
 const { Sider } = Layout;
@@ -65,31 +66,6 @@ interface SidebarProps {
 
 // Menu configuration - Ant Design icon components
 const coreMenuItems: MenuProps["items"] = [
-  {
-    key: "workbench",
-    label: "工作台",
-    type: "group",
-  },
-  {
-    key: "management",
-    label: "管理",
-    type: "group",
-  },
-  {
-    key: "scheduler",
-    label: "任务调度",
-    type: "group",
-  },
-  {
-    key: "workflow",
-    label: "工作流",
-    type: "group",
-  },
-  {
-    key: "knowledge",
-    label: "知识库",
-    type: "group",
-  },
   {
     key: "/",
     icon: <DashboardOutlined />,
@@ -433,9 +409,6 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
   // Theme-related styles
   const siderBg = isDark ? "#001529" : "#ffffff";
   const borderColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)";
-  const logoTextColor = isDark
-    ? "text-white"
-    : "text-[var(--color-text-primary)]";
 
   const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
     navigate(key);
@@ -457,14 +430,11 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
         className="h-full flex flex-col"
         style={{ backgroundColor: siderBg }}
       >
-        {/* Logo area */}
+        {/* Logo area — kept as an empty spacing strip */}
         <div
-          className="flex items-center gap-2 h-[var(--layout-header-height)] px-4 border-b"
+          className="flex items-center h-[var(--layout-header-height)] px-4 border-b"
           style={{ borderColor }}
-        >
-          <RobotOutlined className="text-2xl text-[var(--color-primary)]" />
-          <span className={`text-lg font-bold ${logoTextColor}`}>mofa-studio</span>
-        </div>
+        />
 
         {/* Menu list */}
         <div className="flex-1 overflow-y-auto scrollbar-thin px-2">
@@ -498,27 +468,17 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       trigger={null}
     >
       <div
-        className="relative flex items-center h-[var(--layout-header-height)] px-2 border-b transition-all duration-300 cursor-pointer"
+        className="relative flex items-center h-[var(--layout-header-height)] pr-2 border-b transition-all duration-300"
         style={{ borderColor }}
-        onClick={() => navigate("/")}
       >
+        {/* Inline traffic lights + drag surface keep everything on the
+            title line regardless of utility-class availability */}
+        <TrafficLights leftInset={isMini ? 4 : 16} />
         <div
-          className={`flex items-center ${isMini ? "justify-center w-full" : ""}`}
-        >
-          <RobotOutlined className="text-2xl text-[var(--color-primary)] flex-shrink-0" />
-          <span
-            className="text-lg font-bold transition-all duration-300 ease-in-out whitespace-nowrap"
-            style={{
-              opacity: isMini ? 0 : 1,
-              width: isMini ? 0 : "auto",
-              marginLeft: isMini ? 0 : "8px",
-              overflow: "hidden",
-              color: isDark ? "#fff" : "var(--color-text-primary)",
-            }}
-          >
-            mofa-studio
-          </span>
-        </div>
+          data-window-drag-region
+          className="flex-1 self-stretch"
+          onClick={(e) => e.stopPropagation()}
+        />
 
         <Button
           type="text"
@@ -527,7 +487,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
             e.stopPropagation();
             toggleSidebar();
           }}
-          className="!absolute !right-0 translate-x-1/2 !w-7 !h-7 !rounded-full !border !border-(--color-border) !bg-[var(--color-bg-base)] hover:!bg-[var(--color-bg-secondary)] z-10 flex items-center justify-center"
+          className="!absolute !right-0 translate-x-1/2 !w-7 !h-7 !rounded-full !border !border-[var(--color-border)] !bg-[var(--color-bg-base)] hover:!bg-[var(--color-bg-secondary)] z-10 flex items-center justify-center"
           icon={
             isMini ? (
               <RightOutlined className="text-xs" />
@@ -560,7 +520,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
 
       {/* PLAT-14: expert-mode switch — B-end modules under /expert/* */}
       {!isMini && (
-        <div className="px-4 py-3 border-t border-(--color-border) flex items-center justify-between">
+        <div className="px-4 py-3 border-t border-[var(--color-border)] flex items-center justify-between">
           <span className="text-xs text-[var(--color-text-tertiary)]">专家模式</span>
           <Switch
             size="small"

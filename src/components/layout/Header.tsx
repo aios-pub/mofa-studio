@@ -22,7 +22,7 @@ import AccountDropdown from "./AccountDropdown";
 import NotificationDropdown from "./NotificationDropdown";
 import { useSettingsDrawer } from "./MainLayout";
 import { SearchCommand } from "../common";
-import ConnectionSwitcher from "../websocket/ConnectionSwitcher";
+
 
 interface HeaderProps {
   showBreadcrumb?: boolean;
@@ -165,7 +165,7 @@ export default function Header({
         flex items-center justify-between px-4
         h-14
         bg-[var(--color-bg-secondary)]/80 backdrop-blur-xl
-        border-b border-(--color-border)
+        border-b border-[var(--color-border)]
         transition-all duration-200
       "
     >
@@ -184,9 +184,12 @@ export default function Header({
 
         {/* Breadcrumb */}
         {showBreadcrumb && (
-          <Breadcrumb items={getBreadcrumbs()} className="hidden md:flex" />
+          <Breadcrumb items={getBreadcrumbs()} className="hidden" />
         )}
       </div>
+
+      {/* Inert middle area doubles as a window-drag region (CustomTitlebar) */}
+      <div data-window-drag-region className="flex-1 self-stretch" />
 
       {/* Right toolbar */}
       <div className="flex items-center gap-1 pr-1">
@@ -202,9 +205,6 @@ export default function Header({
 
         {/* Notification button */}
         <NotificationDropdown />
-
-        {/* WebSocket connection status switching */}
-        <ConnectionSwitcher showStatusText={false} />
 
         {/* Divider */}
         <div className="w-px h-5 bg-[var(--color-border)] mx-1" />

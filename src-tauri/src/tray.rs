@@ -57,11 +57,10 @@ pub fn setup_tray<R: Runtime>(
                 if let Some(main_window) = app.get_webview_window("main") {
                     let _ = main_window.hide();
                 }
-                if event.id.as_ref() == "hide_all" {
-                    if let Some(floating_window) = app.get_webview_window("floating") {
+                if event.id.as_ref() == "hide_all"
+                    && let Some(floating_window) = app.get_webview_window("floating") {
                         let _ = floating_window.hide();
                     }
-                }
             }
             "quit" => {
                 app.exit(0);

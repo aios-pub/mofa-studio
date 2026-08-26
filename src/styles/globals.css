@@ -64,6 +64,7 @@
 
     /* ========== 背景色 ========== */
     --color-bg-base: #ffffff;
+    --color-bg-primary: #ffffff;
     --color-bg-secondary: #f8fafc;
     --color-bg-tertiary: #f1f5f9;
     --color-bg-paper: #ffffff;
@@ -121,6 +122,9 @@
     --radius-2xl: 16px;
     --radius-full: 9999px;
 
+    /* Rounded corners of the frameless app window itself (Tauri only) */
+    --app-window-radius: 10px;
+
     /* ========== 排版 ========== */
     --font-size-xs: 12px;
     --font-size-sm: 14px;
@@ -170,6 +174,7 @@
 /* ========== 暗色主题 ========== */
 .dark {
     --color-bg-base: #0f172a;
+    --color-bg-primary: #0f172a;
     --color-bg-secondary: #1e293b;
     --color-bg-tertiary: #334155;
     --color-bg-paper: #1e293b;
@@ -420,6 +425,31 @@ body {
     overflow: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--color-border-hover) transparent;
+}
+
+/* ========== Tauri 无边框窗口外壳 ========== */
+/* The main window is transparent; #root draws the rounded app chrome so
+   all four corners are rounded and a hairline ring keeps the edge visible
+   against same-colored content. */
+html.tauri-window,
+html.tauri-window body {
+    background-color: transparent;
+}
+
+html.tauri-window #root {
+    overflow: hidden;
+    border-radius: var(--app-window-radius);
+    background-color: var(--color-bg-base);
+    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.12);
+}
+
+html.dark.tauri-window #root {
+    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.16);
+}
+
+/* Square off while maximized or fullscreen */
+html.tauri-window.window-maximized #root {
+    border-radius: 0;
 }
 
 /* 骨架屏动画 */

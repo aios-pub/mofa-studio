@@ -4,15 +4,8 @@ import type {
   MouseEvent as ReactMouseEvent,
   PointerEvent as ReactPointerEvent,
 } from "react";
-import {
-  getCurrentWindow,
-  Window,
-  LogicalPosition,
-  LogicalSize,
-  currentMonitor,
-  primaryMonitor,
-} from "@tauri-apps/api/window";
-import {
+import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWindow, Window } from "@tauri-apps/api/window";import {
   MessageCircle,
   History,
   Settings,
@@ -28,13 +21,6 @@ import "./floating.css";
 type MenuPlacement = {
   horizontal: "left" | "right";
   vertical: "up" | "down";
-};
-
-type MonitorBounds = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
 };
 
 type PetState = "idle" | "happy" | "sleepy" | "dragging";
@@ -75,20 +61,47 @@ const BUBBLE_MESSAGES: Record<PetState, string[]> = {
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
 
-const getMonitorBounds = async (): Promise<
-  (MonitorBounds & { scaleFactor: number }) | null
-> => {
-  const monitor = (await currentMonitor()) ?? (await primaryMonitor());
-  if (!monitor) return null;
-  const s = monitor.scaleFactor;
-  return {
-    x: monitor.position.x / s,
-    y: monitor.position.y / s,
-    width: monitor.size.width / s,
-    height: monitor.size.height / s,
-    scaleFactor: s,
-  };
+// The core window-plugin IPC path deadlocks on macOS for the pet window
+// shape (upstream tauri#14822), so window state is driven through the
+// native pet_* commands; reads are time-boxed to stay responsive even if
+// the main thread wedges.
+const IPC_TIMEOUT_MS = 800;
+
+const withTimeout = <T,>(promise: Promise<T>, fallback: T): Promise<T> =>
+  Promise.race([
+    promise,
+    new Promise<T>((resolve) =>
+      setTimeout(() => resolve(fallback), IPC_TIMEOUT_MS),
+    ),
+  ]);
+
+type PetFramePayload = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 };
+
+type PetEnvPayload = {
+  frame: PetFramePayload;
+  monitor: PetFramePayload | null;
+  scale: number;
+};
+
+const petCall = async <T,>(
+  cmd: string,
+  args?: Record<string, unknown>,
+): Promise<T | undefined> => {
+  if (!isTauriApp()) return undefined;
+  try {
+    return await withTimeout(invoke<T>(cmd, args ?? {}), undefined as T);
+  } catch (e) {
+    console.error(`[FloatingApp] ${cmd} failed:`, e);
+    return undefined;
+  }
+};
+
+const getPetEnv = () => petCall<PetEnvPayload>("pet_env");
 
 const getMenuWindowSize = () => ({
   width: MENU_WIDTH + BALL_SIZE + MENU_GAP,
@@ -179,18 +192,10 @@ export default function FloatingApp() {
   // ========== Helpers ==========
 
   const updateBubblePlacement = useCallback(async () => {
-    if (!appWindow) return;
-    try {
-      const bounds = await getMonitorBounds();
-      if (!bounds) return;
-      const s = bounds.scaleFactor;
-      const pos = await appWindow.outerPosition();
-      const logX = pos.x / s;
-      setBubbleOnLeft(logX > bounds.x + bounds.width / 2);
-    } catch {
-      // Ignore errors
-    }
-  }, [appWindow]);
+    const env = await getPetEnv();
+    if (!env?.monitor) return;
+    setBubbleOnLeft(env.frame.x > env.monitor.x + env.monitor.width / 2);
+  }, []);
 
   const showBubbleMessage = useCallback(
     (message: string, duration = 4000) => {
@@ -279,51 +284,50 @@ export default function FloatingApp() {
   const snapToEdge = useCallback(async () => {
     if (!appWindow) return;
 
-    const bounds = await getMonitorBounds();
-    if (!bounds) return;
-    const physPos = await appWindow.outerPosition();
-    const physSize = await appWindow.outerSize();
-    const s = bounds?.scaleFactor ?? 1;
-
-    const position = { x: physPos.x / s, y: physPos.y / s };
-    const size = { width: physSize.width / s, height: physSize.height / s };
-
-    const leftDistance = Math.abs(position.x - bounds.x);
-    const rightDistance = Math.abs(
-      bounds.x + bounds.width - (position.x + size.width),
-    );
-    const topDistance = Math.abs(position.y - bounds.y);
-    const bottomDistance = Math.abs(
-      bounds.y + bounds.height - (position.y + size.height),
-    );
-
-    const minDistance = Math.min(
-      leftDistance,
-      rightDistance,
-      topDistance,
-      bottomDistance,
-    );
+    const env = await getPetEnv();
+    if (!env) return;
+    const bounds = env.monitor;
+    const position = { x: env.frame.x, y: env.frame.y };
+    const size = { width: env.frame.width, height: env.frame.height };
 
     let targetX = position.x;
     let targetY = position.y;
 
-    if (minDistance === leftDistance) {
-      targetX = bounds.x - (size.width - EDGE_PEEK);
-    } else if (minDistance === rightDistance) {
-      targetX = bounds.x + bounds.width - EDGE_PEEK;
-    } else if (minDistance === topDistance) {
-      targetY = bounds.y - (size.height - EDGE_PEEK);
-    } else {
-      targetY = bounds.y + bounds.height - EDGE_PEEK;
+    if (bounds) {
+      const leftDistance = Math.abs(position.x - bounds.x);
+      const rightDistance = Math.abs(
+        bounds.x + bounds.width - (position.x + size.width),
+      );
+      const topDistance = Math.abs(position.y - bounds.y);
+      const bottomDistance = Math.abs(
+        bounds.y + bounds.height - (position.y + size.height),
+      );
+
+      const minDistance = Math.min(
+        leftDistance,
+        rightDistance,
+        topDistance,
+        bottomDistance,
+      );
+
+      if (minDistance === leftDistance) {
+        targetX = bounds.x - (size.width - EDGE_PEEK);
+      } else if (minDistance === rightDistance) {
+        targetX = bounds.x + bounds.width - EDGE_PEEK;
+      } else if (minDistance === topDistance) {
+        targetY = bounds.y - (size.height - EDGE_PEEK);
+      } else {
+        targetY = bounds.y + bounds.height - EDGE_PEEK;
+      }
+
+      const minX = bounds.x - size.width + EDGE_PEEK;
+      const maxX = bounds.x + bounds.width - EDGE_PEEK;
+      const minY = bounds.y - size.height + EDGE_PEEK;
+      const maxY = bounds.y + bounds.height - EDGE_PEEK;
+
+      targetX = clamp(targetX, minX, maxX);
+      targetY = clamp(targetY, minY, maxY);
     }
-
-    const minX = bounds.x - size.width + EDGE_PEEK;
-    const maxX = bounds.x + bounds.width - EDGE_PEEK;
-    const minY = bounds.y - size.height + EDGE_PEEK;
-    const maxY = bounds.y + bounds.height - EDGE_PEEK;
-
-    targetX = clamp(targetX, minX, maxX);
-    targetY = clamp(targetY, minY, maxY);
 
     setSnapping(true);
 
@@ -342,7 +346,12 @@ export default function FloatingApp() {
       const currentX = startX + (targetX - startX) * eased;
       const currentY = startY + (targetY - startY) * eased;
 
-      await appWindow.setPosition(new LogicalPosition(currentX, currentY));
+      await petCall("pet_set_frame", {
+        x: currentX,
+        y: currentY,
+        width: size.width,
+        height: size.height,
+      });
 
       if (progress < 1) {
         requestAnimationFrame((time) => void animate(time));
@@ -359,12 +368,19 @@ export default function FloatingApp() {
       setExpandedWithTrace(true);
       return;
     }
-    const bounds = await getMonitorBounds();
-    const s = bounds?.scaleFactor ?? 1;
-    const physPos = await appWindow.outerPosition();
-
-    const logicalPos = { x: physPos.x / s, y: physPos.y / s };
+    const env = await getPetEnv();
+    const logicalPos = env
+      ? { x: env.frame.x, y: env.frame.y }
+      : { x: 0, y: 0 };
     windowAnchorRef.current = logicalPos;
+    const bounds = env?.monitor
+      ? {
+          x: env.monitor.x,
+          y: env.monitor.y,
+          width: env.monitor.width,
+          height: env.monitor.height,
+        }
+      : null;
     const { width, height } = getMenuWindowSize();
 
     let visibleX = logicalPos.x;
@@ -434,8 +450,7 @@ export default function FloatingApp() {
     }
 
     try {
-      await appWindow.setSize(new LogicalSize(width, height));
-      await appWindow.setPosition(new LogicalPosition(nextX, nextY));
+      await petCall("pet_set_frame", { x: nextX, y: nextY, width, height });
       setExpanded(true);
     } catch (e) {
       console.error("[FloatingApp] Error in expandMenu:", e);
@@ -456,12 +471,16 @@ export default function FloatingApp() {
     }
 
     setExpanded(false);
-    await appWindow.setSize(new LogicalSize(BALL_SIZE, BALL_SIZE));
-
+    const env = await getPetEnv();
     const anchor = windowAnchorRef.current;
-    if (anchor) {
-      await appWindow.setPosition(new LogicalPosition(anchor.x, anchor.y));
-    }
+    const x = anchor?.x ?? env?.frame.x ?? 0;
+    const y = anchor?.y ?? env?.frame.y ?? 0;
+    await petCall("pet_set_frame", {
+      x,
+      y,
+      width: BALL_SIZE,
+      height: BALL_SIZE,
+    });
   }, [appWindow]);
 
   const toggleMenu = useCallback(async () => {
@@ -522,7 +541,7 @@ export default function FloatingApp() {
         setPetState("dragging");
         // Show dragging message while dragging
         showBubbleMessage(getRandomMessage("dragging"), 3000);
-        void appWindow.startDragging();
+        void petCall("start_window_drag");
       }
     }, 300);
   };
@@ -546,7 +565,7 @@ export default function FloatingApp() {
       setPetState("dragging");
       // Show dragging message while dragging
       showBubbleMessage(getRandomMessage("dragging"), 3000);
-      void appWindow.startDragging();
+      void petCall("start_window_drag");
     }
   };
 
@@ -596,75 +615,65 @@ export default function FloatingApp() {
   // ========== Other actions ==========
 
   const toggleAlwaysOnTop = async () => {
-    if (!appWindow) return;
     const newValue = !alwaysOnTop;
     setAlwaysOnTop(newValue);
-    await appWindow.setAlwaysOnTop(newValue);
+    await petCall("pet_window_op", { op: "always_on_top", value: newValue });
   };
 
   const openMainWindow = async (path?: string) => {
-    if (!appWindow) return;
-
-    const mainWindow = await Window.getByLabel("main");
-    if (mainWindow) {
-      await mainWindow.show();
-      await mainWindow.setFocus();
-      if (path) {
-        await mainWindow.emit("floating:navigate", { path });
-      }
+    await petCall("pet_window_op", { op: "show_main" });
+    if (path) {
+      // Best-effort navigation hint; the main window opens regardless.
+      void (async () => {
+        try {
+          const mainWindow = await Window.getByLabel("main");
+          await mainWindow?.emit("floating:navigate", { path });
+        } catch {
+          // Ignore navigation hint failures
+        }
+      })();
     }
 
-    const bounds = await getMonitorBounds();
-    const s = bounds?.scaleFactor ?? 1;
-    const pos = await appWindow.outerPosition();
-    windowAnchorRef.current = { x: pos.x / s, y: pos.y / s };
+    const env = await getPetEnv();
+    if (env) {
+      windowAnchorRef.current = { x: env.frame.x, y: env.frame.y };
+    }
 
     await collapseMenu();
-    await appWindow.hide();
+    await petCall("pet_window_op", { op: "hide" });
   };
 
   const convertToWindow = async () => {
     if (!appWindow) return;
 
-    const bounds = await getMonitorBounds();
-    const s = bounds?.scaleFactor ?? 1;
-    const position = await appWindow.outerPosition();
-
-    const mainWindow = await Window.getByLabel("main");
-    if (mainWindow) {
-      await mainWindow.setPosition(
-        new LogicalPosition(
-          Math.max(0, position.x / s - 350),
-          Math.max(0, position.y / s - 150),
-        ),
-      );
-      await mainWindow.show();
-      await mainWindow.setFocus();
-    }
-
+    await petCall("pet_window_op", { op: "show_main" });
     setExpanded(false);
-    await appWindow.setSize(new LogicalSize(BALL_SIZE, BALL_SIZE));
-    await appWindow.hide();
+    await petCall("pet_set_frame", {
+      x: (await getPetEnv())?.frame.x ?? 0,
+      y: (await getPetEnv())?.frame.y ?? 0,
+      width: BALL_SIZE,
+      height: BALL_SIZE,
+    });
+    await petCall("pet_window_op", { op: "hide" });
   };
 
   const exitApp = async () => {
-    if (!appWindow) return;
-    const windows = await Window.getAll();
-    await Promise.all(windows.map((win) => win.close()));
+    await petCall("pet_exit");
   };
 
   const handleQuickInput = async (message: string) => {
-    if (!appWindow) return;
-
-    const mainWindow = await Window.getByLabel("main");
-    if (mainWindow) {
-      await mainWindow.show();
-      await mainWindow.setFocus();
-      await mainWindow.emit("floating:quick-message", { message });
-    }
+    await petCall("pet_window_op", { op: "show_main" });
+    void (async () => {
+      try {
+        const mainWindow = await Window.getByLabel("main");
+        await mainWindow?.emit("floating:quick-message", { message });
+      } catch {
+        // Best-effort message forwarding
+      }
+    })();
 
     await collapseMenu();
-    await appWindow.hide();
+    await petCall("pet_window_op", { op: "hide" });
   };
 
   // ========== Effects ==========
@@ -680,30 +689,32 @@ export default function FloatingApp() {
         setPetState("idle");
         setContextMenuVisible(false);
 
-        await appWindow.setSize(new LogicalSize(BALL_SIZE, BALL_SIZE));
-        await appWindow.show();
-        await appWindow.setFocus();
+        const env = await getPetEnv();
+        const frame = env?.frame;
+        await petCall("pet_set_frame", {
+          x: frame?.x ?? 0,
+          y: frame?.y ?? 0,
+          width: BALL_SIZE,
+          height: BALL_SIZE,
+        });
+        await petCall("pet_window_op", { op: "show" });
+        await petCall("pet_window_op", { op: "focus" });
 
-        const bounds = await getMonitorBounds();
-        if (bounds) {
-          const s = bounds.scaleFactor;
-          const pos = await appWindow.outerPosition();
-          const logX = pos.x / s;
-          const logY = pos.y / s;
-
+        if (env?.monitor && frame) {
+          const b = env.monitor;
           const isOffScreen =
-            logX < bounds.x - BALL_SIZE ||
-            logX > bounds.x + bounds.width ||
-            logY < bounds.y - BALL_SIZE ||
-            logY > bounds.y + bounds.height;
+            frame.x < b.x - BALL_SIZE ||
+            frame.x > b.x + b.width ||
+            frame.y < b.y - BALL_SIZE ||
+            frame.y > b.y + b.height;
 
           if (isOffScreen) {
-            await appWindow.setPosition(
-              new LogicalPosition(
-                bounds.x + bounds.width - BALL_SIZE - 50,
-                bounds.y + bounds.height / 2,
-              ),
-            );
+            await petCall("pet_set_frame", {
+              x: b.x + b.width - BALL_SIZE - 50,
+              y: b.y + b.height / 2,
+              width: BALL_SIZE,
+              height: BALL_SIZE,
+            });
           }
         }
       });

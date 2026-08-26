@@ -10,7 +10,6 @@ import {
   useEffect,
 } from "react";
 import { Layout, Drawer } from "antd";
-import { RobotOutlined } from "@ant-design/icons";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import HorizontalNav from "./HorizontalNav";
@@ -19,6 +18,7 @@ import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import { SettingsDrawer } from "../settings";
 import { RouteLoadingProgress } from "../common";
 import WelcomeFlow, { hasOnboarded } from "../onboarding/WelcomeFlow";
+import CustomTitlebar from "./CustomTitlebar";
 
 const { Content } = Layout;
 
@@ -64,11 +64,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     checkMobile();
     window.addEventListener("resize", checkMobile);
-    if (showWelcome) {
-    return <WelcomeFlow onFinish={() => setShowWelcome(false)} />;
-  }
-
-  return () => window.removeEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, [sidebarCollapsed, setSidebarCollapsed]);
 
   const isHorizontal = settings.themeLayout === "horizontal";
@@ -83,23 +79,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
   if (isMobile) {
     return (
       <SettingsContext.Provider value={contextValue}>
-        {/* Route loading progress bar */}
-        <RouteLoadingProgress />
-        <Layout className="min-h-screen bg-[var(--color-bg-base)]">
-          {/* Mobile header - mobile nav passed as left slot */}
+        <Layout className="min-h-screen bg-[var(--color-bg-base)] relative">
+          <RouteLoadingProgress />
           <Header leftSlot={null} />
-
-          {/* Content area */}
           <Content className="overflow-auto bg-[var(--color-bg-base)] p-3">
             {children}
           </Content>
-
-          {/* Mobile sidebar drawer */}
           <Drawer
             placement="left"
             open={!sidebarCollapsed}
             onClose={() => setSidebarCollapsed(true)}
-            size={{ width: 280 }}
+            width={280}
             className="p-0"
             styles={{
               body: { padding: 0 },
@@ -108,13 +98,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
           >
             <Sidebar isMobile />
           </Drawer>
-
-          {/* Settings drawer */}
           <SettingsDrawer
             open={settingsOpen}
             onClose={() => setSettingsOpen(false)}
           />
         </Layout>
+        {showWelcome && (
+          <WelcomeFlow onFinish={() => setShowWelcome(false)} />
+        )}
       </SettingsContext.Provider>
     );
   }
@@ -123,25 +114,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
   if (isHorizontal) {
     return (
       <SettingsContext.Provider value={contextValue}>
-        {/* Route loading progress bar */}
-        <RouteLoadingProgress />
-        <Layout className="min-h-screen bg-[var(--color-bg-base)]">
-          {/* Top navigation bar */}
+        <Layout className="min-h-screen bg-[var(--color-bg-base)] relative">
+          <RouteLoadingProgress />
           <Layout.Header className="flex items-center h-14 px-4 bg-[#001529]">
-            {/* Logo */}
-            <div className="flex items-center gap-2 mr-6">
-              <RobotOutlined className="text-2xl text-[var(--color-primary)]" />
-              <span className="text-lg font-bold text-white">mofa-studio</span>
-            </div>
-
-            {/* Horizontal menu */}
             <HorizontalNav dark />
-
-            {/* Right toolbar */}
             <Header showBreadcrumb={false} />
           </Layout.Header>
-
-          {/* Content area */}
           <Layout
             className={`bg-[var(--color-bg-base)] ${isStretch ? "" : "max-w-[1400px] mx-auto"}`}
           >
@@ -149,13 +127,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
               {children}
             </Content>
           </Layout>
-
-          {/* Settings drawer */}
           <SettingsDrawer
             open={settingsOpen}
             onClose={() => setSettingsOpen(false)}
           />
         </Layout>
+        {showWelcome && (
+          <WelcomeFlow onFinish={() => setShowWelcome(false)} />
+        )}
       </SettingsContext.Provider>
     );
   }
@@ -163,35 +142,31 @@ export default function MainLayout({ children }: MainLayoutProps) {
   // Vertical/mini layout (desktop)
   return (
     <SettingsContext.Provider value={contextValue}>
-      {/* Route loading progress bar */}
-      <RouteLoadingProgress />
-      <Layout className="min-h-screen bg-[var(--color-bg-base)]">
-        {/* Sidebar */}
-        <Sidebar />
-
-        {/* Main content area - with transition animation */}
-        <Layout
-          className={`
-            bg-[var(--color-bg-base)]
-            transition-all duration-300 ease-in-out
-            ${isStretch ? "" : "max-w-[1400px] mx-auto"}
-          `}
-        >
-          {/* Header */}
-          <Header />
-
-          {/* Content area */}
-          <Content className="overflow-auto bg-[var(--color-bg-base)] p-4">
-            {children}
-          </Content>
+      <CustomTitlebar>
+        <Layout className="min-h-screen bg-[var(--color-bg-base)] relative">
+          <RouteLoadingProgress />
+          <Sidebar />
+          <Layout
+            className={`
+              bg-[var(--color-bg-base)]
+              transition-all duration-300 ease-in-out
+              ${isStretch ? "" : "max-w-[1400px] mx-auto"}
+            `}
+          >
+            <Header />
+            <Content className="overflow-auto bg-[var(--color-bg-base)] p-4">
+              {children}
+            </Content>
+          </Layout>
+          <SettingsDrawer
+            open={settingsOpen}
+            onClose={() => setSettingsOpen(false)}
+          />
         </Layout>
-
-        {/* Settings drawer */}
-        <SettingsDrawer
-          open={settingsOpen}
-          onClose={() => setSettingsOpen(false)}
-        />
-      </Layout>
+        {showWelcome && (
+          <WelcomeFlow onFinish={() => setShowWelcome(false)} />
+        )}
+      </CustomTitlebar>
     </SettingsContext.Provider>
   );
 }

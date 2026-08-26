@@ -2,18 +2,20 @@
  * Integration tests for long-term memory (TASK-19): the four privacy
  * powers (可见/可编辑/可删除/总开关) plus retrieval gating.
  */
+mod common;
+
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use axum::response::Response;
 use serde_json::{json, Value};
 use tower::ServiceExt;
 
-use server_core::ServerConfig;
 
-fn gateway_router(tag: &str) -> axum::Router {
-    let data_dir = std::env::temp_dir().join(format!("mofa-memory-test-{tag}"));
-    let _ = std::fs::remove_dir_all(&data_dir);
-    server_core::build_router(&ServerConfig::for_data_dir(data_dir)).expect("build router")
+fn gateway_router(tag: &str) -> axum::Router  {
+    common::router_with(
+        tag,
+        std::sync::Arc::new(common::StubEngine::default()),
+    )
 }
 
 async fn body_json(response: Response) -> Value {

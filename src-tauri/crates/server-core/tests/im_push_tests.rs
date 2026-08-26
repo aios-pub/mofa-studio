@@ -2,6 +2,8 @@
  * Integration tests for IM push (TASK-23): channel CRUD with host
  * allow-listing, masked listing, and delivery against a mock vendor.
  */
+mod common;
+
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use axum::response::{IntoResponse, Response};
@@ -10,7 +12,6 @@ use axum::{Json, Router};
 use serde_json::{json, Value};
 use tower::ServiceExt;
 
-use server_core::ServerConfig;
 
 // ==================== Mock vendor webhook ====================
 
@@ -33,10 +34,11 @@ async fn spawn_mock_vendor() -> String {
     format!("http://{addr}")
 }
 
-fn gateway_router(tag: &str) -> Router {
-    let data_dir = std::env::temp_dir().join(format!("mofa-im-test-{tag}"));
-    let _ = std::fs::remove_dir_all(&data_dir);
-    server_core::build_router(&ServerConfig::for_data_dir(data_dir)).expect("router")
+fn gateway_router(tag: &str) -> Router  {
+    common::router_with(
+        tag,
+        std::sync::Arc::new(common::StubEngine::default()),
+    )
 }
 
 async fn body_json(response: Response) -> Value {

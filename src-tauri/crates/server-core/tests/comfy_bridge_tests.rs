@@ -61,12 +61,13 @@ async fn spawn_mock_comfy() -> String {
     format!("http://{addr}")
 }
 
+mod common;
+
 fn gateway_router(comfy_url: String, tag: &str) -> Router {
-    let data_dir = std::env::temp_dir().join(format!("mofa-comfy-test-{tag}"));
-    let _ = std::fs::remove_dir_all(&data_dir);
-    let router = server_core::build_router(&ServerConfig::for_data_dir(data_dir)).expect("router");
+    // ComfyUI flows never touch the inference engine; the default stub just
+    // satisfies the injected-engine requirement.
     let _ = comfy_url;
-    router
+    common::router_with(tag, std::sync::Arc::new(common::StubEngine::default()))
 }
 
 async fn body_json(response: Response) -> Value {

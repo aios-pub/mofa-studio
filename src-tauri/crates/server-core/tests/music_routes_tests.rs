@@ -1,79 +1,70 @@
 /**
  * Integration tests for TOOL-10's gateway music tasks: submit → background
  * engine invoke → poll to a base64 mp3 data URL with the clip label, plus
- * honest failure and validation paths. A mock engine (real socket)
- * reproduces the engine's music_gen contract.
+ * honest failure and validation paths. An injected stub engine reproduces
+ * the engine's music_gen contract.
  */
+mod common;
+
+use std::sync::{Arc, Mutex};
+
 use axum::body::Body;
-use axum::extract::Json;
 use axum::http::{Request, StatusCode};
-use axum::response::{IntoResponse, Response};
-use axum::routing::{get, post};
-use axum::Router;
 use serde_json::{json, Value};
 use tower::ServiceExt;
 
-use server_core::ServerConfig;
+use common::{body_string, router_with, StubEngine};
+use server_core::engine_bridge::EngineCallError;
 
-/// Captured engine request for wire assertions.
-static CAPTURED: std::sync::Mutex<Vec<Value>> = std::sync::Mutex::new(Vec::new());
+// ==================== Stub engine ====================
 
-async fn mock_invoke(Json(req): Json<Value>) -> Response {
-    if req["capability"] == "music_gen" {
-        CAPTURED
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .push(req.clone());
-        // Write an mp3 artifact like the real engine and label it.
-        let dir = std::env::temp_dir().join("mofa-music-gw-test");
-        let _ = std::fs::create_dir_all(&dir);
-        let path = dir.join(format!("mofa_music_{}.mp3", uuid::Uuid::new_v4()));
-        std::fs::write(&path, b"ID3-mock-mp3").expect("write artifact");
-        return axum::Json(json!({
-            "text": "晨跑 · pop, upbeat",
-            "file": path.to_string_lossy(),
-            "model_used": "mock/suno-v4",
-            "provider": "mock",
-            "duration_ms": 42,
-            "request_id": "req-music",
-            "fallback_used": false,
-        }))
-        .into_response();
+/// Music engine that records every forwarded music_gen invoke (captured for
+/// wire assertions) and writes a labeled mp3 artifact like the real engine.
+struct MusicCapture {
+    engine: StubEngine,
+    captured: Arc<Mutex<Vec<Value>>>,
+}
+
+impl MusicCapture {
+    fn new() -> Self {
+        let captured: Arc<Mutex<Vec<Value>>> = Arc::new(Mutex::new(Vec::new()));
+        let sink = captured.clone();
+        let engine = StubEngine::with_handler(move |req| {
+            if req["capability"] != "music_gen" {
+                return Err(EngineCallError::rejected(404, "unsupported capability"));
+            }
+            sink.lock().unwrap_or_else(|e| e.into_inner()).push(req.clone());
+            // Write an mp3 artifact like the real engine and label it.
+            let dir = std::env::temp_dir().join("mofa-music-gw-test");
+            let _ = std::fs::create_dir_all(&dir);
+            let path = dir.join(format!("mofa_music_{}.mp3", uuid::Uuid::new_v4()));
+            std::fs::write(&path, b"ID3-mock-mp3").expect("write artifact");
+            Ok(json!({
+                "text": "晨跑 · pop, upbeat",
+                "file": path.to_string_lossy(),
+                "model_used": "mock/suno-v4",
+                "provider": "mock",
+                "duration_ms": 42,
+                "request_id": "req-music",
+                "fallback_used": false,
+            }))
+        });
+        Self { engine, captured }
     }
-    (StatusCode::NOT_FOUND, "unsupported capability").into_response()
 }
 
-async fn spawn_mock_engine() -> String {
-    let app = Router::new()
-        .route("/v1/invoke", post(mock_invoke))
-        .route("/health", get(|| async { Json(json!({"status":"ok"})) }));
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
-    let addr = listener.local_addr().unwrap();
-    tokio::spawn(async move {
-        axum::serve(listener, app).await.unwrap();
-    });
-    format!("http://{addr}")
+// ==================== Helpers ====================
+
+async fn body_json(response: axum::response::Response) -> Value {
+    serde_json::from_str(&body_string(response).await).expect("parse json")
 }
 
-fn router(engine_url: String, tag: &str) -> Router {
-    let data_dir = std::env::temp_dir().join(format!("mofa-music-gw-{tag}"));
-    let _ = std::fs::remove_dir_all(&data_dir);
-    let mut config = ServerConfig::for_data_dir(data_dir);
-    config.engine_base_url = Some(engine_url);
-    server_core::build_router(&config).expect("build router")
-}
-
-async fn body_json(response: Response) -> Value {
-    let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
-        .await
-        .expect("read body");
-    serde_json::from_slice(&bytes).expect("parse json")
-}
+// ==================== Tests ====================
 
 #[tokio::test]
 async fn music_task_completes_with_labeled_audio() {
-    let engine = spawn_mock_engine().await;
-    let app = router(engine, "ok");
+    let capture = MusicCapture::new();
+    let app = router_with("music-ok", Arc::new(capture.engine));
 
     let submit = app
         .clone()
@@ -128,7 +119,7 @@ async fn music_task_completes_with_labeled_audio() {
     assert!(audio.starts_with("data:audio/mpeg;base64,"), "got: {audio}");
 
     // The engine received the Custom Mode fields.
-    let captured = CAPTURED.lock().unwrap_or_else(|e| e.into_inner());
+    let captured = capture.captured.lock().unwrap_or_else(|e| e.into_inner());
     let req = captured.last().unwrap();
     assert_eq!(req["capability"], "music_gen");
     assert_eq!(req["messages"][0]["content"], "一首欢快的晨跑歌");
@@ -138,8 +129,8 @@ async fn music_task_completes_with_labeled_audio() {
 
 #[tokio::test]
 async fn music_submit_requires_prompt() {
-    let engine = spawn_mock_engine().await;
-    let app = router(engine, "validate");
+    let capture = MusicCapture::new();
+    let app = router_with("music-validate", Arc::new(capture.engine));
     let response = app
         .oneshot(
             Request::builder()
@@ -156,8 +147,8 @@ async fn music_submit_requires_prompt() {
 
 #[tokio::test]
 async fn unknown_task_polls_404() {
-    let engine = spawn_mock_engine().await;
-    let app = router(engine, "404");
+    let capture = MusicCapture::new();
+    let app = router_with("music-404", Arc::new(capture.engine));
     let response = app
         .oneshot(
             Request::builder()
@@ -174,22 +165,13 @@ async fn unknown_task_polls_404() {
 #[tokio::test]
 async fn engine_failure_fails_the_task_with_reason() {
     // Engine that rejects music calls.
-    let app_engine = Router::new().route(
-        "/v1/invoke",
-        post(|| async {
-            (
-                StatusCode::SERVICE_UNAVAILABLE,
-                Json(json!({ "error": { "message": "no music provider configured" } })),
-            )
-        }),
-    );
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
-    let addr = listener.local_addr().unwrap();
-    tokio::spawn(async move {
-        axum::serve(listener, app_engine).await.unwrap();
+    let engine = StubEngine::with_handler(|_req| {
+        Err(EngineCallError::rejected(
+            503,
+            "no music provider configured",
+        ))
     });
-
-    let app = router(format!("http://{addr}"), "fail");
+    let app = router_with("music-fail", Arc::new(engine));
     let submit = app
         .clone()
         .oneshot(

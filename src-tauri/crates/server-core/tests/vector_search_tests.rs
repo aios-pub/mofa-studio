@@ -2,19 +2,25 @@
  * Integration tests for PLAT-07's retrieval upgrades: FTS5 global search
  * over the HTTP surface, and the sqlite-vec path for RAG/memory with the
  * honest keyword fallback when the engine has no embedding model.
+ *
+ * The embedding model is a stub engine injected through
+ * `build_router_with_engine`: it answers `embedding` capability invokes with
+ * deterministic vectors and errors on everything else, so the vector/keyword
+ * split is exercised exactly as production degrades.
  */
+mod common;
+
+use std::sync::{atomic::AtomicUsize, atomic::Ordering, Arc};
+
 use axum::body::Body;
-use axum::extract::Json;
 use axum::http::{Request, StatusCode};
-use axum::response::{IntoResponse, Response};
-use axum::routing::post;
-use axum::Router;
 use serde_json::{json, Value};
 use tower::ServiceExt;
 
-use server_core::ServerConfig;
+use common::{router_with, StubEngine};
+use server_core::engine_bridge::EngineCallError;
 
-// ==================== Mock engine ====================
+// ==================== Stub engines ====================
 
 /// Deterministic embedding: hashes the text into a 4-dim vector so
 /// same-ish texts land close — enough to prove KNN ordering by content.
@@ -27,12 +33,14 @@ fn mock_embedding(text: &str) -> Vec<f32> {
     out.iter().map(|v| v / norm).collect()
 }
 
-/// Captured embedding requests (for the vector-path assertion).
-static EMBED_CALLS: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-
-async fn mock_invoke(Json(req): Json<Value>) -> Response {
-    if req["capability"] == "embedding" {
-        EMBED_CALLS.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+/// Engine doubling as an embedding model. Counts embedding invokes via
+/// `calls` so tests can prove retrieval really walked the KNN path.
+fn embedding_engine(calls: Arc<AtomicUsize>) -> StubEngine {
+    StubEngine::with_handler(move |req| {
+        if req["capability"] != "embedding" {
+            return Err(EngineCallError::rejected(404, "capability not mocked"));
+        }
+        calls.fetch_add(1, Ordering::SeqCst);
         let inputs: Vec<String> = req["params"]["input"]
             .as_array()
             .map(|a| {
@@ -42,40 +50,26 @@ async fn mock_invoke(Json(req): Json<Value>) -> Response {
             })
             .unwrap_or_default();
         if inputs.is_empty() {
-            return (StatusCode::UNPROCESSABLE_ENTITY, "no input").into_response();
+            return Err(EngineCallError::rejected(422, "no input"));
         }
-        return Json(json!({
+        // One embedding row per input, matching the engine contract.
+        Ok(json!({
             "embedding": inputs.iter().map(|t| mock_embedding(t)).collect::<Vec<_>>(),
             "model_used": "mock/embed",
         }))
-        .into_response();
-    }
-    (StatusCode::NOT_FOUND, "capability not mocked").into_response()
+    })
 }
 
-async fn spawn_mock_engine() -> String {
-    let app = Router::new().route("/v1/invoke", post(mock_invoke));
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
-    let addr = listener.local_addr().unwrap();
-    tokio::spawn(async move {
-        axum::serve(listener, app).await.unwrap();
-    });
-    format!("http://{addr}")
+/// Stand-in for an engine without any usable embedding model.
+fn dead_engine() -> StubEngine {
+    StubEngine::with_handler(|_req| {
+        Err(EngineCallError::rejected(503, "no capable embedding model"))
+    })
 }
 
-fn router(engine_url: String, tag: &str) -> Router {
-    let data_dir = std::env::temp_dir().join(format!("mofa-vec-search-{tag}"));
-    let _ = std::fs::remove_dir_all(&data_dir);
-    let mut config = ServerConfig::for_data_dir(data_dir);
-    config.engine_base_url = Some(engine_url);
-    server_core::build_router(&config).expect("build router")
-}
+// ==================== Helpers ====================
 
-fn dead_engine_router(tag: &str) -> Router {
-    router("http://127.0.0.1:9".into(), tag)
-}
-
-async fn body_json(response: Response) -> Value {
+async fn body_json(response: axum::response::Response) -> Value {
     let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
         .expect("read body");
@@ -83,7 +77,7 @@ async fn body_json(response: Response) -> Value {
 }
 
 /// Upload a text doc through the real RAG multipart endpoint.
-async fn upload_doc(app: &Router, name: &str, text: &str) -> Value {
+async fn upload_doc(app: &axum::Router, name: &str, text: &str) -> Value {
     let boundary = "vecb";
     let body = format!(
         "--{boundary}\r\ncontent-disposition: form-data; name=\"file\"; filename=\"{name}\"\r\ncontent-type: text/plain\r\n\r\n{text}\r\n--{boundary}--\r\n"
@@ -109,7 +103,7 @@ async fn upload_doc(app: &Router, name: &str, text: &str) -> Value {
 
 #[tokio::test]
 async fn fts5_global_search_finds_conversations_and_docs_over_http() {
-    let app = dead_engine_router("fts");
+    let app = router_with("fts", Arc::new(dead_engine()));
     // Seed a conversation and a rag doc through the generic collections
     // route family — the store's insert path maintains the FTS index.
     let seeded = app
@@ -147,8 +141,8 @@ async fn fts5_global_search_finds_conversations_and_docs_over_http() {
 
 #[tokio::test]
 async fn rag_retrieval_uses_vectors_when_embeddings_exist() {
-    let engine = spawn_mock_engine().await;
-    let app = router(engine, "rag-vec");
+    let calls = Arc::new(AtomicUsize::new(0));
+    let app = router_with("rag-vec", Arc::new(embedding_engine(calls.clone())));
     let uploaded = upload_doc(&app, "cat.txt", "橘猫喜欢晒太阳，午后在窗台打盹。").await;
     assert_eq!(uploaded["data"]["chunks"].as_u64(), Some(1));
     assert_eq!(
@@ -179,13 +173,13 @@ async fn rag_retrieval_uses_vectors_when_embeddings_exist() {
         "used the KNN path: {body}"
     );
     assert!(body["data"]["hits"].as_array().unwrap().len() >= 1);
-    assert!(EMBED_CALLS.load(std::sync::atomic::Ordering::SeqCst) >= 2);
+    assert!(calls.load(Ordering::SeqCst) >= 2);
 }
 
 #[tokio::test]
 async fn rag_retrieval_falls_back_to_keywords_without_embeddings() {
-    // Dead engine: embedding calls fail → keyword scoring must still answer.
-    let app = dead_engine_router("rag-kw");
+    // Erroring engine: embedding calls fail → keyword scoring must still answer.
+    let app = router_with("rag-kw", Arc::new(dead_engine()));
     let uploaded = upload_doc(&app, "dog.txt", "柴犬每天需要遛两次，早晚各一次。").await;
     assert_eq!(
         uploaded["data"]["vector_indexed"].as_u64(),
@@ -215,8 +209,7 @@ async fn rag_retrieval_falls_back_to_keywords_without_embeddings() {
 
 #[tokio::test]
 async fn memory_retrieval_upgrades_to_vectors_too() {
-    let engine = spawn_mock_engine().await;
-    let app = router(engine, "mem-vec");
+    let app = router_with("mem-vec", Arc::new(embedding_engine(Arc::new(AtomicUsize::new(0)))));
 
     let response = app
         .clone()

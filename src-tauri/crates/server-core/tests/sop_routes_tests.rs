@@ -2,18 +2,20 @@
  * Integration tests for SOP templates (TASK-20): create via the generic
  * collection + trigger binding (转自动化流水线).
  */
+mod common;
+
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use axum::response::Response;
 use serde_json::{json, Value};
 use tower::ServiceExt;
 
-use server_core::ServerConfig;
 
-fn gateway_router(tag: &str) -> axum::Router {
-    let data_dir = std::env::temp_dir().join(format!("mofa-sop-test-{tag}"));
-    let _ = std::fs::remove_dir_all(&data_dir);
-    server_core::build_router(&ServerConfig::for_data_dir(data_dir)).expect("build router")
+fn gateway_router(tag: &str) -> axum::Router  {
+    common::router_with(
+        tag,
+        std::sync::Arc::new(common::StubEngine::default()),
+    )
 }
 
 async fn body_json(response: Response) -> Value {

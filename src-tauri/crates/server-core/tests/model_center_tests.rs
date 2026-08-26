@@ -6,6 +6,10 @@
  * The flows share one test because `OLLAMA_URL` is process-global and the
  * default test runner executes in parallel.
  */
+mod common;
+
+use std::sync::Arc;
+
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use axum::response::{IntoResponse, Response};
@@ -14,7 +18,7 @@ use axum::{Json, Router};
 use serde_json::{json, Value};
 use tower::ServiceExt;
 
-use server_core::ServerConfig;
+use common::StubEngine;
 
 /// OLLAMA_URL is process-global and tests run in parallel: serialize the
 /// tests that touch it.
@@ -65,11 +69,9 @@ async fn mock_ollama() -> String {
 }
 
 fn router(tag: &str) -> Router {
-    let data_dir = std::env::temp_dir().join(format!("mofa-model-center-{tag}"));
-    let _ = std::fs::remove_dir_all(&data_dir);
-    let mut config = ServerConfig::for_data_dir(data_dir);
-    config.engine_base_url = Some("http://127.0.0.1:9".into());
-    server_core::build_router(&config).expect("build router")
+    // Model-center routes proxy the local Ollama via `state.http` and never
+    // touch the LLM engine, so a default stub is enough to satisfy AppState.
+    common::router_with(tag, Arc::new(StubEngine::default()))
 }
 
 async fn body_json(response: Response) -> Value {

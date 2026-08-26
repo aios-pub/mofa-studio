@@ -1,127 +1,101 @@
 /**
- * Integration tests for deep research (TOOL-09): a full run against a
- * mock engine (chat) and the mock search provider — start returns tier
- * metadata with a token estimate, the status endpoint walks
+ * Integration tests for deep research (TOOL-09): a full run against an
+ * injected stub engine (chat) and the mock search provider — start returns
+ * tier metadata with a token estimate, the status endpoint walks
  * planning→searching→synthesizing→done, and the report carries citations.
  */
+mod common;
+
+use std::sync::Arc;
+
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
-use axum::response::{IntoResponse, Response};
-use axum::routing::post;
-use axum::{Json, Router};
 use serde_json::{json, Value};
 use tower::ServiceExt;
 
-use server_core::ServerConfig;
+use common::{router_with, StubEngine};
+use server_core::engine_bridge::EngineCallError;
 
-// ==================== Mock engine ====================
+// ==================== Stub engine ====================
 
-async fn mock_invoke(Json(req): Json<Value>) -> Response {
-    if req["capability"] != "chat" {
-        return (StatusCode::BAD_REQUEST, "unexpected capability").into_response();
-    }
-    let system = req["messages"][0]["content"].as_str().unwrap_or("");
-    if system.contains("搜索查询") {
-        // Planner: two complementary queries.
-        return Json(json!({
-            "text": "橘猫 行为习性\n橘猫 饮食健康",
+/// Chat engine mirroring the old mock daemon: a two-query planner reply
+/// for the query-planning prompt, otherwise a cited synthesis report.
+fn research_engine() -> StubEngine {
+    StubEngine::with_handler(|req| {
+        if req["capability"] != "chat" {
+            return Err(EngineCallError::rejected(400, "unexpected capability"));
+        }
+        let system = req["messages"][0]["content"].as_str().unwrap_or("");
+        if system.contains("搜索查询") {
+            // Planner: two complementary queries.
+            return Ok(json!({
+                "text": "橘猫 行为习性\n橘猫 饮食健康",
+                "file": Value::Null,
+                "model_used": "mock/chat",
+                "provider": "mock",
+                "duration_ms": 10,
+                "request_id": "req-plan",
+                "tokens_used": 40,
+                "fallback_used": false,
+                "routing_reason": "capability_default",
+            }));
+        }
+        // Synthesis: cite the sources by number.
+        Ok(json!({
+            "text": "# 橘猫研究报告\n\n橘猫白天睡觉晚上活动 [1]。\n\n## 参考来源\n- [1] 模拟来源",
             "file": Value::Null,
             "model_used": "mock/chat",
             "provider": "mock",
-            "duration_ms": 10,
-            "request_id": "req-plan",
-            "tokens_used": 40,
+            "duration_ms": 20,
+            "request_id": "req-syn",
+            "tokens_used": 120,
             "fallback_used": false,
             "routing_reason": "capability_default",
         }))
-        .into_response();
-    }
-    // Synthesis: cite the sources by number.
-    Json(json!({
-        "text": "# 橘猫研究报告\n\n橘猫白天睡觉晚上活动 [1]。\n\n## 参考来源\n- [1] 模拟来源",
-        "file": Value::Null,
-        "model_used": "mock/chat",
-        "provider": "mock",
-        "duration_ms": 20,
-        "request_id": "req-syn",
-        "tokens_used": 120,
-        "fallback_used": false,
-        "routing_reason": "capability_default",
-    }))
-    .into_response()
+    })
 }
 
-async fn spawn_mock_engine() -> String {
-    let app = Router::new().route("/v1/invoke", post(mock_invoke));
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
-    let addr = listener.local_addr().unwrap();
-    tokio::spawn(async move {
-        axum::serve(listener, app).await.unwrap();
-    });
-    format!("http://{addr}")
-}
+// ==================== Helpers ====================
 
-fn gateway_router(engine_url: String, tag: &str) -> Router {
-    let data_dir = std::env::temp_dir().join(format!("mofa-research-test-{tag}"));
-    let _ = std::fs::remove_dir_all(&data_dir);
-    let mut config = ServerConfig::for_data_dir(data_dir);
-    config.engine_base_url = Some(engine_url);
-    server_core::build_router(&config).expect("build router")
-}
-
-async fn body_json(response: Response) -> Value {
+async fn body_json(response: axum::response::Response) -> Value {
     let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
         .expect("read body");
     serde_json::from_slice(&bytes).expect("parse json")
 }
 
-async fn configure_mock_search(app: &Router) {
+async fn post_json(app: &axum::Router, uri: &str, body: Value) -> (StatusCode, Value) {
+    let (status, bytes) = common::post_json(app.clone(), uri, body).await;
+    let parsed = serde_json::from_slice(&bytes).expect("parse json");
+    (status, parsed)
+}
+
+async fn configure_mock_search(app: &axum::Router) {
     // The generic meta endpoints don't exist; write through the search
     // config route instead.
-    let response = app
-        .clone()
-        .oneshot(
-            Request::builder()
-                .method("POST")
-                .uri("/api/search/config")
-                .header("content-type", "application/json")
-                .body(Body::from(
-                    json!({ "provider": "mock", "api_key": "mock-key-1234" }).to_string(),
-                ))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    assert_eq!(
-        response.status(),
-        StatusCode::OK,
-        "mock search config accepted"
-    );
+    let (status, _) = post_json(
+        app,
+        "/api/search/config",
+        json!({ "provider": "mock", "api_key": "mock-key-1234" }),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "mock search config accepted");
 }
+
+// ==================== Tests ====================
 
 #[tokio::test]
 async fn full_research_run_with_mock_search() {
-    let engine = spawn_mock_engine().await;
-    let app = gateway_router(engine, "full");
+    let app = router_with("research-full", Arc::new(research_engine()));
     configure_mock_search(&app).await;
 
-    let response = app
-        .clone()
-        .oneshot(
-            Request::builder()
-                .method("POST")
-                .uri("/api/research/start")
-                .header("content-type", "application/json")
-                .body(Body::from(
-                    json!({ "topic": "橘猫", "tier": "quick" }).to_string(),
-                ))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    assert_eq!(response.status(), StatusCode::OK);
-    let started = body_json(response).await;
+    let (status, started) = post_json(
+        &app,
+        "/api/research/start",
+        json!({ "topic": "橘猫", "tier": "quick" }),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
     let data = &started["data"];
     let research_id = data["research_id"].as_str().expect("id").to_string();
     assert_eq!(data["sources_target"], 3, "quick tier targets 3 sources");
@@ -168,37 +142,21 @@ async fn full_research_run_with_mock_search() {
 
 #[tokio::test]
 async fn start_validates_topic_and_tier() {
-    let engine = spawn_mock_engine().await;
-    let app = gateway_router(engine, "validate");
+    let app = router_with("research-validate", Arc::new(research_engine()));
 
-    let response = app
-        .clone()
-        .oneshot(
-            Request::builder()
-                .method("POST")
-                .uri("/api/research/start")
-                .header("content-type", "application/json")
-                .body(Body::from(
-                    json!({ "topic": "", "tier": "quick" }).to_string(),
-                ))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    let (status, _) = post_json(
+        &app,
+        "/api/research/start",
+        json!({ "topic": "", "tier": "quick" }),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
 
-    let response = app
-        .oneshot(
-            Request::builder()
-                .method("POST")
-                .uri("/api/research/start")
-                .header("content-type", "application/json")
-                .body(Body::from(
-                    json!({ "topic": "x", "tier": "extreme" }).to_string(),
-                ))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    let (status, _) = post_json(
+        &app,
+        "/api/research/start",
+        json!({ "topic": "x", "tier": "extreme" }),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
 }

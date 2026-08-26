@@ -2,19 +2,21 @@
  * Integration tests for the embedded server router.
  * Uses tower's oneshot so no real sockets are opened.
  */
+mod common;
+
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use axum::Router;
 use serde_json::{json, Value};
 use tower::ServiceExt;
 
-fn test_router(tag: &str) -> Router {
-    let data_dir = std::env::temp_dir().join(format!("mofa-server-core-test-{tag}"));
-    let _ = std::fs::remove_dir_all(&data_dir);
-    server_core::build_router(&ServerConfig::for_data_dir(data_dir)).expect("build router")
+fn test_router(tag: &str) -> Router  {
+    common::router_with(
+        tag,
+        std::sync::Arc::new(common::StubEngine::default()),
+    )
 }
 
-use server_core::ServerConfig;
 
 async fn json_body(response: axum::http::Response<Body>) -> Value {
     let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)

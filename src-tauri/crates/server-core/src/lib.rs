@@ -19,6 +19,7 @@ pub mod backup;
 pub mod budget;
 pub mod collections;
 pub mod comfy_bridge;
+pub mod content_safety;
 pub mod embeddings;
 pub mod fileops;
 pub mod flow_routes;

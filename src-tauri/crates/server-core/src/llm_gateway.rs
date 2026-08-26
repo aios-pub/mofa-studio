@@ -67,6 +67,22 @@ async fn chat_completions(State(state): State<Arc<AppState>>, Json(body): Json<V
     if let Err(response) = budget::enforce(&state.store) {
         return response;
     }
+    // 07 §3.3: content safety hook — the pass-through default is wired;
+    // word lists plug in by swapping the filter on AppState.
+    use crate::content_safety::ContentFilter as _;
+    let content_filter = crate::content_safety::PassThroughFilter;
+    if let Some(user_text) = messages
+        .iter()
+        .rev()
+        .find(|m| m.get("role").and_then(Value::as_str) == Some("user"))
+        .and_then(|m| m.get("content").and_then(Value::as_str))
+    {
+        if let crate::content_safety::SafetyVerdict::Block(reason) =
+            content_filter.check_input(user_text)
+        {
+            return openai_error(StatusCode::BAD_REQUEST, &reason);
+        }
+    }
 
     let has_images = messages.iter().any(|m| {
         m.get("images")
@@ -120,10 +136,12 @@ async fn chat_completions(State(state): State<Arc<AppState>>, Json(body): Json<V
                         format!("[{}] {} — {}\n{}", index + 1, r.title, r.url, r.snippet)
                     })
                     .collect();
-                let grounding = format!(
+                // 07 §2.3: external content gets isolation markers so
+                // instructions hidden inside search results don't execute.
+                let grounding = crate::content_safety::wrap_untrusted(&format!(
                     "以下是联网检索到的参考资料（引用序号与来源列表对应）。回答时优先依据这些资料，并在句末用 [序号] 标注引用：\n\n{}",
                     numbered.join("\n\n"),
-                );
+                ));
                 // Prepend as the first system message.
                 let mut grounded =
                     vec![json!({ "role": "system", "content": grounding, "images": [] })];

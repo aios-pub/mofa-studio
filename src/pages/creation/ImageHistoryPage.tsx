@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Generation history page (TOOL-05): grid of parameter snapshots with
  * one-click 恢复参数, metadata-degrade notes, single-delete, and the
@@ -23,7 +24,8 @@ import {
 } from "@/services/api/imageHistory";
 import CompareSlider from "@/components/creation/CompareSlider";
 
-export default function ImageHistoryPage() {
+export default function ImageHistoryPage() {  const { t } = useTranslation();
+
   const navigate = useNavigate();
   const [history, setHistory] = useState<ImageGenHistoryEntry[]>(() => listHistory());
   const [compareIds, setCompareIds] = useState<string[]>([]);
@@ -54,7 +56,7 @@ export default function ImageHistoryPage() {
     if (!complete) {
       message.warning(`该记录缺少${missing.join("、")}，将以手动参数方式恢复`);
     } else {
-      message.info("参数已恢复并自动重跑（参数级复现；精确同图需模型支持 seed）");
+      message.info(t("参数已恢复并自动重跑（参数级复现；精确同图需模型支持 seed）"));
     }
     navigate(restoreHref(entry));
   };
@@ -71,21 +73,21 @@ export default function ImageHistoryPage() {
             icon={<ColumnWidthOutlined />}
             disabled={compareIds.length !== 2}
             onClick={openCompare}
-            aria-label="对比所选"
+            aria-label={t("对比所选")}
           >
             对比（{compareIds.length}/2）
           </Button>
           <Popconfirm
-            title="确定清空全部历史？"
+            title={t("确定清空全部历史？")}
             onConfirm={() => {
               clearHistory();
               setHistory([]);
               setCompareIds([]);
             }}
-            okText="清空"
-            cancelText="取消"
+            okText={t("清空")}
+            cancelText={t("取消")}
           >
-            <Button danger aria-label="清空历史">
+            <Button danger aria-label={t("清空历史")}>
               清空
             </Button>
           </Popconfirm>
@@ -94,7 +96,7 @@ export default function ImageHistoryPage() {
 
       {history.length === 0 ? (
         <div className="h-64 flex items-center justify-center">
-          <Empty description="还没有生成记录——去图像生成页跑第一张" />
+          <Empty description={t("还没有生成记录——去图像生成页跑第一张")} />
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl">
@@ -131,7 +133,7 @@ export default function ImageHistoryPage() {
                       size="small"
                       icon={<RedoOutlined />}
                       onClick={() => restore(entry)}
-                      aria-label={`恢复参数 ${entry.prompt}`}
+                      aria-label={t("恢复参数 {{p0}}", { p0: entry.prompt })}
                     >
                       恢复参数
                     </Button>
@@ -139,7 +141,7 @@ export default function ImageHistoryPage() {
                       size="small"
                       onClick={() => toggleCompare(entry.id)}
                       aria-pressed={selected}
-                      aria-label={`选择对比 ${entry.prompt}`}
+                      aria-label={t("选择对比 {{p0}}", { p0: entry.prompt })}
                     >
                       {selected ? "取消对比" : "对比"}
                     </Button>
@@ -148,7 +150,7 @@ export default function ImageHistoryPage() {
                       danger
                       icon={<DeleteOutlined />}
                       onClick={() => setHistory(removeEntry(entry.id))}
-                      aria-label={`删除记录 ${entry.prompt}`}
+                      aria-label={t("删除记录 {{p0}}", { p0: entry.prompt })}
                     />
                   </div>
                 </figcaption>
@@ -159,7 +161,7 @@ export default function ImageHistoryPage() {
       )}
 
       <Modal
-        title="版本对比"
+        title={t("版本对比")}
         open={compareOpen}
         onCancel={() => setCompareOpen(false)}
         footer={null}

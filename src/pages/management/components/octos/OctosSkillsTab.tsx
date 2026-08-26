@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Octos profile skills management
  * Integrates system skills management with recommended installation
@@ -87,7 +88,8 @@ const SKILL_TO_OCTOS_REPO: Record<
   },
 };
 
-export default function OctosSkillsTab({ profileId, apiClient }: Props) {
+export default function OctosSkillsTab({ profileId, apiClient }: Props) {  const { t } = useTranslation();
+
   const [activeTab, setActiveTab] = useState<"installed" | "recommend">(
     "installed",
   );
@@ -125,7 +127,7 @@ export default function OctosSkillsTab({ profileId, apiClient }: Props) {
   const handleInstall = async (skillKey: string) => {
     const repoInfo = SKILL_TO_OCTOS_REPO[skillKey];
     if (!repoInfo) {
-      message.error("未找到对应的 Octos Skill 仓库");
+      message.error(t("未找到对应的 Octos Skill 仓库"));
       return;
     }
 
@@ -143,7 +145,7 @@ export default function OctosSkillsTab({ profileId, apiClient }: Props) {
         }
         fetchInstalledSkills();
       } else {
-        message.error("安装失败");
+        message.error(t("安装失败"));
       }
     } catch (e: any) {
       message.error(e?.message || "安装失败");
@@ -155,7 +157,7 @@ export default function OctosSkillsTab({ profileId, apiClient }: Props) {
   const handleRemove = async (skillName: string) => {
     try {
       await apiClient.removeProfileSkill(profileId, skillName);
-      message.success("已卸载");
+      message.success(t("已卸载"));
       fetchInstalledSkills();
     } catch (e: any) {
       message.error(e?.message || "卸载失败");
@@ -225,13 +227,14 @@ function InstalledSkillsView({
   skills: OctosSkillEntry[];
   loading: boolean;
   onRemove: (name: string) => void;
-}) {
+}) {  const { t } = useTranslation();
+
   if (loading) {
     return (
       <div className="flex justify-center py-8">
         <Space>
           <Spin />
-          <span className="text-[var(--color-text-secondary)]">加载中...</span>
+          <span className="text-[var(--color-text-secondary)]">{t("加载中...")}</span>
         </Space>
       </div>
     );
@@ -240,15 +243,15 @@ function InstalledSkillsView({
   if (skills.length === 0) {
     return (
       <Empty
-        description="暂无已安装 Skills"
+        description={t("暂无已安装 Skills")}
         image={Empty.PRESENTED_IMAGE_SIMPLE}
       >
         <Alert
           type="info"
           showIcon
           icon={<InfoCircleOutlined />}
-          title="提示"
-          description="前往「推荐安装」标签页，从系统 Skills 中选择要安装的 Skills"
+          title={t("提示")}
+          description={t("前往「推荐安装」标签页，从系统 Skills 中选择要安装的 Skills")}
           className="mt-4 text-left"
         />
       </Empty>
@@ -279,7 +282,7 @@ function InstalledSkillsView({
             </Space>
           </div>
           <Popconfirm
-            title="确认卸载此 Skill？"
+            title={t("确认卸载此 Skill？")}
             onConfirm={() => onRemove(skill.name)}
           >
             <Button type="text" danger size="small" icon={<DeleteOutlined />}>
@@ -305,7 +308,8 @@ function RecommendSkillsView({
   installedSkills: OctosSkillEntry[];
   installing: string | null;
   onInstall: (skillKey: string) => void;
-}) {
+}) {  const { t } = useTranslation();
+
   // List of installed skill names
   const installedNames = new Set(
     installedSkills
@@ -321,14 +325,14 @@ function RecommendSkillsView({
   if (systemSkills.length === 0) {
     return (
       <Empty
-        description="系统中暂无已启用的 Skills"
+        description={t("系统中暂无已启用的 Skills")}
         image={Empty.PRESENTED_IMAGE_SIMPLE}
       >
         <Alert
           type="info"
           showIcon
-          title="提示"
-          description="请先在 Skills 管理页面添加并启用 Skills"
+          title={t("提示")}
+          description={t("请先在 Skills 管理页面添加并启用 Skills")}
           className="mt-4 text-left"
         />
       </Empty>
@@ -342,15 +346,15 @@ function RecommendSkillsView({
           type="success"
           showIcon
           icon={<CheckCircleOutlined />}
-          title="所有推荐的 Skills 都已安装"
-          description="系统中已启用的 Skills 都已在此 Profile 中安装"
+          title={t("所有推荐的 Skills 都已安装")}
+          description={t("系统中已启用的 Skills 都已在此 Profile 中安装")}
         />
       ) : (
         <Alert
           type="info"
           showIcon
-          title={`发现 ${recommendedSkills.length} 个可安装的 Skills`}
-          description="以下 Skills 在系统中已启用，建议安装到 Octos 以获得完整功能"
+          title={t("发现 {{p0}} 个可安装的 Skills", { p0: recommendedSkills.length })}
+          description={t("以下 Skills 在系统中已启用，建议安装到 Octos 以获得完整功能")}
         />
       )}
 
@@ -431,7 +435,7 @@ function RecommendSkillsView({
                   <Alert
                     type="info"
                     showIcon
-                    title="推荐安装"
+                    title={t("推荐安装")}
                     className="text-xs py-1"
                   />
                 )}
@@ -446,13 +450,13 @@ function RecommendSkillsView({
         type="info"
         showIcon
         icon={<InfoCircleOutlined />}
-        title="Skills 说明"
+        title={t("Skills 说明")}
         description={
           <ul className="text-xs space-y-1 mt-2 list-disc pl-4">
-            <li>绿色卡片表示已安装的 Skills</li>
-            <li>蓝色卡片表示推荐安装的 Skills（系统已启用但未安装）</li>
-            <li>灰色卡片表示暂不推荐或已禁用的 Skills</li>
-            <li>点击"安装"按钮将从 Octos Skills 仓库安装对应的 Python 包</li>
+            <li>{t("绿色卡片表示已安装的 Skills")}</li>
+            <li>{t("蓝色卡片表示推荐安装的 Skills（系统已启用但未安装）")}</li>
+            <li>{t("灰色卡片表示暂不推荐或已禁用的 Skills")}</li>
+            <li>{t("点击\"安装\"按钮将从 Octos Skills 仓库安装对应的 Python 包")}</li>
           </ul>
         }
       />

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * CHAT-07 实时语音通话浮层: 连续收音 + VAD（静音断句）→ 整段上 ASR；
  * 播报中检测到人声即回调打断。判定逻辑在 utils/voiceCall（纯函数、已测），
@@ -35,7 +36,8 @@ export default function VoiceCallOverlay({
   onUtteranceBlob,
   onBargeIn,
   onHangUp,
-}: VoiceCallOverlayProps) {
+}: VoiceCallOverlayProps) {  const { t } = useTranslation();
+
   const [micError, setMicError] = useState<string | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -121,7 +123,7 @@ export default function VoiceCallOverlay({
         frameTimer = window.setInterval(tick, VAD_FRAME_MS);
       } catch (error) {
         setMicError(
-          error instanceof Error ? error.message : "无法访问麦克风",
+          error instanceof Error ? error.message: t("无法访问麦克风"),
         );
       }
     };
@@ -151,25 +153,25 @@ export default function VoiceCallOverlay({
     <div
       className="fixed bottom-6 right-6 z-50 rounded-2xl border border-(--color-border) bg-[var(--color-bg-base)] shadow-lg p-4 w-64 space-y-2"
       role="dialog"
-      aria-label="语音通话"
+      aria-label={t("语音通话")}
     >
       <div className="flex items-center gap-2">
         <PhoneOutlined className="text-[var(--color-primary)]" />
-        <span className="text-sm font-medium flex-1">语音通话</span>
+        <span className="text-sm font-medium flex-1">{t("语音通话")}</span>
         {phase === "replying" ? (
-          <Tag color="processing">播报中</Tag>
+          <Tag color="processing">{t("播报中")}</Tag>
         ) : (
-          <Tag color="success">通话中</Tag>
+          <Tag color="success">{t("通话中")}</Tag>
         )}
       </div>
-      <p className="text-xs text-[var(--color-text-secondary)]" aria-label="通话状态提示">
+      <p className="text-xs text-[var(--color-text-secondary)]" aria-label={t("通话状态提示")}>
         {callPhaseLabel(phase)}
       </p>
       {bargeIns > 0 && (
         <p className="text-xs text-[var(--color-text-tertiary)]">已打断 {bargeIns} 次</p>
       )}
       {(micError ?? lastError) && (
-        <p className="text-xs text-red-500" aria-label="通话错误">
+        <p className="text-xs text-red-500" aria-label={t("通话错误")}>
           {micError ?? lastError}
         </p>
       )}
@@ -178,7 +180,7 @@ export default function VoiceCallOverlay({
         danger
         icon={<PoweroffOutlined />}
         onClick={onHangUp}
-        aria-label="挂断"
+        aria-label={t("挂断")}
       >
         挂断
       </Button>

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Namespace Manager Component
  * Manage namespaces and members
@@ -29,7 +30,8 @@ import {
 import { skillHubV2Api } from "@/services";
 import type { HubNamespace, NamespaceMember, TenantUser } from "@/types/skill";
 
-export function NamespaceManager() {
+export function NamespaceManager() {  const { t } = useTranslation();
+
   const [namespaces, setNamespaces] = useState<HubNamespace[]>([]);
   const [members, setMembers] = useState<Record<number, NamespaceMember[]>>({});
   const [tenantUsers, setTenantUsers] = useState<TenantUser[]>([]);
@@ -58,7 +60,7 @@ export function NamespaceManager() {
         setMembers((prev) => ({ ...prev, [parseInt(ns.id)]: nsMembers }));
       }
     } catch (error) {
-      message.error("加载命名空间失败");
+      message.error(t("加载命名空间失败"));
     } finally {
       setLoading(false);
     }
@@ -69,19 +71,19 @@ export function NamespaceManager() {
       const users = await skillHubV2Api.listTenantUsers();
       setTenantUsers(users);
     } catch (error) {
-      message.error("加载用户列表失败");
+      message.error(t("加载用户列表失败"));
     }
   };
 
   const handleCreateNamespace = async (values: any) => {
     try {
       await skillHubV2Api.createNamespace(values);
-      message.success("命名空间创建成功");
+      message.success(t("命名空间创建成功"));
       setCreateModalVisible(false);
       form.resetFields();
       loadNamespaces();
     } catch (error) {
-      message.error("创建失败");
+      message.error(t("创建失败"));
     }
   };
 
@@ -94,22 +96,22 @@ export function NamespaceManager() {
         values.user_id,
         values.role,
       );
-      message.success("成员添加成功");
+      message.success(t("成员添加成功"));
       setMemberModalVisible(false);
       memberForm.resetFields();
       loadNamespaces();
     } catch (error) {
-      message.error("添加成员失败");
+      message.error(t("添加成员失败"));
     }
   };
 
   const handleRemoveMember = async (namespaceId: number, userId: string) => {
     try {
       await skillHubV2Api.removeMember(String(namespaceId), userId);
-      message.success("成员移除成功");
+      message.success(t("成员移除成功"));
       loadNamespaces();
     } catch (error) {
-      message.error("移除成员失败");
+      message.error(t("移除成员失败"));
     }
   };
 
@@ -121,12 +123,12 @@ export function NamespaceManager() {
       render: (slug: string) => <code>{slug}</code>,
     },
     {
-      title: "显示名称",
+      title: t("显示名称"),
       dataIndex: "display_name",
       key: "displayName",
     },
     {
-      title: "类型",
+      title: t("类型"),
       dataIndex: "type",
       key: "type",
       render: (type: string) => {
@@ -139,7 +141,7 @@ export function NamespaceManager() {
       },
     },
     {
-      title: "成员数",
+      title: t("成员数"),
       key: "memberCount",
       render: (_: any, record: HubNamespace) => (
         <Space>
@@ -149,7 +151,7 @@ export function NamespaceManager() {
       ),
     },
     {
-      title: "状态",
+      title: t("状态"),
       dataIndex: "status",
       key: "status",
       render: (status: string) => (
@@ -157,7 +159,7 @@ export function NamespaceManager() {
       ),
     },
     {
-      title: "操作",
+      title: t("操作"),
       key: "actions",
       render: (_: any, record: HubNamespace) => (
         <Space>
@@ -179,12 +181,12 @@ export function NamespaceManager() {
 
   const memberColumns = [
     {
-      title: "用户 ID",
+      title: t("用户 ID"),
       dataIndex: "user_id",
       key: "userId",
     },
     {
-      title: "角色",
+      title: t("角色"),
       dataIndex: "role",
       key: "role",
       render: (role: string) => {
@@ -198,17 +200,17 @@ export function NamespaceManager() {
       },
     },
     {
-      title: "添加时间",
+      title: t("添加时间"),
       dataIndex: "created_at",
       key: "addedAt",
       render: (date: string) => new Date(date).toLocaleString(),
     },
     {
-      title: "操作",
+      title: t("操作"),
       key: "actions",
       render: (_: any, record: NamespaceMember) => (
         <Popconfirm
-          title="确认移除该成员？"
+          title={t("确认移除该成员？")}
           onConfirm={() =>
             handleRemoveMember(parseInt(selectedNamespace!.id), record.user_id)
           }
@@ -231,7 +233,7 @@ export function NamespaceManager() {
         <Col span={6}>
           <Card>
             <Statistic
-              title="命名空间总数"
+              title={t("命名空间总数")}
               value={namespaces.length}
               prefix={<TeamOutlined />}
             />
@@ -240,7 +242,7 @@ export function NamespaceManager() {
         <Col span={6}>
           <Card>
             <Statistic
-              title="全局命名空间"
+              title={t("全局命名空间")}
               value={namespaces.filter((ns) => ns.type === "GLOBAL").length}
             />
           </Card>
@@ -248,7 +250,7 @@ export function NamespaceManager() {
         <Col span={6}>
           <Card>
             <Statistic
-              title="团队命名空间"
+              title={t("团队命名空间")}
               value={namespaces.filter((ns) => ns.type === "TEAM").length}
             />
           </Card>
@@ -256,7 +258,7 @@ export function NamespaceManager() {
         <Col span={6}>
           <Card>
             <Statistic
-              title="总成员数"
+              title={t("总成员数")}
               value={Object.values(members).flat().length}
               prefix={<TeamOutlined />}
             />
@@ -265,7 +267,7 @@ export function NamespaceManager() {
       </Row>
 
       <Card
-        title="命名空间列表"
+        title={t("命名空间列表")}
         extra={
           <Button
             type="primary"
@@ -287,7 +289,7 @@ export function NamespaceManager() {
 
       {/* Create Namespace Modal */}
       <Modal
-        title="创建命名空间"
+        title={t("创建命名空间")}
         open={createModalVisible}
         onCancel={() => setCreateModalVisible(false)}
         onOk={() => form.submit()}
@@ -297,10 +299,10 @@ export function NamespaceManager() {
             name="slug"
             label="Slug"
             rules={[
-              { required: true, message: "请输入 slug" },
+              { required: true, message: t("请输入 slug") },
               {
                 pattern: /^[a-z0-9-]+$/,
-                message: "只能包含小写字母、数字和连字符",
+                message: t("只能包含小写字母、数字和连字符"),
               },
             ]}
           >
@@ -308,24 +310,24 @@ export function NamespaceManager() {
           </Form.Item>
           <Form.Item
             name="displayName"
-            label="显示名称"
-            rules={[{ required: true, message: "请输入显示名称" }]}
+            label={t("显示名称")}
+            rules={[{ required: true, message: t("请输入显示名称") }]}
           >
             <Input placeholder="My Namespace" />
           </Form.Item>
           <Form.Item
             name="type"
-            label="类型"
-            rules={[{ required: true, message: "请选择类型" }]}
+            label={t("类型")}
+            rules={[{ required: true, message: t("请选择类型") }]}
           >
             <Select>
-              <Select.Option value="GLOBAL">全局</Select.Option>
-              <Select.Option value="TEAM">团队</Select.Option>
-              <Select.Option value="PERSONAL">个人</Select.Option>
+              <Select.Option value="GLOBAL">{t("全局")}</Select.Option>
+              <Select.Option value="TEAM">{t("团队")}</Select.Option>
+              <Select.Option value="PERSONAL">{t("个人")}</Select.Option>
             </Select>
           </Form.Item>
-          <Form.Item name="description" label="描述">
-            <Input.TextArea rows={3} placeholder="可选的描述信息" />
+          <Form.Item name="description" label={t("描述")}>
+            <Input.TextArea rows={3} placeholder={t("可选的描述信息")} />
           </Form.Item>
         </Form>
       </Modal>
@@ -349,11 +351,11 @@ export function NamespaceManager() {
         >
           <Form.Item
             name="userId"
-            rules={[{ required: true, message: "请选择用户" }]}
+            rules={[{ required: true, message: t("请选择用户") }]}
           >
             <Select
               style={{ width: 240 }}
-              placeholder="选择用户"
+              placeholder={t("选择用户")}
               showSearch
               optionFilterProp="label"
               options={tenantUsers.map((user) => ({
@@ -364,13 +366,13 @@ export function NamespaceManager() {
           </Form.Item>
           <Form.Item
             name="role"
-            rules={[{ required: true, message: "请选择角色" }]}
+            rules={[{ required: true, message: t("请选择角色") }]}
           >
-            <Select style={{ width: 120 }} placeholder="角色">
-              <Select.Option value="OWNER">所有者</Select.Option>
-              <Select.Option value="ADMIN">管理员</Select.Option>
-              <Select.Option value="MEMBER">成员</Select.Option>
-              <Select.Option value="VIEWER">观察者</Select.Option>
+            <Select style={{ width: 120 }} placeholder={t("角色")}>
+              <Select.Option value="OWNER">{t("所有者")}</Select.Option>
+              <Select.Option value="ADMIN">{t("管理员")}</Select.Option>
+              <Select.Option value="MEMBER">{t("成员")}</Select.Option>
+              <Select.Option value="VIEWER">{t("观察者")}</Select.Option>
             </Select>
           </Form.Item>
           <Form.Item>

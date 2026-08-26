@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * 连接器 (TASK-09): 官方目录一键安装（安装前展示授权范围）· 自定义 MCP
  * server · 工具发现与真实调用 · 撤销授权即失效（删除 = 断开）。
@@ -30,7 +31,8 @@ import {
   type ConnectorTool,
 } from "@/services/api/connectors";
 
-export default function ConnectorsPage() {
+export default function ConnectorsPage() {  const { t } = useTranslation();
+
   const [installed, setInstalled] = useState<Connector[]>([]);
   const [loading, setLoading] = useState(true);
   const [installing, setInstalling] = useState<string | null>(null);
@@ -77,16 +79,16 @@ export default function ConnectorsPage() {
     setConfirmEntry(null);
     setConfirmDir("");
     if (!result.ok) {
-      message.error(`安装失败：${result.reason}`);
+      message.error(t("安装失败：{{p0}}", { p0: result.reason }));
       return;
     }
-    message.success(`已安装「${entry.name}」，可查看其工具并试调用`);
+    message.success(t("已安装「{{p0}}」，可查看其工具并试调用", { p0: entry.name }));
     await load();
   };
 
   const installCustom = async () => {
     if (!custom.name.trim() || !custom.command.trim()) {
-      message.warning("名称与命令必填");
+      message.warning(t("名称与命令必填"));
       return;
     }
     const result = await connectorService.add({
@@ -95,22 +97,22 @@ export default function ConnectorsPage() {
       args: custom.args.trim() ? custom.args.trim().split(/\s+/) : undefined,
     });
     if (!result.ok) {
-      message.error(`添加失败：${result.reason}`);
+      message.error(t("添加失败：{{p0}}", { p0: result.reason }));
       return;
     }
     setCustomOpen(false);
     setCustom({ name: "", command: "", args: "" });
-    message.success("已添加自定义连接器");
+    message.success(t("已添加自定义连接器"));
     await load();
   };
 
   const revoke = async (connector: Connector) => {
     const ok = await connectorService.remove(connector.id);
     if (ok) {
-      message.success(`已撤销「${connector.name}」，其工具立即不可用`);
+      message.success(t("已撤销「{{p0}}」，其工具立即不可用", { p0: connector.name }));
       await load();
     } else {
-      message.error("撤销失败");
+      message.error(t("撤销失败"));
     }
   };
 
@@ -124,7 +126,7 @@ export default function ConnectorsPage() {
     setTools(list);
     setToolsLoading(false);
     if (list.length === 0) {
-      message.warning("未发现工具（连接器未启动或命令不可执行）");
+      message.warning(t("未发现工具（连接器未启动或命令不可执行）"));
     }
   };
 
@@ -134,7 +136,7 @@ export default function ConnectorsPage() {
     try {
       args = callArgs.trim() ? JSON.parse(callArgs) : {};
     } catch {
-      message.error("参数必须是合法 JSON");
+      message.error(t("参数必须是合法 JSON"));
       return;
     }
     setCalling(true);
@@ -147,19 +149,19 @@ export default function ConnectorsPage() {
     <div className="max-w-4xl mx-auto p-6 space-y-8">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-[var(--color-text-primary)]">连接器</h1>
+          <h1 className="text-xl font-semibold text-[var(--color-text-primary)]">{t("连接器")}</h1>
           <p className="text-sm text-[var(--color-text-secondary)]">
             接入网盘/搜索/代码库等外部能力（MCP 标准）；撤销授权后工具立即失效
           </p>
         </div>
-        <Button icon={<PlusOutlined />} onClick={() => setCustomOpen(true)} aria-label="添加自定义连接器">
+        <Button icon={<PlusOutlined />} onClick={() => setCustomOpen(true)} aria-label={t("添加自定义连接器")}>
           自定义
         </Button>
       </header>
 
       {/* Official catalog */}
-      <section aria-label="官方目录" className="space-y-3">
-        <h2 className="text-base font-semibold">官方目录</h2>
+      <section aria-label={t("官方目录")} className="space-y-3">
+        <h2 className="text-base font-semibold">{t("官方目录")}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {CONNECTOR_CATALOG.map((entry) => {
             const already = installed.some((c) => matchesCatalog(c, entry));
@@ -169,7 +171,7 @@ export default function ConnectorsPage() {
                   <ApiOutlined className="text-[var(--color-primary)]" />
                   <span className="text-sm font-medium flex-1 truncate">{entry.name}</span>
                   {entry.byok && <Tag color="orange">BYOK</Tag>}
-                  {already && <Tag color="green">已安装</Tag>}
+                  {already && <Tag color="green">{t("已安装")}</Tag>}
                 </div>
                 <p className="text-xs text-[var(--color-text-secondary)]">{entry.description}</p>
                 <p className="text-xs text-[var(--color-text-tertiary)] flex items-start gap-1">
@@ -181,7 +183,7 @@ export default function ConnectorsPage() {
                   type={already ? "default" : "primary"}
                   loading={installing === entry.key}
                   onClick={() => setConfirmEntry(entry)}
-                  aria-label={`安装 ${entry.name}`}
+                  aria-label={t("安装 {{p0}}", { p0: entry.name })}
                 >
                   {already ? "再装一个" : "一键安装"}
                 </Button>
@@ -192,12 +194,12 @@ export default function ConnectorsPage() {
       </section>
 
       {/* Installed */}
-      <section aria-label="已安装" className="space-y-3">
-        <h2 className="text-base font-semibold">已安装</h2>
+      <section aria-label={t("已安装")} className="space-y-3">
+        <h2 className="text-base font-semibold">{t("已安装")}</h2>
         {loading ? (
           <Spin />
         ) : installed.length === 0 ? (
-          <Empty description="尚未安装连接器" />
+          <Empty description={t("尚未安装连接器")} />
         ) : (
           <div className="space-y-2">
             {installed.map((connector) => (
@@ -211,10 +213,10 @@ export default function ConnectorsPage() {
                     {connector.command} {(connector.args ?? []).join(" ")}
                   </p>
                 </div>
-                <Button size="small" icon={<ThunderboltOutlined />} onClick={() => void inspect(connector)} aria-label={`查看工具 ${connector.name}`}>
+                <Button size="small" icon={<ThunderboltOutlined />} onClick={() => void inspect(connector)} aria-label={t("查看工具 {{p0}}", { p0: connector.name })}>
                   工具
                 </Button>
-                <Button size="small" danger icon={<DeleteOutlined />} onClick={() => void revoke(connector)} aria-label={`撤销 ${connector.name}`}>
+                <Button size="small" danger icon={<DeleteOutlined />} onClick={() => void revoke(connector)} aria-label={t("撤销 {{p0}}", { p0: connector.name })}>
                   撤销
                 </Button>
               </div>
@@ -227,8 +229,8 @@ export default function ConnectorsPage() {
       <Modal
         title={`安装「${confirmEntry?.name ?? ""}」`}
         open={confirmEntry !== null}
-        okText="确认安装"
-        cancelText="取消"
+        okText={t("确认安装")}
+        cancelText={t("取消")}
         onCancel={() => setConfirmEntry(null)}
         onOk={() => confirmEntry && void install(confirmEntry, confirmDir)}
       >
@@ -240,12 +242,12 @@ export default function ConnectorsPage() {
             <p className="text-xs">授权范围：{confirmEntry.scope}</p>
             {confirmEntry.args.some((a) => a.startsWith("${")) && (
               <div>
-                <label className="block text-sm mb-1">替换占位符（目录/数据库路径）</label>
+                <label className="block text-sm mb-1">{t("替换占位符（目录/数据库路径）")}</label>
                 <Input
                   value={confirmDir}
                   onChange={(e) => setConfirmDir(e.target.value)}
                   placeholder="/Users/you/Documents/workspace"
-                  aria-label="授权目录"
+                  aria-label={t("授权目录")}
                 />
               </div>
             )}
@@ -260,25 +262,25 @@ export default function ConnectorsPage() {
 
       {/* Custom connector */}
       <Modal
-        title="添加自定义连接器（MCP server）"
+        title={t("添加自定义连接器（MCP server）")}
         open={customOpen}
-        okText="添加"
-        cancelText="取消"
+        okText={t("添加")}
+        cancelText={t("取消")}
         onCancel={() => setCustomOpen(false)}
         onOk={() => void installCustom()}
       >
         <div className="space-y-3">
           <div>
-            <label className="block text-sm mb-1">名称 *</label>
-            <Input value={custom.name} onChange={(e) => setCustom((c) => ({ ...c, name: e.target.value }))} aria-label="连接器名称" />
+            <label className="block text-sm mb-1">{t("名称 *")}</label>
+            <Input value={custom.name} onChange={(e) => setCustom((c) => ({ ...c, name: e.target.value }))} aria-label={t("连接器名称")} />
           </div>
           <div>
-            <label className="block text-sm mb-1">启动命令 *</label>
-            <Input value={custom.command} onChange={(e) => setCustom((c) => ({ ...c, command: e.target.value }))} aria-label="连接器命令" placeholder="npx" />
+            <label className="block text-sm mb-1">{t("启动命令 *")}</label>
+            <Input value={custom.command} onChange={(e) => setCustom((c) => ({ ...c, command: e.target.value }))} aria-label={t("连接器命令")} placeholder="npx" />
           </div>
           <div>
-            <label className="block text-sm mb-1">参数（空格分隔）</label>
-            <Input value={custom.args} onChange={(e) => setCustom((c) => ({ ...c, args: e.target.value }))} aria-label="连接器参数" placeholder="-y @modelcontextprotocol/server-fetch" />
+            <label className="block text-sm mb-1">{t("参数（空格分隔）")}</label>
+            <Input value={custom.args} onChange={(e) => setCustom((c) => ({ ...c, args: e.target.value }))} aria-label={t("连接器参数")} placeholder="-y @modelcontextprotocol/server-fetch" />
           </div>
         </div>
       </Modal>
@@ -296,7 +298,7 @@ export default function ConnectorsPage() {
         ) : (
           <div className="space-y-3">
             {tools && tools.length > 0 ? (
-              <ul className="max-h-40 overflow-y-auto text-xs space-y-1" aria-label="工具清单">
+              <ul className="max-h-40 overflow-y-auto text-xs space-y-1" aria-label={t("工具清单")}>
                 {tools.map((tool) => (
                   <li key={tool.name} className="rounded border border-(--color-border) px-2 py-1">
                     <span className="font-medium">{tool.name}</span>
@@ -307,18 +309,18 @@ export default function ConnectorsPage() {
                 ))}
               </ul>
             ) : (
-              <Empty description="无工具" />
+              <Empty description={t("无工具")} />
             )}
             <div className="space-y-2 border-t border-(--color-border) pt-3">
               <div className="flex gap-2">
                 <Input
                   value={callTool}
                   onChange={(e) => setCallTool(e.target.value)}
-                  placeholder="工具名"
+                  placeholder={t("工具名")}
                   style={{ width: 200 }}
-                  aria-label="调用工具名"
+                  aria-label={t("调用工具名")}
                 />
-                <Button loading={calling} onClick={() => void runCall()} aria-label="调用工具">
+                <Button loading={calling} onClick={() => void runCall()} aria-label={t("调用工具")}>
                   调用
                 </Button>
               </div>
@@ -326,7 +328,7 @@ export default function ConnectorsPage() {
                 value={callArgs}
                 onChange={(e) => setCallArgs(e.target.value)}
                 rows={3}
-                aria-label="调用参数 JSON"
+                aria-label={t("调用参数 JSON")}
                 placeholder='{"key": "value"}'
               />
               {callResult && (

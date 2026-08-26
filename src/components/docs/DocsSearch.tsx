@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Documentation search component
  * Supports searching API endpoints by path, method and tags
@@ -20,7 +21,8 @@ interface SearchOption {
   endpoint: EndpointDocumentation;
 }
 
-export function DocsSearch({ value, onChange, endpoints }: DocsSearchProps) {
+export function DocsSearch({ value, onChange, endpoints }: DocsSearchProps) {  const { t } = useTranslation();
+
   const [options, setOptions] = useState<SearchOption[]>([]);
 
   const handleSearch = (searchText: string) => {
@@ -81,13 +83,13 @@ export function DocsSearch({ value, onChange, endpoints }: DocsSearchProps) {
           </div>
         ),
       }))}
-      placeholder="搜索API..."
+      placeholder={t("搜索API...")}
       className="w-full"
       allowClear
     >
       <Input
         prefix={<SearchOutlined className="text-gray-400" />}
-        placeholder="搜索API名称、路径或方法..."
+        placeholder={t("搜索API名称、路径或方法...")}
         allowClear
       />
     </AutoComplete>

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, type KeyboardEvent } from "react";
 import { Send, Loader2 } from "lucide-react";
 
@@ -6,7 +7,8 @@ type QuickInputProps = {
   disabled?: boolean;
 };
 
-export default function QuickInput({ onSubmit, disabled }: QuickInputProps) {
+export default function QuickInput({ onSubmit, disabled }: QuickInputProps) {  const { t } = useTranslation();
+
   const [value, setValue] = useState("");
 
   const handleSubmit = () => {
@@ -29,7 +31,7 @@ export default function QuickInput({ onSubmit, disabled }: QuickInputProps) {
     <div className="floating-quick-input">
       <textarea
         className="floating-quick-input-textarea"
-        placeholder="输入消息..."
+        placeholder={t("输入消息...")}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
@@ -40,7 +42,7 @@ export default function QuickInput({ onSubmit, disabled }: QuickInputProps) {
         className="floating-quick-input-send"
         onClick={handleSubmit}
         disabled={disabled || !value.trim()}
-        aria-label="发送"
+        aria-label={t("发送")}
       >
         {disabled ? (
           <Loader2 size={16} className="animate-spin" />

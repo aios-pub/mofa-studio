@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Deep research workspace (TOOL-09): tiered runs with upfront token
  * estimates, a live 检索路径树, and the cited markdown report.
@@ -26,7 +27,8 @@ const PHASE_COLORS: Record<ResearchPhase, string> = {
   failed: "error",
 };
 
-export default function ResearchPage() {
+export default function ResearchPage() {  const { t } = useTranslation();
+
   const [topic, setTopic] = useState("");
   const [tier, setTier] = useState<ResearchTier>("standard");
   const [status, setStatus] = useState<ResearchStatus | null>(null);
@@ -42,7 +44,7 @@ export default function ResearchPage() {
     try {
       const started = await researchService.start(trimmed, tier);
       message.info(
-        `已启动（目标 ${started.sources_target} 源，预估 ${started.estimated_tokens} tokens）`,
+        t("已启动（目标 {{p0}} 源，预估 {{p1}} tokens）", { p0: started.sources_target, p1: started.estimated_tokens }),
       );
       const final = await researchService.pollUntilTerminal(
         started.research_id,
@@ -53,11 +55,11 @@ export default function ResearchPage() {
       if (final.phase === "failed") {
         message.error(`研究失败：${final.error ?? "未知错误"}`);
       } else {
-        message.success("研究报告已生成");
+        message.success(t("研究报告已生成"));
       }
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`启动失败：${detail}`);
+      message.error(t("启动失败：{{p0}}", { p0: detail }));
     } finally {
       setRunning(false);
     }
@@ -73,24 +75,24 @@ export default function ResearchPage() {
         </h2>
 
         <div>
-          <label className="block text-sm font-medium mb-1">研究课题</label>
+          <label className="block text-sm font-medium mb-1">{t("研究课题")}</label>
           <Input.TextArea
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            placeholder="例如：2026 年国产新能源车的市场格局"
+            placeholder={t("例如：2026 年国产新能源车的市场格局")}
             rows={3}
-            aria-label="研究课题"
+            aria-label={t("研究课题")}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">档位</label>
+          <label className="block text-sm font-medium mb-1">{t("档位")}</label>
           <Select
             value={tier}
             onChange={setTier}
             options={RESEARCH_TIERS.map((t) => ({ value: t.value, label: t.label }))}
             style={{ width: "100%" }}
-            aria-label="研究档位"
+            aria-label={t("研究档位")}
           />
           <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
             预估成本约 <span className="text-amber-500">{selectedTier.estimatedTokens} tokens</span>
@@ -105,7 +107,7 @@ export default function ResearchPage() {
           loading={running}
           disabled={!topic.trim()}
           onClick={start}
-          aria-label="开始研究"
+          aria-label={t("开始研究")}
         >
           开始研究
         </Button>
@@ -144,7 +146,7 @@ export default function ResearchPage() {
       <div className="flex-1 overflow-y-auto p-6">
         {!status?.report_md ? (
           <div className="h-full flex items-center justify-center">
-            <Empty description="输入课题，选择档位开始研究——报告将带引用编号" />
+            <Empty description={t("输入课题，选择档位开始研究——报告将带引用编号")} />
           </div>
         ) : (
           <div className="max-w-3xl mx-auto space-y-3">
@@ -153,7 +155,7 @@ export default function ResearchPage() {
                 size="small"
                 icon={<DownloadOutlined />}
                 onClick={() => researchService.downloadReport(status.report_md!, status.topic)}
-                aria-label="下载报告"
+                aria-label={t("下载报告")}
               >
                 下载 .md
               </Button>

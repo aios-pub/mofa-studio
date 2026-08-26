@@ -101,7 +101,7 @@ export default function Header({
   const languageMenu: MenuProps["items"] = [
     {
       key: "zh-CN",
-      label: "中文",
+      label: t("中文"),
       onClick: () => setLanguage("zh-CN"),
     },
     {

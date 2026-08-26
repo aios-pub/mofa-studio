@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Agent permission configuration component
  */
@@ -27,7 +28,8 @@ interface PermissionConfigProps {
 export default function PermissionConfig({
   agentId,
   onSave,
-}: PermissionConfigProps) {
+}: PermissionConfigProps) {  const { t } = useTranslation();
+
   const [config, setConfig] = useState<PermissionConfig | null>(null);
   const [originalConfig, setOriginalConfig] = useState<PermissionConfig | null>(
     null,
@@ -157,7 +159,7 @@ export default function PermissionConfig({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="text-[var(--color-text-tertiary)]">加载中...</div>
+        <div className="text-[var(--color-text-tertiary)]">{t("加载中...")}</div>
       </div>
     );
   }
@@ -185,7 +187,7 @@ export default function PermissionConfig({
             onChange={(e) => setSelectedTemplate(e.target.value)}
             className="flex-1 px-3 py-2 bg-[var(--color-bg-base)] border border-(--color-border) rounded-lg text-sm text-[var(--color-text-primary)]"
           >
-            <option value="">选择模板...</option>
+            <option value="">{t("选择模板...")}</option>
             {mockPermissionTemplates.map((template) => (
               <option key={template.id} value={template.id}>
                 {template.name} - {template.description}
@@ -322,9 +324,9 @@ export default function PermissionConfig({
               }
               className="w-full px-3 py-2 bg-(--color-bg-tertiary) border border-(--color-border) rounded-lg text-sm text-[var(--color-text-primary)]"
             >
-              <option value="self">仅自己的数据</option>
-              <option value="department">部门数据</option>
-              <option value="organization">组织数据</option>
+              <option value="self">{t("仅自己的数据")}</option>
+              <option value="department">{t("部门数据")}</option>
+              <option value="organization">{t("组织数据")}</option>
             </select>
           </div>
 
@@ -356,13 +358,13 @@ export default function PermissionConfig({
               }
               className="w-full px-3 py-2 bg-(--color-bg-tertiary) border border-(--color-border) rounded-lg text-sm text-[var(--color-text-primary)]"
             >
-              <option value={7}>7 天</option>
-              <option value={14}>14 天</option>
-              <option value={30}>30 天</option>
-              <option value={60}>60 天</option>
-              <option value={90}>90 天</option>
-              <option value={180}>180 天</option>
-              <option value={365}>365 天</option>
+              <option value={7}>{t("7 天")}</option>
+              <option value={14}>{t("14 天")}</option>
+              <option value={30}>{t("30 天")}</option>
+              <option value={60}>{t("60 天")}</option>
+              <option value={90}>{t("90 天")}</option>
+              <option value={180}>{t("180 天")}</option>
+              <option value={365}>{t("365 天")}</option>
             </select>
           </div>
         </div>
@@ -374,7 +376,7 @@ export default function PermissionConfig({
           {hasChanges && (
             <>
               <ExclamationCircleOutlined className="text-yellow-500" />
-              <span>有未保存的更改</span>
+              <span>{t("有未保存的更改")}</span>
             </>
           )}
         </div>

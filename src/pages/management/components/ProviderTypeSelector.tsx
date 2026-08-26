@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Provider type select component
  * Supports categorized display, search filtering and card selection
@@ -26,7 +27,8 @@ const categories: ProviderCategory[] = ["cloud", "opensource", "custom"];
 export const ProviderTypeSelector: React.FC<ProviderTypeSelectorProps> = ({
   selectedType,
   onSelect,
-}) => {
+}) => {  const { t } = useTranslation();
+
   const [activeCategory, setActiveCategory] =
     useState<ProviderCategory>("cloud");
   const [searchQuery, setSearchQuery] = useState("");
@@ -76,7 +78,7 @@ export const ProviderTypeSelector: React.FC<ProviderTypeSelectorProps> = ({
       {/* Search box */}
       <div className="px-4 pb-2">
         <Input
-          placeholder="搜索厂商或模型..."
+          placeholder={t("搜索厂商或模型...")}
           prefix={
             <SearchOutlined className="text-[var(--color-text-tertiary)]" />
           }
@@ -101,7 +103,7 @@ export const ProviderTypeSelector: React.FC<ProviderTypeSelectorProps> = ({
 
         {filteredProviders.length === 0 && (
           <div className="text-center py-8 text-[var(--color-text-tertiary)]">
-            <p>未找到匹配的厂商</p>
+            <p>{t("未找到匹配的厂商")}</p>
           </div>
         )}
       </div>

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Skill hub browse page
  * With search, filtering and sorting
@@ -25,7 +26,8 @@ import { HubSkillCard } from './HubSkillCard';
 const { Search } = Input;
 const { Text } = Typography;
 
-export function HubSkillsView() {
+export function HubSkillsView() {  const { t } = useTranslation();
+
   const navigate = useNavigate();
 
   const {
@@ -83,7 +85,7 @@ export function HubSkillsView() {
       <div className="mb-6 space-y-4">
         <div className="flex gap-4">
           <Search
-            placeholder="搜索技能名称、描述..."
+            placeholder={t("搜索技能名称、描述...")}
             allowClear
             enterButton={<SearchOutlined />}
             size="large"
@@ -105,9 +107,9 @@ export function HubSkillsView() {
         <div className="flex gap-4 items-center flex-wrap">
           {/* Namespace Filter */}
           <div className="flex items-center gap-2">
-            <Text type="secondary">命名空间:</Text>
+            <Text type="secondary">{t("命名空间:")}</Text>
             <Select
-              placeholder="全部"
+              placeholder={t("全部")}
               allowClear
               style={{ width: 150 }}
               value={selectedNamespace || undefined}
@@ -124,15 +126,15 @@ export function HubSkillsView() {
 
           {/* Sort By */}
           <div className="flex items-center gap-2">
-            <Text type="secondary">排序:</Text>
+            <Text type="secondary">{t("排序:")}</Text>
             <Select
               value={sortBy}
               onChange={setSortBy}
               style={{ width: 120 }}
             >
-              <Select.Option value="newest">最新</Select.Option>
-              <Select.Option value="popular">最受欢迎</Select.Option>
-              <Select.Option value="rating">最高评分</Select.Option>
+              <Select.Option value="newest">{t("最新")}</Select.Option>
+              <Select.Option value="popular">{t("最受欢迎")}</Select.Option>
+              <Select.Option value="rating">{t("最高评分")}</Select.Option>
             </Select>
           </div>
         </div>
@@ -140,7 +142,7 @@ export function HubSkillsView() {
         {/* Label Filters */}
         {labels.length > 0 && (
           <div className="space-y-2">
-            <Text type="secondary">标签筛选:</Text>
+            <Text type="secondary">{t("标签筛选:")}</Text>
             <Space wrap>
               {labels.map(label => (
                 <Checkbox
@@ -167,7 +169,7 @@ export function HubSkillsView() {
           <div className="flex gap-6">
             {facets.namespaces.length > 0 && (
               <div>
-                <Text type="secondary" className="mr-2">命名空间:</Text>
+                <Text type="secondary" className="mr-2">{t("命名空间:")}</Text>
                 <Space wrap>
                   {facets.namespaces.map(ns => (
                     <Tag key={ns.slug}>{ns.display_name} ({ns.count})</Tag>
@@ -177,7 +179,7 @@ export function HubSkillsView() {
             )}
             {facets.labels.length > 0 && (
               <div>
-                <Text type="secondary" className="mr-2">相关标签:</Text>
+                <Text type="secondary" className="mr-2">{t("相关标签:")}</Text>
                 <Space wrap>
                   {facets.labels.map(l => (
                     <Tag key={l.id} color="blue">
@@ -229,14 +231,14 @@ export function HubSkillsView() {
                   search(page - 1);
                 }}
                 showSizeChanger={false}
-                showTotal={(total) => `共 ${total} 个`}
+                showTotal={(total) => t("共 {{p0}} 个", { p0: total })}
               />
             </div>
           )}
         </>
       ) : (
         <Empty
-          description="暂无技能"
+          description={t("暂无技能")}
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
       )}

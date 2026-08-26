@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Inline test panel component
  * Supports sending requests directly from the documentation page and showing responses
@@ -46,7 +47,8 @@ interface RequestResult {
   duration: number;
 }
 
-export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProps) {
+export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProps) {  const { t } = useTranslation();
+
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RequestResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -251,7 +253,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
 
   const getStatusTag = () => {
     if (loading) {
-      return <Tag icon={<LoadingOutlined />}>执行中</Tag>;
+      return <Tag icon={<LoadingOutlined />}>{t("执行中")}</Tag>;
     }
     if (result) {
       return result.statusCode >= 200 && result.statusCode < 300 ? (
@@ -265,7 +267,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
       );
     }
     if (error) {
-      return <Tag color="error">错误</Tag>;
+      return <Tag color="error">{t("错误")}</Tag>;
     }
     return null;
   };
@@ -287,7 +289,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
       <div className="mb-4">
         <Space className="w-full">
           <EnvironmentOutlined />
-          <Text strong>环境:</Text>
+          <Text strong>{t("环境:")}</Text>
           <EnvironmentManager
             value={selectedEnvironment}
             onChange={(envId) => {
@@ -310,13 +312,13 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
         items={[
           {
             key: "params",
-            label: "参数",
+            label: t("参数"),
             children: (
               <div className="space-y-4">
                 {/* Path parameters */}
                 {(endpoint.parameters?.filter((p) => p.in === "path").length ?? 0) > 0 ? (
                   <div>
-                    <Text strong>路径参数</Text>
+                    <Text strong>{t("路径参数")}</Text>
                     <div className="mt-2 space-y-2">
                       {(endpoint.parameters?.filter((p) => p.in === "path") ?? []).map((param) => (
                           <div key={param.name}>
@@ -329,7 +331,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                               )}
                             </div>
                             <Input
-                              placeholder={param.schema?.example || `输入${param.name}`}
+                              placeholder={param.schema?.example || t("输入{{p0}}", { p0: param.name })}
                               value={pathParams[param.name]}
                               onChange={(e) =>
                                 setPathParams({ ...pathParams, [param.name]: e.target.value })
@@ -344,7 +346,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                 {/* Query parameters */}
                 {(endpoint.parameters?.filter((p) => p.in === "query").length ?? 0) > 0 ? (
                   <div>
-                    <Text strong>查询参数</Text>
+                    <Text strong>{t("查询参数")}</Text>
                     <div className="mt-2 space-y-2">
                       {(endpoint.parameters?.filter((p) => p.in === "query") ?? []).map((param) => (
                           <div key={param.name}>
@@ -357,7 +359,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                               )}
                             </div>
                             <Input
-                              placeholder={param.schema?.example || `输入${param.name}`}
+                              placeholder={param.schema?.example || t("输入{{p0}}", { p0: param.name })}
                               value={queryParams[param.name]}
                               onChange={(e) =>
                                 setQueryParams({
@@ -376,7 +378,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                 {(endpoint.headers && endpoint.headers.length > 0) || Object.keys(headers).length > 0 ? (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <Text strong>请求头</Text>
+                      <Text strong>{t("请求头")}</Text>
                       <Button
                                                type="dashed"
                         onClick={() => {
@@ -392,10 +394,10 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                         <div key={header.name}>
                           <div className="flex items-center gap-2">
                             <Text className="text-sm flex-1">{header.name}</Text>
-                            {header.required && <Tag>必填</Tag>}
+                            {header.required && <Tag>{t("必填")}</Tag>}
                           </div>
                           <Input
-                            placeholder={header.example || `输入${header.name}`}
+                            placeholder={header.example || t("输入{{p0}}", { p0: header.name })}
                             value={headers[header.name]}
                             onChange={(e) =>
                               setHeaders({ ...headers, [header.name]: e.target.value })
@@ -425,7 +427,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                               </Button>
                             </div>
                             <Input
-                              placeholder={`自定义${name}`}
+                              placeholder={t("自定义{{p0}}", { p0: name })}
                               value={value}
                               onChange={(e) =>
                                 setHeaders({ ...headers, [name]: e.target.value })
@@ -439,14 +441,14 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
 
                 {/* Auth configuration */}
                 <div>
-                  <Text strong>认证</Text>
+                  <Text strong>{t("认证")}</Text>
                   <div className="mt-2 space-y-2">
                     <Select
                       className="w-full"
                       value={authType}
                       onChange={(value) => setAuthType(value)}
                       options={[
-                        { label: "无认证", value: "none" },
+                        { label: t("无认证"), value: "none" },
                         { label: "Bearer Token", value: "bearer" },
                         { label: "API Key", value: "apiKey" },
                         { label: "Basic Auth", value: "basic" },
@@ -456,7 +458,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                       <div>
                         <Text className="text-xs text-gray-500">Token</Text>
                         <Input.Password
-                          placeholder="输入Bearer Token"
+                          placeholder={t("输入Bearer Token")}
                           value={authToken}
                           onChange={(e) => setAuthToken(e.target.value)}
                         />
@@ -465,30 +467,30 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                     {authType === "apiKey" && (
                       <div className="space-y-2">
                         <div>
-                          <Text className="text-xs text-gray-500">Key 名称</Text>
+                          <Text className="text-xs text-gray-500">{t("Key 名称")}</Text>
                           <Input
-                            placeholder="例如: X-API-Key"
+                            placeholder={t("例如: X-API-Key")}
                             value={authKeyName}
                             onChange={(e) => setAuthKeyName(e.target.value)}
                           />
                         </div>
                         <div>
-                          <Text className="text-xs text-gray-500">Key 值</Text>
+                          <Text className="text-xs text-gray-500">{t("Key 值")}</Text>
                           <Input.Password
-                            placeholder="输入API Key值"
+                            placeholder={t("输入API Key值")}
                             value={authKeyValue}
                             onChange={(e) => setAuthKeyValue(e.target.value)}
                           />
                         </div>
                         <div>
-                          <Text className="text-xs text-gray-500">添加到</Text>
+                          <Text className="text-xs text-gray-500">{t("添加到")}</Text>
                           <Select
                             className="w-full"
                             value={authKeyLocation}
                             onChange={(value) => setAuthKeyLocation(value)}
                             options={[
-                              { label: "请求头 (Header)", value: "header" },
-                              { label: "查询参数 (Query)", value: "query" },
+                              { label: t("请求头 (Header)"), value: "header" },
+                              { label: t("查询参数 (Query)"), value: "query" },
                             ]}
                           />
                         </div>
@@ -497,17 +499,17 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                     {authType === "basic" && (
                       <div className="space-y-2">
                         <div>
-                          <Text className="text-xs text-gray-500">用户名</Text>
+                          <Text className="text-xs text-gray-500">{t("用户名")}</Text>
                           <Input
-                            placeholder="输入用户名"
+                            placeholder={t("输入用户名")}
                             value={authUsername}
                             onChange={(e) => setAuthUsername(e.target.value)}
                           />
                         </div>
                         <div>
-                          <Text className="text-xs text-gray-500">密码</Text>
+                          <Text className="text-xs text-gray-500">{t("密码")}</Text>
                           <Input.Password
-                            placeholder="输入密码"
+                            placeholder={t("输入密码")}
                             value={authPassword}
                             onChange={(e) => setAuthPassword(e.target.value)}
                           />
@@ -520,7 +522,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                 {/* Request body */}
                 {endpoint.request_body && (
                   <div>
-                    <Text strong>请求体</Text>
+                    <Text strong>{t("请求体")}</Text>
                     <div className="mt-2">
                       <TextArea
                         placeholder={JSON.stringify(endpoint.request_body?.example, null, 2)}
@@ -534,7 +536,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
 
                 {/* URL preview */}
                 <Alert
-                  message="请求URL"
+                  message={t("请求URL")}
                   description={<code className="text-xs break-all">{constructUrl()}</code>}
                   type="info"
                 />
@@ -543,13 +545,13 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
           },
           {
             key: "response",
-            label: "响应",
+            label: t("响应"),
             children: (
               <div className="space-y-4">
                 {/* Response status */}
                 <div className="flex items-center justify-between">
                   <Space>
-                    <Text strong>响应状态</Text>
+                    <Text strong>{t("响应状态")}</Text>
                     {getStatusTag()}
                   </Space>
                   {result && (
@@ -568,7 +570,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                 {/* Response headers */}
                 {result?.headers && result.headers.length > 0 && (
                   <div>
-                    <Text strong>响应头</Text>
+                    <Text strong>{t("响应头")}</Text>
                     <div className="mt-2 space-y-1">
                       {result.headers.map((header) => (
                         <div key={header.name} className="flex gap-2">
@@ -583,7 +585,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                 {/* Response body */}
                 {result?.body && (
                   <div>
-                    <Text strong>响应体</Text>
+                    <Text strong>{t("响应体")}</Text>
                     <div className="mt-2 bg-gray-50 p-3 rounded">
                       <pre className="text-xs overflow-x-auto">{result.body}</pre>
                     </div>
@@ -591,7 +593,7 @@ export function InlineTestPanel({ endpoint, onSaveRequest }: InlineTestPanelProp
                 )}
 
                 {error && (
-                  <Alert message="请求错误" description={error} type="error" />
+                  <Alert message={t("请求错误")} description={error} type="error" />
                 )}
               </div>
             ),

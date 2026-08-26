@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Visual API documentation page
  * Swagger UI-like interface for browsing API docs and testing online
@@ -21,7 +22,8 @@ interface InteractiveDocsProps {
   testSetId?: string;
 }
 
-export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsProps) {
+export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsProps) {  const { t } = useTranslation();
+
   const { testSetId: routeTestSetId } = useParams<{ testSetId: string }>();
   const testSetId = propTestSetId || routeTestSetId;
   const [loading, setLoading] = useState(true);
@@ -104,7 +106,7 @@ export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsPro
             <div className="flex items-center justify-between mb-4">
               <Space>
                 <ApiOutlined className="text-blue-600" />
-                <span className="font-semibold">API 文档</span>
+                <span className="font-semibold">{t("API 文档")}</span>
               </Space>
               <Button
                 type="text"
@@ -175,7 +177,7 @@ export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsPro
                 {loading ? (
                   <Spin />
                 ) : (
-                  <Empty description="暂无API文档" />
+                  <Empty description={t("暂无API文档")} />
                 )}
               </div>
             )}
@@ -199,7 +201,7 @@ export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsPro
                 </Button>
               )}
               <Breadcrumb>
-                <Breadcrumb.Item>API文档</Breadcrumb.Item>
+                <Breadcrumb.Item>{t("API文档")}</Breadcrumb.Item>
                 {docs && (
                   <Breadcrumb.Item>{docs.info.title}</Breadcrumb.Item>
                 )}
@@ -234,7 +236,7 @@ export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsPro
                   <div className="flex gap-4">
                     <div>
                       <div className="text-2xl font-bold">{docs.endpoints.length}</div>
-                      <div className="text-sm text-gray-500">API数量</div>
+                      <div className="text-sm text-gray-500">{t("API数量")}</div>
                     </div>
                   </div>
                 </div>
@@ -242,7 +244,7 @@ export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsPro
                 {/* Server information */}
                 {docs.servers && docs.servers.length > 0 && (
                   <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                    <h2 className="text-lg font-semibold mb-4">服务器</h2>
+                    <h2 className="text-lg font-semibold mb-4">{t("服务器")}</h2>
                     <div className="space-y-2">
                       {docs.servers.map((server, index) => (
                         <div key={index} className="bg-gray-50 p-3 rounded">
@@ -258,7 +260,7 @@ export function InteractiveDocs({ testSetId: propTestSetId }: InteractiveDocsPro
 
                 {/* API list */}
                 <div className="bg-white rounded-lg shadow-sm p-6">
-                  <h2 className="text-lg font-semibold mb-4">API列表</h2>
+                  <h2 className="text-lg font-semibold mb-4">{t("API列表")}</h2>
                   <div className="space-y-3">
                     {filteredEndpoints?.map((endpoint) => (
                       <div

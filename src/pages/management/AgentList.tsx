@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Agent list page - full CRUD management
  */
@@ -137,7 +138,8 @@ function ValueInput({
   value: JsonValue;
   onChange: (v: JsonValue) => void;
   compact?: boolean;
-}) {
+}) {  const { ti18n } = useTranslation();
+
   const t = jsonTypeOf(value);
   if (t === "string")
     return (
@@ -145,7 +147,7 @@ function ValueInput({
         size="small"
         value={value as string}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="字符串值"
+        placeholder={ti18n("字符串值")}
         className={compact ? "flex-1" : "w-full"}
       />
     );
@@ -356,7 +358,8 @@ function CustomParamsEditor({
 }: {
   value?: Record<string, unknown>;
   onChange?: (v: Record<string, unknown>) => void;
-}) {
+}) {  const { t } = useTranslation();
+
   const { message } = App.useApp();
   const [mode, setMode] = useState<"visual" | "raw">("visual");
   const [rawText, setRawText] = useState("");
@@ -414,7 +417,7 @@ function CustomParamsEditor({
       }
       setRawError(null);
       onChange?.(parsed as Record<string, unknown>);
-      message.success("已应用");
+      message.success(t("已应用"));
     } catch (e: any) {
       setRawError(e.message);
     }
@@ -574,7 +577,8 @@ function AgentFormModal({
   agent,
   onClose,
   onSuccess,
-}: AgentFormModalProps) {
+}: AgentFormModalProps) {  const { t } = useTranslation();
+
   const { message } = App.useApp();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -685,7 +689,7 @@ function AgentFormModal({
       const values = await form.validateFields();
 
       if (selectedPrompts.length === 0) {
-        message.warning("请至少选择一个提示词");
+        message.warning(t("请至少选择一个提示词"));
         return;
       }
 
@@ -789,35 +793,35 @@ function AgentFormModal({
       onClearError={clearError}
     >
       <Form form={form} layout="vertical" className="space-y-1">
-        <Form.Item name="avatar" label="头像">
+        <Form.Item name="avatar" label={t("头像")}>
           <AvatarPicker />
         </Form.Item>
 
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
             name="name"
-            label="名称"
-            rules={[{ required: true, message: "请输入名称" }]}
+            label={t("名称")}
+            rules={[{ required: true, message: t("请输入名称") }]}
           >
-            <Input placeholder="例如：通用助手" maxLength={50} showCount />
+            <Input placeholder={t("例如：通用助手")} maxLength={50} showCount />
           </Form.Item>
 
           <Form.Item
             name="agentCode"
-            label="编码"
+            label={t("编码")}
             rules={[
-              { required: true, message: "请输入编码" },
+              { required: true, message: t("请输入编码") },
               {
                 pattern: /^[a-zA-Z0-9_-]+$/,
-                message: "仅支持英文、数字、下划线和横线",
+                message: t("仅支持英文、数字、下划线和横线"),
               },
             ]}
           >
-            <Input placeholder="例如：general_assistant" maxLength={50} />
+            <Input placeholder={t("例如：general_assistant")} maxLength={50} />
           </Form.Item>
         </div>
 
-        <Form.Item label="关联提示词" required>
+        <Form.Item label={t("关联提示词")} required>
           <AgentPromptSelector
             selectedPrompts={selectedPrompts}
             onChange={setSelectedPrompts}
@@ -828,11 +832,11 @@ function AgentFormModal({
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
             name="providerId"
-            label="模型供应商"
-            rules={[{ required: true, message: "请选择供应商" }]}
+            label={t("模型供应商")}
+            rules={[{ required: true, message: t("请选择供应商") }]}
           >
             <Select
-              placeholder="选择供应商"
+              placeholder={t("选择供应商")}
               onChange={handleProviderChange}
               options={providers
                 .filter((p) => p.status === "active")
@@ -842,8 +846,8 @@ function AgentFormModal({
 
           <Form.Item
             name="modelId"
-            label="模型"
-            rules={[{ required: true, message: "请选择模型" }]}
+            label={t("模型")}
+            rules={[{ required: true, message: t("请选择模型") }]}
           >
             <Select
               placeholder={selectedProviderId ? "选择模型" : "请先选择供应商"}
@@ -858,24 +862,24 @@ function AgentFormModal({
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <Form.Item name="temperature" label="温度">
+          <Form.Item name="temperature" label={t("温度")}>
             <InputNumber min={0} max={2} step={0.1} className="w-full" />
           </Form.Item>
 
-          <Form.Item name="stream" label="流式输出" valuePropName="checked">
+          <Form.Item name="stream" label={t("流式输出")} valuePropName="checked">
             <Switch />
           </Form.Item>
 
           <Form.Item
             name={["thinking", "enabled"]}
-            label="思考模式"
+            label={t("思考模式")}
             valuePropName="checked"
           >
             <Switch />
           </Form.Item>
         </div>
 
-        <Form.Item name="custom_params" label="自定义参数">
+        <Form.Item name="custom_params" label={t("自定义参数")}>
           <CustomParamsEditor />
         </Form.Item>
       </Form>
@@ -891,7 +895,8 @@ function AgentBasicInfo({
 }: {
   agent: Agent;
   onUpdate: () => void;
-}) {
+}) {  const { t } = useTranslation();
+
   const { message } = App.useApp();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -1017,13 +1022,13 @@ function AgentBasicInfo({
         });
       }
 
-      message.success("保存成功");
+      message.success(t("保存成功"));
       setEditing(false);
       onUpdate();
     } catch (error: any) {
       if (error?.errorFields) return;
       console.error("Failed to save:", error);
-      message.error("保存失败");
+      message.error(t("保存失败"));
     } finally {
       setSaving(false);
     }
@@ -1050,12 +1055,12 @@ function AgentBasicInfo({
   };
 
   const statusLabels: Record<string, { text: string; color: string }> = {
-    idle: { text: "空闲", color: "green" },
-    thinking: { text: "思考中", color: "gold" },
-    tool: { text: "使用工具", color: "blue" },
-    waiting: { text: "等待中", color: "orange" },
-    error: { text: "错误", color: "red" },
-    offline: { text: "离线", color: "default" },
+    idle: { text: t("空闲"), color: "green" },
+    thinking: { text: t("思考中"), color: "gold" },
+    tool: { text: t("使用工具"), color: "blue" },
+    waiting: { text: t("等待中"), color: "orange" },
+    error: { text: t("错误"), color: "red" },
+    offline: { text: t("离线"), color: "default" },
   };
 
   const currentStatus = agent.status || (agent.enabled ? "idle" : "offline");
@@ -1064,26 +1069,26 @@ function AgentBasicInfo({
     return (
       <div className="space-y-4">
         <Form form={form} layout="vertical" className="space-y-1">
-          <Form.Item name="avatar" label="头像">
+          <Form.Item name="avatar" label={t("头像")}>
             <AvatarPicker />
           </Form.Item>
 
           <div className="grid grid-cols-2 gap-4">
             <Form.Item
               name="name"
-              label="名称"
-              rules={[{ required: true, message: "请输入名称" }]}
+              label={t("名称")}
+              rules={[{ required: true, message: t("请输入名称") }]}
             >
               <Input maxLength={50} showCount />
             </Form.Item>
             <Form.Item
               name="agentCode"
-              label="编码"
+              label={t("编码")}
               rules={[
-                { required: true, message: "请输入编码" },
+                { required: true, message: t("请输入编码") },
                 {
                   pattern: /^[a-zA-Z0-9_-]+$/,
-                  message: "仅支持英文、数字、下划线和横线",
+                  message: t("仅支持英文、数字、下划线和横线"),
                 },
               ]}
             >
@@ -1091,7 +1096,7 @@ function AgentBasicInfo({
             </Form.Item>
             <Form.Item
               name="providerId"
-              label="供应商"
+              label={t("供应商")}
               rules={[{ required: true }]}
             >
               <Select
@@ -1104,7 +1109,7 @@ function AgentBasicInfo({
                   .map((p) => ({ label: p.name, value: p.id }))}
               />
             </Form.Item>
-            <Form.Item name="modelId" label="模型" rules={[{ required: true }]}>
+            <Form.Item name="modelId" label={t("模型")} rules={[{ required: true }]}>
               <Select
                 options={availableModels.map((m: any) => ({
                   label: m.name,
@@ -1112,13 +1117,13 @@ function AgentBasicInfo({
                 }))}
               />
             </Form.Item>
-            <Form.Item name="temperature" label="温度">
+            <Form.Item name="temperature" label={t("温度")}>
               <InputNumber min={0} max={2} step={0.1} className="w-full" />
             </Form.Item>
             <div className="flex items-end gap-4">
               <Form.Item
                 name="stream"
-                label="流式输出"
+                label={t("流式输出")}
                 valuePropName="checked"
                 className="mb-0"
               >
@@ -1126,7 +1131,7 @@ function AgentBasicInfo({
               </Form.Item>
               <Form.Item
                 name={["thinking", "enabled"]}
-                label="思考模式"
+                label={t("思考模式")}
                 valuePropName="checked"
                 className="mb-0"
               >
@@ -1135,7 +1140,7 @@ function AgentBasicInfo({
             </div>
           </div>
 
-          <Form.Item label="关联提示词" required>
+          <Form.Item label={t("关联提示词")} required>
             <AgentPromptSelector
               agentId={agent.id}
               selectedPrompts={selectedPrompts}
@@ -1143,7 +1148,7 @@ function AgentBasicInfo({
             />
           </Form.Item>
 
-          <Form.Item name="custom_params" label="自定义参数">
+          <Form.Item name="custom_params" label={t("自定义参数")}>
             <CustomParamsEditor />
           </Form.Item>
         </Form>
@@ -1239,7 +1244,7 @@ function AgentBasicInfo({
             ))}
           </div>
         ) : (
-          <span className="text-[var(--color-text-tertiary)]">暂未关联</span>
+          <span className="text-[var(--color-text-tertiary)]">{t("暂未关联")}</span>
         )}
       </div>
 
@@ -1286,7 +1291,8 @@ function AgentPromptsTab({
 }: {
   agent: Agent;
   onUpdate: () => void;
-}) {
+}) {  const { t } = useTranslation();
+
   const { message } = App.useApp();
   const [permission, setPermission] = useState<AgentPermission | null>(null);
   const [saving, setSaving] = useState(false);
@@ -1313,11 +1319,11 @@ function AgentPromptsTab({
         accessiblePrompts: prompts,
       });
       setPermission({ ...permission, accessiblePrompts: prompts });
-      message.success("提示词关联已保存");
+      message.success(t("提示词关联已保存"));
       onUpdate();
     } catch (error) {
       console.error("Failed to save prompts:", error);
-      message.error("保存失败");
+      message.error(t("保存失败"));
     } finally {
       setSaving(false);
     }
@@ -1360,7 +1366,8 @@ function AgentSkillsTab({
 }: {
   agent: Agent;
   onUpdate: () => void;
-}) {
+}) {  const { t } = useTranslation();
+
   const { message } = App.useApp();
   const [permission, setPermission] = useState<AgentPermission | null>(null);
   const [saving, setSaving] = useState(false);
@@ -1387,11 +1394,11 @@ function AgentSkillsTab({
         accessibleSkills: skills,
       });
       setPermission({ ...permission, accessibleSkills: skills });
-      message.success("Skills 关联已保存");
+      message.success(t("Skills 关联已保存"));
       onUpdate();
     } catch (error) {
       console.error("Failed to save skills:", error);
-      message.error("保存失败");
+      message.error(t("保存失败"));
     } finally {
       setSaving(false);
     }
@@ -1469,7 +1476,8 @@ function AgentDetail({
 }: {
   agent: Agent;
   onUpdate: () => void;
-}) {
+}) {  const { t } = useTranslation();
+
   const [activeTab, setActiveTab] = useState<
     "basic" | "permission" | "prompts" | "skills" | "tests"
   >("basic");
@@ -1496,11 +1504,11 @@ function AgentDetail({
   }, [agent.id]);
 
   const tabs = [
-    { key: "basic", label: "基本信息", icon: RobotOutlined },
-    { key: "permission", label: "权限配置", icon: SafetyOutlined },
-    { key: "prompts", label: "关联提示词", icon: EditOutlined },
-    { key: "skills", label: "关联 Skills", icon: SettingOutlined },
-    { key: "tests", label: "关联测试集", icon: PlayCircleOutlined },
+    { key: "basic", label: t("基本信息"), icon: RobotOutlined },
+    { key: "permission", label: t("权限配置"), icon: SafetyOutlined },
+    { key: "prompts", label: t("关联提示词"), icon: EditOutlined },
+    { key: "skills", label: t("关联 Skills"), icon: SettingOutlined },
+    { key: "tests", label: t("关联测试集"), icon: PlayCircleOutlined },
   ];
 
   return (
@@ -1578,7 +1586,8 @@ function AgentPermissionTab({ agent }: { agent: Agent }) {
 
 // ==================== Main page ====================
 
-export default function AgentListPage() {
+export default function AgentListPage() {  const { t } = useTranslation();
+
   const { modal, message } = App.useApp();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -1618,7 +1627,7 @@ export default function AgentListPage() {
   const handleDelete = (agent: Agent) => {
     showDeleteConfirm(
       {
-        title: "确认删除 Agent",
+        title: t("确认删除 Agent"),
         content: (
           <div>
             <p>
@@ -1636,10 +1645,10 @@ export default function AgentListPage() {
             if (selectedAgent?.id === agent.id) {
               setSelectedAgent(null);
             }
-            message.success("Agent 已删除");
+            message.success(t("Agent 已删除"));
           } catch (error) {
             console.error("Failed to delete agent:", error);
-            message.error("删除失败");
+            message.error(t("删除失败"));
           }
         },
       },
@@ -1673,7 +1682,7 @@ export default function AgentListPage() {
       }
 
       setAgents((prev) => [...prev, newAgent]);
-      message.success("Agent 已复制");
+      message.success(t("Agent 已复制"));
     } catch (error: any) {
       console.error("Failed to duplicate agent:", error);
       message.error(error?.message || "复制失败");
@@ -1697,20 +1706,20 @@ export default function AgentListPage() {
   const getActionMenuItems = (agent: Agent) => [
     {
       key: "edit",
-      label: "编辑",
+      label: t("编辑"),
       icon: <EditOutlined />,
       onClick: () => handleOpenEdit(agent),
     },
     {
       key: "copy",
-      label: "复制",
+      label: t("复制"),
       icon: <CopyOutlined />,
       onClick: () => handleDuplicate(agent),
     },
     { type: "divider" as const },
     {
       key: "delete",
-      label: "删除",
+      label: t("删除"),
       icon: <DeleteOutlined />,
       danger: true,
       onClick: () => handleDelete(agent),
@@ -1787,7 +1796,7 @@ export default function AgentListPage() {
             </Dropdown>
           </div>
           <Input
-            placeholder="搜索 Agent..."
+            placeholder={t("搜索 Agent...")}
             prefix={<SearchOutlined />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -1798,7 +1807,7 @@ export default function AgentListPage() {
             onChange={setTypeFilter}
             className="w-full"
             options={[
-              { label: "全部", value: "all" },
+              { label: t("全部"), value: "all" },
               { label: "Native Agent", value: "native" },
               ...Object.entries(clawTypeConfig).map(([type, cfg]) => ({
                 label: `${cfg.icon} ${cfg.label}`,
@@ -1971,7 +1980,8 @@ interface ClawAgentDetailProps {
   onDelete?: () => void;
 }
 
-function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
+function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {  const { t } = useTranslation();
+
   const { modal, message } = App.useApp();
   const [activeTab, setActiveTab] = useState<
     "basic" | "connection" | "channel" | "octos"
@@ -1993,23 +2003,23 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
       const result = await clawApi.test(agent.id);
       message.success(result ? "连接成功" : "连接失败");
     } catch {
-      message.error("测试失败");
+      message.error(t("测试失败"));
     }
   };
 
   const handleDelete = () => {
     showDeleteConfirm(
       {
-        title: "删除 Agent",
+        title: t("删除 Agent"),
         content: `确定要删除 ${agent.agent_name || ""} 吗？此操作不可恢复。`,
         onOk: async () => {
           try {
             await agentApi.delete(agent.id);
-            message.success("已删除");
+            message.success(t("已删除"));
             onDelete?.();
           } catch (error) {
             console.error("Failed to delete agent:", error);
-            message.error("删除失败");
+            message.error(t("删除失败"));
           }
         },
       },
@@ -2018,19 +2028,19 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
   };
 
   const tabs = [
-    { key: "basic", label: "基本信息", icon: RobotOutlined },
-    { key: "connection", label: "连接信息", icon: LinkOutlined },
+    { key: "basic", label: t("基本信息"), icon: RobotOutlined },
+    { key: "connection", label: t("连接信息"), icon: LinkOutlined },
     ...(agent.agent_category !== "native"
       ? [
           {
             key: "channel" as const,
-            label: "渠道代理",
+            label: t("渠道代理"),
             icon: CloudServerOutlined,
           },
         ]
       : []),
     ...(agentType === "octos"
-      ? [{ key: "octos" as const, label: "Octos 管理", icon: ApiOutlined }]
+      ? [{ key: "octos" as const, label: t("Octos 管理"), icon: ApiOutlined }]
       : []),
   ];
 
@@ -2232,23 +2242,23 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
 
         {activeTab === "connection" && (
           <div className="space-y-4">
-            <Card size="small" title="LLM 代理配置">
+            <Card size="small" title={t("LLM 代理配置")}>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <Typography.Text type="secondary">代理地址</Typography.Text>
+                  <Typography.Text type="secondary">{t("代理地址")}</Typography.Text>
                   <Typography.Text code>
                     http://localhost:3001/proxy/v1
                   </Typography.Text>
                 </div>
                 <div className="flex justify-between">
-                  <Typography.Text type="secondary">模式</Typography.Text>
+                  <Typography.Text type="secondary">{t("模式")}</Typography.Text>
                   <Typography.Text>
                     {config?.mode === "server" ? "Server 模式" : "CLI 模式"}
                   </Typography.Text>
                 </div>
               </div>
             </Card>
-            <Card size="small" title="环境变量配置">
+            <Card size="small" title={t("环境变量配置")}>
               <div className="bg-[var(--color-bg-base)] rounded-lg p-3 font-mono text-sm">
                 {(config?.setupGuide || []).map((line, i) => (
                   <div key={i} className="flex items-center gap-2">
@@ -2266,7 +2276,7 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
         {activeTab === "channel" && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-medium">已分配渠道</h4>
+              <h4 className="text-sm font-medium">{t("已分配渠道")}</h4>
               <Button
                 size="small"
                 type="primary"
@@ -2278,7 +2288,7 @@ function ClawAgentDetail({ agent, onUpdate, onDelete }: ClawAgentDetailProps) {
             </div>
             {mappings.length === 0 ? (
               <Empty
-                description="暂无渠道代理"
+                description={t("暂无渠道代理")}
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
               />
             ) : (
@@ -2407,7 +2417,8 @@ function ClawCreateModal({
   onClose: () => void;
   onSuccess: (result: any) => void;
   preselectedType?: ClawType | null;
-}) {
+}) {  const { t } = useTranslation();
+
   const { message } = App.useApp();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -2477,11 +2488,11 @@ function ClawCreateModal({
         },
       };
       const result = await agentApi.create(agentData);
-      message.success("Agent 创建成功");
+      message.success(t("Agent 创建成功"));
       onSuccess(result);
     } catch (error: any) {
       if (error?.errorFields) return;
-      message.error("创建失败");
+      message.error(t("创建失败"));
     } finally {
       setLoading(false);
     }
@@ -2489,12 +2500,12 @@ function ClawCreateModal({
 
   return (
     <Modal
-      title="创建 Agent"
+      title={t("创建 Agent")}
       open={open}
       onCancel={onClose}
       onOk={handleSubmit}
       width={600}
-      okText="创建"
+      okText={t("创建")}
       confirmLoading={loading}
     >
       <div className="mb-4">
@@ -2530,17 +2541,17 @@ function ClawCreateModal({
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
             name="instanceName"
-            label="实例名称"
-            rules={[{ required: true, message: "请输入名称" }]}
+            label={t("实例名称")}
+            rules={[{ required: true, message: t("请输入名称") }]}
           >
             <Input placeholder={`如：生产环境 ${clawCfg?.label || "Claw"}`} />
           </Form.Item>
-          <Form.Item name="version" label="版本">
-            <Input placeholder="1.0.0（可选）" />
+          <Form.Item name="version" label={t("版本")}>
+            <Input placeholder={t("1.0.0（可选）")} />
           </Form.Item>
         </div>
         {clawCfg?.mode === "server" && (
-          <Form.Item name="endpointUrl" label="端点地址">
+          <Form.Item name="endpointUrl" label={t("端点地址")}>
             <Input placeholder="http://localhost:8080" />
           </Form.Item>
         )}
@@ -2548,19 +2559,19 @@ function ClawCreateModal({
           <Form.Item
             name="authToken"
             label="Auth Token"
-            rules={[{ required: true, message: "请输入 Auth Token" }]}
+            rules={[{ required: true, message: t("请输入 Auth Token") }]}
           >
-            <Input.Password placeholder="Octos 服务启动时的 auth-token" />
+            <Input.Password placeholder={t("Octos 服务启动时的 auth-token")} />
           </Form.Item>
         )}
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
             name="providerId"
-            label="供应商"
-            rules={[{ required: true, message: "请选择供应商" }]}
+            label={t("供应商")}
+            rules={[{ required: true, message: t("请选择供应商") }]}
           >
             <Select
-              placeholder="选择供应商"
+              placeholder={t("选择供应商")}
               onChange={handleProviderChange}
               options={providers.map((p: any) => ({
                 label: p.name,
@@ -2570,16 +2581,16 @@ function ClawCreateModal({
           </Form.Item>
           <Form.Item
             name="modelId"
-            label="模型"
-            rules={[{ required: true, message: "请选择模型" }]}
+            label={t("模型")}
+            rules={[{ required: true, message: t("请选择模型") }]}
           >
             <Select
-              placeholder="选择模型"
+              placeholder={t("选择模型")}
               options={models.map((m: any) => ({ label: m.name, value: m.id }))}
             />
           </Form.Item>
         </div>
-        <Form.Item name="enabled" label="启用" valuePropName="checked">
+        <Form.Item name="enabled" label={t("启用")} valuePropName="checked">
           <Switch />
         </Form.Item>
       </Form>
@@ -2599,7 +2610,8 @@ function ClawEditModal({
   agent: Agent;
   onClose: () => void;
   onSuccess: () => void;
-}) {
+}) {  const { t } = useTranslation();
+
   const { message } = App.useApp();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -2622,7 +2634,7 @@ function ClawEditModal({
       form.setFieldsValue({
         instanceName: agent.agent_name || "",
         agentCode: agent.agent_code || "",
-        systemPrompt: agent.system_prompt || `你是${agentType}`,
+        systemPrompt: agent.system_prompt || t("你是{{p0}}", { p0: agentType }),
         version: clawVal(agent, "version") || "",
         endpointUrl: clawVal(agent, "endpointUrl") || "",
         authToken: (existingAuthConfig?.authToken ||
@@ -2673,7 +2685,7 @@ function ClawEditModal({
       await agentApi.update(agent.id, {
         agent_name: values.instanceName,
         agent_code: values.agentCode,
-        system_prompt: values.systemPrompt || `你是${agentType}`,
+        system_prompt: values.systemPrompt || t("你是{{p0}}", { p0: agentType }),
         agent_category: agentType,
         provider: {
           id: values.providerId,
@@ -2694,11 +2706,11 @@ function ClawEditModal({
           },
         },
       });
-      message.success("更新成功");
+      message.success(t("更新成功"));
       onSuccess();
     } catch (error: any) {
       if (error?.errorFields) return;
-      message.error("更新失败");
+      message.error(t("更新失败"));
     } finally {
       setLoading(false);
     }
@@ -2706,30 +2718,30 @@ function ClawEditModal({
 
   return (
     <Modal
-      title="编辑 Agent"
+      title={t("编辑 Agent")}
       open={open}
       onCancel={onClose}
       onOk={handleSubmit}
       width={600}
-      okText="保存"
+      okText={t("保存")}
       confirmLoading={loading}
     >
       <Form form={form} layout="vertical">
         <Form.Item
           name="instanceName"
-          label="实例名称"
+          label={t("实例名称")}
           rules={[{ required: true }]}
         >
           <Input />
         </Form.Item>
         <Form.Item
           name="agentCode"
-          label="编码"
+          label={t("编码")}
           rules={[
-            { required: true, message: "请输入编码" },
+            { required: true, message: t("请输入编码") },
             {
               pattern: /^[a-zA-Z0-9_-]+$/,
-              message: "仅支持英文、数字、下划线和横线",
+              message: t("仅支持英文、数字、下划线和横线"),
             },
           ]}
         >
@@ -2737,30 +2749,30 @@ function ClawEditModal({
         </Form.Item>
         <Form.Item
           name="systemPrompt"
-          label="系统提示词"
-          rules={[{ required: true, message: "请输入系统提示词" }]}
+          label={t("系统提示词")}
+          rules={[{ required: true, message: t("请输入系统提示词") }]}
         >
-          <Input.TextArea rows={3} placeholder="系统提示词" />
+          <Input.TextArea rows={3} placeholder={t("系统提示词")} />
         </Form.Item>
-        <Form.Item name="version" label="版本">
+        <Form.Item name="version" label={t("版本")}>
           <Input />
         </Form.Item>
-        <Form.Item name="endpointUrl" label="端点地址">
+        <Form.Item name="endpointUrl" label={t("端点地址")}>
           <Input />
         </Form.Item>
         {isOctos && (
           <Form.Item
             name="authToken"
             label="Auth Token"
-            tooltip="Octos 服务启动时 --auth-token 参数指定的令牌"
+            tooltip={t("Octos 服务启动时 --auth-token 参数指定的令牌")}
           >
-            <Input.Password placeholder="输入 Auth Token" />
+            <Input.Password placeholder={t("输入 Auth Token")} />
           </Form.Item>
         )}
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
             name="providerId"
-            label="供应商"
+            label={t("供应商")}
             rules={[{ required: true }]}
           >
             <Select
@@ -2771,13 +2783,13 @@ function ClawEditModal({
               }))}
             />
           </Form.Item>
-          <Form.Item name="modelId" label="模型" rules={[{ required: true }]}>
+          <Form.Item name="modelId" label={t("模型")} rules={[{ required: true }]}>
             <Select
               options={models.map((m: any) => ({ label: m.name, value: m.id }))}
             />
           </Form.Item>
         </div>
-        <Form.Item name="enabled" label="启用" valuePropName="checked">
+        <Form.Item name="enabled" label={t("启用")} valuePropName="checked">
           <Switch />
         </Form.Item>
       </Form>
@@ -2795,7 +2807,8 @@ function ConnectionGuideDialog({
   open: boolean;
   agent: Agent;
   onClose: () => void;
-}) {
+}) {  const { t } = useTranslation();
+
   const { message } = App.useApp();
   const agentType = agent.agent_category as ClawType;
   const config = clawTypeConfig[agentType];
@@ -2803,14 +2816,14 @@ function ConnectionGuideDialog({
 
   return (
     <Modal
-      title="连接信息"
+      title={t("连接信息")}
       open={open}
       onCancel={onClose}
-      footer={<Button onClick={onClose}>关闭</Button>}
+      footer={<Button onClick={onClose}>{t("关闭")}</Button>}
       width={600}
     >
       <div className="space-y-4">
-        <Card size="small" title="LLM 代理配置">
+        <Card size="small" title={t("LLM 代理配置")}>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Typography.Text type="secondary">API Base</Typography.Text>
@@ -2821,7 +2834,7 @@ function ConnectionGuideDialog({
                   icon={<CopyOutlined />}
                   onClick={() => {
                     navigator.clipboard.writeText(proxyBase);
-                    message.success("已复制");
+                    message.success(t("已复制"));
                   }}
                 />
               </div>
@@ -2829,7 +2842,7 @@ function ConnectionGuideDialog({
           </div>
         </Card>
         <div className="mb-2">
-          <Typography.Text strong>环境变量配置</Typography.Text>
+          <Typography.Text strong>{t("环境变量配置")}</Typography.Text>
         </div>
         <div className="bg-[var(--color-bg-secondary)] rounded-lg p-3 font-mono text-sm">
           {(config?.setupGuide || []).map((line, i) => (
@@ -2842,7 +2855,7 @@ function ConnectionGuideDialog({
                 className="cursor-pointer text-[var(--color-text-tertiary)] hover:text-[var(--color-primary)]"
                 onClick={() => {
                   navigator.clipboard.writeText(line);
-                  message.success("已复制");
+                  message.success(t("已复制"));
                 }}
               />
             </div>
@@ -2865,7 +2878,8 @@ function ChannelAssignModal({
   agentId: string;
   onClose: () => void;
   onAssigned: () => void;
-}) {
+}) {  const { t } = useTranslation();
+
   const { message } = App.useApp();
   const [form] = Form.useForm();
   const [channels, setChannels] = useState<any[]>([]);
@@ -2898,7 +2912,7 @@ function ChannelAssignModal({
         values.remoteChannelType,
         values.callbackUrl,
       );
-      message.success("渠道分配成功");
+      message.success(t("渠道分配成功"));
       form.resetFields();
       onAssigned();
     } catch {
@@ -2917,21 +2931,21 @@ function ChannelAssignModal({
 
   return (
     <Modal
-      title="分配渠道"
+      title={t("分配渠道")}
       open={open}
       onCancel={onClose}
       onOk={handleOk}
       confirmLoading={loading}
-      okText="分配"
+      okText={t("分配")}
     >
       <Form form={form} layout="vertical">
         <Form.Item
           name="channelId"
-          label="AgentOS 渠道"
-          rules={[{ required: true, message: "请选择渠道" }]}
+          label={t("AgentOS 渠道")}
+          rules={[{ required: true, message: t("请选择渠道") }]}
         >
           <Select
-            placeholder="选择本地渠道"
+            placeholder={t("选择本地渠道")}
             onChange={handleChannelChange}
             options={channels.map((c: any) => {
               const typeCfg =
@@ -2950,19 +2964,19 @@ function ChannelAssignModal({
         </Form.Item>
         <Form.Item
           name="remoteChannelId"
-          label="远端渠道 ID"
-          rules={[{ required: true, message: "请输入远端渠道ID" }]}
+          label={t("远端渠道 ID")}
+          rules={[{ required: true, message: t("请输入远端渠道ID") }]}
         >
-          <Input placeholder="如：tg-bot-001" />
+          <Input placeholder={t("如：tg-bot-001")} />
         </Form.Item>
         <Form.Item
           name="remoteChannelType"
-          label="远端渠道类型"
-          rules={[{ required: true, message: "请选择渠道类型" }]}
+          label={t("远端渠道类型")}
+          rules={[{ required: true, message: t("请选择渠道类型") }]}
         >
-          <Select placeholder="选择渠道类型" options={channelTypeOptions} />
+          <Select placeholder={t("选择渠道类型")} options={channelTypeOptions} />
         </Form.Item>
-        <Form.Item name="callbackUrl" label="回调地址">
+        <Form.Item name="callbackUrl" label={t("回调地址")}>
           <Input placeholder="https://your-claw.example.com/webhook（Optional）" />
         </Form.Item>
       </Form>
@@ -2980,7 +2994,8 @@ function ChannelProxyGuideModal({
   open: boolean;
   mapping: ClawChannelMapping | null;
   onClose: () => void;
-}) {
+}) {  const { t } = useTranslation();
+
   if (!mapping) return null;
   const proxyCfg =
     channelProxyTypeConfig[mapping.remoteChannelType] ||
@@ -2998,7 +3013,7 @@ function ChannelProxyGuideModal({
       }
       open={open}
       onCancel={onClose}
-      footer={<Button onClick={onClose}>关闭</Button>}
+      footer={<Button onClick={onClose}>{t("关闭")}</Button>}
       width={640}
     >
       <Card size="small" className="mb-4">
@@ -3012,7 +3027,7 @@ function ChannelProxyGuideModal({
         {proxyInfo && (
           <div className="space-y-2">
             <div>
-              <Typography.Text type="secondary">发送地址:</Typography.Text>{" "}
+              <Typography.Text type="secondary">{t("发送地址:")}</Typography.Text>{" "}
               <Typography.Text code copyable>
                 {proxyInfo.sendUrl}
               </Typography.Text>
@@ -3024,7 +3039,7 @@ function ChannelProxyGuideModal({
               </Typography.Text>
             </div>
             <div>
-              <Typography.Text type="secondary">代理 Token:</Typography.Text>{" "}
+              <Typography.Text type="secondary">{t("代理 Token:")}</Typography.Text>{" "}
               <Typography.Text code copyable>
                 {proxyInfo.proxyToken}
               </Typography.Text>

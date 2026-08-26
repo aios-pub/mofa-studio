@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Octos monitoring configuration
  * Watchdog and alert toggles
@@ -29,7 +30,8 @@ interface Props {
   apiClient: OctosApiClient | any;
 }
 
-export default function OctosMonitorTab({ apiClient }: Props) {
+export default function OctosMonitorTab({ apiClient }: Props) {  const { t } = useTranslation();
+
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<OctosMonitorStatus>({
     watchdog_enabled: false,
@@ -84,7 +86,7 @@ export default function OctosMonitorTab({ apiClient }: Props) {
   if (loading) {
     return (
       <div className="flex justify-center py-8">
-        <Spin description="加载中..." />
+        <Spin description={t("加载中...")} />
       </div>
     );
   }
@@ -94,8 +96,8 @@ export default function OctosMonitorTab({ apiClient }: Props) {
       <Alert
         type="info"
         showIcon
-        title="系统级监控配置"
-        description="看门狗会自动重启异常退出的 Profile，告警会在检测到问题时发送通知。"
+        title={t("系统级监控配置")}
+        description={t("看门狗会自动重启异常退出的 Profile，告警会在检测到问题时发送通知。")}
         className="text-xs"
       />
 
@@ -106,14 +108,14 @@ export default function OctosMonitorTab({ apiClient }: Props) {
             title={
               <Space>
                 <SafetyOutlined />
-                <span>看门狗</span>
+                <span>{t("看门狗")}</span>
               </Space>
             }
             size="small"
           >
             <Space orientation="vertical" size={16} className="w-full">
               <div>
-                <Text type="secondary">自动重启异常退出的 Profile</Text>
+                <Text type="secondary">{t("自动重启异常退出的 Profile")}</Text>
               </div>
               <Switch
                 checked={status.watchdog_enabled}
@@ -128,7 +130,7 @@ export default function OctosMonitorTab({ apiClient }: Props) {
                     <EyeOutlined /> 看门狗正在运行
                   </Text>
                 ) : (
-                  <Text type="secondary">看门狗已禁用</Text>
+                  <Text type="secondary">{t("看门狗已禁用")}</Text>
                 )}
               </div>
             </Space>
@@ -141,14 +143,14 @@ export default function OctosMonitorTab({ apiClient }: Props) {
             title={
               <Space>
                 <BellOutlined />
-                <span>告警</span>
+                <span>{t("告警")}</span>
               </Space>
             }
             size="small"
           >
             <Space orientation="vertical" size={16} className="w-full">
               <div>
-                <Text type="secondary">在检测到问题时发送通知</Text>
+                <Text type="secondary">{t("在检测到问题时发送通知")}</Text>
               </div>
               <Switch
                 checked={status.alerts_enabled}
@@ -163,7 +165,7 @@ export default function OctosMonitorTab({ apiClient }: Props) {
                     <BellOutlined /> 告警已启用
                   </Text>
                 ) : (
-                  <Text type="secondary">告警已禁用</Text>
+                  <Text type="secondary">{t("告警已禁用")}</Text>
                 )}
               </div>
             </Space>
@@ -179,10 +181,10 @@ export default function OctosMonitorTab({ apiClient }: Props) {
         </Title>
         <Space orientation="vertical" size={8}>
           <Text type="secondary" className="text-xs">
-            • <strong>看门狗</strong>：检测到 Profile 进程异常退出时，自动重新启动
+            • <strong>{t("看门狗")}</strong>：检测到 Profile 进程异常退出时，自动重新启动
           </Text>
           <Text type="secondary" className="text-xs">
-            • <strong>告警</strong>：在检测到连续失败、高错误率等问题时发送通知
+            • <strong>{t("告警")}</strong>：在检测到连续失败、高错误率等问题时发送通知
           </Text>
           <Text type="secondary" className="text-xs">
             • 监控状态是全局配置，对所有 Profile 生效

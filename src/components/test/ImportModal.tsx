@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Import modal component
  * Supports importing Postman Collection and OpenAPI test sets
@@ -71,7 +72,8 @@ interface ParsedRequest {
   description?: string;
 }
 
-export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: ImportModalProps) {
+export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: ImportModalProps) {  const { t } = useTranslation();
+
   const [format, setFormat] = useState<"postman" | "openapi" | "curl">("postman");
   const [fileList, setFileList] = useState<any[]>([]);
   const [parsing, setParsing] = useState(false);
@@ -103,7 +105,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
       } catch (error: any) {
         onError?.(error);
         Modal.error({
-          title: "解析失败",
+          title: t("解析失败"),
           content: error.message || "无法解析文件内容",
         });
       } finally {
@@ -115,7 +117,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
       setParsing(false);
       onError?.(new Error("文件读取失败"));
       Modal.error({
-        title: "读取失败",
+        title: t("读取失败"),
         content: `无法读取文件: ${(file as File).name}`,
       });
     };
@@ -166,7 +168,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
         } else if (item.request) {
           // This is a standalone request
           testSets.push({
-            name: "默认分组",
+            name: t("默认分组"),
             requestCount: 1,
             requests: [{
               name: item.name,
@@ -209,7 +211,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
 
       if (requests.length > 0) {
         testSets.push({
-          name: "全部接口",
+          name: t("全部接口"),
           description: info.description,
           requestCount: requests.length,
           requests,
@@ -279,14 +281,14 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
       setImportProgress(100);
 
       Modal.success({
-        title: "导入成功",
-        content: `成功导入 ${parsedData.totalRequests} 个测试用例`,
+        title: t("导入成功"),
+        content: t("成功导入 {{p0}} 个测试用例", { p0: parsedData.totalRequests }),
       });
 
       handleClose();
     } catch (error: any) {
       Modal.error({
-        title: "导入失败",
+        title: t("导入失败"),
         content: error.message || "导入过程中发生错误",
       });
     } finally {
@@ -311,7 +313,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
 
   const columns: ColumnsType<ParsedRequest> = [
     {
-      title: "方法",
+      title: t("方法"),
       dataIndex: "method",
       key: "method",
       width: 80,
@@ -327,12 +329,12 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
       },
     },
     {
-      title: "接口名称",
+      title: t("接口名称"),
       dataIndex: "name",
       key: "name",
     },
     {
-      title: "路径",
+      title: t("路径"),
       dataIndex: "url",
       key: "url",
       ellipsis: true,
@@ -351,13 +353,13 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
 
   return (
     <Modal
-      title="导入测试集"
+      title={t("导入测试集")}
       open={open}
       onCancel={handleClose}
       width={800}
       footer={
         <Space>
-          <Button onClick={handleClose}>取消</Button>
+          <Button onClick={handleClose}>{t("取消")}</Button>
           <Button
             type="primary"
             onClick={handleImport}
@@ -372,7 +374,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
       <div className="space-y-4">
         {/* Format selection */}
         <div>
-          <Text strong>导入格式</Text>
+          <Text strong>{t("导入格式")}</Text>
           <Select
             value={format}
             onChange={(value) => {
@@ -417,11 +419,11 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
         {format === "curl" ? (
           <div className="space-y-4">
             <div>
-              <Text strong>cURL 命令</Text>
+              <Text strong>{t("cURL 命令")}</Text>
               <div className="mt-1">
                 <Input.TextArea
                   rows={6}
-                  placeholder="在此粘贴 cURL 命令...&#10;例如: curl -X POST https://api.example.com/users -H 'Content-Type: application/json' -d '{&quot;name&quot;:&quot;test&quot;}'"
+                  placeholder={t("在此粘贴 cURL 命令...&#10;例如: curl -X POST https://api.example.com/users -H 'Content-Type: application/json' -d '{&quot;name&quot;:&quot;test&quot;}'")}
                   value={curlCommand}
                   onChange={(e) => {
                     setCurlCommand(e.target.value);
@@ -429,9 +431,9 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
                     const parsed = parseCurlCommand(e.target.value);
                     if (parsed) {
                       setParsedData({
-                        name: "cURL 导入",
+                        name: t("cURL 导入"),
                         testSets: [{
-                          name: "默认分组",
+                          name: t("默认分组"),
                           requestCount: 1,
                           requests: [parsed],
                         }],
@@ -450,14 +452,14 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
             {/* Test set selection */}
             {existingTestSets.length > 0 && (
               <div>
-                <Text strong>导入到</Text>
+                <Text strong>{t("导入到")}</Text>
                 <div className="mt-1">
                   <Select
                     value={targetTestSetId}
                     onChange={setTargetTestSetId}
-                    placeholder="选择现有测试集或创建新测试集"
+                    placeholder={t("选择现有测试集或创建新测试集")}
                     options={[
-                      { label: "创建新测试集", value: "" },
+                      { label: t("创建新测试集"), value: "" },
                       ...existingTestSets.map((ts) => ({
                         label: ts.name,
                         value: ts.id,
@@ -472,7 +474,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
           </div>
         ) : (
           <div>
-            <Text strong>上传文件</Text>
+            <Text strong>{t("上传文件")}</Text>
             <div className="mt-1">
               <Dragger {...uploadProps} disabled={parsing || importing}>
                 <p className="ant-upload-drag-icon">
@@ -493,7 +495,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
         {parsedData && (
           <>
             <Alert
-              message="解析成功"
+              message={t("解析成功")}
               description={
                 <Space>
                   <span>{parsedData.name}</span>
@@ -512,7 +514,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
               items={[
                 {
                   key: "overview",
-                  label: "概览",
+                  label: t("概览"),
                   children: (
                     <div>
                       <Title level={5}>{parsedData.name}</Title>
@@ -520,7 +522,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
                         <Paragraph type="secondary">{parsedData.description}</Paragraph>
                       )}
                       <div className="mt-4">
-                        <Text strong>测试集列表</Text>
+                        <Text strong>{t("测试集列表")}</Text>
                         <div className="mt-2 space-y-2">
                           {parsedData.testSets.map((testSet, index) => (
                             <Card key={index} size="small" className="bg-gray-50">
@@ -537,7 +539,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
                 },
                 {
                   key: "details",
-                  label: "请求详情",
+                  label: t("请求详情"),
                   children: (
                     <div>
                       {parsedData.testSets.map((testSet, setIndex) => (
@@ -565,19 +567,19 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
           <>
             <Divider />
             <div>
-              <Text strong>导入选项</Text>
+              <Text strong>{t("导入选项")}</Text>
               <div className="mt-2 space-y-3">
                 <div>
-                  <Text>冲突处理</Text>
+                  <Text>{t("冲突处理")}</Text>
                   <Select
                     value={options.conflictResolution}
                     onChange={(value) =>
                       setOptions({ ...options, conflictResolution: value })
                     }
                     options={[
-                      { label: "跳过已存在的", value: "skip" },
-                      { label: "覆盖已存在的", value: "overwrite" },
-                      { label: "重命名", value: "rename" },
+                      { label: t("跳过已存在的"), value: "skip" },
+                      { label: t("覆盖已存在的"), value: "overwrite" },
+                      { label: t("重命名"), value: "rename" },
                     ]}
                     className="w-full mt-1"
                     disabled={importing}
@@ -593,7 +595,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
                       }
                       disabled={importing}
                     />
-                    <Text>包含断言</Text>
+                    <Text>{t("包含断言")}</Text>
                   </label>
                   <label className="flex items-center gap-2">
                     <input
@@ -604,7 +606,7 @@ export function ImportModal({ open, onClose, onImport, existingTestSets = [] }: 
                       }
                       disabled={importing}
                     />
-                    <Text>包含脚本</Text>
+                    <Text>{t("包含脚本")}</Text>
                   </label>
                 </div>
               </div>

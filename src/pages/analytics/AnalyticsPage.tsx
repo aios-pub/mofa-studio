@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Analytics page
  */
@@ -71,7 +72,8 @@ const getDateRange = (
   return { start_date, end_date };
 };
 
-export default function AnalyticsPage() {
+export default function AnalyticsPage() {  const { t } = useTranslation();
+
   const [loading, setLoading] = useState(true);
   const [overviewStats, setOverviewStats] = useState<UsageStats | null>(null);
   const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
@@ -275,7 +277,7 @@ export default function AnalyticsPage() {
                   onChange={(e) => setCustomStartDate(e.target.value)}
                   className="px-3 py-1.5 text-sm bg-[var(--color-bg-base)] border border-(--color-border) rounded-lg focus:outline-none focus:border-(--color-primary)"
                 />
-                <span className="text-[var(--color-text-tertiary)]">至</span>
+                <span className="text-[var(--color-text-tertiary)]">{t("至")}</span>
                 <input
                   type="date"
                   value={customEndDate}
@@ -291,9 +293,9 @@ export default function AnalyticsPage() {
       {/* Tabs bar */}
       <div className="flex gap-1 px-6 border-b border-(--color-border)">
         {[
-          { key: "overview", label: "使用概览", icon: BarChartOutlined },
-          { key: "agents", label: "Agent 统计", icon: ThunderboltOutlined },
-          { key: "users", label: "用户统计", icon: UserOutlined },
+          { key: "overview", label: t("使用概览"), icon: BarChartOutlined },
+          { key: "agents", label: t("Agent 统计"), icon: ThunderboltOutlined },
+          { key: "users", label: t("用户统计"), icon: UserOutlined },
         ].map((tab) => {
           const Icon = tab.icon;
           return (
@@ -363,7 +365,8 @@ function OverviewTab({
   formatNumber: (num: number) => string;
   formatCurrency: (num: number) => string;
   maxHourlyCount: number;
-}) {
+}) {  const { t } = useTranslation();
+
   if (!stats) return null;
 
   const conversationTrend = calculateTrend(dailyStats, "conversations");
@@ -376,14 +379,14 @@ function OverviewTab({
       <div className="grid grid-cols-4 gap-4">
         <StatCard
           icon={MessageOutlined}
-          label="总对话数"
+          label={t("总对话数")}
           value={formatNumber(stats.total_conversations)}
           trend={conversationTrend}
           color="blue"
         />
         <StatCard
           icon={ApiOutlined}
-          label="总 Tokens"
+          label={t("总 Tokens")}
           value={formatNumber(stats.total_tokens)}
           subValue={`输入 ${formatNumber(stats.input_tokens)} / 输出 ${formatNumber(stats.output_tokens)}`}
           trend={tokenTrend}
@@ -391,14 +394,14 @@ function OverviewTab({
         />
         <StatCard
           icon={ClockCircleOutlined}
-          label="平均响应时间"
+          label={t("平均响应时间")}
           value={`${stats.avg_response_time}ms`}
-          subValue={`成功率 ${stats.success_rate}%`}
+          subValue={t("成功率 {{p0}}%", { p0: stats.success_rate })}
           color="orange"
         />
         <StatCard
           icon={DollarOutlined}
-          label="预估费用"
+          label={t("预估费用")}
           value={formatCurrency(stats.total_cost)}
           trend={costTrend}
           color="purple"
@@ -449,7 +452,7 @@ function OverviewTab({
                 style={{
                   backgroundColor: `rgba(59, 130, 246, ${intensity / 100})`,
                 }}
-                title={`${hour.hour}:00 - ${hour.count} 次调用`}
+                title={t("{{p0}}:00 - {{p1}} 次调用", { p0: hour.hour, p1: hour.count })}
               />
             );
           })}

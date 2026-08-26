@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Security Audit Section Component
  * Show the skill package security scan results
@@ -64,7 +65,8 @@ export function SecurityAuditSection({
   versionId,
   versionStatus,
   bare = false,
-}: SecurityAuditSectionProps) {
+}: SecurityAuditSectionProps) {  const { t } = useTranslation();
+
   const { data: audits, isLoading } = useQuery({
     queryKey: ["security-audits", skillId, versionId],
     queryFn: () => fetchSecurityAudits(skillId, versionId),
@@ -98,7 +100,7 @@ export function SecurityAuditSection({
       title={
         <Space>
           <Shield className="w-5 h-5" />
-          <span>安全审计</span>
+          <span>{t("安全审计")}</span>
         </Space>
       }
       className="security-audit-section"
@@ -114,7 +116,8 @@ function ScannerCard({
 }: {
   audit: SecurityAuditRecord;
   versionStatus?: string;
-}) {
+}) {  const { t } = useTranslation();
+
   const [expanded, setExpanded] = useState(false);
   const sortedFindings = [...audit.findings].sort(
     (a, b) =>
@@ -160,7 +163,7 @@ function ScannerCard({
             onClick={() => setExpanded(!expanded)}
             className="w-full text-left text-gray-500 hover:text-gray-700 flex items-center justify-between py-1"
           >
-            <span>查看详情</span>
+            <span>{t("查看详情")}</span>
             {expanded ? (
               <ChevronUp className="w-4 h-4" />
             ) : (
@@ -185,8 +188,8 @@ function ScannerCard({
       {sortedFindings.length === 0 && audit.isSafe && (
         <Alert
           type="success"
-          title="安全扫描通过"
-          description="未发现安全问题"
+          title={t("安全扫描通过")}
+          description={t("未发现安全问题")}
           showIcon
         />
       )}
@@ -198,7 +201,8 @@ function FindingItem({
   finding,
 }: {
   finding: SecurityAuditRecord["findings"][number];
-}) {
+}) {  const { t } = useTranslation();
+
   const severity = SEVERITY_CONFIG[finding.severity];
 
   return (
@@ -232,7 +236,7 @@ function FindingItem({
       )}
       {finding.remediation && (
         <div className="text-sm text-blue-600 mt-2">
-          <strong>修复建议：</strong> {finding.remediation}
+          <strong>{t("修复建议：")}</strong> {finding.remediation}
         </div>
       )}
     </div>

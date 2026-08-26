@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Model selection step component
  * For selecting models to enable after creating a provider
@@ -38,7 +39,8 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
   onToggleAll,
   onAddCustomModel,
   onRefreshModels,
-}) => {
+}) => {  const { t } = useTranslation();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddCustom, setShowAddCustom] = useState(false);
   const [customModelId, setCustomModelId] = useState("");
@@ -60,7 +62,7 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
     const id = customModelId.trim();
     if (!id) return;
     if (availableModels.some((m) => m.id === id)) {
-      message.warning("该模型 ID 已存在");
+      message.warning(t("该模型 ID 已存在"));
       return;
     }
     onAddCustomModel?.({ id, name: id, isCustom: true });
@@ -74,7 +76,7 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
     try {
       await onRefreshModels();
     } catch {
-      message.error("获取模型列表失败");
+      message.error(t("获取模型列表失败"));
     } finally {
       setRefreshing(false);
     }
@@ -85,7 +87,7 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
       {/* Search bar */}
       <div className="flex items-center gap-3 mb-3">
         <Input
-          placeholder="搜索模型名称或 ID..."
+          placeholder={t("搜索模型名称或 ID...")}
           prefix={
             <SearchOutlined className="text-[var(--color-text-tertiary)]" />
           }
@@ -193,15 +195,15 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
 
       {/* Add custom model modal */}
       <Modal
-        title="添加自定义模型"
+        title={t("添加自定义模型")}
         open={showAddCustom}
         onCancel={() => {
           setShowAddCustom(false);
           setCustomModelId("");
         }}
         onOk={handleAddCustom}
-        okText="添加"
-        cancelText="取消"
+        okText={t("添加")}
+        cancelText={t("取消")}
         okButtonProps={{ disabled: !customModelId.trim() }}
       >
         <div className="py-2">
@@ -209,7 +211,7 @@ export const ModelSelectionStep: React.FC<ModelSelectionStepProps> = ({
             模型 ID <span className="text-red-500">*</span>
           </label>
           <Input
-            placeholder="例如: gpt-4-custom"
+            placeholder={t("例如: gpt-4-custom")}
             value={customModelId}
             onChange={(e) => setCustomModelId(e.target.value)}
           />

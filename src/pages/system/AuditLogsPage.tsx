@@ -299,12 +299,12 @@ export default function AuditLogsPage() {
   const exportMenuItems = [
     {
       key: "csv",
-      label: "导出 CSV",
+      label: t("导出 CSV"),
       onClick: () => handleExport("csv"),
     },
     {
       key: "json",
-      label: "导出 JSON",
+      label: t("导出 JSON"),
       onClick: () => handleExport("json"),
     },
   ];
@@ -410,7 +410,7 @@ export default function AuditLogsPage() {
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total) =>
-              t("pagination.total", `共 ${total} 条`, { total }),
+              t("pagination.total", t("共 {{p0}} 条", { p0: total }), { total }),
             pageSizeOptions: ["10", "20", "50", "100"],
           }}
           locale={{
@@ -430,42 +430,42 @@ export default function AuditLogsPage() {
         {selectedLog && (
           <div className="space-y-4">
             {/* Basic information */}
-            <Card size="small" title="基本信息">
+            <Card size="small" title={t("基本信息")}>
               <Descriptions column={1} size="small">
-                <Descriptions.Item label="时间">
+                <Descriptions.Item label={t("时间")}>
                   {formatDateTime(selectedLog.timestamp)}
                 </Descriptions.Item>
-                <Descriptions.Item label="用户">
+                <Descriptions.Item label={t("用户")}>
                   {selectedLog.userName}
                 </Descriptions.Item>
-                <Descriptions.Item label="操作">
+                <Descriptions.Item label={t("操作")}>
                   <Tag color={actionColors[selectedLog.action]}>
                     {actionLabels[selectedLog.action]}
                   </Tag>
                 </Descriptions.Item>
-                <Descriptions.Item label="状态">
+                <Descriptions.Item label={t("状态")}>
                   {selectedLog.status === "success" ? (
-                    <Badge status="success" text="成功" />
+                    <Badge status="success" text={t("成功")} />
                   ) : (
-                    <Badge status="error" text="失败" />
+                    <Badge status="error" text={t("失败")} />
                   )}
                 </Descriptions.Item>
               </Descriptions>
             </Card>
 
             {/* Resource information */}
-            <Card size="small" title="资源信息">
+            <Card size="small" title={t("资源信息")}>
               <Descriptions column={1} size="small">
-                <Descriptions.Item label="资源类型">
+                <Descriptions.Item label={t("资源类型")}>
                   {selectedLog.resource}
                 </Descriptions.Item>
                 {selectedLog.resourceName && (
-                  <Descriptions.Item label="资源名称">
+                  <Descriptions.Item label={t("资源名称")}>
                     {selectedLog.resourceName}
                   </Descriptions.Item>
                 )}
                 {selectedLog.resourceId && (
-                  <Descriptions.Item label="资源ID">
+                  <Descriptions.Item label={t("资源ID")}>
                     <code className="text-xs px-2 py-0.5 bg-(--color-bg-tertiary) rounded">
                       {selectedLog.resourceId}
                     </code>
@@ -475,14 +475,14 @@ export default function AuditLogsPage() {
             </Card>
 
             {/* Action details */}
-            <Card size="small" title="操作详情">
+            <Card size="small" title={t("操作详情")}>
               <Text className="text-sm">{selectedLog.details}</Text>
             </Card>
 
             {/* Client information */}
-            <Card size="small" title="客户端信息">
+            <Card size="small" title={t("客户端信息")}>
               <Descriptions column={1} size="small">
-                <Descriptions.Item label="IP 地址">
+                <Descriptions.Item label={t("IP 地址")}>
                   <code className="text-xs px-2 py-0.5 bg-(--color-bg-tertiary) rounded">
                     {selectedLog.ipAddress}
                   </code>
@@ -496,10 +496,10 @@ export default function AuditLogsPage() {
                 </Descriptions.Item>
                 {selectedLog.metadata && (
                   <>
-                    <Descriptions.Item label="浏览器">
+                    <Descriptions.Item label={t("浏览器")}>
                       {selectedLog.metadata.browser as string}
                     </Descriptions.Item>
-                    <Descriptions.Item label="操作系统">
+                    <Descriptions.Item label={t("操作系统")}>
                       {selectedLog.metadata.os as string}
                     </Descriptions.Item>
                   </>

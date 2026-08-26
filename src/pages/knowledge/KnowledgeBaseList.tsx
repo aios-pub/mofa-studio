@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Knowledge base list page
  */
@@ -36,7 +37,8 @@ const formatSize = (bytes: number) => {
   return (bytes / 1024 / 1024).toFixed(1) + " MB";
 };
 
-export default function KnowledgeBaseListPage() {
+export default function KnowledgeBaseListPage() {  const { t } = useTranslation();
+
   const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -66,7 +68,7 @@ export default function KnowledgeBaseListPage() {
       setLoading(true);
       setKnowledgeBases(await knowledgeApi.getAllKnowledgeBases());
     } catch (e) {
-      message.error("加载失败");
+      message.error(t("加载失败"));
     } finally {
       setLoading(false);
     }
@@ -83,16 +85,16 @@ export default function KnowledgeBaseListPage() {
 
   const handleDelete = (kb: KnowledgeBase) => {
     Modal.confirm({
-      title: "确认删除",
-      content: "确定要删除知识库「" + kb.name + "」吗？",
-      okText: "删除",
-      cancelText: "取消",
+      title: t("确认删除"),
+      content: t("确定要删除知识库「") + kb.name + "」吗？",
+      okText: t("删除"),
+      cancelText: t("取消"),
       okButtonProps: { danger: true },
       onOk: async () => {
         await knowledgeApi.deleteKnowledgeBase(kb.id);
         setKnowledgeBases((prev) => prev.filter((k) => k.id !== kb.id));
         if (selectedKB?.id === kb.id) setSelectedKB(null);
-        message.success("已删除");
+        message.success(t("已删除"));
       },
     });
   };
@@ -113,12 +115,12 @@ export default function KnowledgeBaseListPage() {
   const handleDeleteDocument = async (id: string) => {
     await knowledgeApi.deleteDocument(id);
     setDocuments((prev) => prev.filter((d) => d.id !== id));
-    message.success("已删除");
+    message.success(t("已删除"));
   };
 
   const handleCreateKB = async () => {
     if (!formName.trim()) {
-      message.warning("请输入知识库名称");
+      message.warning(t("请输入知识库名称"));
       return;
     }
     setFormSubmitting(true);
@@ -132,7 +134,7 @@ export default function KnowledgeBaseListPage() {
       setShowCreateModal(false);
       setFormName("");
       setFormDesc("");
-      message.success("创建成功");
+      message.success(t("创建成功"));
     } catch (e: any) {
       setFormError(e?.message || "创建失败");
     } finally {
@@ -142,7 +144,7 @@ export default function KnowledgeBaseListPage() {
 
   const handleEditKB = async () => {
     if (!editKB || !formName.trim()) {
-      message.warning("请输入知识库名称");
+      message.warning(t("请输入知识库名称"));
       return;
     }
     setFormSubmitting(true);
@@ -160,7 +162,7 @@ export default function KnowledgeBaseListPage() {
       setEditKB(null);
       setFormName("");
       setFormDesc("");
-      message.success("更新成功");
+      message.success(t("更新成功"));
     } catch (e: any) {
       setFormError(e?.message || "更新失败");
     } finally {
@@ -185,7 +187,7 @@ export default function KnowledgeBaseListPage() {
   const getMenuItems = (kb: KnowledgeBase) => [
     {
       key: "edit",
-      label: "编辑",
+      label: t("编辑"),
       icon: <EditOutlined />,
       onClick: () => openEditModal(kb),
     },
@@ -197,7 +199,7 @@ export default function KnowledgeBaseListPage() {
     { type: "divider" as const },
     {
       key: "delete",
-      label: "删除",
+      label: t("删除"),
       icon: <DeleteOutlined />,
       danger: true,
       onClick: () => handleDelete(kb),
@@ -211,10 +213,10 @@ export default function KnowledgeBaseListPage() {
   );
 
   const statusConfig: Record<string, { color: string; text: string }> = {
-    pending: { color: "default", text: "待处理" },
-    processing: { color: "blue", text: "处理中" },
-    completed: { color: "green", text: "已完成" },
-    failed: { color: "red", text: "失败" },
+    pending: { color: "default", text: t("待处理") },
+    processing: { color: "blue", text: t("处理中") },
+    completed: { color: "green", text: t("已完成") },
+    failed: { color: "red", text: t("失败") },
   };
 
   return (
@@ -232,7 +234,7 @@ export default function KnowledgeBaseListPage() {
             />
           </div>
           <Input
-            placeholder="搜索知识库..."
+            placeholder={t("搜索知识库...")}
             prefix={<SearchOutlined />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -247,7 +249,7 @@ export default function KnowledgeBaseListPage() {
           ) : filteredKBs.length === 0 ? (
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="暂无知识库"
+              description={t("暂无知识库")}
               className="py-8"
             />
           ) : (
@@ -384,7 +386,7 @@ export default function KnowledgeBaseListPage() {
                               selectedKB.id,
                               file,
                             );
-                            message.success(`文档「${file.name}」上传成功`);
+                            message.success(t("文档「{{p0}}」上传成功", { p0: file.name }));
                             loadDocuments(selectedKB.id);
                             loadKnowledgeBases();
                           } catch (err: any) {
@@ -405,7 +407,7 @@ export default function KnowledgeBaseListPage() {
                       <Spin />
                     </div>
                   ) : documents.length === 0 ? (
-                    <Empty description="暂无文档" className="py-8" />
+                    <Empty description={t("暂无文档")} className="py-8" />
                   ) : (
                     <div className="space-y-2">
                       {documents.map((doc) => (
@@ -513,28 +515,28 @@ export default function KnowledgeBaseListPage() {
         )}
       </div>
       <Modal
-        title="创建知识库"
+        title={t("创建知识库")}
         open={showCreateModal}
         onCancel={closeFormModal}
         onOk={handleCreateKB}
         confirmLoading={formSubmitting}
-        okText="创建"
+        okText={t("创建")}
         width={500}
         destroyOnHidden
       >
         <div className="space-y-4 py-2">
           <div>
-            <label className="block text-sm font-medium mb-1">名称</label>
+            <label className="block text-sm font-medium mb-1">{t("名称")}</label>
             <Input
-              placeholder="输入知识库名称"
+              placeholder={t("输入知识库名称")}
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">描述</label>
+            <label className="block text-sm font-medium mb-1">{t("描述")}</label>
             <Input.TextArea
-              placeholder="输入知识库描述（可选）"
+              placeholder={t("输入知识库描述（可选）")}
               value={formDesc}
               onChange={(e) => setFormDesc(e.target.value)}
               rows={3}
@@ -552,28 +554,28 @@ export default function KnowledgeBaseListPage() {
         </div>
       </Modal>
       <Modal
-        title="编辑知识库"
+        title={t("编辑知识库")}
         open={!!editKB}
         onCancel={closeFormModal}
         onOk={handleEditKB}
         confirmLoading={formSubmitting}
-        okText="保存"
+        okText={t("保存")}
         width={500}
         destroyOnHidden
       >
         <div className="space-y-4 py-2">
           <div>
-            <label className="block text-sm font-medium mb-1">名称</label>
+            <label className="block text-sm font-medium mb-1">{t("名称")}</label>
             <Input
-              placeholder="输入知识库名称"
+              placeholder={t("输入知识库名称")}
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">描述</label>
+            <label className="block text-sm font-medium mb-1">{t("描述")}</label>
             <Input.TextArea
-              placeholder="输入知识库描述（可选）"
+              placeholder={t("输入知识库描述（可选）")}
               value={formDesc}
               onChange={(e) => setFormDesc(e.target.value)}
               rows={3}

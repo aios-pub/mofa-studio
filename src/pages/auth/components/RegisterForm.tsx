@@ -62,7 +62,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
       setUserInfo(res.user);
       navigate("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "注册失败");
+      setError(err instanceof Error ? err.message: t("注册失败"));
     } finally {
       setLoading(false);
     }

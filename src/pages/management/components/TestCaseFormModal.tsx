@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Test case create/edit form modal
  */
@@ -53,7 +54,8 @@ export function TestCaseFormModal({
   onSubmit,
   testCase,
   loading,
-}: TestCaseFormModalProps) {
+}: TestCaseFormModalProps) {  const { t } = useTranslation();
+
   const [form] = Form.useForm<TestCaseFormData>();
   const [requestType, setRequestType] = useState<TestCaseRequestType>("agent");
   const [httpConfig, setHttpConfig] = useState<HttpRequestConfig>();
@@ -386,17 +388,17 @@ export function TestCaseFormModal({
       <Form form={form} layout="vertical" autoComplete="off">
         <Form.Item
           name="name"
-          label="用例名称"
-          rules={[{ required: true, message: "请输入用例名称" }]}
+          label={t("用例名称")}
+          rules={[{ required: true, message: t("请输入用例名称") }]}
         >
-          <Input placeholder="请输入用例名称" />
+          <Input placeholder={t("请输入用例名称")} />
         </Form.Item>
 
-        <Form.Item name="description" label="描述">
-          <Input placeholder="请输入用例描述" />
+        <Form.Item name="description" label={t("描述")}>
+          <Input placeholder={t("请输入用例描述")} />
         </Form.Item>
 
-        <Form.Item label="请求类型">
+        <Form.Item label={t("请求类型")}>
           <Select
             value={requestType}
             onChange={handleRequestTypeChange}
@@ -410,20 +412,20 @@ export function TestCaseFormModal({
           <>
             <Form.Item
               name="input"
-              label="输入"
-              rules={[{ required: true, message: "请输入测试输入" }]}
+              label={t("输入")}
+              rules={[{ required: true, message: t("请输入测试输入") }]}
             >
               <Input.TextArea
-                placeholder="请输入测试输入内容"
+                placeholder={t("请输入测试输入内容")}
                 rows={3}
                 showCount
                 maxLength={2000}
               />
             </Form.Item>
 
-            <Form.Item name="expectedOutput" label="期望输出">
+            <Form.Item name="expectedOutput" label={t("期望输出")}>
               <Input.TextArea
-                placeholder="请输入期望输出"
+                placeholder={t("请输入期望输出")}
                 rows={2}
                 showCount
                 maxLength={1000}
@@ -498,7 +500,7 @@ export function TestCaseFormModal({
           </div>
         )}
 
-        <Form.Item label="断言规则">
+        <Form.Item label={t("断言规则")}>
           <Form.List name="assertions">
             {(fields, { add, remove }) => (
               <div className="space-y-2">
@@ -511,29 +513,29 @@ export function TestCaseFormModal({
                     <Form.Item
                       {...restField}
                       name={[name, "type"]}
-                      rules={[{ required: true, message: "请选择类型" }]}
+                      rules={[{ required: true, message: t("请选择类型") }]}
                       style={{ marginBottom: 0 }}
                     >
                       <Select
                         style={{ width: 120 }}
-                        placeholder="断言类型"
+                        placeholder={t("断言类型")}
                         options={ASSERTION_TYPES}
                       />
                     </Form.Item>
                     <Form.Item
                       {...restField}
                       name={[name, "value"]}
-                      rules={[{ required: true, message: "请输入值" }]}
+                      rules={[{ required: true, message: t("请输入值") }]}
                       style={{ marginBottom: 0, flex: 1 }}
                     >
-                      <Input placeholder="匹配值" />
+                      <Input placeholder={t("匹配值")} />
                     </Form.Item>
                     <Form.Item
                       {...restField}
                       name={[name, "description"]}
                       style={{ marginBottom: 0, flex: 1 }}
                     >
-                      <Input placeholder="描述（可选）" />
+                      <Input placeholder={t("描述（可选）")} />
                     </Form.Item>
                     <Button
                       type="text"
@@ -563,12 +565,12 @@ export function TestCaseFormModal({
           items={[
             {
               key: "advanced",
-              label: "高级功能",
+              label: t("高级功能"),
               children: (
                 <div className="space-y-4">
                   {/* Environment variable selection */}
                   <div>
-                    <div className="text-sm font-medium mb-2">环境变量</div>
+                    <div className="text-sm font-medium mb-2">{t("环境变量")}</div>
                     <EnvironmentManager
                       value={selectedEnvironment}
                       onChange={setSelectedEnvironment}
@@ -580,7 +582,7 @@ export function TestCaseFormModal({
                   {/* Script editing */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <div className="text-sm font-medium mb-2">前置脚本</div>
+                      <div className="text-sm font-medium mb-2">{t("前置脚本")}</div>
                       <ScriptEditor
                         type="pre_request"
                         value={preRequestScript}
@@ -589,7 +591,7 @@ export function TestCaseFormModal({
                       />
                     </div>
                     <div>
-                      <div className="text-sm font-medium mb-2">测试脚本</div>
+                      <div className="text-sm font-medium mb-2">{t("测试脚本")}</div>
                       <ScriptEditor
                         type="test"
                         value={testScript}
@@ -601,7 +603,7 @@ export function TestCaseFormModal({
 
                   {/* Data-driven testing - supported by all test types */}
                   <div>
-                    <div className="text-sm font-medium mb-2">数据驱动测试</div>
+                    <div className="text-sm font-medium mb-2">{t("数据驱动测试")}</div>
                     <DataDrivenTestConfig
                       value={dataDrivenConfig || defaultDataDrivenConfig}
                       onChange={(config) => {

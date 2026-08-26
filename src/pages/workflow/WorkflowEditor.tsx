@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Workflow editor page
  */
@@ -67,7 +68,8 @@ const nodeTypes = {
   delay: DelayNode,
 };
 
-export default function WorkflowEditorPage() {
+export default function WorkflowEditorPage() {  const { t } = useTranslation();
+
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [workflow, setWorkflow] = useState<Workflow | null>(null);
@@ -139,12 +141,12 @@ export default function WorkflowEditorPage() {
         setNodes(rfNodes);
         setEdges(rfEdges);
       } else {
-        message.error("工作流不存在");
+        message.error(t("工作流不存在"));
         navigate("/workflow");
       }
     } catch (error) {
       console.error("Failed to load workflow:", error);
-      message.error("加载失败");
+      message.error(t("加载失败"));
     } finally {
       setLoading(false);
     }
@@ -174,10 +176,10 @@ export default function WorkflowEditorPage() {
         nodes: wfNodes,
         edges: wfEdges,
       });
-      message.success("保存成功");
+      message.success(t("保存成功"));
     } catch (error) {
       console.error("Failed to save workflow:", error);
-      message.error("保存失败");
+      message.error(t("保存失败"));
     } finally {
       setSaving(false);
     }
@@ -189,27 +191,27 @@ export default function WorkflowEditorPage() {
     try {
       await handleSave();
       await workflowApi.publish(workflow.id);
-      message.success("发布成功");
+      message.success(t("发布成功"));
       loadWorkflow(workflow.id);
     } catch (error) {
       console.error("Failed to publish workflow:", error);
-      message.error("发布失败");
+      message.error(t("发布失败"));
     }
   };
 
   // Execute workflow
   const handleExecute = async () => {
     if (!workflow || workflow.status !== "published") {
-      message.warning("请先发布工作流");
+      message.warning(t("请先发布工作流"));
       return;
     }
     try {
       const execution = await workflowApi.execute(workflow.id);
-      message.success("工作流已开始执行");
+      message.success(t("工作流已开始执行"));
       navigate(`/workflow/execution/${execution.id}`);
     } catch (error) {
       console.error("Failed to execute workflow:", error);
-      message.error("执行失败");
+      message.error(t("执行失败"));
     }
   };
 
@@ -305,7 +307,7 @@ export default function WorkflowEditorPage() {
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <div className="animate-spin text-4xl mb-4">⏳</div>
-          <p className="text-[var(--color-text-secondary)]">加载中...</p>
+          <p className="text-[var(--color-text-secondary)]">{t("加载中...")}</p>
         </div>
       </div>
     );
@@ -329,14 +331,14 @@ export default function WorkflowEditorPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Tooltip title="撤销">
+          <Tooltip title={t("撤销")}>
             <Button
               icon={<UndoOutlined />}
               disabled={!canUndo}
               onClick={undo}
             />
           </Tooltip>
-          <Tooltip title="重做">
+          <Tooltip title={t("重做")}>
             <Button
               icon={<RedoOutlined />}
               disabled={!canRedo}
@@ -369,10 +371,10 @@ export default function WorkflowEditorPage() {
               items: [
                 {
                   key: "versions",
-                  label: "版本历史",
+                  label: t("版本历史"),
                   icon: <HistoryOutlined />,
                 },
-                { key: "settings", label: "设置", icon: <SettingOutlined /> },
+                { key: "settings", label: t("设置"), icon: <SettingOutlined /> },
               ],
             }}
           >
@@ -406,13 +408,13 @@ export default function WorkflowEditorPage() {
             <MiniMap />
             <Panel position="top-right">
               <div className="flex gap-1">
-                <Tooltip title="放大">
+                <Tooltip title={t("放大")}>
                   <Button size="small" icon={<ZoomInOutlined />} />
                 </Tooltip>
-                <Tooltip title="缩小">
+                <Tooltip title={t("缩小")}>
                   <Button size="small" icon={<ZoomOutOutlined />} />
                 </Tooltip>
-                <Tooltip title="适应画布">
+                <Tooltip title={t("适应画布")}>
                   <Button size="small" icon={<FullscreenOutlined />} />
                 </Tooltip>
               </div>

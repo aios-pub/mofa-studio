@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Admin Labels Page
  * Admin label management page
@@ -26,7 +27,8 @@ import type { HubLabel, LabelDefinition, LabelType, LabelTranslation } from '@/t
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-export function AdminLabelsPage() {
+export function AdminLabelsPage() {  const { t } = useTranslation();
+
   const [labels, setLabels] = useState<LabelDefinition[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -161,11 +163,11 @@ export function AdminLabelsPage() {
             编辑
           </Button>
           <Popconfirm
-            title="确认删除"
-            description="确定要删除这个标签吗？"
+            title={t("确认删除")}
+            description={t("确定要删除这个标签吗？")}
             onConfirm={() => handleDelete(record.id)}
-            okText="确定"
-            cancelText="取消"
+            okText={t("确定")}
+            cancelText={t("取消")}
           >
             <Button type="link" danger icon={<DeleteOutlined />}>
               删除
@@ -201,8 +203,8 @@ export function AdminLabelsPage() {
         onOk={handleSubmit}
         onCancel={() => setModalVisible(false)}
         width={600}
-        okText="确定"
-        cancelText="取消"
+        okText={t("确定")}
+        cancelText={t("取消")}
       >
         <Form form={form} layout="vertical">
           <Form.Item
@@ -210,30 +212,30 @@ export function AdminLabelsPage() {
             name="slug"
             rules={[{ required: true, message: '请输入 slug' }]}
           >
-            <Input placeholder="例如: recommended, experimental" />
+            <Input placeholder={t("例如: recommended, experimental")} />
           </Form.Item>
 
           <Form.Item
-            label="类型"
+            label={t("类型")}
             name="type"
             rules={[{ required: true, message: '请选择类型' }]}
           >
-            <Select placeholder="选择标签类型">
-              <Option value="RECOMMENDED">推荐 (RECOMMENDED)</Option>
-              <Option value="PRIVILEGED">特权 (PRIVILEGED)</Option>
+            <Select placeholder={t("选择标签类型")}>
+              <Option value="RECOMMENDED">{t("推荐 (RECOMMENDED)")}</Option>
+              <Option value="PRIVILEGED">{t("特权 (PRIVILEGED)")}</Option>
             </Select>
           </Form.Item>
 
           <Form.Item
-            label="显示名称"
+            label={t("显示名称")}
             name={['translations', 0, 'displayName']}
             rules={[{ required: true, message: '请输入显示名称' }]}
           >
-            <Input placeholder="例如: 推荐技能" />
+            <Input placeholder={t("例如: 推荐技能")} />
           </Form.Item>
 
           <Form.Item
-            label="在筛选中可见"
+            label={t("在筛选中可见")}
             name="visibleInFilter"
             valuePropName="checked"
           >
@@ -241,7 +243,7 @@ export function AdminLabelsPage() {
           </Form.Item>
 
           <Form.Item
-            label="排序顺序"
+            label={t("排序顺序")}
             name="sortOrder"
             rules={[{ required: true, message: '请输入排序顺序' }]}
           >

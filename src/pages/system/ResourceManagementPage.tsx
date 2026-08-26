@@ -184,22 +184,22 @@ export default function ResourceManagementPage() {
   const handleDeleteKey = async (id: string) => {
     try {
       await resourceApi.deleteApiKey(id);
-      message.success("密钥已删除");
+      message.success(t("密钥已删除"));
       loadApiKeys();
     } catch (error) {
       console.error("Failed to delete key:", error);
-      message.error("删除失败");
+      message.error(t("删除失败"));
     }
   };
 
   const handleRevokeKey = async (id: string) => {
     try {
       await resourceApi.revokeApiKey(id);
-      message.success("密钥已撤销");
+      message.success(t("密钥已撤销"));
       loadApiKeys();
     } catch (error) {
       console.error("Failed to revoke key:", error);
-      message.error("撤销失败");
+      message.error(t("撤销失败"));
     }
   };
 
@@ -207,19 +207,19 @@ export default function ResourceManagementPage() {
     try {
       const result = await resourceApi.validateApiKey(id);
       if (result.valid) {
-        message.success("密钥有效");
+        message.success(t("密钥有效"));
       } else {
         message.warning(result.message);
       }
     } catch (error) {
       console.error("Failed to validate key:", error);
-      message.error("验证失败");
+      message.error(t("验证失败"));
     }
   };
 
   const handleCopyKey = (key: string) => {
     navigator.clipboard.writeText(key);
-    message.success("已复制到剪贴板");
+    message.success(t("已复制到剪贴板"));
   };
 
   const handleEditProvider = (key: ApiKey) => {
@@ -229,12 +229,12 @@ export default function ResourceManagementPage() {
   const handleUpdateProvider = async (id: string, providerId: string) => {
     try {
       await resourceApi.updateApiKey(id, { provider_id: providerId });
-      message.success("Provider 已更新");
+      message.success(t("Provider 已更新"));
       setEditingKeyProvider(null);
       loadApiKeys();
     } catch (error) {
       console.error("Failed to update provider:", error);
-      message.error("更新失败");
+      message.error(t("更新失败"));
     }
   };
 
@@ -245,22 +245,22 @@ export default function ResourceManagementPage() {
     try {
       await resourceApi.updateQuota(id, { limits });
       setEditingQuota(null);
-      message.success("配额已更新");
+      message.success(t("配额已更新"));
       loadQuotas();
     } catch (error) {
       console.error("Failed to update quota:", error);
-      message.error("更新失败");
+      message.error(t("更新失败"));
     }
   };
 
   const handleDeleteQuota = async (id: string) => {
     try {
       await resourceApi.deleteQuota(id);
-      message.success("配额已删除");
+      message.success(t("配额已删除"));
       loadQuotas();
     } catch (error) {
       console.error("Failed to delete quota:", error);
-      message.error("删除失败");
+      message.error(t("删除失败"));
     }
   };
 
@@ -274,11 +274,11 @@ export default function ResourceManagementPage() {
     try {
       await resourceApi.createQuota(data);
       setCreateQuotaModalOpen(false);
-      message.success("配额已创建");
+      message.success(t("配额已创建"));
       loadQuotas();
     } catch (error) {
       console.error("Failed to create quota:", error);
-      message.error("创建失败");
+      message.error(t("创建失败"));
     }
   };
 
@@ -340,7 +340,7 @@ export default function ResourceManagementPage() {
               {providerLabel}
             </span>
             {isMissing && (
-              <Tooltip title="Provider 已被删除，点击重新选择">
+              <Tooltip title={t("Provider 已被删除，点击重新选择")}>
                 <Button
                   type="link"
                   size="small"
@@ -357,7 +357,7 @@ export default function ResourceManagementPage() {
       },
     },
     {
-      title: "API 密钥",
+      title: t("API 密钥"),
       key: "fullKey",
       width: 280,
       render: (_, record) => {
@@ -370,7 +370,7 @@ export default function ResourceManagementPage() {
             <Text code className="flex-1 break-all font-mono text-xs">
               {displayKey}
             </Text>
-            <Tooltip title="复制密钥">
+            <Tooltip title={t("复制密钥")}>
               <Button
                 type="text"
                 size="small"
@@ -416,7 +416,7 @@ export default function ResourceManagementPage() {
       width: 120,
       render: (_, record) => (
         <Space>
-          <Tooltip title="验证密钥">
+          <Tooltip title={t("验证密钥")}>
             <Button
               type="text"
               size="small"
@@ -426,12 +426,12 @@ export default function ResourceManagementPage() {
           </Tooltip>
           {record.status === "active" && (
             <Popconfirm
-              title="确定要撤销此密钥吗？"
+              title={t("确定要撤销此密钥吗？")}
               onConfirm={() => handleRevokeKey(record.id)}
-              okText="确定"
-              cancelText="取消"
+              okText={t("确定")}
+              cancelText={t("取消")}
             >
-              <Tooltip title="撤销密钥">
+              <Tooltip title={t("撤销密钥")}>
                 <Button
                   type="text"
                   size="small"
@@ -442,12 +442,12 @@ export default function ResourceManagementPage() {
             </Popconfirm>
           )}
           <Popconfirm
-            title="确定要删除此密钥吗？"
+            title={t("确定要删除此密钥吗？")}
             onConfirm={() => handleDeleteKey(record.id)}
-            okText="确定"
-            cancelText="取消"
+            okText={t("确定")}
+            cancelText={t("取消")}
           >
-            <Tooltip title="删除密钥">
+            <Tooltip title={t("删除密钥")}>
               <Button
                 type="text"
                 size="small"
@@ -478,10 +478,10 @@ export default function ResourceManagementPage() {
             <Alert
               type="success"
               showIcon
-              title="密钥创建成功"
+              title={t("密钥创建成功")}
               description={
                 <div>
-                  <p>请复制保存以下密钥，此密钥仅显示一次：</p>
+                  <p>{t("请复制保存以下密钥，此密钥仅显示一次：")}</p>
                   <div className="flex items-center gap-2 mt-2">
                     <Text code className="flex-1 break-all">
                       {newlyCreatedKey}
@@ -512,7 +512,7 @@ export default function ResourceManagementPage() {
                 allowClear
               />
               <Select
-                placeholder="选择 Provider"
+                placeholder={t("选择 Provider")}
                 value={keyFilterProvider || undefined}
                 onChange={setKeyFilterProvider}
                 allowClear
@@ -520,7 +520,7 @@ export default function ResourceManagementPage() {
                 options={providers.map((p) => ({ label: p.name, value: p.id }))}
               />
               <Select
-                placeholder="选择状态"
+                placeholder={t("选择状态")}
                 value={keyFilterStatus || undefined}
                 onChange={setKeyFilterStatus}
                 allowClear
@@ -554,14 +554,14 @@ export default function ResourceManagementPage() {
                 showSizeChanger: true,
                 showQuickJumper: true,
                 showTotal: (total) =>
-                  t("pagination.total", `共 ${total} 条`, { total }),
+                  t("pagination.total", t("共 {{p0}} 条", { p0: total }), { total }),
                 pageSizeOptions: ["10", "20", "50", "100"],
               }}
               locale={{
                 emptyText: (
                   <div className="py-8">
                     <KeyOutlined className="text-4xl text-gray-300 mb-2" />
-                    <p>暂无 API 密钥</p>
+                    <p>{t("暂无 API 密钥")}</p>
                   </div>
                 ),
               }}
@@ -606,7 +606,7 @@ export default function ResourceManagementPage() {
                     title={quota.name}
                     extra={
                       <Space>
-                        <Tooltip title="编辑配额">
+                        <Tooltip title={t("编辑配额")}>
                           <Button
                             type="text"
                             size="small"
@@ -615,12 +615,12 @@ export default function ResourceManagementPage() {
                           />
                         </Tooltip>
                         <Popconfirm
-                          title="确定要删除此配额吗？"
+                          title={t("确定要删除此配额吗？")}
                           onConfirm={() => handleDeleteQuota(quota.id)}
-                          okText="确定"
-                          cancelText="取消"
+                          okText={t("确定")}
+                          cancelText={t("取消")}
                         >
-                          <Tooltip title="删除配额">
+                          <Tooltip title={t("删除配额")}>
                             <Button
                               type="text"
                               size="small"
@@ -663,7 +663,7 @@ export default function ResourceManagementPage() {
                       {/* Requests */}
                       <div>
                         <div className="flex justify-between text-xs mb-1">
-                          <span>请求数</span>
+                          <span>{t("请求数")}</span>
                           <span>
                             {formatNumber(quota.usage.requests)} /{" "}
                             {formatNumber(quota.limits.maxRequests)}
@@ -680,7 +680,7 @@ export default function ResourceManagementPage() {
                       {/* Cost */}
                       <div>
                         <div className="flex justify-between text-xs mb-1">
-                          <span>费用</span>
+                          <span>{t("费用")}</span>
                           <span>
                             {formatCurrency(quota.usage.cost)} /{" "}
                             {formatCurrency(quota.limits.maxCost)}
@@ -729,7 +729,7 @@ export default function ResourceManagementPage() {
             <Col xs={24} sm={12} lg={6}>
               <Card>
                 <Statistic
-                  title="总 Token"
+                  title={t("总 Token")}
                   value={usageStats.totalTokens}
                   formatter={(value) => formatNumber(Number(value))}
                   prefix={<DollarCircleOutlined className="text-blue-500" />}
@@ -739,7 +739,7 @@ export default function ResourceManagementPage() {
             <Col xs={24} sm={12} lg={6}>
               <Card>
                 <Statistic
-                  title="总请求"
+                  title={t("总请求")}
                   value={usageStats.totalRequests}
                   formatter={(value) => formatNumber(Number(value))}
                   prefix={<MessageOutlined className="text-purple-500" />}
@@ -749,7 +749,7 @@ export default function ResourceManagementPage() {
             <Col xs={24} sm={12} lg={6}>
               <Card>
                 <Statistic
-                  title="总费用"
+                  title={t("总费用")}
                   value={usageStats.totalCost}
                   formatter={(value) => formatCurrency(Number(value))}
                   prefix={<DollarOutlined className="text-green-500" />}
@@ -759,7 +759,7 @@ export default function ResourceManagementPage() {
             <Col xs={24} sm={12} lg={6}>
               <Card>
                 <Statistic
-                  title="日均 Token"
+                  title={t("日均 Token")}
                   value={Math.round(usageStats.totalTokens / 30)}
                   formatter={(value) => formatNumber(Number(value))}
                   prefix={<RiseOutlined className="text-orange-500" />}
@@ -771,7 +771,7 @@ export default function ResourceManagementPage() {
           {/* Provider distribution */}
           <Row gutter={[16, 16]}>
             <Col xs={24} lg={12}>
-              <Card title="Token 消耗分布">
+              <Card title={t("Token 消耗分布")}>
                 <Space orientation="vertical" className="w-full">
                   {Object.entries(usageStats.tokensByProvider ?? {}).map(
                     ([providerId, tokens]) => {
@@ -801,7 +801,7 @@ export default function ResourceManagementPage() {
               </Card>
             </Col>
             <Col xs={24} lg={12}>
-              <Card title="费用分布">
+              <Card title={t("费用分布")}>
                 <Space orientation="vertical" className="w-full">
                   {Object.entries(usageStats.costByProvider ?? {}).map(
                     ([providerId, cost]) => {
@@ -833,7 +833,7 @@ export default function ResourceManagementPage() {
           </Row>
 
           {/* Daily usage trend */}
-          <Card title="近 30 天使用趋势">
+          <Card title={t("近 30 天使用趋势")}>
             <div className="h-48 flex items-end gap-1">
               {(usageStats.dailyUsage ?? []).map((day, index) => {
                 const maxTokens = Math.max(
@@ -871,7 +871,7 @@ export default function ResourceManagementPage() {
     <div className="space-y-4">
       <PageHeader
         title={t("resource.title", "资源管理")}
-        description="管理 API 密钥、资源配额和使用统计"
+        description={t("管理 API 密钥、资源配额和使用统计")}
         icon={<SafetyOutlined className="text-xl" />}
         actions={
           <Button
@@ -960,7 +960,8 @@ function CreateKeyModal({
     expiresAt?: Date;
     createdBy?: string;
   }) => Promise<void>;
-}) {
+}) {  const { t } = useTranslation();
+
   const [form] = Form.useForm();
   const [showKey, setShowKey] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -987,7 +988,7 @@ function CreateKeyModal({
     } catch (err: any) {
       if (err?.errorFields) return;
       console.error("Failed to save:", err);
-      setError(err instanceof Error ? err.message : "保存失败");
+      setError(err instanceof Error ? err.message: t("保存失败"));
     } finally {
       setSaving(false);
     }
@@ -1002,12 +1003,12 @@ function CreateKeyModal({
 
   return (
     <Modal
-      title="添加 API 密钥"
+      title={t("添加 API 密钥")}
       open={open}
       onCancel={handleClose}
       onOk={handleSubmit}
-      okText="保存"
-      cancelText="取消"
+      okText={t("保存")}
+      cancelText={t("取消")}
       confirmLoading={saving}
       destroyOnHidden
     >
@@ -1018,10 +1019,10 @@ function CreateKeyModal({
       >
         <Form.Item
           name="name"
-          label="密钥名称"
-          rules={[{ required: true, message: "请输入密钥名称" }]}
+          label={t("密钥名称")}
+          rules={[{ required: true, message: t("请输入密钥名称") }]}
         >
-          <Input placeholder="如：生产环境密钥" />
+          <Input placeholder={t("如：生产环境密钥")} />
         </Form.Item>
 
         <Form.Item name="provider_id" label="Provider">
@@ -1043,7 +1044,7 @@ function CreateKeyModal({
         >
           <Input
             type={showKey ? "text" : "password"}
-            placeholder="输入完整的 API 密钥"
+            placeholder={t("输入完整的 API 密钥")}
             className="font-mono"
             suffix={
               <Button
@@ -1056,11 +1057,11 @@ function CreateKeyModal({
           />
         </Form.Item>
 
-        <Form.Item name="description" label="描述（可选）">
-          <Input placeholder="密钥用途说明" />
+        <Form.Item name="description" label={t("描述（可选）")}>
+          <Input placeholder={t("密钥用途说明")} />
         </Form.Item>
 
-        <Form.Item label="设置过期时间">
+        <Form.Item label={t("设置过期时间")}>
           <Space>
             <Switch checked={hasExpiry} onChange={setHasExpiry} />
             {hasExpiry && (
@@ -1098,7 +1099,8 @@ function QuotaEditModal({
   quota: ResourceQuota;
   onClose: () => void;
   onSave: (id: string, limits: Partial<QuotaLimits>) => Promise<void>;
-}) {
+}) {  const { t } = useTranslation();
+
   const [form] = Form.useForm();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -1122,7 +1124,7 @@ function QuotaEditModal({
     } catch (err: any) {
       if (err?.errorFields) return;
       console.error("Failed to save:", err);
-      setError(err instanceof Error ? err.message : "保存失败");
+      setError(err instanceof Error ? err.message: t("保存失败"));
     } finally {
       setSaving(false);
     }
@@ -1130,29 +1132,29 @@ function QuotaEditModal({
 
   return (
     <Modal
-      title={`编辑配额 - ${quota.name}`}
+      title={t("编辑配额 - {{p0}}", { p0: quota.name })}
       open={true}
       onCancel={onClose}
       onOk={handleSubmit}
-      okText="保存"
-      cancelText="取消"
+      okText={t("保存")}
+      cancelText={t("取消")}
       confirmLoading={saving}
       destroyOnHidden
     >
       <Form form={form} layout="vertical">
-        <Form.Item name="maxTokens" label="最大 Tokens">
+        <Form.Item name="maxTokens" label={t("最大 Tokens")}>
           <InputNumber min={0} className="w-full" />
         </Form.Item>
 
-        <Form.Item name="maxRequests" label="最大请求数">
+        <Form.Item name="maxRequests" label={t("最大请求数")}>
           <InputNumber min={0} className="w-full" />
         </Form.Item>
 
-        <Form.Item name="maxConversations" label="最大对话数">
+        <Form.Item name="maxConversations" label={t("最大对话数")}>
           <InputNumber min={0} className="w-full" />
         </Form.Item>
 
-        <Form.Item name="maxCost" label="最大费用（元）">
+        <Form.Item name="maxCost" label={t("最大费用（元）")}>
           <InputNumber min={0} step={0.01} precision={2} className="w-full" />
         </Form.Item>
       </Form>
@@ -1185,7 +1187,8 @@ function CreateQuotaModal({
     limits: QuotaLimits;
     period: string;
   }) => Promise<void>;
-}) {
+}) {  const { t } = useTranslation();
+
   const [form] = Form.useForm();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -1211,7 +1214,7 @@ function CreateQuotaModal({
     } catch (err: any) {
       if (err?.errorFields) return;
       console.error("Failed to save:", err);
-      setError(err instanceof Error ? err.message : "创建失败");
+      setError(err instanceof Error ? err.message: t("创建失败"));
     } finally {
       setSaving(false);
     }
@@ -1225,12 +1228,12 @@ function CreateQuotaModal({
 
   return (
     <Modal
-      title="新建配额"
+      title={t("新建配额")}
       open={open}
       onCancel={handleClose}
       onOk={handleSubmit}
-      okText="创建"
-      cancelText="取消"
+      okText={t("创建")}
+      cancelText={t("取消")}
       confirmLoading={saving}
       destroyOnHidden
     >
@@ -1248,50 +1251,50 @@ function CreateQuotaModal({
       >
         <Form.Item
           name="name"
-          label="配额名称"
-          rules={[{ required: true, message: "请输入配额名称" }]}
+          label={t("配额名称")}
+          rules={[{ required: true, message: t("请输入配额名称") }]}
         >
-          <Input placeholder="如：全局配额" />
+          <Input placeholder={t("如：全局配额")} />
         </Form.Item>
 
-        <Form.Item name="targetType" label="目标类型">
+        <Form.Item name="targetType" label={t("目标类型")}>
           <Select
             options={[
-              { label: "全局", value: "global" },
-              { label: "用户", value: "user" },
-              { label: "部门", value: "department" },
+              { label: t("全局"), value: "global" },
+              { label: t("用户"), value: "user" },
+              { label: t("部门"), value: "department" },
               { label: "Agent", value: "agent" },
             ]}
           />
         </Form.Item>
 
-        <Form.Item name="targetName" label="目标名称">
-          <Input placeholder="用户/部门/Agent 名称（全局配额可留空）" />
+        <Form.Item name="targetName" label={t("目标名称")}>
+          <Input placeholder={t("用户/部门/Agent 名称（全局配额可留空）")} />
         </Form.Item>
 
-        <Form.Item name="period" label="统计周期">
+        <Form.Item name="period" label={t("统计周期")}>
           <Select
             options={[
-              { label: "每日", value: "daily" },
-              { label: "每周", value: "weekly" },
-              { label: "每月", value: "monthly" },
+              { label: t("每日"), value: "daily" },
+              { label: t("每周"), value: "weekly" },
+              { label: t("每月"), value: "monthly" },
             ]}
           />
         </Form.Item>
 
-        <Form.Item name="maxTokens" label="最大 Tokens">
+        <Form.Item name="maxTokens" label={t("最大 Tokens")}>
           <InputNumber min={0} className="w-full" />
         </Form.Item>
 
-        <Form.Item name="maxRequests" label="最大请求数">
+        <Form.Item name="maxRequests" label={t("最大请求数")}>
           <InputNumber min={0} className="w-full" />
         </Form.Item>
 
-        <Form.Item name="maxConversations" label="最大对话数">
+        <Form.Item name="maxConversations" label={t("最大对话数")}>
           <InputNumber min={0} className="w-full" />
         </Form.Item>
 
-        <Form.Item name="maxCost" label="最大费用（元）">
+        <Form.Item name="maxCost" label={t("最大费用（元）")}>
           <InputNumber min={0} step={0.01} precision={2} className="w-full" />
         </Form.Item>
       </Form>
@@ -1323,7 +1326,8 @@ function EditProviderModal({
   providers: Provider[];
   onClose: () => void;
   onSave: (id: string, providerId: string) => Promise<void>;
-}) {
+}) {  const { t } = useTranslation();
+
   const [form] = Form.useForm();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -1343,7 +1347,7 @@ function EditProviderModal({
     } catch (err: any) {
       if (err?.errorFields) return;
       console.error("Failed to save:", err);
-      setError(err instanceof Error ? err.message : "保存失败");
+      setError(err instanceof Error ? err.message: t("保存失败"));
     } finally {
       setSaving(false);
     }
@@ -1351,31 +1355,31 @@ function EditProviderModal({
 
   return (
     <Modal
-      title="重新选择 Provider"
+      title={t("重新选择 Provider")}
       open={true}
       onCancel={onClose}
       onOk={handleSubmit}
-      okText="保存"
-      cancelText="取消"
+      okText={t("保存")}
+      cancelText={t("取消")}
       confirmLoading={saving}
       destroyOnClose
     >
       <Alert
         type="warning"
-        title="Provider 已被删除"
-        description="请为此 API 密钥重新关联一个有效的 Provider"
+        title={t("Provider 已被删除")}
+        description={t("请为此 API 密钥重新关联一个有效的 Provider")}
         showIcon
         className="mb-4"
       />
       <Form form={form} layout="vertical">
         <Form.Item
           name="provider_id"
-          label="选择 Provider"
-          rules={[{ required: true, message: "请选择 Provider" }]}
+          label={t("选择 Provider")}
+          rules={[{ required: true, message: t("请选择 Provider") }]}
         >
           <Select
             options={providers.map((p) => ({ label: p.name, value: p.id }))}
-            placeholder="请选择新的 Provider"
+            placeholder={t("请选择新的 Provider")}
           />
         </Form.Item>
       </Form>

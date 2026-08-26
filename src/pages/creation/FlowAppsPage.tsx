@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Flow Apps (FLOW-08): published canvas subgraphs as simple form tools.
  * Fill the exposed inputs, run, see results — teammates never touch the
@@ -14,7 +15,8 @@ import {
 } from "@/services/api/flowApp";
 import { flowService } from "@/services/api/flow";
 
-export default function FlowAppsPage() {
+export default function FlowAppsPage() {  const { t } = useTranslation();
+
   const [apps, setApps] = useState<FlowApp[]>([]);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState<string | null>(null);
@@ -52,13 +54,13 @@ export default function FlowAppsPage() {
             }
           }
           setResults((prev) => ({ ...prev, [app.id]: images }));
-          message.success(`执行 ${result.executed} · 缓存 ${result.cached}`);
+          message.success(t("执行 {{p0}} · 缓存 {{p1}}", { p0: result.executed, p1: result.cached }));
         } else {
           message.error(`执行失败：${result.error ?? "未知错误"}`);
         }
       } catch (error) {
         const detail = error instanceof Error ? error.message : String(error);
-        message.error(`执行失败：${detail}`);
+        message.error(t("执行失败：{{p0}}", { p0: detail }));
       } finally {
         setRunning(null);
       }
@@ -93,7 +95,7 @@ export default function FlowAppsPage() {
         </div>
       ) : apps.length === 0 ? (
         <div className="h-64 flex items-center justify-center">
-          <Empty description="还没有应用——在工作流画布上点「发布为应用」，把调好的流程变成简单表单" />
+          <Empty description={t("还没有应用——在工作流画布上点「发布为应用」，把调好的流程变成简单表单")} />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 max-w-6xl">
@@ -108,8 +110,8 @@ export default function FlowAppsPage() {
                   <h3 className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
                     {app.name}
                   </h3>
-                  <Popconfirm title="下架这个应用？" onConfirm={() => void remove(app)} okText="下架" cancelText="取消">
-                    <Button size="small" danger icon={<DeleteOutlined />} aria-label={`下架 ${app.name}`} />
+                  <Popconfirm title={t("下架这个应用？")} onConfirm={() => void remove(app)} okText={t("下架")} cancelText={t("取消")}>
+                    <Button size="small" danger icon={<DeleteOutlined />} aria-label={t("下架 {{p0}}", { p0: app.name })} />
                   </Popconfirm>
                 </div>
                 {app.description && (
@@ -147,7 +149,7 @@ export default function FlowAppsPage() {
                   icon={<PlayCircleOutlined />}
                   loading={running === app.id}
                   onClick={() => void run(app)}
-                  aria-label={`运行 ${app.name}`}
+                  aria-label={t("运行 {{p0}}", { p0: app.name })}
                 >
                   运行
                 </Button>

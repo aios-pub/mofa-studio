@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Search result item component
  */
@@ -21,7 +22,8 @@ export default function SearchResultItemComponent({
   item,
   query,
   onCopy,
-}: SearchResultItemProps) {
+}: SearchResultItemProps) {  const { t } = useTranslation();
+
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -33,10 +35,10 @@ export default function SearchResultItemComponent({
     try {
       await navigator.clipboard.writeText(item.content);
       setCopied(true);
-      message.success("已复制到剪贴板");
+      message.success(t("已复制到剪贴板"));
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      message.error("复制失败");
+      message.error(t("复制失败"));
     }
   };
 

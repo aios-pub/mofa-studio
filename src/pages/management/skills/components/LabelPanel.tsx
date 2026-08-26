@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Label panel component
  */
@@ -12,7 +13,8 @@ interface LabelPanelProps {
   editable?: boolean;
 }
 
-export function LabelPanel({ skillId, editable = false }: LabelPanelProps) {
+export function LabelPanel({ skillId, editable = false }: LabelPanelProps) {  const { t } = useTranslation();
+
   const { labels, loadLabels, getSkillLabels, assignLabels, removeLabel } = useSkillHubStore();
   const [skillLabels, setSkillLabels] = useState<HubLabel[]>([]);
   const [loading, setLoading] = useState(false);
@@ -46,7 +48,7 @@ export function LabelPanel({ skillId, editable = false }: LabelPanelProps) {
   }
 
   if (labels.length === 0) {
-    return <Empty description="暂无标签" />;
+    return <Empty description={t("暂无标签")} />;
   }
 
   const skillLabelIds = new Set(skillLabels.map(l => l.id));
@@ -54,7 +56,7 @@ export function LabelPanel({ skillId, editable = false }: LabelPanelProps) {
   return (
     <div className="space-y-4">
       <div>
-        <h4 className="text-sm font-semibold mb-3">推荐标签</h4>
+        <h4 className="text-sm font-semibold mb-3">{t("推荐标签")}</h4>
         <Space wrap>
           {labels
             .filter(l => l.type === 'RECOMMENDED')
@@ -78,7 +80,7 @@ export function LabelPanel({ skillId, editable = false }: LabelPanelProps) {
       </div>
 
       <div>
-        <h4 className="text-sm font-semibold mb-3">特权标签</h4>
+        <h4 className="text-sm font-semibold mb-3">{t("特权标签")}</h4>
         <Space wrap>
           {labels
             .filter(l => l.type === 'PRIVILEGED')

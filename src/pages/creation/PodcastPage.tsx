@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Podcast workshop (TOOL-12): 选题 → A/B 对谈脚本（逐句可编辑/换音色）→
  * 多音色 TTS 合成 → BGM 混音（人声优先）→ MP3 导出 + RSS 输出。
@@ -31,7 +32,8 @@ interface TurnState {
   audio?: string;
 }
 
-export default function PodcastPage() {
+export default function PodcastPage() {  const { t } = useTranslation();
+
   const [topic, setTopic] = useState("");
   const [minutes, setMinutes] = useState(5);
   const [model, setModel] = useState<string>(AUTO_MODEL);
@@ -44,7 +46,7 @@ export default function PodcastPage() {
     const pending = takePendingPodcastBgm();
     if (pending) {
       setBgm(pending);
-      message.info("已载入来自音乐生成的 BGM");
+      message.info(t("已载入来自音乐生成的 BGM"));
     }
   }, []);
   const [busy, setBusy] = useState<"script" | "synth" | "render" | number | null>(null);
@@ -71,10 +73,10 @@ export default function PodcastPage() {
           voice: defaultVoiceFor(turn.speaker),
         })),
       );
-      message.success(`脚本已生成（${generated.script.length} 轮对谈）`);
+      message.success(t("脚本已生成（{{p0}} 轮对谈）", { p0: generated.script.length }));
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`脚本生成失败：${detail}`);
+      message.error(t("脚本生成失败：{{p0}}", { p0: detail }));
     } finally {
       setBusy(null);
     }
@@ -94,7 +96,7 @@ export default function PodcastPage() {
         message.success(`第 ${index + 1} 句已配音（${turn.voice}）`);
       } catch (error) {
         const detail = error instanceof Error ? error.message : String(error);
-        message.error(`配音失败：${detail}`);
+        message.error(t("配音失败：{{p0}}", { p0: detail }));
       } finally {
         setBusy(null);
       }
@@ -111,10 +113,10 @@ export default function PodcastPage() {
         const audio = await podcastService.synthesizeTurn(turns[i].text, turns[i].voice);
         setTurns((prev) => prev.map((t, idx) => (idx === i ? { ...t, audio } : t)));
       }
-      message.success("全部句子已配音");
+      message.success(t("全部句子已配音"));
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`配音中断：${detail}`);
+      message.error(t("配音中断：{{p0}}", { p0: detail }));
     } finally {
       setBusy(null);
     }
@@ -123,7 +125,7 @@ export default function PodcastPage() {
   const render = useCallback(async () => {
     const audioTurns = turns.map((t) => t.audio).filter(Boolean) as string[];
     if (audioTurns.length !== turns.length || busy !== null) {
-      message.warning("还有句子未配音");
+      message.warning(t("还有句子未配音"));
       return;
     }
     setBusy("render");
@@ -134,7 +136,7 @@ export default function PodcastPage() {
       message.success(`已合成（${Math.round(rendered.size / 1024)} KB）`);
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`合成失败：${detail}`);
+      message.error(t("合成失败：{{p0}}", { p0: detail }));
     } finally {
       setBusy(null);
     }
@@ -178,30 +180,30 @@ export default function PodcastPage() {
         </h2>
 
         <div>
-          <label className="block text-sm font-medium mb-1">选题</label>
+          <label className="block text-sm font-medium mb-1">{t("选题")}</label>
           <Input.TextArea
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            placeholder="例如：为什么猫都爱纸箱"
+            placeholder={t("例如：为什么猫都爱纸箱")}
             rows={2}
-            aria-label="播客选题"
+            aria-label={t("播客选题")}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">时长（分钟）</label>
+          <label className="block text-sm font-medium mb-1">{t("时长（分钟）")}</label>
           <InputNumber
             min={1}
             max={30}
             value={minutes}
             onChange={(v) => setMinutes(v ?? 5)}
             style={{ width: "100%" }}
-            aria-label="时长"
+            aria-label={t("时长")}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">脚本模型</label>
+          <label className="block text-sm font-medium mb-1">{t("脚本模型")}</label>
           <ModelPicker value={model} onChange={setModel} />
         </div>
 
@@ -211,7 +213,7 @@ export default function PodcastPage() {
           loading={busy === "script"}
           disabled={!topic.trim() || busy !== null}
           onClick={generateScript}
-          aria-label="生成脚本"
+          aria-label={t("生成脚本")}
         >
           生成对谈脚本
         </Button>
@@ -224,7 +226,7 @@ export default function PodcastPage() {
               loading={busy === "synth"}
               disabled={busy !== null}
               onClick={synthesizeAll}
-              aria-label="全部配音"
+              aria-label={t("全部配音")}
             >
               全部配音
             </Button>
@@ -236,11 +238,11 @@ export default function PodcastPage() {
                 const reader = new FileReader();
                 reader.onloadend = () => setBgm(reader.result as string);
                 reader.readAsDataURL(file);
-                message.info("BGM 已加载（默认 25% 音量，不压人声）");
+                message.info(t("BGM 已加载（默认 25% 音量，不压人声）"));
                 return false;
               }}
             >
-              <Button block icon={<UploadOutlined />} aria-label="上传 BGM">
+              <Button block icon={<UploadOutlined />} aria-label={t("上传 BGM")}>
                 {bgm ? "更换 BGM" : "上传 BGM（可选）"}
               </Button>
             </Upload>
@@ -252,7 +254,7 @@ export default function PodcastPage() {
               loading={busy === "render"}
               disabled={busy !== null || turns.some((t) => !t.audio)}
               onClick={render}
-              aria-label="合成导出"
+              aria-label={t("合成导出")}
             >
               合成导出 MP3
             </Button>
@@ -261,11 +263,11 @@ export default function PodcastPage() {
 
         {result && (
           <div className="space-y-2 pt-2 border-t border-(--color-border)">
-            <audio src={result} controls className="w-full" aria-label="成品预览" />
-            <Button block icon={<DownloadOutlined />} onClick={downloadMp3} aria-label="下载 MP3">
+            <audio src={result} controls className="w-full" aria-label={t("成品预览")} />
+            <Button block icon={<DownloadOutlined />} onClick={downloadMp3} aria-label={t("下载 MP3")}>
               下载 MP3
             </Button>
-            <Button block icon={<WifiOutlined />} onClick={downloadRss} aria-label="下载 RSS">
+            <Button block icon={<WifiOutlined />} onClick={downloadRss} aria-label={t("下载 RSS")}>
               输出 RSS
             </Button>
           </div>
@@ -276,7 +278,7 @@ export default function PodcastPage() {
       <div className="flex-1 overflow-y-auto p-6">
         {turns.length === 0 ? (
           <div className="h-full flex items-center justify-center">
-            <Empty description="输入选题，生成双人对谈脚本——逐句可改写、可换音色" />
+            <Empty description={t("输入选题，生成双人对谈脚本——逐句可改写、可换音色")} />
           </div>
         ) : (
           <div className="max-w-2xl mx-auto space-y-2">

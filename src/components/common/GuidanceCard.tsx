@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Inline guidance card (ONBOARD-04 交互要点): a non-modal strip with a
  * permanent-dismiss control — the UI half of the progressive-disclosure
@@ -10,7 +11,8 @@ import { Button, Tag } from "antd";
 import { BulbOutlined, CloseOutlined } from "@ant-design/icons";
 import { dismissGuidance, type Guidance } from "@/utils/progressiveDisclosure";
 
-export default function GuidanceCard({ guidance }: { guidance: Guidance }) {
+export default function GuidanceCard({ guidance }: { guidance: Guidance }) {  const { t } = useTranslation();
+
   const navigate = useNavigate();
   const [visible, setVisible] = useState(true);
   if (!visible) return null;
@@ -24,7 +26,7 @@ export default function GuidanceCard({ guidance }: { guidance: Guidance }) {
     <div
       className="flex items-start gap-3 p-3 rounded-xl border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5"
       role="status"
-      aria-label={`引导：${guidance.title}`}
+      aria-label={t("引导：{{p0}}", { p0: guidance.title })}
     >
       <BulbOutlined className="text-[var(--color-primary)] mt-1" />
       <div className="flex-1 min-w-0">
@@ -50,8 +52,8 @@ export default function GuidanceCard({ guidance }: { guidance: Guidance }) {
       <button
         onClick={dismiss}
         className="p-1 text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]"
-        aria-label="永久关闭此引导"
-        title="不再显示"
+        aria-label={t("永久关闭此引导")}
+        title={t("不再显示")}
       >
         <CloseOutlined />
       </button>

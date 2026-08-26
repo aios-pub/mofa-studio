@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * PPT generation workspace (TOOL-07): outline-first — the LLM drafts an
  * editable outline, the user confirms, then each page's content is
@@ -27,7 +28,8 @@ import { ModelPicker } from "@/components/conversation";
 
 type Phase = "input" | "outline" | "generating" | "done";
 
-export default function PptGenPage() {
+export default function PptGenPage() {  const { t } = useTranslation();
+
   const [topic, setTopic] = useState("");
   const [pageCount, setPageCount] = useState(8);
   const [themeId, setThemeId] = useState(PPT_THEMES[0].id);
@@ -50,7 +52,7 @@ export default function PptGenPage() {
       setPhase("outline");
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`大纲生成失败：${detail}`);
+      message.error(t("大纲生成失败：{{p0}}", { p0: detail }));
       setPhase("input");
     }
   }, [topic, pageCount, model, phase]);
@@ -72,10 +74,10 @@ export default function PptGenPage() {
       setOutline(filled);
       setCurrentSlide(0);
       setPhase("done");
-      message.success("全部页面已生成，可导出 .pptx");
+      message.success(t("全部页面已生成，可导出 .pptx"));
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`内容生成失败：${detail}`);
+      message.error(t("内容生成失败：{{p0}}", { p0: detail }));
       setPhase("outline");
     }
   }, [phase, outline, topic, model]);
@@ -92,10 +94,10 @@ export default function PptGenPage() {
       );
       setOutline((prev) => prev.map((s, i) => (i === currentSlide ? fresh : s)));
       setPhase("done");
-      message.success("该页已重新生成");
+      message.success(t("该页已重新生成"));
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`重新生成失败：${detail}`);
+      message.error(t("重新生成失败：{{p0}}", { p0: detail }));
       setPhase("done");
     }
   }, [phase, currentSlide, outline, topic, model]);
@@ -103,10 +105,10 @@ export default function PptGenPage() {
   const download = useCallback(async () => {
     try {
       await exportPptx({ title: deckTitle, slides: outline }, themeId);
-      message.success("已导出 .pptx（PowerPoint / WPS 可打开）");
+      message.success(t("已导出 .pptx（PowerPoint / WPS 可打开）"));
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`导出失败：${detail}`);
+      message.error(t("导出失败：{{p0}}", { p0: detail }));
     }
   }, [deckTitle, outline, themeId]);
 
@@ -122,29 +124,29 @@ export default function PptGenPage() {
         </h2>
 
         <div>
-          <label className="block text-sm font-medium mb-1">主题</label>
+          <label className="block text-sm font-medium mb-1">{t("主题")}</label>
           <Input
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            placeholder="例如：橘猫智能产品发布会"
-            aria-label="PPT 主题"
+            placeholder={t("例如：橘猫智能产品发布会")}
+            aria-label={t("PPT 主题")}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">页数</label>
+          <label className="block text-sm font-medium mb-1">{t("页数")}</label>
           <InputNumber
             min={3}
             max={20}
             value={pageCount}
             onChange={(value) => setPageCount(value ?? 8)}
             style={{ width: "100%" }}
-            aria-label="PPT 页数"
+            aria-label={t("PPT 页数")}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">主题模板</label>
+          <label className="block text-sm font-medium mb-1">{t("主题模板")}</label>
           <Select
             value={themeId}
             onChange={setThemeId}
@@ -161,12 +163,12 @@ export default function PptGenPage() {
               ),
             }))}
             style={{ width: "100%" }}
-            aria-label="主题模板选择"
+            aria-label={t("主题模板选择")}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">模型</label>
+          <label className="block text-sm font-medium mb-1">{t("模型")}</label>
           <ModelPicker value={model} onChange={setModel} />
         </div>
 
@@ -176,13 +178,13 @@ export default function PptGenPage() {
             block
             disabled={!topic.trim()}
             onClick={draftOutline}
-            aria-label="生成大纲"
+            aria-label={t("生成大纲")}
           >
             生成大纲
           </Button>
         )}
         {phase === "outline" && (
-          <Button type="primary" block icon={<CheckOutlined />} onClick={confirmOutline} aria-label="确认大纲并生成内容">
+          <Button type="primary" block icon={<CheckOutlined />} onClick={confirmOutline} aria-label={t("确认大纲并生成内容")}>
             确认大纲，逐页生成
           </Button>
         )}
@@ -193,10 +195,10 @@ export default function PptGenPage() {
         )}
         {phase === "done" && (
           <div className="space-y-2">
-            <Button type="primary" block icon={<DownloadOutlined />} onClick={download} aria-label="导出 pptx">
+            <Button type="primary" block icon={<DownloadOutlined />} onClick={download} aria-label={t("导出 pptx")}>
               导出 .pptx
             </Button>
-            <Button block icon={<RedoOutlined />} onClick={regenerateSlide} disabled={currentSlide === 0} aria-label="重新生成本页">
+            <Button block icon={<RedoOutlined />} onClick={regenerateSlide} disabled={currentSlide === 0} aria-label={t("重新生成本页")}>
               重新生成本页
             </Button>
           </div>
@@ -211,7 +213,7 @@ export default function PptGenPage() {
       <div className="flex-1 overflow-y-auto p-6">
         {outline.length === 0 ? (
           <div className="h-full flex items-center justify-center">
-            <Empty description="输入主题，先生成大纲" />
+            <Empty description={t("输入主题，先生成大纲")} />
           </div>
         ) : phase === "outline" ? (
           <div className="max-w-2xl mx-auto space-y-3">
@@ -324,7 +326,7 @@ export default function PptGenPage() {
               </span>
             </div>
             <p className="text-xs text-[var(--color-text-tertiary)]">
-              <Tag>只读预览</Tag> 导出 .pptx 后可在 PowerPoint / WPS 中继续编辑。
+              <Tag>{t("只读预览")}</Tag> 导出 .pptx 后可在 PowerPoint / WPS 中继续编辑。
             </p>
           </div>
         )}

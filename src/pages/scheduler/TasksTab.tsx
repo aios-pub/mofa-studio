@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Task management tab
  * Modeled on apalis-board Tasks: status tab filter + paginated table + detail panel
@@ -51,7 +52,8 @@ export default function TasksTab({
 }: {
   initialFilterType?: TaskType | "";
   onFilterTypeConsumed?: () => void;
-}) {
+}) {  const { t } = useTranslation();
+
   const [tasks, setTasks] = useState<ScheduledTask[]>([]);
   const [executions, setExecutions] = useState<TaskExecution[]>([]);
   const [taskTypes, setTaskTypes] = useState<TaskTypeDescriptor[]>([]);
@@ -123,20 +125,20 @@ export default function TasksTab({
   const handleExecute = async (id: string) => {
     try {
       await scheduledTaskApi.executeTask(id);
-      message.success("任务已开始执行");
+      message.success(t("任务已开始执行"));
       loadData();
     } catch {
-      message.error("执行失败");
+      message.error(t("执行失败"));
     }
   };
 
   const handleToggle = async (id: string) => {
     try {
       await scheduledTaskApi.toggleTask(id);
-      message.success("状态已更新");
+      message.success(t("状态已更新"));
       loadData();
     } catch {
-      message.error("操作失败");
+      message.error(t("操作失败"));
     }
   };
 
@@ -144,10 +146,10 @@ export default function TasksTab({
     try {
       await scheduledTaskApi.deleteTask(id);
       if (selectedTask?.id === id) setSelectedTask(null);
-      message.success("任务已删除");
+      message.success(t("任务已删除"));
       loadData();
     } catch {
-      message.error("删除失败");
+      message.error(t("删除失败"));
     }
   };
 
@@ -176,7 +178,7 @@ export default function TasksTab({
 
   const columns: ColumnsType<ScheduledTask> = [
     {
-      title: "名称",
+      title: t("名称"),
       dataIndex: "name",
       key: "name",
       sorter: (a, b) => a.name.localeCompare(b.name),
@@ -190,13 +192,13 @@ export default function TasksTab({
       ),
     },
     {
-      title: "状态",
+      title: t("状态"),
       dataIndex: "status",
       key: "status",
       width: 90,
       filters: [
-        { text: "已启用", value: "enabled" },
-        { text: "已禁用", value: "disabled" },
+        { text: t("已启用"), value: "enabled" },
+        { text: t("已禁用"), value: "disabled" },
       ],
       onFilter: (value, record) => record.status === value,
       render: (status: TaskStatus) => (
@@ -222,7 +224,7 @@ export default function TasksTab({
       ),
     },
     {
-      title: "成功/失败",
+      title: t("成功/失败"),
       key: "counts",
       width: 120,
       sorter: (a, b) => a.successCount - b.successCount,
@@ -261,7 +263,7 @@ export default function TasksTab({
       },
     },
     {
-      title: "上次执行",
+      title: t("上次执行"),
       dataIndex: "lastRunAt",
       key: "lastRun",
       width: 150,
@@ -290,7 +292,7 @@ export default function TasksTab({
       ),
     },
     {
-      title: "下次执行",
+      title: t("下次执行"),
       dataIndex: "nextRunAt",
       key: "nextRun",
       width: 150,
@@ -299,7 +301,7 @@ export default function TasksTab({
       ),
     },
     {
-      title: "操作",
+      title: t("操作"),
       key: "actions",
       width: 140,
       render: (_: unknown, record: ScheduledTask) => (
@@ -327,10 +329,10 @@ export default function TasksTab({
             onClick={() => setEditingTask(record)}
           />
           <Popconfirm
-            title="确认删除？"
+            title={t("确认删除？")}
             onConfirm={() => handleDelete(record.id)}
-            okText="删除"
-            cancelText="取消"
+            okText={t("删除")}
+            cancelText={t("取消")}
             okButtonProps={{ danger: true }}
           >
             <Button size="small" danger icon={<DeleteOutlined />} />
@@ -345,7 +347,7 @@ export default function TasksTab({
       {/* Action bar */}
       <div className="flex items-center gap-3 p-3 border-b border-(--color-border)">
         <Input
-          placeholder="搜索任务..."
+          placeholder={t("搜索任务...")}
           prefix={<SearchOutlined />}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -356,7 +358,7 @@ export default function TasksTab({
         <Select
           value={filterType || undefined}
           onChange={(v) => setFilterType(v || "")}
-          placeholder="全部类型"
+          placeholder={t("全部类型")}
           allowClear
           style={{ width: 160 }}
           size="small"
@@ -379,10 +381,10 @@ export default function TasksTab({
       {/* Status tabs */}
       <div className="flex border-b border-(--color-border)">
         {[
-          { key: "all" as const, label: "全部", count: tasks.length },
-          { key: "enabled" as const, label: "已启用", count: enabledCount },
-          { key: "disabled" as const, label: "已禁用", count: disabledCount },
-          { key: "running" as const, label: "运行中", count: runningCount },
+          { key: "all" as const, label: t("全部"), count: tasks.length },
+          { key: "enabled" as const, label: t("已启用"), count: enabledCount },
+          { key: "disabled" as const, label: t("已禁用"), count: disabledCount },
+          { key: "running" as const, label: t("运行中"), count: runningCount },
         ].map((tab) => (
           <button
             key={tab.key}
@@ -409,7 +411,7 @@ export default function TasksTab({
           loading={loading}
           pagination={{
             pageSize: 15,
-            showTotal: (t) => `共 ${t} 条`,
+            showTotal: (t) => t("共 {{p0}} 条", { p0: t }),
             size: "small",
           }}
           onRow={(record) => ({

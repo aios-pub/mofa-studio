@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Local skills list component
  */
@@ -39,7 +40,8 @@ export function LocalSkillsList({
   selectedSkill,
   onSelectSkill,
   onRefresh,
-}: LocalSkillsListProps) {
+}: LocalSkillsListProps) {  const { t } = useTranslation();
+
   const [skills, setSkills] = useState<Skill[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -84,7 +86,7 @@ export function LocalSkillsList({
       }
     } catch (error) {
       console.error("Failed to toggle skill:", error);
-      message.error("操作失败");
+      message.error(t("操作失败"));
     }
   };
 
@@ -102,7 +104,7 @@ export function LocalSkillsList({
       setSkills((prev) => [created, ...prev]);
       setShowCreateModal(false);
       createForm.resetFields();
-      message.success("创建成功");
+      message.success(t("创建成功"));
     } catch (error: any) {
       if (error?.errorFields) return; // form validation error
       message.error(error?.message || "创建失败");
@@ -124,7 +126,7 @@ export function LocalSkillsList({
       if (selectedSkill?.id === updated.id) onSelectSkill(updated);
       setEditSkill(null);
       editForm.resetFields();
-      message.success("更新成功");
+      message.success(t("更新成功"));
     } catch (error: any) {
       if (error?.errorFields) return;
       message.error(error?.message || "更新失败");
@@ -135,16 +137,16 @@ export function LocalSkillsList({
 
   const handleDeleteSkill = (skill: Skill) => {
     Modal.confirm({
-      title: "确认删除",
-      content: `确定要删除 Skill「${skill.name}」吗？`,
-      okText: "删除",
-      cancelText: "取消",
+      title: t("确认删除"),
+      content: t("确定要删除 Skill「{{p0}}」吗？", { p0: skill.name }),
+      okText: t("删除"),
+      cancelText: t("取消"),
       okButtonProps: { danger: true },
       onOk: async () => {
         await skillApi.delete(skill.id);
         setSkills(skills.filter((s) => s.id !== skill.id));
         if (selectedSkill?.id === skill.id) onSelectSkill(null);
-        message.success("已删除");
+        message.success(t("已删除"));
       },
     });
   };
@@ -181,8 +183,8 @@ export function LocalSkillsList({
 
   const getTypeTag = (type: Skill["type"]) => {
     const config: Record<string, { color: string; label: string }> = {
-      builtin: { color: "blue", label: "内置" },
-      custom: { color: "purple", label: "自定义" },
+      builtin: { color: "blue", label: t("内置") },
+      custom: { color: "purple", label: t("自定义") },
       api: { color: "orange", label: "API" },
     };
     const item = config[type ?? ""] ?? {
@@ -210,7 +212,7 @@ export function LocalSkillsList({
 
         {/* Search */}
         <Input
-          placeholder="搜索 Skills..."
+          placeholder={t("搜索 Skills...")}
           prefix={<SearchOutlined />}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -235,9 +237,9 @@ export function LocalSkillsList({
             style={{ flex: 1 }}
             size="small"
             options={[
-              { label: "全部类型", value: "all" },
-              { label: "内置", value: "builtin" },
-              { label: "自定义", value: "custom" },
+              { label: t("全部类型"), value: "all" },
+              { label: t("内置"), value: "builtin" },
+              { label: t("自定义"), value: "custom" },
               { label: "API", value: "api" },
             ]}
           />
@@ -248,7 +250,7 @@ export function LocalSkillsList({
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="text-center py-8">
-            <Text type="secondary">加载中...</Text>
+            <Text type="secondary">{t("加载中...")}</Text>
           </div>
         ) : filteredSkills.length === 0 ? (
           <div className="text-center py-8">
@@ -260,7 +262,7 @@ export function LocalSkillsList({
                 display: "block",
               }}
             />
-            <Text type="secondary">暂无 Skills</Text>
+            <Text type="secondary">{t("暂无 Skills")}</Text>
           </div>
         ) : (
           <Collapse
@@ -369,7 +371,7 @@ export function LocalSkillsList({
       </div>
 
       <Modal
-        title="创建 Skill"
+        title={t("创建 Skill")}
         open={showCreateModal}
         onCancel={() => {
           setShowCreateModal(false);
@@ -377,29 +379,29 @@ export function LocalSkillsList({
         }}
         onOk={handleCreateSkill}
         confirmLoading={createLoading}
-        okText="创建"
+        okText={t("创建")}
         width={500}
         destroyOnHidden
       >
         <Form form={createForm} layout="vertical" className="pt-2">
           <Form.Item
             name="name"
-            label="名称"
-            rules={[{ required: true, message: "请输入名称" }]}
+            label={t("名称")}
+            rules={[{ required: true, message: t("请输入名称") }]}
           >
-            <Input placeholder="输入 Skill 名称" />
+            <Input placeholder={t("输入 Skill 名称")} />
           </Form.Item>
-          <Form.Item name="description" label="描述">
-            <Input.TextArea placeholder="输入描述（可选）" rows={3} />
+          <Form.Item name="description" label={t("描述")}>
+            <Input.TextArea placeholder={t("输入描述（可选）")} rows={3} />
           </Form.Item>
-          <Form.Item name="category" label="分类" initialValue="general">
+          <Form.Item name="category" label={t("分类")} initialValue="general">
             <Select
               options={[
-                { label: "通用", value: "general" },
-                { label: "数据处理", value: "data" },
-                { label: "网络", value: "network" },
-                { label: "文件", value: "file" },
-                { label: "系统集成", value: "integration" },
+                { label: t("通用"), value: "general" },
+                { label: t("数据处理"), value: "data" },
+                { label: t("网络"), value: "network" },
+                { label: t("文件"), value: "file" },
+                { label: t("系统集成"), value: "integration" },
               ]}
             />
           </Form.Item>
@@ -407,7 +409,7 @@ export function LocalSkillsList({
       </Modal>
 
       <Modal
-        title="编辑 Skill"
+        title={t("编辑 Skill")}
         open={!!editSkill}
         onCancel={() => {
           setEditSkill(null);
@@ -415,29 +417,29 @@ export function LocalSkillsList({
         }}
         onOk={handleEditSkill}
         confirmLoading={editLoading}
-        okText="保存"
+        okText={t("保存")}
         width={500}
         destroyOnHidden
       >
         <Form form={editForm} layout="vertical" className="pt-2">
           <Form.Item
             name="name"
-            label="名称"
-            rules={[{ required: true, message: "请输入名称" }]}
+            label={t("名称")}
+            rules={[{ required: true, message: t("请输入名称") }]}
           >
-            <Input placeholder="输入 Skill 名称" />
+            <Input placeholder={t("输入 Skill 名称")} />
           </Form.Item>
-          <Form.Item name="description" label="描述">
-            <Input.TextArea placeholder="输入描述（可选）" rows={3} />
+          <Form.Item name="description" label={t("描述")}>
+            <Input.TextArea placeholder={t("输入描述（可选）")} rows={3} />
           </Form.Item>
-          <Form.Item name="category" label="分类">
+          <Form.Item name="category" label={t("分类")}>
             <Select
               options={[
-                { label: "通用", value: "general" },
-                { label: "数据处理", value: "data" },
-                { label: "网络", value: "network" },
-                { label: "文件", value: "file" },
-                { label: "系统集成", value: "integration" },
+                { label: t("通用"), value: "general" },
+                { label: t("数据处理"), value: "data" },
+                { label: t("网络"), value: "network" },
+                { label: t("文件"), value: "file" },
+                { label: t("系统集成"), value: "integration" },
               ]}
             />
           </Form.Item>

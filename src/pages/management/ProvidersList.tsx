@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Provider management page
  */
@@ -38,7 +39,8 @@ import { formatDate } from "@/utils";
 import ResizableSidebar from "@/components/layout/ResizableSidebar";
 import { fuzzyMatch } from "@/utils/fuzzySearch";
 
-export default function ProvidersListPage() {
+export default function ProvidersListPage() {  const { t } = useTranslation();
+
   const [providers, setProviders] = useState<Provider[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -107,10 +109,10 @@ export default function ProvidersListPage() {
       if (selectedProvider?.id === id) {
         setSelectedProvider(null);
       }
-      message.success("Provider 已删除");
+      message.success(t("Provider 已删除"));
     } catch (error) {
       console.error("Failed to delete provider:", error);
-      message.error("删除失败");
+      message.error(t("删除失败"));
     }
   };
 
@@ -121,11 +123,11 @@ export default function ProvidersListPage() {
       if (result.valid) {
         message.success(result.message);
       } else {
-        message.error(`验证失败: ${result.message}`);
+        message.error(t("验证失败: {{p0}}", { p0: result.message }));
       }
     } catch (error) {
       console.error("Failed to validate key:", error);
-      message.error("验证失败");
+      message.error(t("验证失败"));
     } finally {
       setValidatingKey(null);
     }
@@ -144,7 +146,7 @@ export default function ProvidersListPage() {
       setRefreshModalOpen(true);
     } catch (error) {
       console.error("Failed to refresh models:", error);
-      message.error("获取模型列表失败");
+      message.error(t("获取模型列表失败"));
     } finally {
       setRefreshingModels(null);
     }
@@ -163,10 +165,10 @@ export default function ProvidersListPage() {
       if (selectedProvider?.id === refreshingProviderId && updated) {
         setSelectedProvider(updated);
       }
-      message.success("模型列表已更新");
+      message.success(t("模型列表已更新"));
     } catch (error) {
       console.error("Failed to save model selection:", error);
-      message.error("保存失败");
+      message.error(t("保存失败"));
     }
   };
 
@@ -193,7 +195,7 @@ export default function ProvidersListPage() {
       message.success(enabled ? "模型已启用" : "模型已禁用");
     } catch (error) {
       console.error("Failed to toggle model:", error);
-      message.error("操作失败");
+      message.error(t("操作失败"));
     }
   };
 
@@ -203,7 +205,7 @@ export default function ProvidersListPage() {
     if (!provider) return;
     const currentIds = provider.models.map((m) => m.name);
     if (currentIds.includes(modelId)) {
-      message.warning("该模型已存在");
+      message.warning(t("该模型已存在"));
       return;
     }
     const updatedIds = [...currentIds, modelId];
@@ -214,10 +216,10 @@ export default function ProvidersListPage() {
       if (selectedProvider?.id === providerId && updated) {
         setSelectedProvider(updated);
       }
-      message.success(`模型 "${modelId}" 添加成功`);
+      message.success(t("模型 \"{{p0}}\" 添加成功", { p0: modelId }));
     } catch (error) {
       console.error("Failed to add model:", error);
-      message.error("添加失败");
+      message.error(t("添加失败"));
     }
   };
 
@@ -226,7 +228,7 @@ export default function ProvidersListPage() {
     formData: CreateProviderFormData,
   ): Promise<ProviderWithModels | void> => {
     const newProvider = await providerApi.createFromFormData(formData);
-    message.success(`Provider "${newProvider.name}" 添加成功`);
+    message.success(t("Provider \"{{p0}}\" 添加成功", { p0: newProvider.name }));
     return {
       id: newProvider.id,
       name: newProvider.name,
@@ -255,7 +257,7 @@ export default function ProvidersListPage() {
     const updated = await providerApi.update(id, updateData);
     setProviders(providers.map((p) => (p.id === id ? updated : p)));
     setSelectedProvider(updated);
-    message.success(`Provider "${updated.name}" 更新成功`);
+    message.success(t("Provider \"{{p0}}\" 更新成功", { p0: updated.name }));
   };
 
   return (
@@ -278,7 +280,7 @@ export default function ProvidersListPage() {
 
           {/* Search */}
           <Input
-            placeholder="搜索 Providers..."
+            placeholder={t("搜索 Providers...")}
             prefix={<SearchOutlined />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -295,7 +297,7 @@ export default function ProvidersListPage() {
           ) : filteredProviders.length === 0 ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">
               <CloudServerOutlined className="text-3xl mb-2 opacity-50" />
-              <p>暂无 Providers</p>
+              <p>{t("暂无 Providers")}</p>
             </div>
           ) : (
             filteredProviders.map((provider) => (
@@ -463,11 +465,11 @@ export default function ProvidersListPage() {
       {/* Refresh model selection dialog */}
       <Modal
         open={refreshModalOpen}
-        title="选择要启用的模型"
+        title={t("选择要启用的模型")}
         onCancel={() => setRefreshModalOpen(false)}
         onOk={handleRefreshConfirm}
-        okText="确认选择"
-        cancelText="取消"
+        okText={t("确认选择")}
+        cancelText={t("取消")}
         width={560}
       >
         <div className="h-[400px]">
@@ -526,7 +528,8 @@ function ProviderDetail({
   onEdit: (provider: Provider) => void;
   validatingKey: boolean;
   refreshingModels: boolean;
-}) {
+}) {  const { t } = useTranslation();
+
   const [showApiKey, setShowApiKey] = useState(false);
   const [activeTab, setActiveTab] = useState<"models" | "usage" | "settings">(
     "models",
@@ -548,9 +551,9 @@ function ProviderDetail({
     (provider.models?.[0]?.pricing.input || 0);
 
   const tabs = [
-    { key: "models", label: "模型列表", icon: ThunderboltOutlined },
-    { key: "usage", label: "使用统计", icon: DollarOutlined },
-    { key: "settings", label: "配置设置", icon: KeyOutlined },
+    { key: "models", label: t("模型列表"), icon: ThunderboltOutlined },
+    { key: "usage", label: t("使用统计"), icon: DollarOutlined },
+    { key: "settings", label: t("配置设置"), icon: KeyOutlined },
   ];
 
   return (
@@ -692,7 +695,7 @@ function ProviderDetail({
             </div>
 
             <Input
-              placeholder="搜索模型..."
+              placeholder={t("搜索模型...")}
               prefix={<SearchOutlined />}
               value={modelSearch}
               onChange={(e) => setModelSearch(e.target.value)}
@@ -753,7 +756,7 @@ function ProviderDetail({
 
             {/* Add model modal */}
             <Modal
-              title="添加模型"
+              title={t("添加模型")}
               open={addModelOpen}
               onCancel={() => {
                 setAddModelOpen(false);
@@ -773,8 +776,8 @@ function ProviderDetail({
                   setAddingModel(false);
                 }
               }}
-              okText="添加"
-              cancelText="取消"
+              okText={t("添加")}
+              cancelText={t("取消")}
               confirmLoading={addingModel}
               okButtonProps={{ disabled: !addModelId.trim() }}
             >
@@ -783,7 +786,7 @@ function ProviderDetail({
                   模型 ID <span className="text-red-500">*</span>
                 </label>
                 <Input
-                  placeholder="例如: gpt-4o, claude-3-opus"
+                  placeholder={t("例如: gpt-4o, claude-3-opus")}
                   value={addModelId}
                   onChange={(e) => setAddModelId(e.target.value)}
                 />
@@ -801,7 +804,7 @@ function ProviderDetail({
               <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
                 <div className="flex items-center gap-2 text-[var(--color-text-tertiary)] mb-2">
                   <ThunderboltOutlined />
-                  <span className="text-sm">总调用次数</span>
+                  <span className="text-sm">{t("总调用次数")}</span>
                 </div>
                 <p className="text-2xl font-semibold text-[var(--color-text-primary)]">
                   {provider.usage.totalCalls.toLocaleString()}
@@ -810,7 +813,7 @@ function ProviderDetail({
               <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
                 <div className="flex items-center gap-2 text-[var(--color-text-tertiary)] mb-2">
                   <ClockCircleOutlined />
-                  <span className="text-sm">总 Tokens</span>
+                  <span className="text-sm">{t("总 Tokens")}</span>
                 </div>
                 <p className="text-2xl font-semibold text-[var(--color-text-primary)]">
                   {(provider.usage.totalTokens / 1000).toFixed(1)}K
@@ -819,7 +822,7 @@ function ProviderDetail({
               <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
                 <div className="flex items-center gap-2 text-[var(--color-text-tertiary)] mb-2">
                   <DollarOutlined />
-                  <span className="text-sm">预估费用</span>
+                  <span className="text-sm">{t("预估费用")}</span>
                 </div>
                 <p className="text-2xl font-semibold text-[var(--color-text-primary)]">
                   {formatCurrency(estimatedCost)}
@@ -832,8 +835,8 @@ function ProviderDetail({
                 使用历史
               </h4>
               <div className="text-center text-[var(--color-text-tertiary)] py-8">
-                <p>使用历史图表开发中...</p>
-                <p className="text-xs mt-1">将显示调用趋势和 Token 消耗</p>
+                <p>{t("使用历史图表开发中...")}</p>
+                <p className="text-xs mt-1">{t("将显示调用趋势和 Token 消耗")}</p>
               </div>
             </div>
 
@@ -898,7 +901,7 @@ function ProviderDetail({
                       onClick={() => {
                         if (provider.apiKey) {
                           navigator.clipboard.writeText(provider.apiKey);
-                          message.success("已复制到剪贴板");
+                          message.success(t("已复制到剪贴板"));
                         }
                       }}
                     />

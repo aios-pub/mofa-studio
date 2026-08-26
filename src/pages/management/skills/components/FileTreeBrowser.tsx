@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * File tree browser component
  */
@@ -91,12 +92,13 @@ function buildTree(files: HubSkillFile[]): DataNode[] {
   return roots;
 }
 
-export function FileTreeBrowser({ files, onFileSelect }: FileTreeBrowserProps) {
+export function FileTreeBrowser({ files, onFileSelect }: FileTreeBrowserProps) {  const { t } = useTranslation();
+
   const treeData = buildTree(files);
 
   return (
     <div className="border rounded-lg p-4 bg-gray-50">
-      <h3 className="text-sm font-semibold mb-3 text-gray-700">文件列表</h3>
+      <h3 className="text-sm font-semibold mb-3 text-gray-700">{t("文件列表")}</h3>
       <Tree
         showIcon
         defaultExpandAll

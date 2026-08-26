@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * My Skills Page
  * Show skills owned by the current user
@@ -32,7 +33,8 @@ import { skillHubV2Api } from "@/services";
 import type { HubSkill, SkillStatus } from "@/types/skill";
 import { useSkillHubStore } from "@/stores/useSkillHubStore";
 
-export function MySkillsPage() {
+export function MySkillsPage() {  const { t } = useTranslation();
+
   const navigate = useNavigate();
   const [mySkills, setMySkills] = useState<HubSkill[]>([]);
   const [loading, setLoading] = useState(false);
@@ -114,7 +116,7 @@ export function MySkillsPage() {
 
   const columns = [
     {
-      title: "技能",
+      title: t("技能"),
       key: "skill",
       render: (_: unknown, record: HubSkill) => (
         <Space orientation="vertical" size={0}>
@@ -136,7 +138,7 @@ export function MySkillsPage() {
       ),
     },
     {
-      title: "状态",
+      title: t("状态"),
       dataIndex: "status",
       key: "status",
       width: 100,
@@ -145,7 +147,7 @@ export function MySkillsPage() {
       ),
     },
     {
-      title: "版本",
+      title: t("版本"),
       key: "version",
       width: 120,
       render: (_: unknown, record: HubSkill) => (
@@ -158,18 +160,18 @@ export function MySkillsPage() {
       ),
     },
     {
-      title: "统计",
+      title: t("统计"),
       key: "stats",
       width: 150,
       render: (_: unknown, record: HubSkill) => (
         <Space size="large" className="text-sm">
-          <Tooltip title="下载次数">
+          <Tooltip title={t("下载次数")}>
             <Space size={4}>
               <span>⬇</span>
               <span>{record.download_count}</span>
             </Space>
           </Tooltip>
-          <Tooltip title="Star 数">
+          <Tooltip title={t("Star 数")}>
             <Space size={4}>
               <span>★</span>
               <span>{record.star_count}</span>
@@ -189,27 +191,27 @@ export function MySkillsPage() {
       ),
     },
     {
-      title: "可见性",
+      title: t("可见性"),
       dataIndex: "visibility",
       key: "visibility",
       width: 120,
       render: (visibility: string) => {
         const config: Record<string, { color: string; text: string }> = {
-          PUBLIC: { color: "green", text: "公开" },
-          NAMESPACE_ONLY: { color: "blue", text: "命名空间" },
-          PRIVATE: { color: "default", text: "私有" },
+          PUBLIC: { color: "green", text: t("公开") },
+          NAMESPACE_ONLY: { color: "blue", text: t("命名空间") },
+          PRIVATE: { color: "default", text: t("私有") },
         };
         const c = config[visibility] || { color: "default", text: visibility };
         return <Tag color={c.color}>{c.text}</Tag>;
       },
     },
     {
-      title: "操作",
+      title: t("操作"),
       key: "actions",
       width: 200,
       render: (_: unknown, record: HubSkill) => (
         <Space size="small">
-          <Tooltip title="查看详情">
+          <Tooltip title={t("查看详情")}>
             <Button
               type="text"
               size="small"
@@ -229,10 +231,10 @@ export function MySkillsPage() {
               onClick={() => handleToggleStar(record.id)}
             />
           </Tooltip>
-          <Tooltip title="编辑">
+          <Tooltip title={t("编辑")}>
             <Button type="text" size="small" icon={<EditOutlined />} />
           </Tooltip>
-          <Tooltip title="发布新版本">
+          <Tooltip title={t("发布新版本")}>
             <Button
               type="text"
               size="small"
@@ -241,7 +243,7 @@ export function MySkillsPage() {
             />
           </Tooltip>
           {record.status === "ACTIVE" && (
-            <Tooltip title="归档">
+            <Tooltip title={t("归档")}>
               <Button
                 type="text"
                 size="small"
@@ -263,7 +265,7 @@ export function MySkillsPage() {
             </Tooltip>
           )}
           {record.status === "ARCHIVED" && (
-            <Tooltip title="恢复">
+            <Tooltip title={t("恢复")}>
               <Button
                 type="text"
                 size="small"
@@ -293,13 +295,13 @@ export function MySkillsPage() {
       <Row gutter={16} className="mb-6">
         <Col span={4}>
           <Card>
-            <Statistic title="总技能数" value={stats.total} />
+            <Statistic title={t("总技能数")} value={stats.total} />
           </Card>
         </Col>
         <Col span={4}>
           <Card>
             <Statistic
-              title="活跃"
+              title={t("活跃")}
               value={stats.active}
               styles={{ content: { color: "#3f8600" } }}
             />
@@ -307,13 +309,13 @@ export function MySkillsPage() {
         </Col>
         <Col span={4}>
           <Card>
-            <Statistic title="总下载" value={stats.totalDownloads} />
+            <Statistic title={t("总下载")} value={stats.totalDownloads} />
           </Card>
         </Col>
         <Col span={4}>
           <Card>
             <Statistic
-              title="总 Stars"
+              title={t("总 Stars")}
               value={stats.totalStars}
               styles={{ content: { color: "#cf1322" } }}
             />
@@ -321,18 +323,18 @@ export function MySkillsPage() {
         </Col>
         <Col span={4}>
           <Card>
-            <Statistic title="已隐藏" value={stats.hidden} />
+            <Statistic title={t("已隐藏")} value={stats.hidden} />
           </Card>
         </Col>
         <Col span={4}>
           <Card>
-            <Statistic title="已归档" value={stats.archived} />
+            <Statistic title={t("已归档")} value={stats.archived} />
           </Card>
         </Col>
       </Row>
 
       <Card
-        title="我的技能"
+        title={t("我的技能")}
         extra={
           <Space>
             <Space.Compact>
@@ -375,7 +377,7 @@ export function MySkillsPage() {
           pagination={{
             pageSize: 20,
             showSizeChanger: true,
-            showTotal: (total) => `共 ${total} 个技能`,
+            showTotal: (total) => t("共 {{p0}} 个技能", { p0: total }),
           }}
         />
       </Card>

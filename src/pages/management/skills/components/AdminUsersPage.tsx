@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Admin Users Page
  * Admin user management page
@@ -34,7 +35,8 @@ interface UserInfo {
   lastLoginAt: string;
 }
 
-export function AdminUsersPage() {
+export function AdminUsersPage() {  const { t } = useTranslation();
+
   const [users, setUsers] = useState<UserInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -226,12 +228,12 @@ export function AdminUsersPage() {
         <Title level={3} className="m-0">
           用户管理
         </Title>
-        <Text type="secondary">管理系统用户和权限</Text>
+        <Text type="secondary">{t("管理系统用户和权限")}</Text>
       </div>
 
       <div className="mb-4 flex gap-4">
         <Input
-          placeholder="搜索用户名、邮箱或显示名称"
+          placeholder={t("搜索用户名、邮箱或显示名称")}
           prefix={<SearchOutlined />}
           value={searchText}
           onChange={e => setSearchText(e.target.value)}
@@ -239,26 +241,26 @@ export function AdminUsersPage() {
           allowClear
         />
         <Select
-          placeholder="筛选状态"
+          placeholder={t("筛选状态")}
           value={statusFilter}
           onChange={setStatusFilter}
           style={{ width: 150 }}
           allowClear
         >
-          <Option value="active">活跃</Option>
-          <Option value="inactive">未激活</Option>
-          <Option value="suspended">已暂停</Option>
+          <Option value="active">{t("活跃")}</Option>
+          <Option value="inactive">{t("未激活")}</Option>
+          <Option value="suspended">{t("已暂停")}</Option>
         </Select>
         <Select
-          placeholder="筛选角色"
+          placeholder={t("筛选角色")}
           value={roleFilter}
           onChange={setRoleFilter}
           style={{ width: 150 }}
           allowClear
         >
-          <Option value="SUPER_ADMIN">超级管理员</Option>
-          <Option value="ADMIN">管理员</Option>
-          <Option value="USER">普通用户</Option>
+          <Option value="SUPER_ADMIN">{t("超级管理员")}</Option>
+          <Option value="ADMIN">{t("管理员")}</Option>
+          <Option value="USER">{t("普通用户")}</Option>
         </Select>
       </div>
 
@@ -271,28 +273,28 @@ export function AdminUsersPage() {
           total: filteredUsers.length,
           pageSize: 20,
           showSizeChanger: true,
-          showTotal: total => `共 ${total} 个用户`,
+          showTotal: total => t("共 {{p0}} 个用户", { p0: total }),
         }}
       />
 
       <Modal
-        title="管理用户"
+        title={t("管理用户")}
         open={editModalVisible}
         onOk={handleUpdateUser}
         onCancel={() => setEditModalVisible(false)}
-        okText="保存"
-        cancelText="取消"
+        okText={t("保存")}
+        cancelText={t("取消")}
       >
         {selectedUser && (
           <Form form={form} layout="vertical">
-            <Form.Item label="用户名">
+            <Form.Item label={t("用户名")}>
               <Input value={selectedUser.username} disabled />
             </Form.Item>
-            <Form.Item label="邮箱">
+            <Form.Item label={t("邮箱")}>
               <Input value={selectedUser.email} disabled />
             </Form.Item>
             <Form.Item
-              label="状态"
+              label={t("状态")}
               name="status"
               valuePropName="checked"
               initialValue={selectedUser.status === 'active'}
@@ -300,14 +302,14 @@ export function AdminUsersPage() {
               <Switch checkedChildren="活跃" unCheckedChildren="暂停" />
             </Form.Item>
             <Form.Item
-              label="角色"
+              label={t("角色")}
               name="role"
               initialValue={selectedUser.role}
             >
               <Select>
-                <Option value="SUPER_ADMIN">超级管理员</Option>
-                <Option value="ADMIN">管理员</Option>
-                <Option value="USER">普通用户</Option>
+                <Option value="SUPER_ADMIN">{t("超级管理员")}</Option>
+                <Option value="ADMIN">{t("管理员")}</Option>
+                <Option value="USER">{t("普通用户")}</Option>
               </Select>
             </Form.Item>
           </Form>

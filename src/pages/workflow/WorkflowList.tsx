@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Workflow list page
  */
@@ -36,7 +37,8 @@ const statusConfig: Record<WorkflowStatus, { color: string; text: string }> = {
   archived: { color: "default", text: "已归档" },
 };
 
-export default function WorkflowListPage() {
+export default function WorkflowListPage() {  const { t } = useTranslation();
+
   const navigate = useNavigate();
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,7 +55,7 @@ export default function WorkflowListPage() {
       setWorkflows(data);
     } catch (error) {
       console.error("Failed to load workflows:", error);
-      message.error("加载失败");
+      message.error(t("加载失败"));
     } finally {
       setLoading(false);
     }
@@ -61,19 +63,19 @@ export default function WorkflowListPage() {
 
   const handleDelete = async (workflow: Workflow) => {
     Modal.confirm({
-      title: "确认删除",
-      content: `确定要删除工作流「${workflow.name}」吗？删除后无法恢复。`,
-      okText: "删除",
-      cancelText: "取消",
+      title: t("确认删除"),
+      content: t("确定要删除工作流「{{p0}}」吗？删除后无法恢复。", { p0: workflow.name }),
+      okText: t("删除"),
+      cancelText: t("取消"),
       okButtonProps: { danger: true },
       onOk: async () => {
         try {
           await workflowApi.delete(workflow.id);
           setWorkflows((prev) => prev.filter((w) => w.id !== workflow.id));
-          message.success("工作流已删除");
+          message.success(t("工作流已删除"));
         } catch (error) {
           console.error("Failed to delete workflow:", error);
-          message.error("删除失败");
+          message.error(t("删除失败"));
         }
       },
     });
@@ -84,11 +86,11 @@ export default function WorkflowListPage() {
       const newWorkflow = await workflowApi.duplicate(workflow.id);
       if (newWorkflow) {
         setWorkflows((prev) => [...prev, newWorkflow]);
-        message.success("工作流已复制");
+        message.success(t("工作流已复制"));
       }
     } catch (error) {
       console.error("Failed to duplicate workflow:", error);
-      message.error("复制失败");
+      message.error(t("复制失败"));
     }
   };
 
@@ -99,46 +101,46 @@ export default function WorkflowListPage() {
         setWorkflows((prev) =>
           prev.map((w) => (w.id === updated.id ? updated : w)),
         );
-        message.success("工作流已发布");
+        message.success(t("工作流已发布"));
       }
     } catch (error) {
       console.error("Failed to publish workflow:", error);
-      message.error("发布失败");
+      message.error(t("发布失败"));
     }
   };
 
   const handleExecute = async (workflow: Workflow) => {
     if (workflow.status !== "published") {
-      message.warning("请先发布工作流");
+      message.warning(t("请先发布工作流"));
       return;
     }
     try {
       const execution = await workflowApi.execute(workflow.id);
-      message.success("工作流已开始执行");
+      message.success(t("工作流已开始执行"));
       // Can navigate to the execution detail page
       console.log("Execution started:", execution);
     } catch (error) {
       console.error("Failed to execute workflow:", error);
-      message.error("执行失败");
+      message.error(t("执行失败"));
     }
   };
 
   const handleCreateWorkflow = async () => {
     try {
       const newWorkflow = await workflowApi.create({
-        name: "新工作流",
+        name: t("新工作流"),
         nodes: [
           {
             id: "node-start",
             type: "start",
             position: { x: 100, y: 200 },
-            config: { type: "start", config: { label: "开始", inputs: [] } },
+            config: { type: "start", config: { label: t("开始"), inputs: [] } },
           },
           {
             id: "node-end",
             type: "end",
             position: { x: 400, y: 200 },
-            config: { type: "end", config: { label: "结束", outputs: [] } },
+            config: { type: "end", config: { label: t("结束"), outputs: [] } },
           },
         ],
         edges: [
@@ -152,35 +154,35 @@ export default function WorkflowListPage() {
       navigate(`/workflow/editor/${newWorkflow.id}`);
     } catch (error) {
       console.error("Failed to create workflow:", error);
-      message.error("创建失败");
+      message.error(t("创建失败"));
     }
   };
 
   const getActionMenuItems = (workflow: Workflow) => [
     {
       key: "edit",
-      label: "编辑",
+      label: t("编辑"),
       icon: <EditOutlined />,
       onClick: () => navigate(`/workflow/editor/${workflow.id}`),
     },
     {
       key: "duplicate",
-      label: "复制",
+      label: t("复制"),
       icon: <CopyOutlined />,
       onClick: () => handleDuplicate(workflow),
     },
     {
       key: "versions",
-      label: "版本历史",
+      label: t("版本历史"),
       icon: <HistoryOutlined />,
-      onClick: () => message.info("版本历史功能开发中"),
+      onClick: () => message.info(t("版本历史功能开发中")),
     },
     { type: "divider" as const },
     ...(workflow.status === "draft"
       ? [
           {
             key: "publish",
-            label: "发布",
+            label: t("发布"),
             icon: <ShareAltOutlined />,
             onClick: () => handlePublish(workflow),
           },
@@ -188,7 +190,7 @@ export default function WorkflowListPage() {
       : []),
     {
       key: "execute",
-      label: "执行",
+      label: t("执行"),
       icon: <PlayCircleOutlined />,
       disabled: workflow.status !== "published",
       onClick: () => handleExecute(workflow),
@@ -196,7 +198,7 @@ export default function WorkflowListPage() {
     { type: "divider" as const },
     {
       key: "delete",
-      label: "删除",
+      label: t("删除"),
       icon: <DeleteOutlined />,
       danger: true,
       onClick: () => handleDelete(workflow),
@@ -232,7 +234,7 @@ export default function WorkflowListPage() {
         </div>
 
         <Input
-          placeholder="搜索工作流..."
+          placeholder={t("搜索工作流...")}
           prefix={<SearchOutlined />}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * File preview component
  */
@@ -12,7 +13,8 @@ interface FilePreviewProps {
   loading: boolean;
 }
 
-export function FilePreview({ fileName, content, loading }: FilePreviewProps) {
+export function FilePreview({ fileName, content, loading }: FilePreviewProps) {  const { t } = useTranslation();
+
   if (loading) {
     return (
       <Card>
@@ -26,7 +28,7 @@ export function FilePreview({ fileName, content, loading }: FilePreviewProps) {
   if (!content) {
     return (
       <Card>
-        <Empty description="选择一个文件以预览内容" />
+        <Empty description={t("选择一个文件以预览内容")} />
       </Card>
     );
   }

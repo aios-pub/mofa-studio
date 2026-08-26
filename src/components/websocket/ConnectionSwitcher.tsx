@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * WebSocket connection mode switcher component
  */
@@ -85,7 +86,8 @@ export default function ConnectionSwitcher({
   showStatusText = true,
   style,
   className,
-}: ConnectionSwitcherProps) {
+}: ConnectionSwitcherProps) {  const { t } = useTranslation();
+
   const { state, mode, switchMode, connect, disconnect } = useWebSocket({
     autoConnect: false,
   });
@@ -151,7 +153,7 @@ export default function ConnectionSwitcher({
         buttonStyle="solid"
       >
         <Radio.Button value="native">
-          <Tooltip title="Socket.IO 模式 - 支持回退和重连">
+          <Tooltip title={t("Socket.IO 模式 - 支持回退和重连")}>
             <Space size={4}>
               <ApiOutlined />
               <span className="text-xs">Socket.IO</span>
@@ -159,7 +161,7 @@ export default function ConnectionSwitcher({
           </Tooltip>
         </Radio.Button>
         <Radio.Button value="wss">
-          <Tooltip title="原生 WSS 模式 - 更轻量级">
+          <Tooltip title={t("原生 WSS 模式 - 更轻量级")}>
             <Space size={4}>
               <LinkOutlined />
               <span className="text-xs">WSS</span>

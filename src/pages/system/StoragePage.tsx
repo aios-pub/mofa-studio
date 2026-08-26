@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Storage management page (PLAT-09): category usage breakdown, one-click
  * cache cleanup, and a recoverable recycle bin.
@@ -14,7 +15,8 @@ import {
   type TrashItem,
 } from "@/services/api/storage";
 
-export default function StoragePage() {
+export default function StoragePage() {  const { t } = useTranslation();
+
   const [usage, setUsage] = useState<StorageUsage | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -41,9 +43,9 @@ export default function StoragePage() {
     async (item: TrashItem) => {
       const restored = await storageService.restore(item.id);
       if (restored) {
-        message.success("已恢复到媒体目录");
+        message.success(t("已恢复到媒体目录"));
       } else {
-        message.error("恢复失败");
+        message.error(t("恢复失败"));
       }
       await load();
     },
@@ -100,18 +102,18 @@ export default function StoragePage() {
               <Progress percent={percent} showInfo={false} size="small" />
               {cleanable ? (
                 <Popconfirm
-                  title={`确定清理「${category.label}」全部文件？`}
-                  description="清理后不可恢复（不走回收站）"
+                  title={t("确定清理「{{p0}}」全部文件？", { p0: category.label })}
+                  description={t("清理后不可恢复（不走回收站）")}
                   onConfirm={() => void clean(category.key)}
-                  okText="清理"
-                  cancelText="取消"
+                  okText={t("清理")}
+                  cancelText={t("取消")}
                 >
                   <Button size="small" danger icon={<DeleteOutlined />} className="mt-2">
                     一键清理
                   </Button>
                 </Popconfirm>
               ) : (
-                <Tag className="mt-2">不可清理</Tag>
+                <Tag className="mt-2">{t("不可清理")}</Tag>
               )}
             </Card>
           );
@@ -121,14 +123,14 @@ export default function StoragePage() {
       {/* Recycle bin */}
       <Card
         size="small"
-        title={`回收站（${usage.trash.length} 项）`}
+        title={t("回收站（{{p0}} 项）", { p0: usage.trash.length })}
         extra={
           usage.trash.length > 0 && (
             <Popconfirm
-              title="确定清空回收站？"
+              title={t("确定清空回收站？")}
               onConfirm={() => void emptyTrash()}
-              okText="清空"
-              cancelText="取消"
+              okText={t("清空")}
+              cancelText={t("取消")}
             >
               <Button size="small" danger>
                 清空回收站
@@ -145,32 +147,32 @@ export default function StoragePage() {
           locale={{ emptyText: "回收站为空" }}
           columns={[
             {
-              title: "条目",
+              title: t("条目"),
               dataIndex: "id",
               key: "id",
               render: (id: string) => <span className="text-xs">{id}</span>,
             },
             {
-              title: "大小",
+              title: t("大小"),
               dataIndex: "size",
               key: "size",
               render: (size: number) => formatBytes(size),
             },
             {
-              title: "删除时间",
+              title: t("删除时间"),
               dataIndex: "trashed_at",
               key: "trashed_at",
               render: (at: string) => at.replace("T", " ").slice(0, 19),
             },
             {
-              title: "操作",
+              title: t("操作"),
               key: "actions",
               render: (_: unknown, item: TrashItem) => (
                 <Button
                   size="small"
                   icon={<UndoOutlined />}
                   onClick={() => void restore(item)}
-                  aria-label={`恢复 ${item.id}`}
+                  aria-label={t("恢复 {{p0}}", { p0: item.id })}
                 >
                   恢复
                 </Button>

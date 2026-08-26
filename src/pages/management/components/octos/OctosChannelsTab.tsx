@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Octos channel configuration - reuses channel management
  * Select from configured channels instead of reconfiguring
@@ -31,7 +32,8 @@ const OCTOS_SUPPORTED_CHANNEL_TYPES = [
   "wechat",
 ] as const;
 
-export default function OctosChannelsTab({ config, onChange }: Props) {
+export default function OctosChannelsTab({ config, onChange }: Props) {  const { t } = useTranslation();
+
   const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]);
@@ -101,7 +103,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
       <div className="flex items-center justify-center py-8">
         <Space>
           <Spin />
-          <Text type="secondary">加载渠道列表...</Text>
+          <Text type="secondary">{t("加载渠道列表...")}</Text>
         </Space>
       </div>
     );
@@ -112,7 +114,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
       <Alert
         type="info"
         showIcon
-        title="从已配置的渠道中选择，无需重新配置凭据"
+        title={t("从已配置的渠道中选择，无需重新配置凭据")}
         className="text-xs"
       />
 
@@ -121,10 +123,10 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
         <Alert
           type="warning"
           showIcon
-          title="未选择任何渠道"
+          title={t("未选择任何渠道")}
           description={
             <div className="text-xs">
-              <p>请至少选择一个渠道以启用消息收发功能。</p>
+              <p>{t("请至少选择一个渠道以启用消息收发功能。")}</p>
               <p className="mt-1 text-(--color-text-tertiary)">
                 Octos 将使用所选渠道的凭据（如 Token、Secret）进行消息通信。
               </p>
@@ -144,7 +146,7 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={
               <div className="text-center">
-                <p className="text-(--color-text-tertiary)">暂无可用渠道</p>
+                <p className="text-(--color-text-tertiary)">{t("暂无可用渠道")}</p>
                 <p className="text-xs text-(--color-text-tertiary) mt-1">
                   请先在渠道管理页面添加渠道
                 </p>
@@ -257,16 +259,16 @@ export default function OctosChannelsTab({ config, onChange }: Props) {
         type="info"
         showIcon
         icon={<InfoCircleOutlined />}
-        title="渠道配置说明"
+        title={t("渠道配置说明")}
         description={
           <div className="text-xs mt-2">
             <ul className="space-y-1 list-disc pl-4">
-              <li>只有已启用且状态正常的渠道才能被选择</li>
-              <li>渠道的具体配置（如 Token、Secret）在渠道管理页面维护</li>
-              <li>Octos 会自动将所选渠道的凭据转换为后端所需的格式</li>
+              <li>{t("只有已启用且状态正常的渠道才能被选择")}</li>
+              <li>{t("渠道的具体配置（如 Token、Secret）在渠道管理页面维护")}</li>
+              <li>{t("Octos 会自动将所选渠道的凭据转换为后端所需的格式")}</li>
             </ul>
             <div className="mt-2 p-2 bg-(--color-bg-tertiary) rounded">
-              <p className="font-medium mb-1">后端配置格式示例：</p>
+              <p className="font-medium mb-1">{t("后端配置格式示例：")}</p>
               <pre className="text-xs text-(--color-text-tertiary) overflow-x-auto">
                 {`{
   "channels": [

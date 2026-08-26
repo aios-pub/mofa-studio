@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Admin panel - report handling, skill hiding, namespace management, etc.
  */
@@ -43,7 +44,8 @@ const reportActions = [
   { value: "yank", label: "撤回版本", color: "error" },
 ];
 
-export function AdminGovernancePanel() {
+export function AdminGovernancePanel() {  const { t } = useTranslation();
+
   const { reports, reportsLoading, loadReports, resolveReport } =
     useSkillHubStore();
 
@@ -66,7 +68,7 @@ export function AdminGovernancePanel() {
 
     try {
       await resolveReport(selectedReport.id, { action, comment });
-      message.success("处理成功");
+      message.success(t("处理成功"));
       setModalVisible(false);
       loadReports({ status: "PENDING" });
     } catch (err) {
@@ -83,34 +85,34 @@ export function AdminGovernancePanel() {
       render: (id: string) => <span className="text-xs">{id.slice(0, 8)}</span>,
     },
     {
-      title: "技能 ID",
+      title: t("技能 ID"),
       dataIndex: "skillId",
       key: "skillId",
       width: 80,
       render: (id: string) => <span className="text-xs">{id.slice(0, 8)}</span>,
     },
     {
-      title: "举报原因",
+      title: t("举报原因"),
       dataIndex: "reason",
       key: "reason",
       width: 120,
     },
     {
-      title: "详细说明",
+      title: t("详细说明"),
       dataIndex: "details",
       key: "details",
       width: 200,
       ellipsis: true,
     },
     {
-      title: "举报者",
+      title: t("举报者"),
       dataIndex: "reporterId",
       key: "reporterId",
       width: 100,
       render: (id: string) => <span className="text-xs">{id.slice(0, 8)}</span>,
     },
     {
-      title: "状态",
+      title: t("状态"),
       dataIndex: "status",
       key: "status",
       width: 100,
@@ -120,28 +122,28 @@ export function AdminGovernancePanel() {
       },
     },
     {
-      title: "创建时间",
+      title: t("创建时间"),
       dataIndex: "createdAt",
       key: "createdAt",
       width: 160,
       render: (date: Date) => new Date(date).toLocaleString("zh-CN"),
     },
     {
-      title: "处理者",
+      title: t("处理者"),
       dataIndex: "handledBy",
       key: "handledBy",
       width: 100,
       render: (handler: string | undefined) => handler || "-",
     },
     {
-      title: "处理说明",
+      title: t("处理说明"),
       dataIndex: "handleComment",
       key: "handleComment",
       width: 150,
       ellipsis: true,
     },
     {
-      title: "操作",
+      title: t("操作"),
       key: "action",
       width: 150,
       render: (_: unknown, record: SkillReport) => (
@@ -187,7 +189,7 @@ export function AdminGovernancePanel() {
         title={
           <Space>
             <WarningOutlined />
-            <span>管理面板</span>
+            <span>{t("管理面板")}</span>
             <Badge
               count={
                 (reports?.items || []).filter((r) => r.status === "PENDING").length
@@ -211,7 +213,7 @@ export function AdminGovernancePanel() {
             },
             {
               key: "hidden",
-              label: "已隐藏技能",
+              label: t("已隐藏技能"),
             },
             {
               key: "namespaces",
@@ -250,7 +252,7 @@ export function AdminGovernancePanel() {
         {activeTab === "hidden" && (
           <div className="text-center py-12 text-gray-400">
             <StopOutlined style={{ fontSize: 48 }} />
-            <div className="mt-4">已隐藏技能列表（待实现）</div>
+            <div className="mt-4">{t("已隐藏技能列表（待实现）")}</div>
           </div>
         )}
 
@@ -285,10 +287,10 @@ export function AdminGovernancePanel() {
                 </Button>,
                 <Popconfirm
                   key="confirm"
-                  title="确定要处理此举报吗？"
+                  title={t("确定要处理此举报吗？")}
                   onConfirm={handleResolveReport}
-                  okText="确定"
-                  cancelText="取消"
+                  okText={t("确定")}
+                  cancelText={t("取消")}
                 >
                   <Button type="primary" danger>
                     确认处理
@@ -311,27 +313,27 @@ export function AdminGovernancePanel() {
           <div>
             <div className="space-y-2 mb-4">
               <div>
-                <span className="text-gray-600">举报 ID: </span>
+                <span className="text-gray-600">{t("举报 ID:")}</span>
                 <span>{selectedReport.id.slice(0, 8)}</span>
               </div>
               <div>
-                <span className="text-gray-600">技能 ID: </span>
+                <span className="text-gray-600">{t("技能 ID:")}</span>
                 <span>{selectedReport.skill_id.slice(0, 8)}</span>
               </div>
               <div>
-                <span className="text-gray-600">举报原因: </span>
+                <span className="text-gray-600">{t("举报原因:")}</span>
                 <Tag color="warning">{selectedReport.reason}</Tag>
               </div>
               <div>
-                <span className="text-gray-600">详细说明: </span>
+                <span className="text-gray-600">{t("详细说明:")}</span>
                 <span>{selectedReport.details}</span>
               </div>
               <div>
-                <span className="text-gray-600">举报者: </span>
+                <span className="text-gray-600">{t("举报者:")}</span>
                 <span>{selectedReport.reporter_id.slice(0, 8)}</span>
               </div>
               <div>
-                <span className="text-gray-600">举报时间: </span>
+                <span className="text-gray-600">{t("举报时间:")}</span>
                 <span>
                   {new Date(selectedReport.created_at).toLocaleString("zh-CN")}
                 </span>
@@ -341,7 +343,7 @@ export function AdminGovernancePanel() {
             {action === "hide" && (
               <div className="border-t pt-4">
                 <div className="mb-3">
-                  <span className="text-gray-600">处理操作: </span>
+                  <span className="text-gray-600">{t("处理操作:")}</span>
                   <Select
                     value={action}
                     onChange={setAction}
@@ -353,12 +355,12 @@ export function AdminGovernancePanel() {
                   />
                 </div>
                 <div>
-                  <span className="text-gray-600 block mb-2">处理说明: </span>
+                  <span className="text-gray-600 block mb-2">{t("处理说明:")}</span>
                   <TextArea
                     rows={3}
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    placeholder="请输入处理说明..."
+                    placeholder={t("请输入处理说明...")}
                   />
                 </div>
               </div>

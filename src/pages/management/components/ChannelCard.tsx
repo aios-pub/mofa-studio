@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Channel card component
  */
@@ -37,19 +38,20 @@ export default function ChannelCard({
   onEdit,
   onDelete,
   onTest,
-}: ChannelCardProps) {
+}: ChannelCardProps) {  const { t } = useTranslation();
+
   const typeInfo = channelTypeConfig[channel.type];
 
   const menuItems = [
     {
       key: "test",
-      label: "测试连接",
+      label: t("测试连接"),
       icon: <ApiOutlined />,
       onClick: onTest,
     },
     {
       key: "edit",
-      label: "编辑",
+      label: t("编辑"),
       icon: <EditOutlined />,
       onClick: onEdit,
     },
@@ -58,7 +60,7 @@ export default function ChannelCard({
     },
     {
       key: "delete",
-      label: "删除",
+      label: t("删除"),
       icon: <DeleteOutlined />,
       danger: true,
       onClick: onDelete,

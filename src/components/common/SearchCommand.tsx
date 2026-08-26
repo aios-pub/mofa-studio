@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Search command palette component
  * Supports global search and quick navigation (Cmd/Ctrl + K)
@@ -191,7 +192,8 @@ export interface SearchCommandProps {
 export const SearchCommand: React.FC<SearchCommandProps> = ({
   open: controlledOpen,
   onOpenChange,
-}) => {
+}) => {  const { t } = useTranslation();
+
   const [internalOpen, setInternalOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
@@ -306,7 +308,7 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
           prefix={
             <SearchOutlined className="text-[var(--color-text-tertiary)]" />
           }
-          placeholder="搜索菜单、页面... (Ctrl+K)"
+          placeholder={t("搜索菜单、页面... (Ctrl+K)")}
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}
           size="large"
@@ -321,7 +323,7 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
           <>
             <div className="px-4 py-2 text-xs text-[var(--color-text-tertiary)] flex items-center gap-1">
               <HistoryOutlined />
-              <span>最近搜索</span>
+              <span>{t("最近搜索")}</span>
             </div>
             <div className="flex flex-col">
               {recentItems.map((item: SearchItem) => (
@@ -382,7 +384,7 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
         {searchValue.trim() && filteredItems.length === 0 && (
           <div className="py-12 text-center text-[var(--color-text-tertiary)]">
             <SearchOutlined className="text-4xl mb-2" />
-            <p>未找到相关结果</p>
+            <p>{t("未找到相关结果")}</p>
           </div>
         )}
       </div>
@@ -396,19 +398,19 @@ export const SearchCommand: React.FC<SearchCommandProps> = ({
           <kbd className="px-1.5 py-0.5 rounded bg-(--color-bg-tertiary)">
             ↓
           </kbd>
-          <span>导航</span>
+          <span>{t("导航")}</span>
         </Space>
         <Space>
           <kbd className="px-1.5 py-0.5 rounded bg-(--color-bg-tertiary)">
             Enter
           </kbd>
-          <span>选择</span>
+          <span>{t("选择")}</span>
         </Space>
         <Space>
           <kbd className="px-1.5 py-0.5 rounded bg-(--color-bg-tertiary)">
             Esc
           </kbd>
-          <span>关闭</span>
+          <span>{t("关闭")}</span>
         </Space>
       </div>
     </Modal>

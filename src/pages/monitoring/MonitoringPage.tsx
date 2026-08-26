@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Real-time monitoring page
  */
@@ -28,7 +29,8 @@ import type {
 } from "@/services";
 import { monitoringApi } from "@/services";
 
-export default function MonitoringPage() {
+export default function MonitoringPage() {  const { t } = useTranslation();
+
   const [agentStatuses, setAgentStatuses] = useState<AgentStatus[]>([]);
   const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
   const [systemMetrics, setSystemMetrics] = useState<SystemMetrics | null>(
@@ -141,7 +143,7 @@ export default function MonitoringPage() {
           />
           <MetricCard
             icon={DatabaseOutlined}
-            label="内存"
+            label={t("内存")}
             value={`${systemMetrics.memory.toFixed(1)}%`}
             color={
               systemMetrics.memory > 80
@@ -153,19 +155,19 @@ export default function MonitoringPage() {
           />
           <MetricCard
             icon={WifiOutlined}
-            label="网络"
+            label={t("网络")}
             value={`${systemMetrics.network.toFixed(1)}%`}
             color="blue"
           />
           <MetricCard
             icon={AlertOutlined}
-            label="活跃连接"
+            label={t("活跃连接")}
             value={systemMetrics.active_connections.toString()}
             color="blue"
           />
           <MetricCard
             icon={UnorderedListOutlined}
-            label="队列长度"
+            label={t("队列长度")}
             value={systemMetrics.queue_length.toString()}
             color={systemMetrics.queue_length > 10 ? "yellow" : "green"}
           />
@@ -177,18 +179,18 @@ export default function MonitoringPage() {
         {[
           {
             key: "agents",
-            label: "Agent 状态",
+            label: t("Agent 状态"),
             icon: ThunderboltOutlined,
             badge: agentStatuses.filter((a) => a.status === "online").length,
           },
           {
             key: "activity",
-            label: "活动流",
+            label: t("活动流"),
             icon: AlertOutlined,
           },
           {
             key: "alerts",
-            label: "告警",
+            label: t("告警"),
             icon: BellOutlined,
             badge: unacknowledgedAlerts.length,
             badgeColor: "red",
@@ -245,7 +247,8 @@ export default function MonitoringPage() {
 }
 
 // Agent statusTabs
-function AgentsTab({ statuses }: { statuses: AgentStatus[] }) {
+function AgentsTab({ statuses }: { statuses: AgentStatus[] }) {  const { t } = useTranslation();
+
   const getStatusColor = (status: AgentStatus["status"]) => {
     switch (status) {
       case "online":
@@ -332,7 +335,7 @@ function AgentsTab({ statuses }: { statuses: AgentStatus[] }) {
               </p>
             </div>
             <div>
-              <span className="text-[var(--color-text-tertiary)]">成功率</span>
+              <span className="text-[var(--color-text-tertiary)]">{t("成功率")}</span>
               <p className="font-medium text-green-500">
                 {agent.metrics.success_rate}%
               </p>
@@ -448,7 +451,8 @@ function AlertsTab({
 }: {
   alerts: Alert[];
   onAcknowledge: (id: string) => void;
-}) {
+}) {  const { t } = useTranslation();
+
   const getAlertIcon = (type: Alert["type"]) => {
     switch (type) {
       case "error":
@@ -516,7 +520,7 @@ function AlertsTab({
       {alerts.length === 0 && (
         <div className="text-center py-12 text-[var(--color-text-tertiary)]">
           <BellOutlined className="text-4xl mx-auto mb-2 opacity-50" />
-          <p>暂无告警</p>
+          <p>{t("暂无告警")}</p>
         </div>
       )}
     </div>

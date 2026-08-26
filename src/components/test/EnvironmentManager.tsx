@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Environment variable management component
  * Postman-like environment management
@@ -41,7 +42,8 @@ export function EnvironmentManager({
   onChange,
   onVariablesChange,
   className,
-}: EnvironmentManagerProps) {
+}: EnvironmentManagerProps) {  const { t } = useTranslation();
+
   const [environments, setEnvironments] = useState<Environment[]>([]);
   const [activeEnvironment, setActiveEnvironment] = useState<Environment | null>(null);
   const [loading, setLoading] = useState(true);
@@ -84,7 +86,7 @@ export function EnvironmentManager({
     } catch (error) {
       if (requestId !== environmentsRequestIdRef.current) return;
       console.error("Failed to load environments:", error);
-      message.error("加载环境变量失败");
+      message.error(t("加载环境变量失败"));
     } finally {
       if (requestId === environmentsRequestIdRef.current) {
         setLoading(false);
@@ -126,10 +128,10 @@ export function EnvironmentManager({
       }
 
       onChange?.(envId);
-      message.success("已切换环境");
+      message.success(t("已切换环境"));
     } catch (error) {
       console.error("Failed to set active environment:", error);
-      message.error("切换环境失败");
+      message.error(t("切换环境失败"));
     }
   };
 
@@ -165,10 +167,10 @@ export function EnvironmentManager({
         onChange?.("");
         onVariablesChange?.([]);
       }
-      message.success("删除成功");
+      message.success(t("删除成功"));
     } catch (error) {
       console.error("Failed to delete environment:", error);
-      message.error("删除失败");
+      message.error(t("删除失败"));
     }
   };
 
@@ -191,7 +193,7 @@ export function EnvironmentManager({
           description: values.description,
           variables: variables.map(({ key, ...rest }) => ({ ...rest, key })),
         } as any);
-        message.success("更新成功");
+        message.success(t("更新成功"));
       } else {
         await environmentApi.create({
           name: values.name,
@@ -199,7 +201,7 @@ export function EnvironmentManager({
           variables,
           isGlobal: false,
         });
-        message.success("创建成功");
+        message.success(t("创建成功"));
       }
 
       setModalOpen(false);
@@ -207,13 +209,13 @@ export function EnvironmentManager({
     } catch (error: any) {
       if (error?.errorFields) return;
       console.error("Failed to save environment:", error);
-      message.error("保存失败");
+      message.error(t("保存失败"));
     }
   };
 
   const columns: ColumnsType<EnvironmentVariable> = [
     {
-      title: "启用",
+      title: t("启用"),
       dataIndex: "enabled",
       width: 70,
       render: (_enabled, _record, index) => (
@@ -227,21 +229,21 @@ export function EnvironmentManager({
       ),
     },
     {
-      title: "变量名",
+      title: t("变量名"),
       dataIndex: "key",
       width: 200,
       render: (_key, _record, index) => (
         <Form.Item
           name={["variables", index, "key"]}
-          rules={[{ required: true, message: "请输入变量名" }]}
+          rules={[{ required: true, message: t("请输入变量名") }]}
           style={{ margin: 0 }}
         >
-          <Input placeholder="变量名" />
+          <Input placeholder={t("变量名")} />
         </Form.Item>
       ),
     },
     {
-      title: "值",
+      title: t("值"),
       dataIndex: "value",
       width: 250,
       render: (_value, _record, index) => (
@@ -249,12 +251,12 @@ export function EnvironmentManager({
           name={["variables", index, "value"]}
           style={{ margin: 0 }}
         >
-          <Input.Password placeholder="变量值" />
+          <Input.Password placeholder={t("变量值")} />
         </Form.Item>
       ),
     },
     {
-      title: "描述",
+      title: t("描述"),
       dataIndex: "description",
       width: 180,
       render: (_description, _record, index) => (
@@ -262,7 +264,7 @@ export function EnvironmentManager({
           name={["variables", index, "description"]}
           style={{ margin: 0 }}
         >
-          <Input placeholder="描述（可选）" />
+          <Input placeholder={t("描述（可选）")} />
         </Form.Item>
       ),
     },
@@ -275,12 +277,12 @@ export function EnvironmentManager({
           value={value || undefined}
           onChange={handleSetActive}
           loading={loading}
-          placeholder="选择环境"
+          placeholder={t("选择环境")}
           allowClear
           style={{ flex: 1 }}
           options={[
             {
-              label: <span style={{ color: "#999" }}>不使用环境</span>,
+              label: <span style={{ color: "#999" }}>{t("不使用环境")}</span>,
               value: "",
             },
             ...environments.map((env) => ({
@@ -290,7 +292,7 @@ export function EnvironmentManager({
                     <CheckCircleOutlined style={{ color: "#52c41a" }} />
                   )}
                   <span>{env.name}</span>
-                  {env.isGlobal && <Tag color="blue">全局</Tag>}
+                  {env.isGlobal && <Tag color="blue">{t("全局")}</Tag>}
                 </Space>
               ),
               value: env.id,
@@ -301,7 +303,7 @@ export function EnvironmentManager({
           icon={<EnvironmentOutlined />}
           onClick={() => {
             Modal.info({
-              title: "环境变量管理",
+              title: t("环境变量管理"),
               width: 800,
               content: (
                 <EnvironmentListContent
@@ -325,8 +327,8 @@ export function EnvironmentManager({
         onOk={handleModalOk}
         onCancel={() => setModalOpen(false)}
         width={900}
-        okText="保存"
-        cancelText="取消"
+        okText={t("保存")}
+        cancelText={t("取消")}
       >
         <Form
           form={form}
@@ -335,17 +337,17 @@ export function EnvironmentManager({
         >
           <Form.Item
             name="name"
-            label="环境名称"
-            rules={[{ required: true, message: "请输入环境名称" }]}
+            label={t("环境名称")}
+            rules={[{ required: true, message: t("请输入环境名称") }]}
           >
-            <Input placeholder="例如：开发环境、测试环境、生产环境" />
+            <Input placeholder={t("例如：开发环境、测试环境、生产环境")} />
           </Form.Item>
 
-          <Form.Item name="description" label="描述">
-            <Input.TextArea placeholder="环境描述（可选）" rows={2} />
+          <Form.Item name="description" label={t("描述")}>
+            <Input.TextArea placeholder={t("环境描述（可选）")} rows={2} />
           </Form.Item>
 
-          <Divider>变量列表</Divider>
+          <Divider>{t("变量列表")}</Divider>
 
           <Form.List name="variables">
             {(fields, { add, remove }) => (
@@ -353,7 +355,7 @@ export function EnvironmentManager({
                 <Table
                   columns={columns.concat([
                     {
-                      title: "操作",
+                      title: t("操作"),
                       width: 60,
                       key: "action",
                       render: (_value: unknown, _record: unknown, index: number) => (
@@ -406,10 +408,11 @@ function EnvironmentListContent({
   onEdit,
   onDelete,
   onCreate,
-}: EnvironmentListContentProps) {
+}: EnvironmentListContentProps) {  const { t } = useTranslation();
+
   const columns: ColumnsType<Environment> = [
     {
-      title: "环境名称",
+      title: t("环境名称"),
       dataIndex: "name",
       key: "name",
       render: (name, record) => (
@@ -420,19 +423,19 @@ function EnvironmentListContent({
               当前
             </Tag>
           )}
-          {record.isGlobal && <Tag color="blue">全局</Tag>}
+          {record.isGlobal && <Tag color="blue">{t("全局")}</Tag>}
         </Space>
       ),
     },
     {
-      title: "变量数量",
+      title: t("变量数量"),
       dataIndex: "variables",
       key: "variables",
       width: 100,
       render: (variables) => variables.length,
     },
     {
-      title: "操作",
+      title: t("操作"),
       key: "actions",
       width: 150,
       render: (_, record) => (
@@ -445,10 +448,10 @@ function EnvironmentListContent({
             编辑
           </Button>
           <Popconfirm
-            title="确定要删除此环境吗？"
+            title={t("确定要删除此环境吗？")}
             onConfirm={() => onDelete(record.id)}
-            okText="确定"
-            cancelText="取消"
+            okText={t("确定")}
+            cancelText={t("取消")}
           >
             <Button size="small" danger icon={<DeleteOutlined />}>
               删除

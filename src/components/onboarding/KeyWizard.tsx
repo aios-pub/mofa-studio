@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * BYOK key configuration wizard (ONBOARD-02).
  *
@@ -28,7 +29,8 @@ import SearchConfigCard from "./SearchConfigCard";
 import ModelRoutingCard from "./ModelRoutingCard";
 import BudgetCard from "./BudgetCard";
 
-export default function KeyWizard({ onDone }: { onDone?: () => void }) {
+export default function KeyWizard({ onDone }: { onDone?: () => void }) {  const { t } = useTranslation();
+
   const vendors = useMemo(
     () =>
       orderVendorsChinaFirst(
@@ -74,10 +76,10 @@ export default function KeyWizard({ onDone }: { onDone?: () => void }) {
       }
       setDone(true);
       markOnboarded();
-      message.success(`已配置 ${vendor.name}`);
+      message.success(t("已配置 {{p0}}", { p0: vendor.name }));
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`配置失败：${detail}`);
+      message.error(t("配置失败：{{p0}}", { p0: detail }));
     } finally {
       setBusy(false);
     }
@@ -97,7 +99,7 @@ export default function KeyWizard({ onDone }: { onDone?: () => void }) {
         <p className="text-sm text-[var(--color-text-secondary)]">
           密钥已保存在本机引擎中，前端不保留明文。现在可以在对话中选择该模型开始使用。
         </p>
-        <Button type="primary" onClick={onDone} aria-label="完成配置">
+        <Button type="primary" onClick={onDone} aria-label={t("完成配置")}>
           开始使用
         </Button>
       </div>
@@ -110,11 +112,11 @@ export default function KeyWizard({ onDone }: { onDone?: () => void }) {
       <Steps
         size="small"
         current={apiKey && validation?.ok ? 1 : 0}
-        items={[{ title: "选择厂商" }, { title: "粘贴 Key" }, { title: "连通测试" }]}
+        items={[{ title: t("选择厂商") }, { title: t("粘贴 Key") }, { title: t("连通测试") }]}
       />
 
       <div>
-        <label className="block text-sm font-medium mb-1">厂商（国内可达优先）</label>
+        <label className="block text-sm font-medium mb-1">{t("厂商（国内可达优先）")}</label>
         <Select
           value={vendorType}
           onChange={handleVendorChange}
@@ -125,7 +127,7 @@ export default function KeyWizard({ onDone }: { onDone?: () => void }) {
             label: `${v.icon} ${v.name}`,
           }))}
           style={{ width: "100%" }}
-          aria-label="厂商选择"
+          aria-label={t("厂商选择")}
         />
       </div>
 
@@ -149,22 +151,22 @@ export default function KeyWizard({ onDone }: { onDone?: () => void }) {
           value={apiKey}
           onChange={(e) => setApiKey(e.target.value)}
           placeholder={vendor.api.apiKeyPlaceholder ?? "粘贴你的 API Key"}
-          aria-label="API Key 输入"
+          aria-label={t("API Key 输入")}
         />
         {validation && !validation.ok && (
           <p className="mt-1 text-xs text-red-400">{validation.reason}</p>
         )}
         {validation?.ok && (
-          <p className="mt-1 text-xs text-green-500">Key 格式看起来正确</p>
+          <p className="mt-1 text-xs text-green-500">{t("Key 格式看起来正确")}</p>
         )}
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">默认模型（可修改）</label>
+        <label className="block text-sm font-medium mb-1">{t("默认模型（可修改）")}</label>
         <Input
           value={modelName}
           onChange={(e) => setModelName(e.target.value)}
-          aria-label="默认模型"
+          aria-label={t("默认模型")}
         />
       </div>
 
@@ -175,7 +177,7 @@ export default function KeyWizard({ onDone }: { onDone?: () => void }) {
         disabled={!validation?.ok}
         onClick={handleRegister}
         icon={<SafetyOutlined />}
-        aria-label="保存并测试连通"
+        aria-label={t("保存并测试连通")}
       >
         {busy ? "注册并测试中…" : "保存并测试连通"}
       </Button>

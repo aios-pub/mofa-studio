@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Channel list page
  */
@@ -47,7 +48,8 @@ const statusConfig: Record<
   disabled: { color: "default", text: "已禁用", icon: <StopOutlined /> },
 };
 
-export default function ChannelsListPage() {
+export default function ChannelsListPage() {  const { t } = useTranslation();
+
   const [channels, setChannels] = useState<Channel[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -78,7 +80,7 @@ export default function ChannelsListPage() {
       setAgents(agentData);
     } catch (error) {
       console.error("Failed to load data:", error);
-      message.error("加载数据失败");
+      message.error(t("加载数据失败"));
     } finally {
       setLoading(false);
     }
@@ -87,10 +89,10 @@ export default function ChannelsListPage() {
   // Delete channel
   const handleDelete = async (id: string) => {
     Modal.confirm({
-      title: "确认删除",
-      content: "删除后无法恢复，确定要删除此渠道吗？",
-      okText: "删除",
-      cancelText: "取消",
+      title: t("确认删除"),
+      content: t("删除后无法恢复，确定要删除此渠道吗？"),
+      okText: t("删除"),
+      cancelText: t("取消"),
       okButtonProps: { danger: true },
       onOk: async () => {
         try {
@@ -99,10 +101,10 @@ export default function ChannelsListPage() {
           if (selectedChannel?.id === id) {
             setSelectedChannel(null);
           }
-          message.success("渠道已删除");
+          message.success(t("渠道已删除"));
         } catch (error) {
           console.error("Failed to delete channel:", error);
-          message.error("删除失败");
+          message.error(t("删除失败"));
         }
       },
     });
@@ -125,11 +127,11 @@ export default function ChannelsListPage() {
       }
     } catch (error) {
       console.error("Failed to test connection:", error);
-      message.error("测试失败");
+      message.error(t("测试失败"));
       setTestResult({
         channelId: channel.id,
         success: false,
-        message: "测试请求失败，请检查网络或后端服务",
+        message: t("测试请求失败，请检查网络或后端服务"),
       });
     } finally {
       setTestLoading(null);
@@ -151,7 +153,7 @@ export default function ChannelsListPage() {
       }
     } catch (error) {
       console.error("Failed to toggle status:", error);
-      message.error("操作失败");
+      message.error(t("操作失败"));
     }
   };
 
@@ -159,13 +161,13 @@ export default function ChannelsListPage() {
   const getActionMenuItems = (channel: Channel) => [
     {
       key: "test",
-      label: "测试连接",
+      label: t("测试连接"),
       icon: <ApiOutlined />,
       onClick: () => handleTestConnection(channel),
     },
     {
       key: "edit",
-      label: "编辑",
+      label: t("编辑"),
       icon: <EditOutlined />,
       onClick: () => setSelectedChannel(channel),
     },
@@ -174,7 +176,7 @@ export default function ChannelsListPage() {
     },
     {
       key: "delete",
-      label: "删除",
+      label: t("删除"),
       icon: <DeleteOutlined />,
       danger: true,
       onClick: () => handleDelete(channel.id),
@@ -199,10 +201,10 @@ export default function ChannelsListPage() {
       setShowCreateModal(false);
       setShowTypeSelector(false);
       setSelectedChannel(newChannel);
-      message.success("渠道创建成功");
+      message.success(t("渠道创建成功"));
     } catch (error) {
       console.error("Failed to create channel:", error);
-      message.error("创建失败");
+      message.error(t("创建失败"));
     }
   };
 
@@ -215,11 +217,11 @@ export default function ChannelsListPage() {
           prev.map((c) => (c.id === updated.id ? updated : c)),
         );
         setSelectedChannel(updated);
-        message.success("渠道更新成功");
+        message.success(t("渠道更新成功"));
       }
     } catch (error) {
       console.error("Failed to update channel:", error);
-      message.error("更新失败");
+      message.error(t("更新失败"));
     }
   };
 
@@ -241,7 +243,7 @@ export default function ChannelsListPage() {
           </div>
 
           <Input
-            placeholder="搜索渠道..."
+            placeholder={t("搜索渠道...")}
             prefix={<SearchOutlined />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -258,7 +260,7 @@ export default function ChannelsListPage() {
           ) : filteredChannels.length === 0 ? (
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="暂无渠道"
+              description={t("暂无渠道")}
               className="py-8"
             />
           ) : (
@@ -354,7 +356,7 @@ export default function ChannelsListPage() {
 
       {/* Create channel modal */}
       <Modal
-        title="创建渠道"
+        title={t("创建渠道")}
         open={showCreateModal}
         onCancel={() => setShowCreateModal(false)}
         footer={null}
@@ -389,15 +391,16 @@ function ChannelDetail({
   onToggleStatus: () => void;
   onUpdate: (data: Partial<Channel>) => void;
   onRefresh: () => void;
-}) {
+}) {  const { t } = useTranslation();
+
   const [activeTab, setActiveTab] = useState<"config" | "stats" | "agents">(
     "config",
   );
   const [editing, setEditing] = useState(false);
 
   const tabs = [
-    { key: "config", label: "配置", icon: EditOutlined },
-    { key: "stats", label: "统计", icon: ApiOutlined },
+    { key: "config", label: t("配置"), icon: EditOutlined },
+    { key: "stats", label: t("统计"), icon: ApiOutlined },
     { key: "agents", label: "Agents", icon: LinkOutlined },
   ];
 
@@ -462,11 +465,11 @@ function ChannelDetail({
       {/* Statistics cards */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         <StatCard
-          title="总消息数"
+          title={t("总消息数")}
           value={(channel.stats?.totalMessages ?? 0).toLocaleString()}
         />
         <StatCard
-          title="成功率"
+          title={t("成功率")}
           value={`${(channel.stats?.successRate ?? 0).toFixed(1)}%`}
           status={
             (channel.stats?.successRate ?? 0) >= 95
@@ -477,11 +480,11 @@ function ChannelDetail({
           }
         />
         <StatCard
-          title="失败消息"
+          title={t("失败消息")}
           value={(channel.stats?.failedMessages ?? 0).toLocaleString()}
         />
         <StatCard
-          title="平均响应"
+          title={t("平均响应")}
           value={`${channel.stats?.avgResponseTime ?? 0}ms`}
         />
       </div>
@@ -742,7 +745,8 @@ function ChannelAgentsView({
   channel: Channel;
   agents: Agent[];
   onRefresh: () => void;
-}) {
+}) {  const { t } = useTranslation();
+
   const [channelAgents, setChannelAgents] = useState<
     { agentId: string; enabled: boolean }[]
   >([]);
@@ -776,12 +780,12 @@ function ChannelAgentsView({
         channelId: channel.id,
         priority: 10,
       });
-      message.success("Agent 已添加到渠道");
+      message.success(t("Agent 已添加到渠道"));
       loadChannelAgents();
       onRefresh();
     } catch (error) {
       console.error("Failed to add agent:", error);
-      message.error("添加失败");
+      message.error(t("添加失败"));
     }
   };
 
@@ -789,11 +793,11 @@ function ChannelAgentsView({
     try {
       await channelApi.removeAgentFromChannel(agentId, channel.id);
       setChannelAgents(channelAgents.filter((ca) => ca.agentId !== agentId));
-      message.success("Agent 已从渠道移除");
+      message.success(t("Agent 已从渠道移除"));
       onRefresh();
     } catch (error) {
       console.error("Failed to remove agent:", error);
-      message.error("移除失败");
+      message.error(t("移除失败"));
     }
   };
 

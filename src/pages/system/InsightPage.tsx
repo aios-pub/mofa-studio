@@ -93,7 +93,8 @@ function SimpleBarChart({ data }: { data: { label: string; value: number }[] }) 
 }
 
 // Ring chart component
-function SimpleDonutChart({ data }: { data: { label: string; value: number; color: string }[] }) {
+function SimpleDonutChart({ data }: { data: { label: string; value: number; color: string }[] }) {  const { t } = useTranslation();
+
   const total = data.reduce((acc, item) => acc + item.value, 0);
   let cumulativePercent = 0;
 
@@ -125,7 +126,7 @@ function SimpleDonutChart({ data }: { data: { label: string; value: number; colo
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="text-xl font-bold">{total.toLocaleString()}</div>
-            <div className="text-xs text-[var(--color-text-tertiary)]">总计</div>
+            <div className="text-xs text-[var(--color-text-tertiary)]">{t("总计")}</div>
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * API Token Management Component
  * Manage personal API access tokens
@@ -38,7 +39,8 @@ interface ApiToken {
   createdAt: string;
 }
 
-export function ApiTokenManagement() {
+export function ApiTokenManagement() {  const { t } = useTranslation();
+
   const [tokens, setTokens] = useState<ApiToken[]>([]);
   const [loading, setLoading] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
@@ -102,9 +104,9 @@ export function ApiTokenManagement() {
     if (daysLeft < 0) {
       return { color: 'red', text: '已过期' };
     } else if (daysLeft < 7) {
-      return { color: 'orange', text: `${daysLeft}天后过期` };
+      return { color: 'orange', text: t("{{p0}}天后过期", { p0: daysLeft }) };
     } else if (daysLeft < 30) {
-      return { color: 'blue', text: `${daysLeft}天后过期` };
+      return { color: 'blue', text: t("{{p0}}天后过期", { p0: daysLeft }) };
     } else {
       return { color: 'default', text: `${Math.ceil(daysLeft / 30)}个月后过期` };
     }
@@ -166,7 +168,7 @@ export function ApiTokenManagement() {
       render: (_: unknown, record: ApiToken) => (
         <Space>
           <Popconfirm
-            title="确认删除此令牌？"
+            title={t("确认删除此令牌？")}
             onConfirm={() => handleDeleteToken(record.id)}
           >
             <Button type="link" size="small" danger icon={<DeleteOutlined />}>
@@ -184,7 +186,7 @@ export function ApiTokenManagement() {
         title={
           <Space>
             <KeyOutlined />
-            <span>API 令牌管理</span>
+            <span>{t("API 令牌管理")}</span>
           </Space>
         }
         extra={
@@ -212,14 +214,14 @@ export function ApiTokenManagement() {
         {tokens.length === 0 && !loading && (
           <div className="text-center py-12 text-gray-400">
             <KeyOutlined style={{ fontSize: 48, marginBottom: 16 }} />
-            <div>还没有创建任何令牌</div>
+            <div>{t("还没有创建任何令牌")}</div>
           </div>
         )}
       </Card>
 
       {/* Create Token Modal */}
       <Modal
-        title="创建 API 令牌"
+        title={t("创建 API 令牌")}
         open={createModalVisible}
         onCancel={() => setCreateModalVisible(false)}
         onOk={() => form.submit()}
@@ -232,21 +234,21 @@ export function ApiTokenManagement() {
         >
           <Form.Item
             name="name"
-            label="令牌名称"
+            label={t("令牌名称")}
             rules={[{ required: true, message: '请输入令牌名称' }]}
           >
-            <Input placeholder="例如：我的 CLI 令牌" />
+            <Input placeholder={t("例如：我的 CLI 令牌")} />
           </Form.Item>
 
           <Form.Item
             name="scopes"
-            label="权限范围"
+            label={t("权限范围")}
             rules={[{ required: true, message: '请选择权限范围' }]}
-            tooltip="选择此令牌可以访问的 API 范围"
+            tooltip={t("选择此令牌可以访问的 API 范围")}
           >
             <Select
               mode="multiple"
-              placeholder="选择权限"
+              placeholder={t("选择权限")}
               options={[
                 { label: '读取技能', value: 'skill:read' },
                 { label: '写入技能', value: 'skill:write' },
@@ -261,7 +263,7 @@ export function ApiTokenManagement() {
 
           <Form.Item
             name="expirationMode"
-            label="过期时间"
+            label={t("过期时间")}
             initialValue="never"
             rules={[{ required: true, message: '请选择过期时间' }]}
           >
@@ -285,7 +287,7 @@ export function ApiTokenManagement() {
           >
             <Form.Item
               name="customExpiresAt"
-              label="自定义过期日期"
+              label={t("自定义过期日期")}
               rules={[
                 {
                   validator: (_, value) => {
@@ -305,7 +307,7 @@ export function ApiTokenManagement() {
 
       {/* New Token Display Modal */}
       <Modal
-        title="令牌创建成功"
+        title={t("令牌创建成功")}
         open={!!newToken}
         onCancel={() => setNewToken(null)}
         footer={[
@@ -322,7 +324,7 @@ export function ApiTokenManagement() {
             </Paragraph>
 
             <div>
-              <Text strong>令牌：</Text>
+              <Text strong>{t("令牌：")}</Text>
               <div className="mt-2 p-3 bg-gray-50 rounded border">
                 <code className="break-all text-sm">{newToken.token}</code>
               </div>
@@ -337,8 +339,8 @@ export function ApiTokenManagement() {
             </Button>
 
             <div className="text-sm text-gray-500">
-              <p>• 使用 <code>amos-cli auth login --token YOUR_TOKEN</code> 配置 CLI</p>
-              <p>• 在 HTTP 请求头中使用：<code>Authorization: Bearer YOUR_TOKEN</code></p>
+              <p>{t("• 使用")}<code>amos-cli auth login --token YOUR_TOKEN</code>{t("配置 CLI")}</p>
+              <p>{t("• 在 HTTP 请求头中使用：")}<code>Authorization: Bearer YOUR_TOKEN</code></p>
             </div>
           </div>
         )}

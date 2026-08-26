@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Version compare slider (TOOL-05 版本对比滑杆): two history entries
  * stacked; a draggable divider clips the top image. Pure and controlled —
@@ -23,7 +24,8 @@ export default function CompareSlider({
   afterLabel,
   position,
   onPositionChange,
-}: CompareSliderProps) {
+}: CompareSliderProps) {  const { t } = useTranslation();
+
   const handleInput = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       onPositionChange(Number(event.target.value));
@@ -70,7 +72,7 @@ export default function CompareSlider({
         value={position}
         onChange={handleInput}
         className="w-full"
-        aria-label="对比滑杆"
+        aria-label={t("对比滑杆")}
       />
     </div>
   );

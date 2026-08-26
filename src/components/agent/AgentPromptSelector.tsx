@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Agent associated prompts selector - all antd components
  */
@@ -31,7 +32,8 @@ export default function AgentPromptSelector({
   selectedPrompts,
   onChange,
   maxHeight,
-}: AgentPromptSelectorProps) {
+}: AgentPromptSelectorProps) {  const { t } = useTranslation();
+
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -122,7 +124,7 @@ export default function AgentPromptSelector({
 
       {/* Search box */}
       <Input
-        placeholder="搜索提示词..."
+        placeholder={t("搜索提示词...")}
         prefix={<SearchOutlined />}
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
@@ -133,7 +135,7 @@ export default function AgentPromptSelector({
       {/* Prompt list */}
       {filteredPrompts.length === 0 ? (
         <Empty
-          description="暂无匹配的提示词"
+          description={t("暂无匹配的提示词")}
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
       ) : (

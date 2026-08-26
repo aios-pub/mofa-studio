@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Hub skill card component (V2)
  * Supports the new HubSkill interface
@@ -41,7 +42,8 @@ export function HubSkillCard({
   isInstalling,
   onInstall,
   onClick,
-}: HubSkillCardProps) {
+}: HubSkillCardProps) {  const { t } = useTranslation();
+
   const isNew = isNewHubSkill(skill);
 
   // Extract common properties with fallback
@@ -78,10 +80,10 @@ export function HubSkillCard({
                 <>
                   <Tag color="blue">{skill.visibility}</Tag>
                   {skill.status === 'ACTIVE' && (
-                    <Tag color="green">活跃</Tag>
+                    <Tag color="green">{t("活跃")}</Tag>
                   )}
                   {skill.hidden && (
-                    <Tag color="red">已隐藏</Tag>
+                    <Tag color="red">{t("已隐藏")}</Tag>
                   )}
                 </>
               )}
@@ -131,7 +133,7 @@ export function HubSkillCard({
         {/* Statistics */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-4">
-            <Tooltip title="下载量">
+            <Tooltip title={t("下载量")}>
               <div className="flex items-center gap-1 text-xs text-[var(--color-text-secondary)]">
                 <DownloadOutlined />
                 <span>{formatDownloads(downloads)}</span>
@@ -145,7 +147,7 @@ export function HubSkillCard({
                 </div>
               </Tooltip>
             )}
-            <Tooltip title="评分">
+            <Tooltip title={t("评分")}>
               <div className="flex items-center gap-1">
                 <Rate disabled value={rating} count={1} style={{ fontSize: 12 }} />
                 <span className="text-xs text-[var(--color-text-secondary)]">

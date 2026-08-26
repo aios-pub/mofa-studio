@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Review queue component
  */
@@ -43,7 +44,8 @@ const statusConfig: Record<
   WITHDRAWN: { color: "default", text: "已撤回", icon: <CloseOutlined /> },
 };
 
-export function ReviewQueue() {
+export function ReviewQueue() {  const { t } = useTranslation();
+
   const {
     reviewTasks,
     reviewLoading,
@@ -73,10 +75,10 @@ export function ReviewQueue() {
     try {
       if (action === "approve") {
         await approveReview(selectedReview.id, comment);
-        message.success("已通过审核");
+        message.success(t("已通过审核"));
       } else {
         await rejectReview(selectedReview.id, comment);
-        message.success("已拒绝审核");
+        message.success(t("已拒绝审核"));
       }
       setModalVisible(false);
       setComment("");
@@ -97,20 +99,20 @@ export function ReviewQueue() {
       render: (id: string) => <Text copyable>{id.slice(0, 8)}...</Text>,
     },
     {
-      title: "技能版本 ID",
+      title: t("技能版本 ID"),
       dataIndex: "skillVersionId",
       key: "skillVersionId",
       width: 120,
       render: (id: string) => <Text copyable>{id.slice(0, 8)}...</Text>,
     },
     {
-      title: "命名空间",
+      title: t("命名空间"),
       dataIndex: "namespaceId",
       key: "namespaceId",
       width: 80,
     },
     {
-      title: "状态",
+      title: t("状态"),
       dataIndex: "status",
       key: "status",
       width: 100,
@@ -124,27 +126,27 @@ export function ReviewQueue() {
       },
     },
     {
-      title: "提交者",
+      title: t("提交者"),
       dataIndex: "submittedBy",
       key: "submittedBy",
       width: 100,
     },
     {
-      title: "提交时间",
+      title: t("提交时间"),
       dataIndex: "submittedAt",
       key: "submittedAt",
       width: 160,
       render: (date: Date) => new Date(date).toLocaleString("zh-CN"),
     },
     {
-      title: "审核者",
+      title: t("审核者"),
       dataIndex: "reviewedBy",
       key: "reviewedBy",
       width: 100,
       render: (reviewer: string | undefined) => reviewer || "-",
     },
     {
-      title: "审核时间",
+      title: t("审核时间"),
       dataIndex: "reviewedAt",
       key: "reviewedAt",
       width: 160,
@@ -152,7 +154,7 @@ export function ReviewQueue() {
         date ? new Date(date).toLocaleString("zh-CN") : "-",
     },
     {
-      title: "操作",
+      title: t("操作"),
       key: "action",
       width: 200,
       render: (_: unknown, record: ReviewTask) => (
@@ -194,7 +196,7 @@ export function ReviewQueue() {
 
   return (
     <div className="p-6">
-      <Card title="审核队列" variant="borderless">
+      <Card title={t("审核队列")} variant="borderless">
         <Tabs
           activeKey={activeTab}
           onChange={(key) => setActiveTab(key as "pending" | "my" | "all")}
@@ -203,8 +205,8 @@ export function ReviewQueue() {
               key: "pending",
               label: `待处理 (${reviewTasks?.items?.filter((r) => r.status === "PENDING").length || 0})`,
             },
-            { key: "my", label: "我的提交" },
-            { key: "all", label: "全部" },
+            { key: "my", label: t("我的提交") },
+            { key: "all", label: t("全部") },
           ]}
         />
 
@@ -233,20 +235,20 @@ export function ReviewQueue() {
       >
         {selectedReview && (
           <Descriptions size="small" column={1} variant>
-            <Descriptions.Item label="审核 ID">
+            <Descriptions.Item label={t("审核 ID")}>
               {selectedReview.id}
             </Descriptions.Item>
-            <Descriptions.Item label="技能版本 ID">
+            <Descriptions.Item label={t("技能版本 ID")}>
               {selectedReview.skill_version_id}
             </Descriptions.Item>
-            <Descriptions.Item label="提交者">
+            <Descriptions.Item label={t("提交者")}>
               {selectedReview.submitted_by}
             </Descriptions.Item>
-            <Descriptions.Item label="提交时间">
+            <Descriptions.Item label={t("提交时间")}>
               {new Date(selectedReview.submitted_at).toLocaleString("zh-CN")}
             </Descriptions.Item>
             {selectedReview.review_comment && (
-              <Descriptions.Item label="审核意见">
+              <Descriptions.Item label={t("审核意见")}>
                 {selectedReview.review_comment}
               </Descriptions.Item>
             )}
@@ -254,24 +256,24 @@ export function ReviewQueue() {
         )}
         {action === "reject" && (
           <div className="mt-4">
-            <Text type="secondary">拒绝原因（必填）:</Text>
+            <Text type="secondary">{t("拒绝原因（必填）:")}</Text>
             <TextArea
               rows={4}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="请说明拒绝原因..."
+              placeholder={t("请说明拒绝原因...")}
               style={{ marginTop: 8 }}
             />
           </div>
         )}
         {action === "approve" && (
           <div className="mt-4">
-            <Text type="secondary">审核意见（可选）:</Text>
+            <Text type="secondary">{t("审核意见（可选）:")}</Text>
             <TextArea
               rows={4}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="可以添加审核意见..."
+              placeholder={t("可以添加审核意见...")}
               style={{ marginTop: 8 }}
             />
           </div>

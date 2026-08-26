@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Creation-workflow canvas (FLOW-01/02/04/06): five-piece node palette on
  * xyflow, connection-type validation, live node coloring driven by the
@@ -143,7 +144,8 @@ function FlowNodeView({ data }: NodeProps) {
 
 const nodeTypes = { flow: FlowNodeView };
 
-export default function FlowCanvasPage() {
+export default function FlowCanvasPage() {  const { t } = useTranslation();
+
   const [nodes, setNodes] = useState<Node<CanvasNodeData>[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [running, setRunning] = useState(false);
@@ -205,7 +207,7 @@ export default function FlowCanvasPage() {
           kind,
           params:
             kind === "prompt_text"
-              ? { text: "一只橘猫坐在窗台上" }
+              ? { text: t("一只橘猫坐在窗台上") }
               : kind === "image_gen"
                 ? { size: "1024x1024", n: 1 }
                 : {},
@@ -249,7 +251,7 @@ export default function FlowCanvasPage() {
         );
       });
       if (result.ok) {
-        setSummary(`执行 ${result.executed} · 缓存 ${result.cached} · ${result.duration_ms}ms`);
+        setSummary(t("执行 {{p0}} · 缓存 {{p1}} · {{p2}}ms", { p0: result.executed, p1: result.cached, p2: result.duration_ms }));
         // Surface image outputs from every node for quick preview.
         const images: string[] = [];
         for (const output of Object.values(result.node_outputs)) {
@@ -261,14 +263,14 @@ export default function FlowCanvasPage() {
           }
         }
         setPreview(images);
-        message.success(`工作流完成（执行 ${result.executed} · 缓存 ${result.cached}）`);
+        message.success(t("工作流完成（执行 {{p0}} · 缓存 {{p1}}）", { p0: result.executed, p1: result.cached }));
       } else {
         setSummary(`失败：${result.error ?? "未知错误"}`);
         message.error(`执行失败：${result.error ?? "未知错误"}`);
       }
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`执行失败：${detail}`);
+      message.error(t("执行失败：{{p0}}", { p0: detail }));
     } finally {
       setRunning(false);
     }
@@ -307,7 +309,7 @@ export default function FlowCanvasPage() {
       );
       clearStatuses();
       setTemplateOpen(false);
-      message.success(`已载入模板「${template.title}」`);
+      message.success(t("已载入模板「{{p0}}」", { p0: template.title }));
     },
     [clearStatuses],
   );
@@ -345,7 +347,7 @@ export default function FlowCanvasPage() {
         })),
       );
       clearStatuses();
-      message.success(`${label}（${graph.nodes.length} 节点）`);
+      message.success(t("{{p0}}（{{p1}} 节点）", { p0: label, p1: graph.nodes.length }));
     },
     [clearStatuses],
   );
@@ -355,7 +357,7 @@ export default function FlowCanvasPage() {
       try {
         const raw = await file.text();
         const { graph } = parseFlowJson(raw);
-        applyGraph(graph, `已导入「${file.name}」`);
+        applyGraph(graph, t("已导入「{{p0}}」", { p0: file.name }));
       } catch (error) {
         const detail = error instanceof Error ? error.message : String(error);
         message.error(detail);
@@ -371,15 +373,15 @@ export default function FlowCanvasPage() {
       const bytes = new Uint8Array(await file.arrayBuffer());
       const workflow = extractWorkflowFromPng(bytes);
       if (!workflow) {
-        message.error("这张图片没有携带工作流快照（仅本产品生成的图片可恢复）");
+        message.error(t("这张图片没有携带工作流快照（仅本产品生成的图片可恢复）"));
         return;
       }
       try {
         const graph = parseBareGraph(workflow);
-        applyGraph(graph, `已从图片恢复「${file.name}」`);
+        applyGraph(graph, t("已从图片恢复「{{p0}}」", { p0: file.name }));
       } catch (error) {
         const detail = error instanceof Error ? error.message : String(error);
-        message.error(`图片内快照无法解析：${detail}`);
+        message.error(t("图片内快照无法解析：{{p0}}", { p0: detail }));
       }
     },
     [applyGraph],
@@ -399,12 +401,12 @@ export default function FlowCanvasPage() {
       graph,
     });
     if (!saved) {
-      message.error("保存失败");
+      message.error(t("保存失败"));
       return;
     }
     setDocId(saved.id);
     setDocName(docName || `工作流 ${new Date().toLocaleDateString()}`);
-    message.success(`已保存为版本 v${saved.version}`);
+    message.success(t("已保存为版本 v{{p0}}", { p0: saved.version }));
   }, [nodes, edges, docId, docName]);
 
   const openHistory = useCallback(async () => {
@@ -417,15 +419,15 @@ export default function FlowCanvasPage() {
       if (!docId) return;
       const graph = await flowDocService.version(docId, index);
       if (!graph) {
-        message.error("该版本读取失败");
+        message.error(t("该版本读取失败"));
         return;
       }
       try {
         const parsed = parseBareGraph(JSON.stringify(graph));
-        applyGraph(parsed, `已恢复 v${index}`);
+        applyGraph(parsed, t("已恢复 v{{p0}}", { p0: index }));
         setHistoryOpen(false);
       } catch {
-        message.error("版本数据无法解析");
+        message.error(t("版本数据无法解析"));
       }
     },
     [docId, applyGraph],
@@ -461,7 +463,7 @@ export default function FlowCanvasPage() {
             key={kind}
             onClick={() => addNode(kind)}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-(--color-border) hover:border-[var(--color-primary)] hover:bg-(--color-bg-tertiary) transition-colors text-left"
-            aria-label={`添加 ${NODE_LABELS[kind]} 节点`}
+            aria-label={t("添加 {{p0}} 节点", { p0: NODE_LABELS[kind] })}
           >
             <PlusOutlined className="text-xs text-[var(--color-primary)]" />
             <span className="text-xs">{NODE_LABELS[kind]}</span>
@@ -476,7 +478,7 @@ export default function FlowCanvasPage() {
             loading={running}
             disabled={nodes.length === 0}
             onClick={run}
-            aria-label="运行工作流"
+            aria-label={t("运行工作流")}
           >
             运行
           </Button>
@@ -484,7 +486,7 @@ export default function FlowCanvasPage() {
             block
             icon={<AppstoreOutlined />}
             onClick={() => void openTemplates()}
-            aria-label="模板市场"
+            aria-label={t("模板市场")}
           >
             模板市场
           </Button>
@@ -508,23 +510,23 @@ export default function FlowCanvasPage() {
               void flowAppService
                 .publish({
                   name: prompt("应用名称：") || "未命名应用",
-                  description: "从工作流画布发布",
+                  description: t("从工作流画布发布"),
                   graph,
                   inputs,
                 })
                 .then((app) => {
                   if (app) {
-                    message.success(`已发布「${app.name}」——在「应用」页可用`);
+                    message.success(t("已发布「{{p0}}」——在「应用」页可用", { p0: app.name }));
                   } else {
-                    message.error("发布失败");
+                    message.error(t("发布失败"));
                   }
                 });
             }}
-            aria-label="发布为应用"
+            aria-label={t("发布为应用")}
           >
             发布为应用
           </Button>
-          <Button block icon={<DownloadOutlined />} onClick={exportJson} aria-label="导出 JSON">
+          <Button block icon={<DownloadOutlined />} onClick={exportJson} aria-label={t("导出 JSON")}>
             导出 JSON
           </Button>
           <Upload
@@ -539,7 +541,7 @@ export default function FlowCanvasPage() {
               return false;
             }}
           >
-            <Button block icon={<UploadOutlined />} aria-label="导入 JSON 或图片">
+            <Button block icon={<UploadOutlined />} aria-label={t("导入 JSON 或图片")}>
               导入 JSON / 图片
             </Button>
           </Upload>
@@ -547,7 +549,7 @@ export default function FlowCanvasPage() {
             block
             icon={<SaveOutlined />}
             onClick={() => void saveDoc()}
-            aria-label="保存工作流"
+            aria-label={t("保存工作流")}
           >
             保存（含版本历史）
           </Button>
@@ -556,7 +558,7 @@ export default function FlowCanvasPage() {
             icon={<HistoryOutlined />}
             onClick={() => void openHistory()}
             disabled={!docId}
-            aria-label="版本历史"
+            aria-label={t("版本历史")}
           >
             版本历史
           </Button>
@@ -587,7 +589,7 @@ export default function FlowCanvasPage() {
           </h3>
           {selected.data.kind === "prompt_text" && (
             <div>
-              <label className="block text-xs mb-1">提示词</label>
+              <label className="block text-xs mb-1">{t("提示词")}</label>
               <textarea
                 value={selectedText}
                 onChange={(e) =>
@@ -597,14 +599,14 @@ export default function FlowCanvasPage() {
                 }
                 rows={6}
                 className="w-full px-2 py-1.5 bg-(--color-bg-secondary) border border-(--color-border) rounded-lg text-xs resize-y focus:outline-none"
-                aria-label="提示词编辑"
+                aria-label={t("提示词编辑")}
               />
             </div>
           )}
           {selectedHttp && (
             <div className="space-y-2">
               <div>
-                <label className="block text-xs mb-1">服务 URL</label>
+                <label className="block text-xs mb-1">{t("服务 URL")}</label>
                 <input
                   value={selectedHttp.url}
                   onChange={(e) =>
@@ -614,11 +616,11 @@ export default function FlowCanvasPage() {
                   }
                   placeholder="https://api.example.com/endpoint"
                   className="w-full px-2 py-1.5 bg-(--color-bg-secondary) border border-(--color-border) rounded-lg text-xs"
-                  aria-label="HTTP 服务 URL"
+                  aria-label={t("HTTP 服务 URL")}
                 />
               </div>
               <div>
-                <label className="block text-xs mb-1">方法</label>
+                <label className="block text-xs mb-1">{t("方法")}</label>
                 <select
                   value={selectedHttp.method}
                   onChange={(e) =>
@@ -627,7 +629,7 @@ export default function FlowCanvasPage() {
                     })
                   }
                   className="w-full px-2 py-1.5 bg-(--color-bg-secondary) border border-(--color-border) rounded-lg text-xs"
-                  aria-label="HTTP 方法"
+                  aria-label={t("HTTP 方法")}
                 >
                   {["GET", "POST", "PUT", "DELETE"].map((m) => (
                     <option key={m} value={m}>
@@ -649,14 +651,14 @@ export default function FlowCanvasPage() {
                   }
                   rows={5}
                   className="w-full px-2 py-1.5 bg-(--color-bg-secondary) border border-(--color-border) rounded-lg text-xs resize-y"
-                  aria-label="HTTP 请求体模板"
+                  aria-label={t("HTTP 请求体模板")}
                 />
               </div>
             </div>
           )}
           {selected.data.kind === "image_gen" && (
             <div>
-              <label className="block text-xs mb-1">尺寸</label>
+              <label className="block text-xs mb-1">{t("尺寸")}</label>
               <select
                 value={selectedSize}
                 onChange={(e) =>
@@ -665,7 +667,7 @@ export default function FlowCanvasPage() {
                   })
                 }
                 className="w-full px-2 py-1.5 bg-(--color-bg-secondary) border border-(--color-border) rounded-lg text-xs"
-                aria-label="尺寸选择"
+                aria-label={t("尺寸选择")}
               >
                 {["1024x1024", "768x1024", "720x1280", "1280x720"].map((s) => (
                   <option key={s} value={s}>
@@ -689,7 +691,7 @@ export default function FlowCanvasPage() {
         onCancel={() => setHistoryOpen(false)}
       >
         {versions.length === 0 ? (
-          <p className="text-xs text-[var(--color-text-tertiary)]">暂无历史版本</p>
+          <p className="text-xs text-[var(--color-text-tertiary)]">{t("暂无历史版本")}</p>
         ) : (
           <div className="space-y-2">
             {versions.map((version) => (
@@ -700,7 +702,7 @@ export default function FlowCanvasPage() {
                 <span className="text-xs font-medium flex-1">
                   v{version.version_index} · {version.created_at?.slice(0, 19).replace("T", " ")}
                 </span>
-                <Button size="small" onClick={() => void restoreVersion(version.version_index)} aria-label={`恢复版本 ${version.version_index}`}>
+                <Button size="small" onClick={() => void restoreVersion(version.version_index)} aria-label={t("恢复版本 {{p0}}", { p0: version.version_index })}>
                   恢复
                 </Button>
               </div>
@@ -728,7 +730,7 @@ export default function FlowCanvasPage() {
 
       {/* FLOW-07: built-in templates with live dependency detection */}
       <Modal
-        title="模板市场 · 官方内置"
+        title={t("模板市场 · 官方内置")}
         open={templateOpen}
         onCancel={() => setTemplateOpen(false)}
         footer={null}
@@ -736,7 +738,7 @@ export default function FlowCanvasPage() {
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto">
           {BUILTIN_TEMPLATES.length === 0 ? (
-            <Empty description="暂无模板" />
+            <Empty description={t("暂无模板")} />
           ) : (
             BUILTIN_TEMPLATES.map((template) => {
               const missing = missingDependencies(template, engineModels);
@@ -746,7 +748,7 @@ export default function FlowCanvasPage() {
                   key={template.id}
                   onClick={() => loadTemplate(template)}
                   className="text-left p-3 rounded-xl border border-(--color-border) hover:border-[var(--color-primary)] hover:shadow transition-all"
-                  aria-label={`载入模板 ${template.title}`}
+                  aria-label={t("载入模板 {{p0}}", { p0: template.title })}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-medium text-[var(--color-text-primary)]">
@@ -760,9 +762,9 @@ export default function FlowCanvasPage() {
                   <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
                     {template.graph.nodes.length} 节点
                     {missing.length === 0 ? (
-                      <span className="ml-2 text-green-500">依赖就绪</span>
+                      <span className="ml-2 text-green-500">{t("依赖就绪")}</span>
                     ) : (
-                      <span className="ml-2 text-amber-500">缺少依赖</span>
+                      <span className="ml-2 text-amber-500">{t("缺少依赖")}</span>
                     )}
                   </p>
                   {hint && <p className="mt-1 text-xs text-amber-500">{hint}</p>}

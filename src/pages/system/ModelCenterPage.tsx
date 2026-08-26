@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * 模型管理中心 (FLOW-05): 双轨视图.
  *
@@ -35,7 +36,8 @@ const CAPABILITY_LABEL: Record<string, string> = {
 
 const POLL_MS = 1200;
 
-export default function ModelCenterPage() {
+export default function ModelCenterPage() {  const { t } = useTranslation();
+
   // Cloud track: engine model cards.
   const [engineModels, setEngineModels] = useState<EngineModel[]>([]);
   const [loadingModels, setLoadingModels] = useState(true);
@@ -103,7 +105,7 @@ export default function ModelCenterPage() {
     if (!name) return;
     const id = await modelCenterService.pull(name);
     if (!id) {
-      message.error("拉取启动失败（本地 Ollama 不可达？）");
+      message.error(t("拉取启动失败（本地 Ollama 不可达？）"));
       return;
     }
     setPullName("");
@@ -113,10 +115,10 @@ export default function ModelCenterPage() {
   const removeModel = async (name: string) => {
     const ok = await modelCenterService.delete(name);
     if (ok) {
-      message.success(`已删除 ${name}，磁盘已释放`);
+      message.success(t("已删除 {{p0}}，磁盘已释放", { p0: name }));
       await loadLocal();
     } else {
-      message.error("删除失败");
+      message.error(t("删除失败"));
     }
   };
 
@@ -136,15 +138,15 @@ export default function ModelCenterPage() {
           模型中心
         </h1>
         <p className="text-sm text-[var(--color-text-secondary)]">
-          云端模型配好 Key 即用（<Link to="/onboarding/key" className="underline">去配置密钥</Link>）；
+          云端模型配好 Key 即用（<Link to="/onboarding/key" className="underline">{t("去配置密钥")}</Link>）；
           本地模型经 Ollama 代理拉取与管理
         </p>
       </header>
 
       {/* 云轨: engine cards by capability */}
-      <section aria-label="云端模型" className="space-y-3">
+      <section aria-label={t("云端模型")} className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold">云端模型（引擎路由）</h2>
+          <h2 className="text-base font-semibold">{t("云端模型（引擎路由）")}</h2>
           <Button size="small" icon={<ReloadOutlined />} onClick={() => void loadEngineModels()}>
             刷新
           </Button>
@@ -152,7 +154,7 @@ export default function ModelCenterPage() {
         {loadingModels ? (
           <Spin />
         ) : engineModels.length === 0 ? (
-          <Empty description="引擎暂无模型：配置 provider 或启动 Ollama 后刷新" />
+          <Empty description={t("引擎暂无模型：配置 provider 或启动 Ollama 后刷新")} />
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {Object.entries(grouped).map(([capability, models]) => (
@@ -182,8 +184,8 @@ export default function ModelCenterPage() {
       </section>
 
       {/* 本地轨: Ollama proxy */}
-      <section aria-label="本地模型" className="space-y-3">
-        <h2 className="text-base font-semibold">本地模型（Ollama 代理）</h2>
+      <section aria-label={t("本地模型")} className="space-y-3">
+        <h2 className="text-base font-semibold">{t("本地模型（Ollama 代理）")}</h2>
         {localUnavailable ? (
           <Empty
             description={
@@ -199,16 +201,16 @@ export default function ModelCenterPage() {
               <Input
                 value={pullName}
                 onChange={(e) => setPullName(e.target.value)}
-                placeholder="模型名，如 qwen3:8b"
+                placeholder={t("模型名，如 qwen3:8b")}
                 style={{ width: 260 }}
-                aria-label="拉取模型名"
+                aria-label={t("拉取模型名")}
                 onPressEnter={() => void startPull()}
               />
               <Button
                 type="primary"
                 icon={<CloudDownloadOutlined />}
                 onClick={() => void startPull()}
-                aria-label="拉取模型"
+                aria-label={t("拉取模型")}
                 disabled={!pullName.trim()}
               >
                 拉取
@@ -219,7 +221,7 @@ export default function ModelCenterPage() {
             </div>
 
             {pulls.length > 0 && (
-              <div className="space-y-2" aria-label="拉取任务">
+              <div className="space-y-2" aria-label={t("拉取任务")}>
                 {pulls.map((task) => (
                   <div
                     key={task.id}
@@ -256,7 +258,7 @@ export default function ModelCenterPage() {
                       <Button
                         size="small"
                         onClick={() => void modelCenterService.cancel(task.id).then(loadPulls)}
-                        aria-label={`取消拉取 ${task.name}`}
+                        aria-label={t("取消拉取 {{p0}}", { p0: task.name })}
                       >
                         取消
                       </Button>
@@ -273,9 +275,9 @@ export default function ModelCenterPage() {
               locale={{ emptyText: "暂无本地模型" }}
               pagination={false}
               columns={[
-                { title: "模型", dataIndex: "name", key: "name" },
+                { title: t("模型"), dataIndex: "name", key: "name" },
                 {
-                  title: "磁盘占用",
+                  title: t("磁盘占用"),
                   dataIndex: "size_bytes",
                   key: "size",
                   width: 140,
@@ -291,7 +293,7 @@ export default function ModelCenterPage() {
                       danger
                       icon={<DeleteOutlined />}
                       onClick={() => void removeModel(record.name)}
-                      aria-label={`删除 ${record.name}`}
+                      aria-label={t("删除 {{p0}}", { p0: record.name })}
                     />
                   ),
                 },

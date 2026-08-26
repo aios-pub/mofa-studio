@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Multi-tab management component
  */
@@ -253,7 +254,8 @@ export const MultiTabView: React.FC<MultiTabViewProps> = ({
   showClose = true,
   extra,
   className = "",
-}) => {
+}) => {  const { t } = useTranslation();
+
   const {
     tabs,
     activeKey,
@@ -272,41 +274,41 @@ export const MultiTabView: React.FC<MultiTabViewProps> = ({
       {
         key: "refresh",
         icon: <ReloadOutlined />,
-        label: "刷新",
+        label: t("刷新"),
         onClick: () => refreshTab(key),
       },
       { type: "divider" },
       {
         key: "close",
         icon: <CloseOutlined />,
-        label: "关闭",
+        label: t("关闭"),
         disabled: tabs.find((t) => t.key === key)?.closable === false,
         onClick: () => closeTab(key),
       },
       {
         key: "closeOthers",
         icon: <CloseCircleOutlined />,
-        label: "关闭其他",
+        label: t("关闭其他"),
         onClick: () => closeOthersTab(key),
       },
       { type: "divider" },
       {
         key: "closeLeft",
         icon: <VerticalLeftOutlined />,
-        label: "关闭左侧",
+        label: t("关闭左侧"),
         onClick: () => closeLeft(key),
       },
       {
         key: "closeRight",
         icon: <VerticalRightOutlined />,
-        label: "关闭右侧",
+        label: t("关闭右侧"),
         onClick: () => closeRight(key),
       },
       { type: "divider" },
       {
         key: "closeAll",
         icon: <CloseCircleOutlined />,
-        label: "关闭所有",
+        label: t("关闭所有"),
         onClick: () => closeAll(),
       },
     ];

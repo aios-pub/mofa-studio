@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Agent associated skills selector
  */
@@ -25,7 +26,8 @@ interface AgentSkillSelectorProps {
 export default function AgentSkillSelector({
   selectedSkills,
   onChange,
-}: AgentSkillSelectorProps) {
+}: AgentSkillSelectorProps) {  const { t } = useTranslation();
+
   const [skills, setSkills] = useState<Skill[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -131,7 +133,7 @@ export default function AgentSkillSelector({
 
       {/* Search box */}
       <Input
-        placeholder="搜索 Skills..."
+        placeholder={t("搜索 Skills...")}
         prefix={<SearchOutlined />}
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}

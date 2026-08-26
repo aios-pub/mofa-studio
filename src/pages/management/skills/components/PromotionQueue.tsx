@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Promotion Queue Component
  * Manage cross-namespace skill promotion requests
@@ -39,7 +40,8 @@ const statusConfig: Record<
   REJECTED: { color: 'error', text: '已拒绝' },
 };
 
-export function PromotionQueue() {
+export function PromotionQueue() {  const { t } = useTranslation();
+
   const {
     promotions,
     promotionsLoading,
@@ -128,7 +130,7 @@ export function PromotionQueue() {
             {record.target_namespace_slug}
           </div>
           {record.target_skill_id && (
-            <Tag color="blue">已存在</Tag>
+            <Tag color="blue">{t("已存在")}</Tag>
           )}
         </Space>
       ),
@@ -188,7 +190,7 @@ export function PromotionQueue() {
           {record.status === 'PENDING' && (
             <>
               <Popconfirm
-                title="确认批准此推广？"
+                title={t("确认批准此推广？")}
                 onConfirm={() => handleApprove(record.id)}
               >
                 <Button
@@ -200,7 +202,7 @@ export function PromotionQueue() {
                 </Button>
               </Popconfirm>
               <Popconfirm
-                title="确认拒绝此推广？"
+                title={t("确认拒绝此推广？")}
                 onConfirm={() => handleReject(record.id)}
               >
                 <Button
@@ -225,7 +227,7 @@ export function PromotionQueue() {
         title={
           <Space>
             <SwapOutlined />
-            <span>推广队列</span>
+            <span>{t("推广队列")}</span>
             <Badge count={(promotions?.items || []).filter(p => p.status === 'PENDING').length} />
           </Space>
         }
@@ -258,7 +260,7 @@ export function PromotionQueue() {
         title={
           <Space>
             <SendOutlined />
-            <span>提交推广请求</span>
+            <span>{t("提交推广请求")}</span>
           </Space>
         }
         open={submitModalVisible}
@@ -272,24 +274,24 @@ export function PromotionQueue() {
         >
           <Form.Item
             name="sourceSkillId"
-            label="源技能 ID"
+            label={t("源技能 ID")}
             rules={[{ required: true, message: '请输入源技能 ID' }]}
           >
-            <Input placeholder="技能 ID" />
+            <Input placeholder={t("技能 ID")} />
           </Form.Item>
           <Form.Item
             name="sourceVersionId"
-            label="源版本 ID"
+            label={t("源版本 ID")}
             rules={[{ required: true, message: '请输入源版本 ID' }]}
           >
-            <Input placeholder="版本 ID" />
+            <Input placeholder={t("版本 ID")} />
           </Form.Item>
           <Form.Item
             name="targetNamespaceId"
-            label="目标命名空间 ID"
+            label={t("目标命名空间 ID")}
             rules={[{ required: true, message: '请输入目标命名空间 ID' }]}
           >
-            <Input placeholder="命名空间 ID" />
+            <Input placeholder={t("命名空间 ID")} />
           </Form.Item>
         </Form>
       </Modal>
@@ -299,7 +301,7 @@ export function PromotionQueue() {
         title={
           <Space>
             <EyeOutlined />
-            <span>推广详情</span>
+            <span>{t("推广详情")}</span>
           </Space>
         }
         open={detailModalVisible}
@@ -312,7 +314,7 @@ export function PromotionQueue() {
             <>
               <Popconfirm
                 key="approve"
-                title="确认批准此推广？"
+                title={t("确认批准此推广？")}
                 onConfirm={() => handleApprove(selectedPromotion.id)}
               >
                 <Button type="primary" icon={<CheckOutlined />}>
@@ -321,7 +323,7 @@ export function PromotionQueue() {
               </Popconfirm>
               <Popconfirm
                 key="reject"
-                title="确认拒绝此推广？"
+                title={t("确认拒绝此推广？")}
                 onConfirm={() => handleReject(selectedPromotion.id)}
               >
                 <Button danger icon={<CloseOutlined />}>
@@ -346,45 +348,45 @@ export function PromotionQueue() {
           <div>
             <div className="space-y-2 mb-4">
               <div>
-                <span className="text-gray-600">推广 ID: </span>
+                <span className="text-gray-600">{t("推广 ID:")}</span>
                 <span>{selectedPromotion.id.slice(0, 8)}</span>
               </div>
               <div>
-                <span className="text-gray-600">来源: </span>
+                <span className="text-gray-600">{t("来源:")}</span>
                 <Tag color="blue">{selectedPromotion.source_namespace_slug}</Tag>
                 <code>{selectedPromotion.source_skill_slug}</code>
                 <Tag>{selectedPromotion.sourceVersion}</Tag>
               </div>
               <div>
-                <span className="text-gray-600">目标: </span>
+                <span className="text-gray-600">{t("目标:")}</span>
                 <Tag color="green">{selectedPromotion.target_namespace_slug}</Tag>
                 {selectedPromotion.target_skill_id && (
-                  <Tag color="orange">已存在技能</Tag>
+                  <Tag color="orange">{t("已存在技能")}</Tag>
                 )}
               </div>
               <div>
-                <span className="text-gray-600">状态: </span>
+                <span className="text-gray-600">{t("状态:")}</span>
                 {(() => {
                   const config = statusConfig[selectedPromotion.status];
                   return <Tag color={config.color}>{config.text}</Tag>;
                 })()}
               </div>
               <div>
-                <span className="text-gray-600">提交者: </span>
+                <span className="text-gray-600">{t("提交者:")}</span>
                 <span>{selectedPromotion.submitted_by.slice(0, 8)}</span>
               </div>
               <div>
-                <span className="text-gray-600">提交时间: </span>
+                <span className="text-gray-600">{t("提交时间:")}</span>
                 <span>{new Date(selectedPromotion.submitted_at).toLocaleString('zh-CN')}</span>
               </div>
               {selectedPromotion.reviewed_by && (
                 <>
                   <div>
-                    <span className="text-gray-600">处理者: </span>
+                    <span className="text-gray-600">{t("处理者:")}</span>
                     <span>{selectedPromotion.reviewed_by.slice(0, 8)}</span>
                   </div>
                   <div>
-                    <span className="text-gray-600">处理时间: </span>
+                    <span className="text-gray-600">{t("处理时间:")}</span>
                     <span>
                       {selectedPromotion.reviewed_at
                         ? new Date(selectedPromotion.reviewed_at).toLocaleString('zh-CN')
@@ -393,7 +395,7 @@ export function PromotionQueue() {
                   </div>
                   {selectedPromotion.review_comment && (
                     <div>
-                      <span className="text-gray-600">处理说明: </span>
+                      <span className="text-gray-600">{t("处理说明:")}</span>
                       <span>{selectedPromotion.review_comment}</span>
                     </div>
                   )}

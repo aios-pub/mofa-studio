@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Script editor component
  * Supports JavaScript syntax highlighting and code completion
@@ -110,7 +111,8 @@ export function ScriptEditor({
   onChange,
   onTest,
   readOnly = false,
-}: ScriptEditorProps) {
+}: ScriptEditorProps) {  const { t } = useTranslation();
+
   const [script, setScript] = useState(value || "");
   const [error, setError] = useState<string | null>(null);
   const [testing, setTesting] = useState(false);
@@ -200,19 +202,19 @@ export function ScriptEditor({
 
         {!readOnly && (
           <Alert
-            message="脚本上下文"
+            message={t("脚本上下文")}
             description={
               <div className="text-xs space-y-1">
-                <div><strong>pm.environment</strong>: 环境变量操作 (get/set/unset/clear)</div>
-                <div><strong>pm.globals</strong>: 全局变量操作 (get/set/unset/clear)</div>
-                <div><strong>pm.request</strong>: 请求数据 (url/method/headers/body)</div>
+                <div><strong>pm.environment</strong>{t(": 环境变量操作 (get/set/unset/clear)")}</div>
+                <div><strong>pm.globals</strong>{t(": 全局变量操作 (get/set/unset/clear)")}</div>
+                <div><strong>pm.request</strong>{t(": 请求数据 (url/method/headers/body)")}</div>
                 {type === "test" && (
                   <>
-                    <div><strong>pm.response</strong>: 响应数据 (statusCode/headers/body/responseTime)</div>
-                    <div><strong>pm.test()</strong>: 添加测试断言</div>
+                    <div><strong>pm.response</strong>{t(": 响应数据 (statusCode/headers/body/responseTime)")}</div>
+                    <div><strong>pm.test()</strong>{t(": 添加测试断言")}</div>
                   </>
                 )}
-                <div><strong>pm.utils</strong>: 工具函数 (replaceVariables/base64Encode/jsonParse)</div>
+                <div><strong>pm.utils</strong>{t(": 工具函数 (replaceVariables/base64Encode/jsonParse)")}</div>
               </div>
             }
             type="info"
@@ -238,7 +240,7 @@ export function ScriptEditor({
 
         {error && (
           <Alert
-            message="脚本错误"
+            message={t("脚本错误")}
             description={error}
             type="error"
             closable
@@ -279,7 +281,7 @@ export function ScriptEditor({
       </Card>
 
       {!readOnly && (
-        <Card size="small" title={<Space><InfoCircleOutlined /> 代码示例</Space>}>
+        <Card size="small" title={<Space><InfoCircleOutlined />{t("代码示例")}</Space>}>
           <Tabs
             activeKey={activeExampleTab}
             onChange={setActiveExampleTab}

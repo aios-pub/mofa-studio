@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * HTTP request builder component
  * For configuring URL, method, headers, body, etc. of HTTP test requests
@@ -43,7 +44,8 @@ export function HttpRequestBuilder({
   onExecute,
   readonly = false,
   loading = false,
-}: HttpRequestBuilderProps) {
+}: HttpRequestBuilderProps) {  const { t } = useTranslation();
+
   const config = value || getDefaultConfig();
 
   const updateConfig = (updates: Partial<HttpRequestConfig>) => {
@@ -102,7 +104,7 @@ export function HttpRequestBuilder({
               <KeyValueListEditor
                 value={config.params}
                 onChange={(params) => updateConfig({ params })}
-                placeholder="参数值"
+                placeholder={t("参数值")}
                 readonly={readonly}
               />
             ),
@@ -114,7 +116,7 @@ export function HttpRequestBuilder({
               <KeyValueListEditor
                 value={config.headers}
                 onChange={(headers) => updateConfig({ headers })}
-                placeholder="Header值"
+                placeholder={t("Header值")}
                 readonly={readonly}
               />
             ),
@@ -254,7 +256,8 @@ function BodyEditor({
   rawContentType,
   onChange,
   readonly = false,
-}: BodyEditorProps) {
+}: BodyEditorProps) {  const { t } = useTranslation();
+
   const [selectedBodyType, setSelectedBodyType] = useState<BodyType>(bodyType);
 
   // Sync bodyType changes from the parent (e.g. loading an existing config)
@@ -295,7 +298,7 @@ function BodyEditor({
         <KeyValueListEditor
           value={Array.isArray(body) ? body : []}
           onChange={(items) => onChange?.(selectedBodyType, items)}
-          placeholder="值"
+          placeholder={t("值")}
           readonly={readonly}
         />
       )}
@@ -304,7 +307,7 @@ function BodyEditor({
         <KeyValueListEditor
           value={Array.isArray(body) ? body : []}
           onChange={(items) => onChange?.(selectedBodyType, items)}
-          placeholder="值"
+          placeholder={t("值")}
           readonly={readonly}
         />
       )}
@@ -326,7 +329,7 @@ function BodyEditor({
           <TextArea
             value={typeof body === "string" ? body : JSON.stringify(body ?? "", null, 2)}
             onChange={(e) => onChange?.(selectedBodyType, e.target.value, rawContentType)}
-            placeholder="请求体内容"
+            placeholder={t("请求体内容")}
             disabled={readonly}
             rows={8}
           />
@@ -335,7 +338,7 @@ function BodyEditor({
 
       {selectedBodyType === "binary" && (
         <div className="p-4 border border-dashed rounded text-center">
-          <Text type="secondary">选择文件上传</Text>
+          <Text type="secondary">{t("选择文件上传")}</Text>
         </div>
       )}
     </div>
@@ -361,7 +364,8 @@ function AuthEditor({
   authConfig,
   onChange,
   readonly = false,
-}: AuthEditorProps) {
+}: AuthEditorProps) {  const { t } = useTranslation();
+
   const handleTypeChange = (newType: AuthType) => {
     if (onChange) {
       // Clear old config when switching auth type to avoid sending mixed data
@@ -400,7 +404,7 @@ function AuthEditor({
           <Input.Password
             value={authConfig?.token}
             onChange={(e) => onChange?.(authType, { token: e.target.value })}
-            placeholder="您的Bearer Token"
+            placeholder={t("您的Bearer Token")}
             disabled={readonly}
           />
         </div>
@@ -426,12 +430,12 @@ function AuthEditor({
               onChange={(e) =>
                 onChange?.(authType, { ...authConfig, apiKey: e.target.value })
               }
-              placeholder="您的API Key"
+              placeholder={t("您的API Key")}
               disabled={readonly}
             />
           </div>
           <div>
-            <Text strong>添加到</Text>
+            <Text strong>{t("添加到")}</Text>
             <Select
               value={authConfig?.addTo || "header"}
               onChange={(val) => onChange?.(authType, { ...authConfig, addTo: val })}
@@ -449,24 +453,24 @@ function AuthEditor({
       {authType === "basic" && (
         <div className="space-y-2">
           <div>
-            <Text strong>用户名</Text>
+            <Text strong>{t("用户名")}</Text>
             <Input
               value={authConfig?.username}
               onChange={(e) =>
                 onChange?.(authType, { ...authConfig, username: e.target.value })
               }
-              placeholder="用户名"
+              placeholder={t("用户名")}
               disabled={readonly}
             />
           </div>
           <div>
-            <Text strong>密码</Text>
+            <Text strong>{t("密码")}</Text>
             <Input.Password
               value={authConfig?.password}
               onChange={(e) =>
                 onChange?.(authType, { ...authConfig, password: e.target.value })
               }
-              placeholder="密码"
+              placeholder={t("密码")}
               disabled={readonly}
             />
           </div>

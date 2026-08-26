@@ -392,7 +392,7 @@ export default function TracingPage() {
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total) =>
-              t("pagination.total", `共 ${total} 条`, { total }),
+              t("pagination.total", t("共 {{p0}} 条", { p0: total }), { total }),
             pageSizeOptions: ["10", "20", "50", "100"],
           }}
           locale={{
@@ -412,7 +412,7 @@ export default function TracingPage() {
         {selectedTrace && (
           <div className="space-y-4">
             {/* Basic information */}
-            <Card size="small" title="基本信息">
+            <Card size="small" title={t("基本信息")}>
               <Descriptions column={1} size="small">
                 <Descriptions.Item label={t("tracing.traceId", "Trace ID")}>
                   <Text code className="text-xs break-all">

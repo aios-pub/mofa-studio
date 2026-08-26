@@ -96,10 +96,10 @@ export default function MenuManagementPage() {
   const handleDelete = async (id: string) => {
     try {
       await menuApi.delete(id);
-      message.success("删除成功");
+      message.success(t("删除成功"));
       loadMenus();
     } catch (error) {
-      message.error("删除失败");
+      message.error(t("删除失败"));
     }
   };
 
@@ -108,15 +108,15 @@ export default function MenuManagementPage() {
       const values = await form.validateFields();
       if (editingMenu) {
         await menuApi.update(editingMenu.id, values);
-        message.success("更新成功");
+        message.success(t("更新成功"));
       } else {
         await menuApi.create(values);
-        message.success("创建成功");
+        message.success(t("创建成功"));
       }
       setModalVisible(false);
       loadMenus();
     } catch (error) {
-      message.error("操作失败");
+      message.error(t("操作失败"));
     }
   };
 
@@ -134,9 +134,9 @@ export default function MenuManagementPage() {
       width: 100,
       render: (type: MenuType) => {
         const typeMap = {
-          [MenuType.CATALOGUE]: { text: "目录", color: "blue" },
-          [MenuType.MENU]: { text: "菜单", color: "green" },
-          [MenuType.BUTTON]: { text: "按钮", color: "orange" },
+          [MenuType.CATALOGUE]: { text: t("目录"), color: "blue" },
+          [MenuType.MENU]: { text: t("菜单"), color: "green" },
+          [MenuType.BUTTON]: { text: t("按钮"), color: "orange" },
         };
         const config = typeMap[type];
         return <Tag color={config.color}>{config.text}</Tag>;
@@ -216,10 +216,10 @@ export default function MenuManagementPage() {
             编辑
           </Button>
           <Popconfirm
-            title="确定要删除这个菜单吗？"
+            title={t("确定要删除这个菜单吗？")}
             onConfirm={() => handleDelete(record.id)}
-            okText="确定"
-            cancelText="取消"
+            okText={t("确定")}
+            cancelText={t("取消")}
           >
             <Button type="link" size="small" danger icon={<DeleteOutlined />}>
               删除
@@ -234,7 +234,7 @@ export default function MenuManagementPage() {
   const parentMenuOptions = [
     {
       value: null,
-      label: "顶级菜单",
+      label: t("顶级菜单"),
     },
     ...flatMenus
       .filter((m) => m.type === MenuType.CATALOGUE)
@@ -264,13 +264,13 @@ export default function MenuManagementPage() {
       <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="text-[var(--color-text-tertiary)]">加载中...</div>
+            <div className="text-[var(--color-text-tertiary)]">{t("加载中...")}</div>
           </div>
         ) : menus.length === 0 ? (
           <EmptyState
             type="settings"
-            title="暂无菜单"
-            description="点击上方按钮创建第一个菜单"
+            title={t("暂无菜单")}
+            description={t("点击上方按钮创建第一个菜单")}
           />
         ) : (
           <Table
@@ -294,9 +294,9 @@ export default function MenuManagementPage() {
         destroyOnHidden
       >
         <Form form={form} layout="vertical">
-          <Form.Item name="parentId" label="上级菜单">
+          <Form.Item name="parentId" label={t("上级菜单")}>
             <Select
-              placeholder="请选择上级菜单"
+              placeholder={t("请选择上级菜单")}
               options={parentMenuOptions}
               allowClear
             />
@@ -305,76 +305,76 @@ export default function MenuManagementPage() {
           <div className="grid grid-cols-2 gap-4">
             <Form.Item
               name="name"
-              label="菜单名称（英文）"
-              rules={[{ required: true, message: "请输入菜单名称" }]}
+              label={t("菜单名称（英文）")}
+              rules={[{ required: true, message: t("请输入菜单名称") }]}
             >
-              <Input placeholder="例如：menu-management" />
+              <Input placeholder={t("例如：menu-management")} />
             </Form.Item>
 
             <Form.Item
               name="label"
-              label="菜单标题"
-              rules={[{ required: true, message: "请输入菜单标题" }]}
+              label={t("菜单标题")}
+              rules={[{ required: true, message: t("请输入菜单标题") }]}
             >
-              <Input placeholder="例如：菜单管理" />
+              <Input placeholder={t("例如：菜单管理")} />
             </Form.Item>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <Form.Item
               name="type"
-              label="菜单类型"
+              label={t("菜单类型")}
               rules={[{ required: true }]}
             >
               <Select
                 options={[
-                  { value: MenuType.CATALOGUE, label: "目录" },
-                  { value: MenuType.MENU, label: "菜单" },
-                  { value: MenuType.BUTTON, label: "按钮" },
+                  { value: MenuType.CATALOGUE, label: t("目录") },
+                  { value: MenuType.MENU, label: t("菜单") },
+                  { value: MenuType.BUTTON, label: t("按钮") },
                 ]}
               />
             </Form.Item>
 
-            <Form.Item name="icon" label="图标">
-              <Input placeholder="例如：MenuOutlined" />
+            <Form.Item name="icon" label={t("图标")}>
+              <Input placeholder={t("例如：MenuOutlined")} />
             </Form.Item>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <Form.Item name="path" label="路由路径">
-              <Input placeholder="例如：/system/menu" />
+            <Form.Item name="path" label={t("路由路径")}>
+              <Input placeholder={t("例如：/system/menu")} />
             </Form.Item>
 
-            <Form.Item name="component" label="组件路径">
-              <Input placeholder="例如：system/menu/index" />
+            <Form.Item name="component" label={t("组件路径")}>
+              <Input placeholder={t("例如：system/menu/index")} />
             </Form.Item>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
-            <Form.Item name="order" label="排序" initialValue={0}>
+            <Form.Item name="order" label={t("排序")} initialValue={0}>
               <InputNumber min={0} className="w-full" />
             </Form.Item>
 
-            <Form.Item name="status" label="状态" rules={[{ required: true }]}>
+            <Form.Item name="status" label={t("状态")} rules={[{ required: true }]}>
               <Select
                 options={[
-                  { value: BasicStatus.ENABLE, label: "启用" },
-                  { value: BasicStatus.DISABLE, label: "禁用" },
+                  { value: BasicStatus.ENABLE, label: t("启用") },
+                  { value: BasicStatus.DISABLE, label: t("禁用") },
                 ]}
               />
             </Form.Item>
 
-            <Form.Item name="hide" label="是否隐藏" valuePropName="checked">
+            <Form.Item name="hide" label={t("是否隐藏")} valuePropName="checked">
               <Switch />
             </Form.Item>
           </div>
 
-          <Form.Item name="externalLink" label="外链地址">
-            <Input placeholder="如果是外链，请填写完整URL" />
+          <Form.Item name="externalLink" label={t("外链地址")}>
+            <Input placeholder={t("如果是外链，请填写完整URL")} />
           </Form.Item>
 
-          <Form.Item name="description" label="描述">
-            <TextArea rows={2} placeholder="菜单描述（可选）" />
+          <Form.Item name="description" label={t("描述")}>
+            <TextArea rows={2} placeholder={t("菜单描述（可选）")} />
           </Form.Item>
         </Form>
       </Modal>

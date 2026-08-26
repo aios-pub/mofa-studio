@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Recording transcription workspace (TOOL-11): record or upload audio →
  * speaker-separated transcript with timestamps → LLM minutes (概要/待办) →
@@ -24,7 +25,8 @@ import {
 import { recordingSupported } from "@/services/api/audio";
 import { parseCsv } from "@/services/api/sheets";
 
-export default function TranscriptionPage() {
+export default function TranscriptionPage() {  const { t } = useTranslation();
+
   const [turns, setTurns] = useState<SpeakerTurn[]>([]);
   const [minutes, setMinutes] = useState<Minutes | null>(null);
   const [busy, setBusy] = useState<"transcribing" | "minutes" | null>(null);
@@ -40,10 +42,10 @@ export default function TranscriptionPage() {
     try {
       const result = await transcriptionService.transcribe(blob);
       setTurns(result.turns.length > 0 ? result.turns : [{ speaker: "A", text: result.raw, startSec: 0 }]);
-      message.success(`转写完成（${result.raw.length} 字）`);
+      message.success(t("转写完成（{{p0}} 字）", { p0: result.raw.length }));
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`转写失败：${detail}`);
+      message.error(t("转写失败：{{p0}}", { p0: detail }));
     } finally {
       setBusy(null);
     }
@@ -66,7 +68,7 @@ export default function TranscriptionPage() {
       recorderRef.current = recorder;
       setRecording(true);
     } catch (error) {
-      message.warning("无法访问麦克风，请检查系统权限");
+      message.warning(t("无法访问麦克风，请检查系统权限"));
       console.error(error);
     }
   }, [recording, handleBlob]);
@@ -85,10 +87,10 @@ export default function TranscriptionPage() {
     try {
       const result = await transcriptionService.minutes(turns);
       setMinutes(result);
-      message.success("纪要已生成");
+      message.success(t("纪要已生成"));
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`纪要生成失败：${detail}`);
+      message.error(t("纪要生成失败：{{p0}}", { p0: detail }));
     } finally {
       setBusy(null);
     }
@@ -107,7 +109,7 @@ export default function TranscriptionPage() {
     // Verify the CSV re-imports through the sheets parser (闭环自证).
     const parsed = parseCsv(csv);
     if (parsed.columns[0] !== "事项") {
-      message.warning("导出的 CSV 结构异常");
+      message.warning(t("导出的 CSV 结构异常"));
     }
   }, [minutes]);
 
@@ -142,7 +144,7 @@ export default function TranscriptionPage() {
             return false;
           }}
         >
-          <Button block icon={<UploadOutlined />} aria-label="上传音频">
+          <Button block icon={<UploadOutlined />} aria-label={t("上传音频")}>
             上传音频文件
           </Button>
         </Upload>
@@ -169,14 +171,14 @@ export default function TranscriptionPage() {
           disabled={turns.length === 0 || busy !== null}
           loading={busy === "minutes"}
           onClick={generateMinutes}
-          aria-label="生成纪要"
+          aria-label={t("生成纪要")}
         >
           生成纪要（概要+待办）
         </Button>
 
         {minutes && (
           <div className="space-y-2 pt-2 border-t border-(--color-border)">
-            <p className="text-xs font-medium text-[var(--color-text-secondary)]">纪要</p>
+            <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("纪要")}</p>
             <p className="text-xs text-[var(--color-text-secondary)]">{minutes.summary}</p>
             {minutes.todos.length > 0 && (
               <ul className="text-xs text-[var(--color-text-tertiary)] list-disc pl-4 space-y-0.5">
@@ -190,7 +192,7 @@ export default function TranscriptionPage() {
               size="small"
               icon={<TableOutlined />}
               onClick={exportTodosCsv}
-              aria-label="待办导出 CSV"
+              aria-label={t("待办导出 CSV")}
             >
               待办 → AI 表格 CSV
             </Button>
@@ -199,7 +201,7 @@ export default function TranscriptionPage() {
               size="small"
               icon={<DownloadOutlined />}
               onClick={exportSlide}
-              aria-label="纪要导出 PPT 大纲"
+              aria-label={t("纪要导出 PPT 大纲")}
             >
               纪要 → PPT 大纲
             </Button>

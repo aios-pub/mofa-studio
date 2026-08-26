@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Overview dashboard tab
  * Modeled on apalis-board home: stats cards (with mini bar chart) + task type cards (activity chart)
@@ -216,7 +217,8 @@ interface Props {
   onNavigateToTasks?: (type?: TaskType) => void;
 }
 
-export default function OverviewTab({ onNavigateToTasks }: Props) {
+export default function OverviewTab({ onNavigateToTasks }: Props) {  const { t } = useTranslation();
+
   const [tasks, setTasks] = useState<ScheduledTask[]>([]);
   const [executions, setExecutions] = useState<TaskExecution[]>([]);
   const [task_types, setTaskTypes] = useState<TaskTypeDescriptor[]>([]);
@@ -300,7 +302,7 @@ export default function OverviewTab({ onNavigateToTasks }: Props) {
       <div className="flex items-center justify-center h-64">
         <div className="text-center text-[var(--color-text-tertiary)]">
           <ClockCircleOutlined className="text-3xl mb-2 animate-spin" />
-          <p>加载中...</p>
+          <p>{t("加载中...")}</p>
         </div>
       </div>
     );
@@ -318,26 +320,26 @@ export default function OverviewTab({ onNavigateToTasks }: Props) {
         </p>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <StatCard
-            title="总任务数"
+            title={t("总任务数")}
             value={stats.total}
             icon={<ThunderboltOutlined />}
             data={statsActivity}
           />
           <StatCard
-            title="已启用"
+            title={t("已启用")}
             value={stats.enabled}
             color="text-green-500"
             icon={<CheckCircleOutlined />}
             data={statsActivity}
           />
           <StatCard
-            title="已禁用"
+            title={t("已禁用")}
             value={stats.disabled}
             icon={<CloseCircleOutlined />}
             data={statsActivity}
           />
           <StatCard
-            title="成功率"
+            title={t("成功率")}
             value={`${stats.rate.toFixed(1)}%`}
             color={
               stats.rate >= 90
@@ -346,7 +348,7 @@ export default function OverviewTab({ onNavigateToTasks }: Props) {
                   ? "text-orange-500"
                   : "text-red-500"
             }
-            subtitle={`${stats.totalSuccess} 成功 / ${stats.totalFailure} 失败`}
+            subtitle={t("{{p0}} 成功 / {{p1}} 失败", { p0: stats.totalSuccess, p1: stats.totalFailure })}
             data={statsActivity}
           />
         </div>

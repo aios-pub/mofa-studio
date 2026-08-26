@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Worker monitoring tab
  * Modeled on apalis-board Workers: worker status + handler list
@@ -19,7 +20,8 @@ interface HandlerInfo {
   icon: string;
 }
 
-export default function WorkersTab() {
+export default function WorkersTab() {  const { t } = useTranslation();
+
   const [handlers, setHandlers] = useState<HandlerInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -48,14 +50,14 @@ export default function WorkersTab() {
 
   const handlerColumns: ColumnsType<HandlerInfo> = [
     {
-      title: "图标",
+      title: t("图标"),
       dataIndex: "icon",
       key: "icon",
       width: 60,
       render: (icon: string) => <span className="text-lg">{icon}</span>,
     },
     {
-      title: "任务类型",
+      title: t("任务类型"),
       dataIndex: "taskType",
       key: "taskType",
       render: (type: string) => (
@@ -63,7 +65,7 @@ export default function WorkersTab() {
       ),
     },
     {
-      title: "名称",
+      title: t("名称"),
       dataIndex: "label",
       key: "label",
       render: (label: string) => (
@@ -71,7 +73,7 @@ export default function WorkersTab() {
       ),
     },
     {
-      title: "描述",
+      title: t("描述"),
       dataIndex: "description",
       key: "description",
       render: (desc: string) => (
@@ -81,10 +83,10 @@ export default function WorkersTab() {
       ),
     },
     {
-      title: "状态",
+      title: t("状态"),
       key: "status",
       width: 100,
-      render: () => <Tag color="green">活跃</Tag>,
+      render: () => <Tag color="green">{t("活跃")}</Tag>,
     },
   ];
 
@@ -114,7 +116,7 @@ export default function WorkersTab() {
           <div className="text-xs text-[var(--color-text-tertiary)]">
             并发: 1
           </div>
-          <Tag color="green">运行中</Tag>
+          <Tag color="green">{t("运行中")}</Tag>
         </div>
       </section>
 

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Task detail panel
  * Modeled on apalis-board SingleTaskView: split view (params+context | execution timeline)
@@ -77,7 +78,8 @@ export default function TaskDetail({
   onEdit,
   onDelete,
   onViewAllExecutions,
-}: Props) {
+}: Props) {  const { t } = useTranslation();
+
   const taskExecutions = useMemo(
     () => executions.filter((e) => e.task_id === task.id).slice(0, 5),
     [executions, task.id],
@@ -183,7 +185,7 @@ export default function TaskDetail({
             </span>
           </div>
           <div className="flex gap-1.5">
-            <Tooltip title="执行">
+            <Tooltip title={t("执行")}>
               <Button
                 size="small"
                 type="primary"
@@ -204,14 +206,14 @@ export default function TaskDetail({
                 onClick={() => onToggle(task.id)}
               />
             </Tooltip>
-            <Tooltip title="编辑">
+            <Tooltip title={t("编辑")}>
               <Button
                 size="small"
                 icon={<EditOutlined />}
                 onClick={() => onEdit(task)}
               />
             </Tooltip>
-            <Tooltip title="删除">
+            <Tooltip title={t("删除")}>
               <Button
                 size="small"
                 danger

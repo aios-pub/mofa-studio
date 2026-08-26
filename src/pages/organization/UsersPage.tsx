@@ -112,7 +112,7 @@ export default function UsersPage() {
 
   const handleBatchUpdateStatus = async (status: UserType["status"]) => {
     if (selectedRowKeys.length === 0) {
-      message.warning("请选择要操作的用户");
+      message.warning(t("请选择要操作的用户"));
       return;
     }
     await organizationApi.batchUpdateStatus(
@@ -121,14 +121,14 @@ export default function UsersPage() {
     );
     setSelectedRowKeys([]);
     message.success(
-      `已批量${statusLabels[status]} ${selectedRowKeys.length} 个用户`,
+      t("已批量{{p0}} {{p1}} 个用户", { p0: statusLabels[status], p1: selectedRowKeys.length }),
     );
     loadUsers();
   };
 
   const handleDeleteUser = async (id: string) => {
     await organizationApi.deleteUser(id);
-    message.success("用户已删除");
+    message.success(t("用户已删除"));
     loadUsers();
   };
 
@@ -158,17 +158,17 @@ export default function UsersPage() {
       setFormError(null);
       if (editingUser) {
         await organizationApi.updateUser(editingUser.id, values);
-        message.success("用户已更新");
+        message.success(t("用户已更新"));
       } else {
         await organizationApi.createUser(values);
-        message.success("用户已创建");
+        message.success(t("用户已创建"));
       }
       handleModalClose();
       loadUsers();
     } catch (error: any) {
       if (error?.errorFields) return;
       console.error("Failed to save user:", error);
-      setFormError(error instanceof Error ? error.message : "保存失败");
+      setFormError(error instanceof Error ? error.message: t("保存失败"));
     }
   };
 
@@ -226,7 +226,7 @@ export default function UsersPage() {
       ),
     },
     {
-      title: "使用量",
+      title: t("使用量"),
       key: "usage",
       width: 140,
       render: (_, record) => (
@@ -253,7 +253,7 @@ export default function UsersPage() {
       width: 100,
       render: (_, record) => (
         <Space>
-          <Tooltip title="编辑">
+          <Tooltip title={t("编辑")}>
             <Button
               type="text"
               size="small"
@@ -290,12 +290,12 @@ export default function UsersPage() {
   const batchMenuItems = [
     {
       key: "active",
-      label: "批量激活",
+      label: t("批量激活"),
       onClick: () => handleBatchUpdateStatus("active"),
     },
     {
       key: "inactive",
-      label: "批量禁用",
+      label: t("批量禁用"),
       onClick: () => handleBatchUpdateStatus("inactive"),
     },
   ];
@@ -304,7 +304,7 @@ export default function UsersPage() {
     <div className="space-y-4">
       <PageHeader
         title={t("user.title", "用户管理")}
-        description="管理系统用户和权限"
+        description={t("管理系统用户和权限")}
         icon={<UserOutlined className="text-xl" />}
         actions={
           <Button
@@ -329,7 +329,7 @@ export default function UsersPage() {
             allowClear
           />
           <Select
-            placeholder="选择部门"
+            placeholder={t("选择部门")}
             value={filterDepartment || undefined}
             onChange={setFilterDepartment}
             allowClear
@@ -340,7 +340,7 @@ export default function UsersPage() {
             }))}
           />
           <Select
-            placeholder="选择状态"
+            placeholder={t("选择状态")}
             value={filterStatus || undefined}
             onChange={setFilterStatus}
             allowClear
@@ -351,7 +351,7 @@ export default function UsersPage() {
             }))}
           />
           <Select
-            placeholder="选择角色"
+            placeholder={t("选择角色")}
             value={filterRole || undefined}
             onChange={setFilterRole}
             allowClear
@@ -385,7 +385,7 @@ export default function UsersPage() {
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total) =>
-              t("pagination.total", `共 ${total} 条`, { total }),
+              t("pagination.total", t("共 {{p0}} 条", { p0: total }), { total }),
             pageSizeOptions: ["10", "20", "50", "100"],
           }}
           locale={{
@@ -418,26 +418,26 @@ export default function UsersPage() {
         >
           <Form.Item
             name="name"
-            label="姓名"
-            rules={[{ required: true, message: "请输入姓名" }]}
+            label={t("姓名")}
+            rules={[{ required: true, message: t("请输入姓名") }]}
           >
-            <Input placeholder="请输入姓名" />
+            <Input placeholder={t("请输入姓名")} />
           </Form.Item>
 
           <Form.Item
             name="email"
-            label="邮箱"
+            label={t("邮箱")}
             rules={[
-              { required: true, message: "请输入邮箱" },
-              { type: "email", message: "请输入有效的邮箱地址" },
+              { required: true, message: t("请输入邮箱") },
+              { type: "email", message: t("请输入有效的邮箱地址") },
             ]}
           >
-            <Input placeholder="请输入邮箱" />
+            <Input placeholder={t("请输入邮箱")} />
           </Form.Item>
 
-          <Form.Item name="department" label="部门">
+          <Form.Item name="department" label={t("部门")}>
             <Select
-              placeholder="选择部门"
+              placeholder={t("选择部门")}
               allowClear
               options={departments.map((dept) => ({
                 label: dept,
@@ -446,7 +446,7 @@ export default function UsersPage() {
             />
           </Form.Item>
 
-          <Form.Item name="role" label="角色">
+          <Form.Item name="role" label={t("角色")}>
             <Select
               options={Object.entries(roleLabels).map(([value, label]) => ({
                 label,
@@ -456,7 +456,7 @@ export default function UsersPage() {
           </Form.Item>
 
           {editingUser && (
-            <Form.Item name="status" label="状态">
+            <Form.Item name="status" label={t("状态")}>
               <Select
                 options={Object.entries(statusLabels).map(([value, label]) => ({
                   label,

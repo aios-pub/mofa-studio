@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Deliverable center (TASK-17): all project/automation outputs in one
  * place — list + inline preview (点击即预览无需下载) and a line-diff view
@@ -38,7 +39,8 @@ function downloadText(content: string, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-export default function DeliverablesPage() {
+export default function DeliverablesPage() {  const { t } = useTranslation();
+
   const [items, setItems] = useState<Deliverable[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<View>("list");
@@ -91,7 +93,7 @@ export default function DeliverablesPage() {
               type={view === "list" ? "primary" : "text"}
               icon={<EyeOutlined />}
               onClick={() => setView("list")}
-              aria-label="列表视图"
+              aria-label={t("列表视图")}
             />
             <Button
               size="small"
@@ -99,7 +101,7 @@ export default function DeliverablesPage() {
               icon={<DiffOutlined />}
               disabled={diffCandidates.length === 0}
               onClick={() => setView("diff")}
-              aria-label="变更 diff"
+              aria-label={t("变更 diff")}
             />
           </div>
         </div>
@@ -122,7 +124,7 @@ export default function DeliverablesPage() {
                     ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
                     : "border-(--color-border) hover:bg-(--color-bg-tertiary)"
                 }`}
-                aria-label={`预览产物 ${item.title}`}
+                aria-label={t("预览产物 {{p0}}", { p0: item.title })}
               >
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-sm text-[var(--color-text-primary)] truncate">
@@ -144,19 +146,19 @@ export default function DeliverablesPage() {
                 size="small"
                 value={diffLeft}
                 onChange={setDiffLeft}
-                placeholder="旧版本"
+                placeholder={t("旧版本")}
                 options={items.map((item) => ({ value: item.id, label: item.title }))}
                 style={{ width: "100%" }}
-                aria-label="diff 旧版本"
+                aria-label={t("diff 旧版本")}
               />
               <Select
                 size="small"
                 value={diffRight}
                 onChange={setDiffRight}
-                placeholder="新版本"
+                placeholder={t("新版本")}
                 options={items.map((item) => ({ value: item.id, label: item.title }))}
                 style={{ width: "100%" }}
-                aria-label="diff 新版本"
+                aria-label={t("diff 新版本")}
               />
               {diff.length > 0 && (
                 <p className="text-xs">
@@ -174,7 +176,7 @@ export default function DeliverablesPage() {
         {view === "list" ? (
           !selected ? (
             <div className="h-full flex items-center justify-center">
-              <Empty description="点击左侧产物即可预览" />
+              <Empty description={t("点击左侧产物即可预览")} />
             </div>
           ) : (
             <div className="max-w-3xl mx-auto space-y-3">
@@ -188,7 +190,7 @@ export default function DeliverablesPage() {
                   onClick={() =>
                     downloadText(selected.content, `${selected.title}.md`)
                   }
-                  aria-label="下载产物"
+                  aria-label={t("下载产物")}
                 >
                   下载
                 </Button>
@@ -200,7 +202,7 @@ export default function DeliverablesPage() {
           )
         ) : !left || !right ? (
           <div className="h-full flex items-center justify-center">
-            <Empty description="选择两个产物以查看差异" />
+            <Empty description={t("选择两个产物以查看差异")} />
           </div>
         ) : (
           <div className="max-w-3xl mx-auto space-y-3">

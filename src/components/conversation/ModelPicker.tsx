@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Model picker for the assistant chat toolbar.
  *
@@ -22,7 +23,8 @@ export interface ModelPickerProps {
   onChange: (model: string) => void;
 }
 
-export default function ModelPicker({ value, onChange }: ModelPickerProps) {
+export default function ModelPicker({ value, onChange }: ModelPickerProps) {  const { t } = useTranslation();
+
   const [models, setModels] = useState<EngineModel[]>([]);
   const [health, setHealth] = useState<EngineHealth | null>(null);
   const [open, setOpen] = useState(false);
@@ -56,7 +58,7 @@ export default function ModelPicker({ value, onChange }: ModelPickerProps) {
     () => [
       {
         value: AUTO_MODEL,
-        label: "自动 · 引擎路由",
+        label: t("自动 · 引擎路由"),
       },
       ...models.map((m) => ({
         value: m.id,
@@ -91,7 +93,7 @@ export default function ModelPicker({ value, onChange }: ModelPickerProps) {
             offset={[4, 0]}
           />
         }
-        aria-label="模型选择"
+        aria-label={t("模型选择")}
       />
     </Tooltip>
   );

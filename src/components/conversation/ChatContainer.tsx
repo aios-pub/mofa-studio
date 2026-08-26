@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Conversation content container component
  * Supports agent selection, file upload and context clearing
@@ -138,7 +139,8 @@ export default function ChatContainer({
   onRegenerate,
   onEditResend,
   onBranch,
-}: ChatContainerProps) {
+}: ChatContainerProps) {  const { t } = useTranslation();
+
   const [input, setInput] = useState("");
   const [slashCommands, setSlashCommands] = useState<SlashCommand[]>([]);
   // CHAT-08: hold-to-talk recording state.
@@ -268,7 +270,7 @@ export default function ChatContainer({
       }
       if (ragSupports(file.name)) {
         try {
-          message.info(`正在解析「${file.name}」…`);
+          message.info(t("正在解析「{{p0}}」…", { p0: file.name }));
           const doc = await ragService.upload(file);
           setAttachments((prev) => [
             ...prev,
@@ -279,13 +281,13 @@ export default function ChatContainer({
               size: file.size,
             },
           ]);
-          message.success(`已索引「${file.name}」（${doc.chunks} 段）`);
+          message.success(t("已索引「{{p0}}」（{{p1}} 段）", { p0: file.name, p1: doc.chunks }));
         } catch (error) {
           const detail = error instanceof Error ? error.message : String(error);
-          message.error(`文档解析失败：${detail}`);
+          message.error(t("文档解析失败：{{p0}}", { p0: detail }));
         }
       } else {
-        message.warning("暂不支持该格式——建议先转换为 PDF 后再上传");
+        message.warning(t("暂不支持该格式——建议先转换为 PDF 后再上传"));
       }
     }
   };
@@ -322,7 +324,7 @@ export default function ChatContainer({
       recorderRef.current = recorder;
       setRecording(true);
     } catch (error) {
-      message.warning("无法访问麦克风，请检查系统权限");
+      message.warning(t("无法访问麦克风，请检查系统权限"));
       console.error(error);
     }
   };
@@ -344,11 +346,11 @@ export default function ChatContainer({
       if (text) {
         setInput((prev) => (prev ? `${prev} ${text}` : text));
       } else {
-        message.info("没有识别到语音内容");
+        message.info(t("没有识别到语音内容"));
       }
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`语音识别失败：${detail}`);
+      message.error(t("语音识别失败：{{p0}}", { p0: detail }));
     } finally {
       setTranscribing(false);
     }
@@ -417,7 +419,7 @@ export default function ChatContainer({
             按输入建议：
             {suggestions.map((id) => capabilityById(id)?.label ?? id).join("、")}
           </span>
-          <Button size="small" type="link" onClick={applySuggestions} aria-label="预选建议能力">
+          <Button size="small" type="link" onClick={applySuggestions} aria-label={t("预选建议能力")}>
             预选
           </Button>
         </div>
@@ -428,7 +430,7 @@ export default function ChatContainer({
       )}
       {skillHits.length > 0 && (
         <div className="pt-1 border-t border-(--color-border) space-y-1" data-testid="skill-hits">
-          <p className="text-xs font-medium">匹配技能</p>
+          <p className="text-xs font-medium">{t("匹配技能")}</p>
           {skillHits.map(({ skill }) => (
             <button
               key={skill.id}
@@ -439,7 +441,7 @@ export default function ChatContainer({
                 if (command) pickCommand(command);
               }}
               className="block w-full text-left text-xs px-2 py-1 rounded border border-(--color-border) hover:bg-(--color-bg-tertiary)"
-              aria-label={`技能-${skill.name}`}
+              aria-label={t("技能-{{p0}}", { p0: skill.name })}
             >
               {skill.name}：{skill.description.slice(0, 24)}
             </button>
@@ -451,7 +453,7 @@ export default function ChatContainer({
           checked={webSearch}
           disabled={!onWebSearchChange}
           onChange={(e) => onWebSearchChange?.(e.target.checked)}
-          aria-label="能力-联网搜索"
+          aria-label={t("能力-联网搜索")}
         >
           联网搜索
         </Checkbox>
@@ -459,28 +461,28 @@ export default function ChatContainer({
           checked={deepThinking}
           disabled={!onDeepThinkingChange}
           onChange={(e) => onDeepThinkingChange?.(e.target.checked)}
-          aria-label="能力-深度思考"
+          aria-label={t("能力-深度思考")}
         >
           深度思考
         </Checkbox>
         <Checkbox
           checked={routeCaps.has("image_gen")}
           onChange={(e) => toggleRouteCap("image_gen", e.target.checked)}
-          aria-label="能力-图像生成"
+          aria-label={t("能力-图像生成")}
         >
           图像生成路由（本次发送）
         </Checkbox>
         <Checkbox
           checked={routeCaps.has("video_gen")}
           onChange={(e) => toggleRouteCap("video_gen", e.target.checked)}
-          aria-label="能力-视频生成"
+          aria-label={t("能力-视频生成")}
         >
           视频生成路由（本次发送）
         </Checkbox>
       </div>
       {onToolScopeChange && (
         <div className="pt-1 border-t border-(--color-border) space-y-1">
-          <p className="text-xs font-medium">本会话工具范围（TASK-10）</p>
+          <p className="text-xs font-medium">{t("本会话工具范围（TASK-10）")}</p>
           <div className="flex flex-wrap gap-x-3 gap-y-1">
             {CAPABILITIES.map((c) => (
               <Checkbox
@@ -492,7 +494,7 @@ export default function ChatContainer({
                   else next.delete(c.id);
                   onToolScopeChange(next.size > 0 ? [...next] : null);
                 }}
-                aria-label={`范围-${c.label}`}
+                aria-label={t("范围-{{p0}}", { p0: c.label })}
               >
                 {c.label}
               </Checkbox>
@@ -501,7 +503,7 @@ export default function ChatContainer({
           <p className="text-xs text-[var(--color-text-tertiary)]">
             {toolScope === null
               ? "未限定：全部工具可用"
-              : `已限定 ${toolScope.length} 项——范围外指令不再出现在面板`}
+              : t("已限定 {{p0}} 项——范围外指令不再出现在面板", { p0: toolScope.length })}
           </p>
         </div>
       )}
@@ -516,7 +518,7 @@ export default function ChatContainer({
               );
               if (command) pickCommand(command);
             }}
-            aria-label={`命令工具-${c.label}`}
+            aria-label={t("命令工具-{{p0}}", { p0: c.label })}
           >
             {c.label}
           </Button>
@@ -583,7 +585,7 @@ export default function ChatContainer({
   const handleClearContext = () => {
     if (onClearContext) {
       onClearContext();
-      message.success("上下文已清空");
+      message.success(t("上下文已清空"));
     }
   };
 
@@ -635,7 +637,7 @@ export default function ChatContainer({
             onChange={handleFileChange}
             onRemove={handleRemoveFile}
           >
-            <Button icon={<PaperClipOutlined />}>选择文件</Button>
+            <Button icon={<PaperClipOutlined />}>{t("选择文件")}</Button>
           </Upload>
         );
       case "select":
@@ -718,7 +720,7 @@ export default function ChatContainer({
         {/* Agent selector */}
         {onSelectAgent && agents.length > 0 && (
           <Select
-            placeholder="选择智能体"
+            placeholder={t("选择智能体")}
             value={selectedAgentId || conversation.agentId}
             onChange={onSelectAgent}
             style={{ width: 180 }}
@@ -735,20 +737,20 @@ export default function ChatContainer({
             <Button
               icon={<SettingOutlined />}
               onClick={() => setShowParamModal(true)}
-              title="参数设置"
+              title={t("参数设置")}
             />
           )}
 
         {/* Clear context button */}
         {onClearContext && (
           <Popconfirm
-            title="确定要清空上下文吗？"
-            description="清空后将无法恢复消息历史"
+            title={t("确定要清空上下文吗？")}
+            description={t("清空后将无法恢复消息历史")}
             onConfirm={handleClearContext}
-            okText="确定"
-            cancelText="取消"
+            okText={t("确定")}
+            cancelText={t("取消")}
           >
-            <Button icon={<ClearOutlined />} danger title="清空上下文">
+            <Button icon={<ClearOutlined />} danger title={t("清空上下文")}>
               清空
             </Button>
           </Popconfirm>
@@ -761,7 +763,7 @@ export default function ChatContainer({
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <RobotOutlined className="text-3xl text-[var(--color-text-tertiary)] mx-auto mb-3" />
-              <p className="text-[var(--color-text-secondary)]">开始新对话</p>
+              <p className="text-[var(--color-text-secondary)]">{t("开始新对话")}</p>
               <p className="text-sm text-[var(--color-text-tertiary)]">
                 输入您的问题开始
               </p>
@@ -860,7 +862,7 @@ export default function ChatContainer({
                       setAttachments((prev) => prev.filter((a) => a.id !== att.id))
                     }
                     className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white text-xs leading-none opacity-0 group-hover:opacity-100 transition-opacity"
-                    aria-label={`移除图片 ${att.name}`}
+                    aria-label={t("移除图片 {{p0}}", { p0: att.name })}
                   >
                     ×
                   </button>
@@ -881,7 +883,7 @@ export default function ChatContainer({
           >
             <button
               className="px-3 py-2 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-(--color-bg-tertiary) transition-colors"
-              title="添加附件"
+              title={t("添加附件")}
             >
               <PaperClipOutlined />
             </button>
@@ -891,7 +893,7 @@ export default function ChatContainer({
             <div
               className="absolute bottom-full left-0 right-0 mb-2 max-h-64 overflow-y-auto rounded-xl bg-[var(--color-bg-primary)] border border-(--color-border) shadow-xl z-30"
               role="listbox"
-              aria-label="快捷指令"
+              aria-label={t("快捷指令")}
             >
               {palette.length === 0 ? (
                 <p className="px-3 py-2 text-xs text-[var(--color-text-tertiary)]">
@@ -944,8 +946,8 @@ export default function ChatContainer({
                   });
               }}
               className="px-3 py-2 border rounded-lg transition-colors flex items-center gap-1 text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-(--color-border) hover:text-[var(--color-text-primary)]"
-              title="截图提问：截取屏幕/窗口，作为图片发给 AI 识别（PLAT-11）"
-              aria-label="截图提问"
+              title={t("截图提问：截取屏幕/窗口，作为图片发给 AI 识别（PLAT-11）")}
+              aria-label={t("截图提问")}
             >
               <CameraOutlined />
             </button>
@@ -974,7 +976,7 @@ export default function ChatContainer({
               aria-label={recording ? "正在录音" : "按住说话"}
             >
               <AudioOutlined />
-              {recording && <span className="text-xs">松手识别</span>}
+              {recording && <span className="text-xs">{t("松手识别")}</span>}
             </button>
           )}
           {onTtsEnabledChange && (
@@ -985,9 +987,9 @@ export default function ChatContainer({
                   ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)]"
                   : "bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-(--color-border) hover:text-[var(--color-text-primary)]"
               }`}
-              title="自动播报：回答完成后自动朗读"
+              title={t("自动播报：回答完成后自动朗读")}
               aria-pressed={ttsEnabled}
-              aria-label="自动播报开关"
+              aria-label={t("自动播报开关")}
             >
               <SoundOutlined />
             </button>
@@ -997,10 +999,10 @@ export default function ChatContainer({
             <button
               onClick={() => onExpertDismiss?.()}
               className="px-3 py-2 border rounded-lg transition-colors flex items-center gap-1 text-sm bg-[var(--color-primary)]/10 border-[var(--color-primary)] text-[var(--color-primary)]"
-              title={`已召唤专家「${expertName}」，点击解除`}
-              aria-label={`当前专家 ${expertName}（AI 生成），点击解除`}
+              title={t("已召唤专家「{{p0}}」，点击解除", { p0: expertName })}
+              aria-label={t("当前专家 {{p0}}（AI 生成），点击解除", { p0: expertName })}
             >
-              🧑‍🏫 {expertName} <span className="text-[10px] opacity-70">AI 生成</span> ✕
+              🧑‍🏫 {expertName} <span className="text-[10px] opacity-70">{t("AI 生成")}</span> ✕
             </button>
           )}
 
@@ -1011,11 +1013,11 @@ export default function ChatContainer({
                   ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)]"
                   : "bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-(--color-border) hover:text-[var(--color-text-primary)]"
               }`}
-              title="能力面板：按意图预选本次可用的工具（TASK-06 路由 v1）"
-              aria-label="能力面板"
+              title={t("能力面板：按意图预选本次可用的工具（TASK-06 路由 v1）")}
+              aria-label={t("能力面板")}
             >
               <AppstoreOutlined />
-              <span className="hidden md:inline">能力</span>
+              <span className="hidden md:inline">{t("能力")}</span>
             </button>
           </Popover>
 
@@ -1027,11 +1029,11 @@ export default function ChatContainer({
                   ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)]"
                   : "bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-(--color-border) hover:text-[var(--color-text-primary)]"
               }`}
-              title="联网搜索：先检索再作答，回答附带可点击引用"
+              title={t("联网搜索：先检索再作答，回答附带可点击引用")}
               aria-pressed={webSearch}
             >
               <GlobalOutlined />
-              <span className="hidden md:inline">联网</span>
+              <span className="hidden md:inline">{t("联网")}</span>
             </button>
           )}
 
@@ -1043,11 +1045,11 @@ export default function ChatContainer({
                   ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)]"
                   : "bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-(--color-border) hover:text-[var(--color-text-primary)]"
               }`}
-              title="深度思考：让推理模型先思考再作答，思考链单独折叠展示"
+              title={t("深度思考：让推理模型先思考再作答，思考链单独折叠展示")}
               aria-pressed={deepThinking}
             >
               <BulbOutlined />
-              <span className="hidden md:inline">深度思考</span>
+              <span className="hidden md:inline">{t("深度思考")}</span>
             </button>
           )}
 
@@ -1057,7 +1059,7 @@ export default function ChatContainer({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
-            placeholder="输入消息，按 Enter 发送，Shift+Enter 换行..."
+            placeholder={t("输入消息，按 Enter 发送，Shift+Enter 换行...")}
             rows={1}
             className="flex-1 px-4 py-2 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg resize-none focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
             style={{ minHeight: "44px", maxHeight: "200px" }}
@@ -1066,15 +1068,15 @@ export default function ChatContainer({
             <button
               onClick={onStopGeneration}
               className="px-4 py-2 bg-[var(--color-bg-tertiary)] border border-(--color-border) rounded-lg hover:bg-(--color-border) transition-colors flex items-center gap-1"
-              title="停止生成"
+              title={t("停止生成")}
             >
-              <StopOutlined aria-label="停止生成" />
+              <StopOutlined aria-label={t("停止生成")} />
             </button>
           ) : (
             <button
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
-              aria-label="发送"
+              aria-label={t("发送")}
               className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <SendOutlined />
@@ -1089,8 +1091,8 @@ export default function ChatContainer({
         open={slotCommand !== null}
         onOk={() => slotCommand && applyCommand(slotCommand, slotValues)}
         onCancel={() => setSlotCommand(null)}
-        okText="填入"
-        cancelText="取消"
+        okText={t("填入")}
+        cancelText={t("取消")}
       >
         <div className="space-y-3">
           {slotCommand?.slots.map((slot) => (
@@ -1102,7 +1104,7 @@ export default function ChatContainer({
                   setSlotValues((prev) => ({ ...prev, [slot]: e.target.value }))
                 }
                 rows={slot.includes("原文") || slot.includes("内容") ? 4 : 1}
-                aria-label={`参数 ${slot}`}
+                aria-label={t("参数 {{p0}}", { p0: slot })}
               />
             </div>
           ))}
@@ -1111,7 +1113,7 @@ export default function ChatContainer({
 
       {/* Parameter input modal */}
       <Modal
-        title="智能体参数设置"
+        title={t("智能体参数设置")}
         open={showParamModal}
         onOk={() => {
           setShowParamModal(false);
@@ -1127,8 +1129,8 @@ export default function ChatContainer({
           }
         }}
         onCancel={() => setShowParamModal(false)}
-        okText="确定"
-        cancelText="取消"
+        okText={t("确定")}
+        cancelText={t("取消")}
         width={500}
       >
         <div className="space-y-4">
@@ -1171,7 +1173,8 @@ function MessageItem({
   onBranch,
   onQuote,
   disabled = false,
-}: MessageItemProps) {
+}: MessageItemProps) {  const { t } = useTranslation();
+
   const isUser = message.role === "user";
   const streaming = message.status === "pending";
   // Auto-expand the thinking trace while it streams in; the user can fold it.
@@ -1255,7 +1258,7 @@ function MessageItem({
                         link.click();
                       }}
                       className="text-[var(--color-primary)]"
-                      aria-label={`下载视频 ${att.name}`}
+                      aria-label={t("下载视频 {{p0}}", { p0: att.name })}
                     >
                       下载
                     </button>
@@ -1281,7 +1284,7 @@ function MessageItem({
                         link.click();
                       }}
                       className="px-2 py-0.5 rounded text-xs text-white bg-white/20 hover:bg-white/30"
-                      aria-label={`下载图片 ${att.name}`}
+                      aria-label={t("下载图片 {{p0}}", { p0: att.name })}
                     >
                       下载
                     </button>
@@ -1290,7 +1293,7 @@ function MessageItem({
                         window.open(att.url, "_blank");
                       }}
                       className="px-2 py-0.5 rounded text-xs text-white bg-white/20 hover:bg-white/30"
-                      aria-label={`放大查看 ${att.name}`}
+                      aria-label={t("放大查看 {{p0}}", { p0: att.name })}
                     >
                       放大
                     </button>
@@ -1324,7 +1327,7 @@ function MessageItem({
                 onChange={(e) => setEditDraft(e.target.value)}
                 rows={3}
                 className="w-full px-3 py-2 bg-(--color-bg-tertiary) border border-(--color-border) rounded-lg resize-y focus:outline-none text-[var(--color-text-primary)]"
-                aria-label="编辑消息"
+                aria-label={t("编辑消息")}
               />
               <div className="flex justify-end gap-2">
                 <button
@@ -1345,13 +1348,13 @@ function MessageItem({
                 </button>
               </div>
               <Popconfirm
-                title="编辑重发将丢弃这条消息之后的对话"
-                description="后续消息会被截断，无法恢复"
+                title={t("编辑重发将丢弃这条消息之后的对话")}
+                description={t("后续消息会被截断，无法恢复")}
                 open={confirmEdit}
                 onConfirm={submitEdit}
                 onCancel={() => setConfirmEdit(false)}
-                okText="确认重发"
-                cancelText="取消"
+                okText={t("确认重发")}
+                cancelText={t("取消")}
               >
                 <span />
               </Popconfirm>
@@ -1444,11 +1447,11 @@ function MessageItem({
               <button
                 onClick={handleCopy}
                 className="p-0.5 hover:bg-(--color-bg-tertiary) rounded"
-                title="复制"
-                aria-label="复制消息"
+                title={t("复制")}
+                aria-label={t("复制消息")}
               >
                 {copied ? (
-                  <span className="text-xs text-green-500">已复制</span>
+                  <span className="text-xs text-green-500">{t("已复制")}</span>
                 ) : (
                   <CopyOutlined className="text-xs" />
                 )}
@@ -1457,8 +1460,8 @@ function MessageItem({
                 <button
                   onClick={() => onQuote(message.content)}
                   className="p-0.5 hover:bg-(--color-bg-tertiary) rounded"
-                  title="引用"
-                  aria-label="引用消息"
+                  title={t("引用")}
+                  aria-label={t("引用消息")}
                 >
                   <DownOutlined className="text-xs rotate-180" />
                 </button>
@@ -1471,8 +1474,8 @@ function MessageItem({
                   }}
                   disabled={disabled}
                   className="p-0.5 hover:bg-(--color-bg-tertiary) rounded disabled:opacity-40"
-                  title="编辑重发"
-                  aria-label="编辑重发"
+                  title={t("编辑重发")}
+                  aria-label={t("编辑重发")}
                 >
                   <EditOutlined className="text-xs" />
                 </button>
@@ -1482,8 +1485,8 @@ function MessageItem({
                   onClick={() => onRegenerate(message.id)}
                   disabled={disabled}
                   className="p-0.5 hover:bg-(--color-bg-tertiary) rounded disabled:opacity-40"
-                  title="重新生成"
-                  aria-label="重新生成"
+                  title={t("重新生成")}
+                  aria-label={t("重新生成")}
                 >
                   <ReloadOutlined className="text-xs" />
                 </button>
@@ -1493,8 +1496,8 @@ function MessageItem({
                   onClick={() => onBranch(message.id, !isUser)}
                   disabled={disabled}
                   className="p-0.5 hover:bg-(--color-bg-tertiary) rounded disabled:opacity-40"
-                  title="从此处分支新对话"
-                  aria-label="分支对话"
+                  title={t("从此处分支新对话")}
+                  aria-label={t("分支对话")}
                 >
                   <ForkOutlined className="text-xs" />
                 </button>

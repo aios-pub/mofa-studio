@@ -58,7 +58,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
       const from = (location.state as any)?.from || "/";
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "登录失败");
+      setError(err instanceof Error ? err.message: t("登录失败"));
     } finally {
       setLoading(false);
     }

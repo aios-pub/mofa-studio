@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Agent associated test sets selector
  */
@@ -26,7 +27,8 @@ export default function AgentTestSetSelector({
   agentId,
   selectedTestSets,
   onChange,
-}: AgentTestSetSelectorProps) {
+}: AgentTestSetSelectorProps) {  const { t } = useTranslation();
+
   const [testSets, setTestSets] = useState<TestSet[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -139,7 +141,7 @@ export default function AgentTestSetSelector({
 
       {/* Search box */}
       <Input
-        placeholder="搜索测试集..."
+        placeholder={t("搜索测试集...")}
         prefix={<SearchOutlined />}
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}

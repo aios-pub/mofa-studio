@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Prompt editor component
  */
@@ -168,7 +169,8 @@ export default function PromptEditor({
   promptId,
   onSave,
   onCancel,
-}: PromptEditorProps) {
+}: PromptEditorProps) {  const { t } = useTranslation();
+
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<
@@ -330,7 +332,7 @@ export default function PromptEditor({
   // Save
   const handleSave = async () => {
     if (!name.trim() || !content.trim()) {
-      alert("请填写名称和内容");
+      alert(t("请填写名称和内容"));
       return;
     }
 
@@ -363,7 +365,7 @@ export default function PromptEditor({
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-[var(--color-text-tertiary)]">加载中...</div>
+        <div className="text-[var(--color-text-tertiary)]">{t("加载中...")}</div>
       </div>
     );
   }
@@ -466,7 +468,7 @@ export default function PromptEditor({
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="提示词名称"
+                    placeholder={t("提示词名称")}
                     className="w-full px-3 py-2 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg text-sm focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
                   />
                 </div>
@@ -478,7 +480,7 @@ export default function PromptEditor({
                     type="text"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    placeholder="分类名称"
+                    placeholder={t("分类名称")}
                     className="w-full px-3 py-2 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg text-sm focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
                   />
                 </div>
@@ -491,7 +493,7 @@ export default function PromptEditor({
                   type="text"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="简短描述提示词的用途"
+                  placeholder={t("简短描述提示词的用途")}
                   className="w-full px-3 py-2 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg text-sm focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
                 />
               </div>
@@ -500,9 +502,9 @@ export default function PromptEditor({
             {/* Tabs bar */}
             <div className="flex border-b border-(--color-border)">
               {[
-                { key: "content", label: "内容", icon: FileTextOutlined },
-                { key: "variables", label: "变量", icon: FunctionOutlined },
-                { key: "preview", label: "预览", icon: EyeOutlined },
+                { key: "content", label: t("内容"), icon: FileTextOutlined },
+                { key: "variables", label: t("变量"), icon: FunctionOutlined },
+                { key: "preview", label: t("预览"), icon: EyeOutlined },
               ].map((tab) => (
                 <button
                   key={tab.key}
@@ -526,7 +528,7 @@ export default function PromptEditor({
                   name="content"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="输入提示词内容，使用 {{变量名}} 插入变量..."
+                  placeholder={t("输入提示词内容，使用 {{变量名}} 插入变量...")}
                   className="w-full h-full p-4 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg text-sm focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)] font-mono resize-none"
                 />
               )}
@@ -549,8 +551,8 @@ export default function PromptEditor({
                   {variables.length === 0 ? (
                     <div className="text-center py-8 text-[var(--color-text-tertiary)]">
                       <FunctionOutlined className="text-2xl mx-auto mb-2 opacity-50" />
-                      <p>暂无自定义变量</p>
-                      <p className="text-xs">点击上方按钮添加变量</p>
+                      <p>{t("暂无自定义变量")}</p>
+                      <p className="text-xs">{t("点击上方按钮添加变量")}</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -582,7 +584,7 @@ export default function PromptEditor({
                               onChange={(e) =>
                                 updateVariable(index, { name: e.target.value })
                               }
-                              placeholder="变量名"
+                              placeholder={t("变量名")}
                               className="px-2 py-1 text-sm bg-(--color-bg-tertiary) border border-(--color-border) rounded"
                             />
                             <select
@@ -609,7 +611,7 @@ export default function PromptEditor({
                                   defaultValue: e.target.value,
                                 })
                               }
-                              placeholder="默认值"
+                              placeholder={t("默认值")}
                               className="px-2 py-1 text-sm bg-(--color-bg-tertiary) border border-(--color-border) rounded"
                             />
                             <label className="flex items-center gap-1">
@@ -623,7 +625,7 @@ export default function PromptEditor({
                                 }
                                 className="rounded"
                               />
-                              <span className="text-sm">必填</span>
+                              <span className="text-sm">{t("必填")}</span>
                             </label>
                           </div>
                           {v.type === "enum" && (
@@ -638,7 +640,7 @@ export default function PromptEditor({
                                       .map((s) => s.trim()),
                                   })
                                 }
-                                placeholder="枚举值，用逗号分隔"
+                                placeholder={t("枚举值，用逗号分隔")}
                                 className="w-full px-2 py-1 text-sm bg-(--color-bg-tertiary) border border-(--color-border) rounded"
                               />
                             </div>

@@ -43,7 +43,7 @@ export default function Pagination({
         showTotal={
           showTotal
             ? (total) =>
-                t("pagination.total", { total, defaultValue: `共 ${total} 条` })
+                t("pagination.total", { total, defaultValue: t("共 {{p0}} 条", { p0: total }) })
             : undefined
         }
         pageSizeOptions={pageSizeOptions}

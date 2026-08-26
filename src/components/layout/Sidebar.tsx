@@ -529,7 +529,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
             size="small"
             checked={expertMode}
             onChange={toggleExpertMode}
-            aria-label="专家模式开关"
+            aria-label={t("专家模式开关")}
           />
         </div>
       )}

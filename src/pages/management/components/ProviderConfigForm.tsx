@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Provider configuration form component
  * Dynamically generate configuration fields by vendor type
@@ -28,7 +29,8 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
   config,
   formData,
   onChange,
-}) => {
+}) => {  const { t } = useTranslation();
+
   const [showApiKey, setShowApiKey] = useState(false);
 
   // Initialize defaults (only when fields are empty)
@@ -144,7 +146,7 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
             名称 <span className="text-red-500">*</span>
           </label>
           <Input
-            placeholder="输入 Provider 名称"
+            placeholder={t("输入 Provider 名称")}
             value={formData.name || ""}
             onChange={(e) => onChange({ name: e.target.value })}
           />
@@ -233,7 +235,7 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
             prefix={
               <LinkOutlined className="text-[var(--color-text-tertiary)]" />
             }
-            placeholder="API 基础地址"
+            placeholder={t("API 基础地址")}
             value={formData.baseUrl || ""}
             onChange={(e) => onChange({ baseUrl: e.target.value })}
           />

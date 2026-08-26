@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Resizable sidebar component
  * Supports mouse drag resizing with min/max width limits
@@ -75,7 +76,8 @@ export default function ResizableSidebar({
   collapseThreshold = 20,
   collapsedWidth = 40,
   storageKey,
-}: ResizableSidebarProps) {
+}: ResizableSidebarProps) {  const { t } = useTranslation();
+
   const storedWidth = getStoredWidth(storageKey, defaultWidth);
   const storedCollapsed = getStoredCollapsed(storageKey);
 
@@ -190,7 +192,7 @@ export default function ResizableSidebar({
         <button
           onClick={handleToggle}
           className="absolute inset-0 flex flex-col items-center pt-3 text-[var(--color-text-tertiary)] hover:text-[var(--color-primary)] transition-colors z-30 cursor-pointer bg-transparent border-none outline-none"
-          title="展开面板"
+          title={t("展开面板")}
         >
           <RightOutlined className="text-xs mb-1" />
           <span
@@ -230,7 +232,7 @@ export default function ResizableSidebar({
         <button
           onClick={handleToggle}
           className="absolute top-1/2 -right-3 -translate-y-1/2 w-6 h-6 rounded-full border border-(--color-border) bg-[var(--color-bg-base)] hover:bg-[var(--color-bg-secondary)] flex items-center justify-center z-30 cursor-pointer shadow-sm"
-          title="折叠面板"
+          title={t("折叠面板")}
         >
           <LeftOutlined className="text-[10px] text-[var(--color-text-tertiary)]" />
         </button>

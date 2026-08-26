@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Audit Log Page
  * Audit log page
@@ -35,7 +36,8 @@ interface AuditLogEntry {
   userAgent: string;
 }
 
-export function AuditLogPage() {
+export function AuditLogPage() {  const { t } = useTranslation();
+
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -107,7 +109,7 @@ export function AuditLogPage() {
 
   const columns: ColumnsType<AuditLogEntry> = [
     {
-      title: "时间",
+      title: t("时间"),
       dataIndex: "timestamp",
       key: "timestamp",
       width: 180,
@@ -119,41 +121,41 @@ export function AuditLogPage() {
       },
     },
     {
-      title: "用户",
+      title: t("用户"),
       dataIndex: "username",
       key: "username",
       width: 120,
     },
     {
-      title: "操作",
+      title: t("操作"),
       dataIndex: "action",
       key: "action",
       width: 100,
       filters: [
-        { text: "创建", value: "CREATE" },
-        { text: "更新", value: "UPDATE" },
-        { text: "删除", value: "DELETE" },
-        { text: "登录", value: "LOGIN" },
-        { text: "登出", value: "LOGOUT" },
+        { text: t("创建"), value: "CREATE" },
+        { text: t("更新"), value: "UPDATE" },
+        { text: t("删除"), value: "DELETE" },
+        { text: t("登录"), value: "LOGIN" },
+        { text: t("登出"), value: "LOGOUT" },
       ],
       render: (action: string) => (
         <Tag color={getActionColor(action)}>{action}</Tag>
       ),
     },
     {
-      title: "资源类型",
+      title: t("资源类型"),
       dataIndex: "resourceType",
       key: "resourceType",
       width: 120,
     },
     {
-      title: "资源ID",
+      title: t("资源ID"),
       dataIndex: "resourceId",
       key: "resourceId",
       ellipsis: true,
     },
     {
-      title: "IP地址",
+      title: t("IP地址"),
       dataIndex: "ipAddress",
       key: "ipAddress",
       width: 140,
@@ -190,12 +192,12 @@ export function AuditLogPage() {
         <Title level={3} className="m-0">
           审计日志
         </Title>
-        <Text type="secondary">查看系统操作记录和安全审计</Text>
+        <Text type="secondary">{t("查看系统操作记录和安全审计")}</Text>
       </div>
 
       <div className="mb-4 flex flex-wrap gap-4">
         <Input
-          placeholder="搜索用户名或资源ID"
+          placeholder={t("搜索用户名或资源ID")}
           prefix={<SearchOutlined />}
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
@@ -203,29 +205,29 @@ export function AuditLogPage() {
           allowClear
         />
         <Select
-          placeholder="筛选操作类型"
+          placeholder={t("筛选操作类型")}
           value={actionFilter}
           onChange={setActionFilter}
           style={{ width: 150 }}
           allowClear
         >
-          <Option value="CREATE">创建</Option>
-          <Option value="UPDATE">更新</Option>
-          <Option value="DELETE">删除</Option>
-          <Option value="LOGIN">登录</Option>
-          <Option value="LOGOUT">登出</Option>
+          <Option value="CREATE">{t("创建")}</Option>
+          <Option value="UPDATE">{t("更新")}</Option>
+          <Option value="DELETE">{t("删除")}</Option>
+          <Option value="LOGIN">{t("登录")}</Option>
+          <Option value="LOGOUT">{t("登出")}</Option>
         </Select>
         <Select
-          placeholder="筛选资源类型"
+          placeholder={t("筛选资源类型")}
           value={resourceFilter}
           onChange={setResourceFilter}
           style={{ width: 150 }}
           allowClear
         >
-          <Option value="SKILL">技能</Option>
-          <Option value="NAMESPACE">命名空间</Option>
-          <Option value="LABEL">标签</Option>
-          <Option value="USER">用户</Option>
+          <Option value="SKILL">{t("技能")}</Option>
+          <Option value="NAMESPACE">{t("命名空间")}</Option>
+          <Option value="LABEL">{t("标签")}</Option>
+          <Option value="USER">{t("用户")}</Option>
         </Select>
         <DatePicker.RangePicker
           value={dateRange}
@@ -250,7 +252,7 @@ export function AuditLogPage() {
               total: filteredLogs.length,
               pageSize: 20,
               showSizeChanger: true,
-              showTotal: (total) => `共 ${total} 条记录`,
+              showTotal: (total) => t("共 {{p0}} 条记录", { p0: total }),
             }}
             onRow={(record) => ({
               onClick: () => setSelectedLog(record),
@@ -266,26 +268,26 @@ export function AuditLogPage() {
         {selectedLog && (
           <div className="w-96">
             <div className="bg-white p-4 rounded-lg shadow-sm">
-              <Title level={5}>日志详情</Title>
+              <Title level={5}>{t("日志详情")}</Title>
               <Descriptions column={1} size="small" variant>
-                <Descriptions.Item label="时间">
+                <Descriptions.Item label={t("时间")}>
                   {new Date(selectedLog.timestamp).toLocaleString("zh-CN")}
                 </Descriptions.Item>
-                <Descriptions.Item label="用户">
+                <Descriptions.Item label={t("用户")}>
                   {selectedLog.username} ({selectedLog.user_id})
                 </Descriptions.Item>
-                <Descriptions.Item label="操作">
+                <Descriptions.Item label={t("操作")}>
                   <Tag color={getActionColor(selectedLog.action)}>
                     {selectedLog.action}
                   </Tag>
                 </Descriptions.Item>
-                <Descriptions.Item label="资源类型">
+                <Descriptions.Item label={t("资源类型")}>
                   {selectedLog.resourceType}
                 </Descriptions.Item>
-                <Descriptions.Item label="资源ID">
+                <Descriptions.Item label={t("资源ID")}>
                   <code>{selectedLog.resourceId}</code>
                 </Descriptions.Item>
-                <Descriptions.Item label="IP地址">
+                <Descriptions.Item label={t("IP地址")}>
                   {selectedLog.ipAddress}
                 </Descriptions.Item>
                 <Descriptions.Item label="User Agent">
@@ -293,7 +295,7 @@ export function AuditLogPage() {
                     {selectedLog.userAgent}
                   </Text>
                 </Descriptions.Item>
-                <Descriptions.Item label="详情">
+                <Descriptions.Item label={t("详情")}>
                   <pre className="text-xs bg-gray-50 p-2 rounded">
                     {JSON.stringify(selectedLog.details, null, 2)}
                   </pre>

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Conversation list component
  */
@@ -41,7 +42,8 @@ export default function ConversationList({
   onSelectConversation,
   selectedId,
   onCreateConversation,
-}: ConversationListProps) {
+}: ConversationListProps) {  const { t } = useTranslation();
+
   const navigate = useNavigate();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -86,7 +88,7 @@ export default function ConversationList({
       try {
         const newConversation = await conversationApi.create({
           agentId: "agent-1",
-          title: "新对话",
+          title: t("新对话"),
         });
         setConversations((prev) => [newConversation, ...prev]);
         onSelectConversation?.(newConversation);
@@ -189,7 +191,7 @@ export default function ConversationList({
       navigate("/projects");
     } catch (error) {
       console.error("Failed to convert conversation to project:", error);
-      message.error("立项失败，请稍后重试");
+      message.error(t("立项失败，请稍后重试"));
     }
   };
 
@@ -267,10 +269,10 @@ export default function ConversationList({
           <SearchOutlined className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-tertiary)]" />
           <input
             type="text"
-            placeholder="搜索会话..."
+            placeholder={t("搜索会话...")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            aria-label="搜索会话"
+            aria-label={t("搜索会话")}
             className="w-full pl-9 pr-3 py-2 bg-(--color-bg-tertiary) border border-(--color-border) rounded-lg text-sm focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
           />
         </div>
@@ -285,7 +287,7 @@ export default function ConversationList({
                 : "border-(--color-border) text-[var(--color-text-tertiary)]"
             }`}
             aria-pressed={showArchived}
-            aria-label="显示归档会话"
+            aria-label={t("显示归档会话")}
           >
             <InboxOutlined /> 归档
           </button>
@@ -300,7 +302,7 @@ export default function ConversationList({
                 : "border-(--color-border) text-[var(--color-text-tertiary)]"
             }`}
             aria-pressed={batchMode}
-            aria-label="批量管理"
+            aria-label={t("批量管理")}
           >
             <CheckSquareOutlined /> 批量
           </button>
@@ -309,7 +311,7 @@ export default function ConversationList({
               onClick={handleBatchDelete}
               disabled={checked.size === 0}
               className="ml-auto px-2 py-1 rounded-lg text-red-500 border border-red-300 disabled:opacity-40"
-              aria-label="删除所选"
+              aria-label={t("删除所选")}
             >
               删除({checked.size})
             </button>
@@ -321,12 +323,12 @@ export default function ConversationList({
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="text-[var(--color-text-tertiary)]">加载中...</div>
+            <div className="text-[var(--color-text-tertiary)]">{t("加载中...")}</div>
           </div>
         ) : filteredConversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <MessageOutlined className="text-3xl text-[var(--color-text-tertiary)] mb-2" />
-            <p className="text-[var(--color-text-secondary)]">暂无会话</p>
+            <p className="text-[var(--color-text-secondary)]">{t("暂无会话")}</p>
             <p className="text-sm text-[var(--color-text-tertiary)]">
               点击上方按钮开始新对话
             </p>
@@ -366,7 +368,7 @@ export default function ConversationList({
                             checked={checked.has(conversation.id)}
                             onClick={(e) => e.stopPropagation()}
                             onChange={() => toggleChecked(conversation.id)}
-                            aria-label={`选择会话 ${conversation.title}`}
+                            aria-label={t("选择会话 {{p0}}", { p0: conversation.title })}
                             className="flex-shrink-0"
                           />
                         )}
@@ -393,13 +395,13 @@ export default function ConversationList({
                               {conversation.pinned && (
                                 <PushpinOutlined
                                   className="text-[var(--color-primary)] text-xs"
-                                  aria-label="已置顶"
+                                  aria-label={t("已置顶")}
                                 />
                               )}
                               {conversation.archived && (
                                 <InboxOutlined
                                   className="text-[var(--color-text-tertiary)] text-xs"
-                                  aria-label="已归档"
+                                  aria-label={t("已归档")}
                                 />
                               )}
                               <span className="truncate">{conversation.title}</span>
@@ -415,7 +417,7 @@ export default function ConversationList({
                             e.stopPropagation();
                             handleContextMenu(e, conversation.id);
                           }}
-                          aria-label="更多操作"
+                          aria-label={t("更多操作")}
                           className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[var(--color-bg-base)] rounded transition-opacity"
                         >
                           <MoreOutlined className="text-[var(--color-text-tertiary)]" />

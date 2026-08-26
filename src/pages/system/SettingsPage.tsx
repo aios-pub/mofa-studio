@@ -350,7 +350,7 @@ function DataSettings() {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Failed to export data:", error);
-      message.error("导出数据失败，请重试");
+      message.error(t("导出数据失败，请重试"));
     } finally {
       setExporting(false);
     }

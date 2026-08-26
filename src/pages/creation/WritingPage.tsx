@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * AI writing workspace (TOOL-06): genre templates → streamed draft into a
  * TipTap editor (Markdown source), a floating AI menu over the selection
@@ -37,7 +38,8 @@ interface FloatingMenu {
   left: number;
 }
 
-export default function WritingPage() {
+export default function WritingPage() {  const { t } = useTranslation();
+
   const [genre, setGenre] = useState(GENRE_TEMPLATES[0].id);
   const [topic, setTopic] = useState("");
   const [requirements, setRequirements] = useState("");
@@ -65,7 +67,7 @@ export default function WritingPage() {
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Placeholder.configure({ placeholder: "生成初稿后在此编辑，选中文字唤起 AI 菜单…" }),
+      Placeholder.configure({ placeholder: t("生成初稿后在此编辑，选中文字唤起 AI 菜单…") }),
       Markdown.configure({ html: false }),
     ],
     content: "",
@@ -123,14 +125,14 @@ export default function WritingPage() {
         },
         abortRef.current.signal,
       );
-      message.success("初稿已生成");
+      message.success(t("初稿已生成"));
       if (!hasFirstOutput()) {
         markFirstOutput();
         setFirstOutputOpen(true);
       }
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`生成失败：${detail}`);
+      message.error(t("生成失败：{{p0}}", { p0: detail }));
     } finally {
       setIsGenerating(false);
       setBusyOp(null);
@@ -177,7 +179,7 @@ export default function WritingPage() {
         );
       } catch (error) {
         const detail = error instanceof Error ? error.message : String(error);
-        message.error(`${TRANSFORM_LABELS[op]}失败：${detail}`);
+        message.error(t("{{p0}}失败：{{p1}}", { p0: TRANSFORM_LABELS[op], p1: detail }));
         // Restore the original text on failure for destructive ops.
         if (op !== "continue") {
           editor.commands.insertContentAt(insertPos, selection);
@@ -192,7 +194,7 @@ export default function WritingPage() {
   const downloadMarkdown = useCallback(() => {
     const content = (editor?.storage.markdown?.getMarkdown() as string) ?? "";
     if (!content.trim()) {
-      message.warning("还没有内容可导出");
+      message.warning(t("还没有内容可导出"));
       return;
     }
     const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
@@ -214,13 +216,13 @@ export default function WritingPage() {
         </h2>
 
         <div>
-          <label className="block text-sm font-medium mb-1">体裁模板</label>
+          <label className="block text-sm font-medium mb-1">{t("体裁模板")}</label>
           <Select
             value={genre}
             onChange={setGenre}
             options={GENRE_TEMPLATES.map((g) => ({ value: g.id, label: g.label }))}
             style={{ width: "100%" }}
-            aria-label="体裁模板"
+            aria-label={t("体裁模板")}
           />
           {activeGenre && (
             <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
@@ -230,28 +232,28 @@ export default function WritingPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">主题</label>
+          <label className="block text-sm font-medium mb-1">{t("主题")}</label>
           <Input
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            placeholder="例如：新手露营装备怎么选"
-            aria-label="写作主题"
+            placeholder={t("例如：新手露营装备怎么选")}
+            aria-label={t("写作主题")}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">补充要求（可选）</label>
+          <label className="block text-sm font-medium mb-1">{t("补充要求（可选）")}</label>
           <Input.TextArea
             value={requirements}
             onChange={(e) => setRequirements(e.target.value)}
-            placeholder="语气、受众、必须包含的点…"
+            placeholder={t("语气、受众、必须包含的点…")}
             rows={3}
-            aria-label="补充要求"
+            aria-label={t("补充要求")}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">模型</label>
+          <label className="block text-sm font-medium mb-1">{t("模型")}</label>
           <ModelPicker value={model} onChange={setModel} />
         </div>
 
@@ -262,12 +264,12 @@ export default function WritingPage() {
           disabled={!topic.trim()}
           onClick={runDraft}
           icon={<ThunderboltOutlined />}
-          aria-label="生成初稿"
+          aria-label={t("生成初稿")}
         >
           生成初稿
         </Button>
 
-        <Button block onClick={downloadMarkdown} aria-label="导出 Markdown">
+        <Button block onClick={downloadMarkdown} aria-label={t("导出 Markdown")}>
           导出 Markdown
         </Button>
       </div>
@@ -286,7 +288,7 @@ export default function WritingPage() {
           {busyOp && (
             <span className="flex items-center gap-1">
               <Spin size="small" />
-              {busyOp === "draft" ? "生成初稿中…" : `${TRANSFORM_LABELS[busyOp]}中…`}
+              {busyOp === "draft" ? "生成初稿中…" : t("{{p0}}中…", { p0: TRANSFORM_LABELS[busyOp] })}
             </span>
           )}
         </div>
@@ -311,7 +313,7 @@ export default function WritingPage() {
           className="fixed z-40 flex gap-1 px-2 py-1 rounded-lg bg-[var(--color-bg-primary)] border border-(--color-border) shadow-lg"
           style={{ top: menu.top, left: menu.left }}
           role="toolbar"
-          aria-label="AI 文本处理"
+          aria-label={t("AI 文本处理")}
         >
           {(Object.keys(TRANSFORM_LABELS) as TransformOp[]).map((op) => (
             <Tooltip key={op} title={`AI ${TRANSFORM_LABELS[op]}`}>

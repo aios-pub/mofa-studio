@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * First-task guide (ONBOARD-03): a「做同款」recommendation strip shown on
  * the dashboard until the first successful output. One click routes into
@@ -11,7 +12,8 @@ import { RocketOutlined, RightOutlined } from "@ant-design/icons";
 import { FIRST_RUN_CASES, hasFirstOutput } from "./firstRunCases";
 import { loadCommands, makeCommand, saveCommands } from "@/utils/slashCommands";
 
-export default function FirstRunGuide() {
+export default function FirstRunGuide() {  const { t } = useTranslation();
+
   const navigate = useNavigate();
   const [dismissed, setDismissed] = useState(false);
 
@@ -30,7 +32,7 @@ export default function FirstRunGuide() {
         border border-[var(--color-border)]
         bg-[var(--color-bg-secondary)]/60
       "
-      aria-label="首任务引导"
+      aria-label={t("首任务引导")}
     >
       <div className="p-4">
         {/* Header */}
@@ -56,7 +58,7 @@ export default function FirstRunGuide() {
             size="small"
             className="text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
             onClick={() => setDismissed(true)}
-            aria-label="关闭首任务引导"
+            aria-label={t("关闭首任务引导")}
           >
             稍后再说
           </Button>
@@ -76,7 +78,7 @@ export default function FirstRunGuide() {
                 hover:shadow-sm
                 transition-all duration-150
               "
-              aria-label={`做同款：${c.title}`}
+              aria-label={t("做同款：{{p0}}", { p0: c.title })}
             >
               <span
                 className="
@@ -116,7 +118,8 @@ export function FirstOutputDialog({
   templateName: string;
   templateBody: string;
   onClose: () => void;
-}) {
+}) {  const { t } = useTranslation();
+
   const saveAsTemplate = () => {
     const command = makeCommand(`case-${Date.now()}`, templateName, templateBody);
     saveCommands([...loadCommands().filter((c) => c.id !== command.id), command]);
@@ -125,7 +128,7 @@ export function FirstOutputDialog({
 
   return (
     <Modal
-      title="第一个成果已完成 🎉"
+      title={t("第一个成果已完成 🎉")}
       open={open}
       onCancel={onClose}
       footer={[

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Node panel - left node library panel
  */
@@ -36,7 +37,8 @@ const nodeCategories = [
   },
 ];
 
-export default function NodePanel({ onAddNode }: NodePanelProps) {
+export default function NodePanel({ onAddNode }: NodePanelProps) {  const { t } = useTranslation();
+
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter node types
@@ -58,7 +60,7 @@ export default function NodePanel({ onAddNode }: NodePanelProps) {
       {/* Search */}
       <div className="p-3 border-b border-(--color-border)">
         <Input
-          placeholder="搜索节点..."
+          placeholder={t("搜索节点...")}
           prefix={<SearchOutlined />}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}

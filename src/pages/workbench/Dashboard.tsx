@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Dashboard page
  */
@@ -57,7 +58,8 @@ function WelcomeBanner() {
   );
 }
 
-export default function Dashboard() {
+export default function Dashboard() {  const { t } = useTranslation();
+
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<UsageStats | null>(null);
   const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
@@ -117,7 +119,7 @@ export default function Dashboard() {
   const statCards = stats
     ? [
         {
-          title: "今日对话",
+          title: t("今日对话"),
           value: formatNumber(
             dailyStats[dailyStats.length - 1]?.conversations || 0,
           ),
@@ -127,7 +129,7 @@ export default function Dashboard() {
           chartData: dailyStats.map((d) => d.conversations),
         },
         {
-          title: "Token 消耗",
+          title: t("Token 消耗"),
           value: formatNumber(stats.total_tokens),
           change: calculateTrend(dailyStats, "tokens"),
           icon: ThunderboltOutlined,
@@ -135,7 +137,7 @@ export default function Dashboard() {
           chartData: dailyStats.map((d) => d.tokens),
         },
         {
-          title: "平均响应",
+          title: t("平均响应"),
           value: `${((stats.avg_response_time || 0) / 1000).toFixed(1)}s`,
           change: -calculateTrend(dailyStats, "avg_response_time"), // lower response time is better
           icon: ClockCircleOutlined,
@@ -143,7 +145,7 @@ export default function Dashboard() {
           chartData: dailyStats.map((d) => d.avg_response_time),
         },
         {
-          title: "成功率",
+          title: t("成功率"),
           value: `${(stats.success_rate || 100).toFixed(1)}%`,
           change: calculateTrend(dailyStats, "success_rate"),
           icon: LineChartOutlined,
@@ -156,22 +158,22 @@ export default function Dashboard() {
   // Quick actions
   const quickActions = [
     {
-      label: "新建对话",
+      label: t("新建对话"),
       path: "/conversation",
       icon: MessageOutlined,
-      description: "与 Agent 开始新对话",
+      description: t("与 Agent 开始新对话"),
     },
     {
-      label: "Agent 管理",
+      label: t("Agent 管理"),
       path: "/management/agents",
       icon: RobotOutlined,
-      description: "管理和配置 AI Agent",
+      description: t("管理和配置 AI Agent"),
     },
     {
-      label: "统计分析",
+      label: t("统计分析"),
       path: "/analytics",
       icon: LineChartOutlined,
-      description: "查看详细使用数据",
+      description: t("查看详细使用数据"),
     },
   ];
 
@@ -298,10 +300,10 @@ export default function Dashboard() {
                   <div className="flex items-center gap-1 bg-[var(--color-bg-secondary)] rounded-lg p-1">
                     {[
                       { key: "tokens", label: "Token", color: "#8b5cf6" },
-                      { key: "conversations", label: "对话", color: "#3b82f6" },
+                      { key: "conversations", label: t("对话"), color: "#3b82f6" },
                       {
                         key: "avg_response_time",
-                        label: "响应",
+                        label: t("响应"),
                         color: "#f59e0b",
                       },
                     ].map((metric) => (

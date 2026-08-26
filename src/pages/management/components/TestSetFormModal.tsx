@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Test set create/edit form modal
  */
@@ -26,7 +27,8 @@ export function TestSetFormModal({
   categories,
   defaultCategoryId,
   loading,
-}: TestSetFormModalProps) {
+}: TestSetFormModalProps) {  const { t } = useTranslation();
+
   const [form] = Form.useForm<TestSetFormData>();
   const isEdit = !!testSet;
   const { error, handleError, clearError } = useFormError(open);
@@ -92,24 +94,24 @@ export function TestSetFormModal({
       <Form form={form} layout="vertical" autoComplete="off">
         <Form.Item
           name="name"
-          label="名称"
-          rules={[{ required: true, message: "请输入测试集名称" }]}
+          label={t("名称")}
+          rules={[{ required: true, message: t("请输入测试集名称") }]}
         >
-          <Input placeholder="请输入测试集名称" />
+          <Input placeholder={t("请输入测试集名称")} />
         </Form.Item>
 
-        <Form.Item name="categoryId" label="所属分类">
+        <Form.Item name="categoryId" label={t("所属分类")}>
           <TreeSelect
             treeData={categoryTreeData}
-            placeholder="选择分类文件夹"
+            placeholder={t("选择分类文件夹")}
             allowClear
             treeDefaultExpandAll
           />
         </Form.Item>
 
-        <Form.Item name="description" label="描述">
+        <Form.Item name="description" label={t("描述")}>
           <Input.TextArea
-            placeholder="请输入测试集描述"
+            placeholder={t("请输入测试集描述")}
             rows={3}
             showCount
             maxLength={500}

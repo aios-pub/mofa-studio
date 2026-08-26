@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Prompt list page
  */
@@ -164,7 +165,8 @@ const presetTemplates = [
   },
 ];
 
-export default function PromptListPage() {
+export default function PromptListPage() {  const { t } = useTranslation();
+
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -247,7 +249,7 @@ export default function PromptListPage() {
       })),
     });
     setActiveTab("content");
-    message.info(`已应用「${template.name}」模板`);
+    message.info(t("已应用「{{p0}}」模板", { p0: template.name }));
   };
 
   // Save
@@ -284,11 +286,11 @@ export default function PromptListPage() {
 
       if (editingPrompt) {
         const saved = await promptApi.update(editingPrompt.id, promptData);
-        message.success("提示词已更新");
+        message.success(t("提示词已更新"));
         setSelectedPrompt(saved || null);
       } else {
         const saved = await promptApi.create(promptData);
-        message.success("提示词已创建");
+        message.success(t("提示词已创建"));
         setSelectedPrompt(saved);
       }
 
@@ -300,7 +302,7 @@ export default function PromptListPage() {
         return;
       }
       console.error("Failed to save prompt:", error);
-      message.error(error instanceof Error ? error.message : "保存失败");
+      message.error(error instanceof Error ? error.message: t("保存失败"));
     } finally {
       setSaving(false);
     }
@@ -315,12 +317,12 @@ export default function PromptListPage() {
   // Delete (with confirmation)
   const handleDelete = (prompt: Prompt) => {
     Modal.confirm({
-      title: "确认删除",
+      title: t("确认删除"),
       icon: <ExclamationCircleOutlined />,
-      content: `确定要删除提示词「${prompt.name}」吗？此操作不可恢复。`,
-      okText: "删除",
+      content: t("确定要删除提示词「{{p0}}」吗？此操作不可恢复。", { p0: prompt.name }),
+      okText: t("删除"),
       okType: "danger",
-      cancelText: "取消",
+      cancelText: t("取消"),
       onOk: async () => {
         try {
           await promptApi.delete(prompt.id);
@@ -328,10 +330,10 @@ export default function PromptListPage() {
           if (selectedPrompt?.id === prompt.id) {
             setSelectedPrompt(null);
           }
-          message.success("提示词已删除");
+          message.success(t("提示词已删除"));
         } catch (error) {
           console.error("Failed to delete prompt:", error);
-          message.error("删除失败");
+          message.error(t("删除失败"));
         }
       },
     });
@@ -340,17 +342,17 @@ export default function PromptListPage() {
   const handleDuplicate = async (prompt: Prompt) => {
     try {
       const newPrompt = await promptApi.create({
-        name: `${prompt.name} (副本)`,
+        name: t("{{p0}} (副本)", { p0: prompt.name }),
         description: prompt.description,
         content: prompt.content,
         category: prompt.category,
         variables: prompt.variables,
       });
       setPrompts((prev) => [...prev, newPrompt]);
-      message.success("提示词已复制");
+      message.success(t("提示词已复制"));
     } catch (error) {
       console.error("Failed to duplicate prompt:", error);
-      message.error("复制失败");
+      message.error(t("复制失败"));
     }
   };
 
@@ -371,13 +373,13 @@ export default function PromptListPage() {
   const getActionMenuItems = (prompt: Prompt) => [
     {
       key: "edit",
-      label: "编辑",
+      label: t("编辑"),
       icon: <EditOutlined />,
       onClick: () => handleEdit(prompt),
     },
     {
       key: "copy",
-      label: "复制",
+      label: t("复制"),
       icon: <CopyOutlined />,
       onClick: () => handleDuplicate(prompt),
     },
@@ -386,7 +388,7 @@ export default function PromptListPage() {
     },
     {
       key: "delete",
-      label: "删除",
+      label: t("删除"),
       icon: <DeleteOutlined />,
       danger: true,
       onClick: () => handleDelete(prompt),
@@ -430,7 +432,7 @@ export default function PromptListPage() {
 
           {/* Search */}
           <Input
-            placeholder="搜索提示词..."
+            placeholder={t("搜索提示词...")}
             prefix={<SearchOutlined />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -461,7 +463,7 @@ export default function PromptListPage() {
           ) : filteredPrompts.length === 0 ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">
               <FileTextOutlined className="text-3xl mb-2 opacity-50" />
-              <p>暂无提示词</p>
+              <p>{t("暂无提示词")}</p>
             </div>
           ) : (
             filteredPrompts.map((prompt) => (
@@ -553,7 +555,7 @@ export default function PromptListPage() {
         destroyOnHidden
         footer={
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-            <Button onClick={handleEditorCancel}>取消</Button>
+            <Button onClick={handleEditorCancel}>{t("取消")}</Button>
             <Button
               type="primary"
               icon={<SaveOutlined />}
@@ -598,19 +600,19 @@ export default function PromptListPage() {
           initialValues={{ category: "通用", variables: [] }}
         >
           <Form.Item
-            label="名称"
+            label={t("名称")}
             name="name"
-            rules={[{ required: true, message: "请输入名称" }]}
+            rules={[{ required: true, message: t("请输入名称") }]}
           >
-            <Input placeholder="提示词名称" />
+            <Input placeholder={t("提示词名称")} />
           </Form.Item>
 
           <Space style={{ width: "100%" }} size="middle">
-            <Form.Item label="分类" name="category" style={{ flex: 1 }}>
-              <Input placeholder="分类名称" />
+            <Form.Item label={t("分类")} name="category" style={{ flex: 1 }}>
+              <Input placeholder={t("分类名称")} />
             </Form.Item>
-            <Form.Item label="描述" name="description" style={{ flex: 2 }}>
-              <Input placeholder="简短描述用途" />
+            <Form.Item label={t("描述")} name="description" style={{ flex: 2 }}>
+              <Input placeholder={t("简短描述用途")} />
             </Form.Item>
           </Space>
 
@@ -620,16 +622,16 @@ export default function PromptListPage() {
             items={[
               {
                 key: "content",
-                label: "内容",
+                label: t("内容"),
                 icon: <FileTextOutlined />,
                 children: (
                   <Form.Item
                     name="content"
-                    rules={[{ required: true, message: "请输入提示词内容" }]}
+                    rules={[{ required: true, message: t("请输入提示词内容") }]}
                     style={{ marginBottom: 0 }}
                   >
                     <Input.TextArea
-                      placeholder="输入提示词内容，使用 {{变量名}} 插入变量..."
+                      placeholder={t("输入提示词内容，使用 {{变量名}} 插入变量...")}
                       autoSize={{ minRows: 14, maxRows: 30 }}
                       style={{ fontFamily: "monospace" }}
                     />
@@ -638,7 +640,7 @@ export default function PromptListPage() {
               },
               {
                 key: "variables",
-                label: "变量",
+                label: t("变量"),
                 icon: <CodeOutlined />,
                 children: (
                   <Form.List name="variables">
@@ -646,7 +648,7 @@ export default function PromptListPage() {
                       <>
                         {fields.length === 0 ? (
                           <Empty
-                            description="暂无变量"
+                            description={t("暂无变量")}
                             style={{ margin: "24px 0" }}
                           />
                         ) : (
@@ -673,8 +675,8 @@ export default function PromptListPage() {
                                 <Form.Item
                                   {...restField}
                                   name={[name, "name"]}
-                                  label="变量名"
-                                  rules={[{ required: true, message: "必填" }]}
+                                  label={t("变量名")}
+                                  rules={[{ required: true, message: t("必填") }]}
                                   style={{ marginBottom: 0, width: 150 }}
                                 >
                                   <Input placeholder="variable_name" />
@@ -682,7 +684,7 @@ export default function PromptListPage() {
                                 <Form.Item
                                   {...restField}
                                   name={[name, "type"]}
-                                  label="类型"
+                                  label={t("类型")}
                                   style={{ marginBottom: 0, width: 110 }}
                                 >
                                   <Select options={variableTypeOptions} />
@@ -690,15 +692,15 @@ export default function PromptListPage() {
                                 <Form.Item
                                   {...restField}
                                   name={[name, "defaultValue"]}
-                                  label="默认值"
+                                  label={t("默认值")}
                                   style={{ marginBottom: 0, width: 120 }}
                                 >
-                                  <Input placeholder="默认值" />
+                                  <Input placeholder={t("默认值")} />
                                 </Form.Item>
                                 <Form.Item
                                   {...restField}
                                   name={[name, "required"]}
-                                  label="必填"
+                                  label={t("必填")}
                                   valuePropName="checked"
                                   style={{ marginBottom: 0 }}
                                 >
@@ -719,10 +721,10 @@ export default function PromptListPage() {
                                     <Form.Item
                                       {...restField}
                                       name={[name, "options"]}
-                                      label="枚举选项（逗号分隔）"
+                                      label={t("枚举选项（逗号分隔）")}
                                       style={{ marginBottom: 0, marginTop: 8 }}
                                     >
-                                      <Input placeholder="选项1, 选项2, 选项3" />
+                                      <Input placeholder={t("选项1, 选项2, 选项3")} />
                                     </Form.Item>
                                   ) : null
                                 }
@@ -745,12 +747,12 @@ export default function PromptListPage() {
               },
               {
                 key: "preview",
-                label: "预览",
+                label: t("预览"),
                 icon: <PlayCircleOutlined />,
                 children: (
                   <Form.Item shouldUpdate style={{ marginBottom: 0 }}>
                     {() => (
-                      <Card size="small" title="预览结果">
+                      <Card size="small" title={t("预览结果")}>
                         <pre
                           style={{
                             whiteSpace: "pre-wrap",
@@ -787,7 +789,8 @@ function PromptDetail({
   onUpdate: () => void;
   onEdit: () => void;
   onDelete: () => void;
-}) {
+}) {  const { t } = useTranslation();
+
   const [activeTab, setActiveTab] = useState<
     "content" | "variables" | "versions" | "test"
   >("content");
@@ -806,10 +809,10 @@ function PromptDetail({
   };
 
   const tabs = [
-    { key: "content", label: "内容", icon: FileTextOutlined },
-    { key: "variables", label: "变量", icon: CodeOutlined },
-    { key: "versions", label: "版本历史", icon: HistoryOutlined },
-    { key: "test", label: "测试", icon: PlayCircleOutlined },
+    { key: "content", label: t("内容"), icon: FileTextOutlined },
+    { key: "variables", label: t("变量"), icon: CodeOutlined },
+    { key: "versions", label: t("版本历史"), icon: HistoryOutlined },
+    { key: "test", label: t("测试"), icon: PlayCircleOutlined },
   ];
 
   return (
@@ -937,7 +940,7 @@ function PromptDetail({
                         </td>
                         <td className="py-2">
                           {variable.required ? (
-                            <span className="text-red-500">是</span>
+                            <span className="text-red-500">{t("是")}</span>
                           ) : (
                             <span className="text-[var(--color-text-tertiary)]">
                               否

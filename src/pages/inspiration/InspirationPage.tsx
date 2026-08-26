@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Inspiration gallery (TASK-21 M2): curated 做同款 cases with live
  * dependency detection — one click lands on the right tool prefilled and
@@ -24,7 +25,8 @@ const DEP_LABELS: Record<string, string> = {
   image_gen: "图像模型",
 };
 
-export default function InspirationPage() {
+export default function InspirationPage() {  const { t } = useTranslation();
+
   const navigate = useNavigate();
   const [kind, setKind] = useState<InspirationKind | "all">("all");
   const [models, setModels] = useState<EngineModel[]>([]);
@@ -61,7 +63,7 @@ export default function InspirationPage() {
           onChange={setKind}
           options={INSPIRATION_KINDS}
           style={{ width: 120 }}
-          aria-label="类型筛选"
+          aria-label={t("类型筛选")}
         />
       </div>
       <p className="text-xs text-[var(--color-text-tertiary)]">
@@ -81,7 +83,7 @@ export default function InspirationPage() {
                 key={case_.id}
                 onClick={() => run(case_)}
                 className="text-left p-5 rounded-2xl border border-(--color-border) bg-[var(--color-bg-secondary)] hover:border-[var(--color-primary)] hover:shadow-lg transition-all"
-                aria-label={`做同款 ${case_.title}`}
+                aria-label={t("做同款 {{p0}}", { p0: case_.title })}
               >
                 <div className="flex items-start justify-between">
                   <span className="text-3xl">{case_.icon}</span>
@@ -95,7 +97,7 @@ export default function InspirationPage() {
                 </p>
                 <p className="mt-2 text-xs">
                   {missing.length === 0 ? (
-                    <span className="text-green-500">依赖就绪 · 一键做同款</span>
+                    <span className="text-green-500">{t("依赖就绪 · 一键做同款")}</span>
                   ) : (
                     <span className="text-amber-500">
                       缺少{missing.map((m) => DEP_LABELS[m] ?? m).join("、")}

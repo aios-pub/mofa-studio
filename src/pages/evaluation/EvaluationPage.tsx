@@ -421,7 +421,7 @@ export default function EvaluationPage() {
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total) =>
-              t("evaluation.total", `共 ${total} 条记录`, { total }),
+              t("evaluation.total", t("共 {{p0}} 条记录", { p0: total }), { total }),
           }}
           expandable={{
             expandedRowKeys,
@@ -453,7 +453,7 @@ export default function EvaluationPage() {
           <Form.Item
             name="agentId"
             label={t("evaluation.agent", "Agent")}
-            rules={[{ required: true, message: "请选择 Agent" }]}
+            rules={[{ required: true, message: t("请选择 Agent") }]}
           >
             <Select
               placeholder={t("evaluation.selectAgent", "选择 Agent")}
@@ -463,7 +463,7 @@ export default function EvaluationPage() {
           <Form.Item
             name="overallScore"
             label={t("evaluation.overallScore", "综合评分")}
-            rules={[{ required: true, message: "请输入评分" }]}
+            rules={[{ required: true, message: t("请输入评分") }]}
           >
             <InputNumber
               min={0}

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Octos Provider QoS metrics
  * Show provider QoS data such as latency, success rate and error rate
@@ -32,7 +33,8 @@ interface Props {
   apiClient: OctosApiClient | any;
 }
 
-export default function OctosMetricsTab({ profileId, apiClient }: Props) {
+export default function OctosMetricsTab({ profileId, apiClient }: Props) {  const { t } = useTranslation();
+
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<OctosSharedMetrics | null>(null);
 
@@ -57,7 +59,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
   if (loading) {
     return (
       <div className="flex justify-center py-8">
-        <Spin description="加载中..." />
+        <Spin description={t("加载中...")} />
       </div>
     );
   }
@@ -67,8 +69,8 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
       <Alert
         type="info"
         showIcon
-        title="暂无指标数据"
-        description="Profile 可能尚未运行，或未启用 QoS 指标收集。"
+        title={t("暂无指标数据")}
+        description={t("Profile 可能尚未运行，或未启用 QoS 指标收集。")}
       />
     );
   }
@@ -101,7 +103,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
       width: 180,
     },
     {
-      title: "分数",
+      title: t("分数"),
       dataIndex: "score",
       key: "score",
       width: 80,
@@ -116,7 +118,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
       ),
     },
     {
-      title: "延迟",
+      title: t("延迟"),
       key: "latency",
       width: 120,
       render: (_: unknown, r: OctosSharedProviderMetrics) => (
@@ -131,7 +133,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
       ),
     },
     {
-      title: "成功率",
+      title: t("成功率"),
       dataIndex: ["error_rate"],
       key: "success_rate",
       width: 120,
@@ -148,7 +150,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
       },
     },
     {
-      title: "请求 / 错误",
+      title: t("请求 / 错误"),
       key: "counts",
       width: 100,
       render: (_: unknown, r: OctosSharedProviderMetrics) => (
@@ -165,7 +167,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
       ),
     },
     {
-      title: "连续失败",
+      title: t("连续失败"),
       dataIndex: "consecutive_failures",
       key: "consecutive_failures",
       width: 80,
@@ -188,7 +190,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
         <Col span={6}>
           <Card>
             <Statistic
-              title="总请求数"
+              title={t("总请求数")}
               value={totalRequests}
               prefix={<ThunderboltOutlined />}
             />
@@ -197,7 +199,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
         <Col span={6}>
           <Card>
             <Statistic
-              title="总错误数"
+              title={t("总错误数")}
               value={totalErrors}
               prefix={<CloseCircleOutlined />}
               styles={{ content: { color: totalErrors > 0 ? "#ff4d4f" : undefined } }}
@@ -207,7 +209,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
         <Col span={6}>
           <Card>
             <Statistic
-              title="平均成功率"
+              title={t("平均成功率")}
               value={avgSuccessRate * 100}
               precision={1}
               suffix="%"
@@ -223,7 +225,7 @@ export default function OctosMetricsTab({ profileId, apiClient }: Props) {
         <Col span={6}>
           <Card>
             <Statistic
-              title="更新时间"
+              title={t("更新时间")}
               value={new Date(metrics.updated_at).toLocaleTimeString()}
               prefix={<ClockCircleOutlined />}
             />

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Channel configuration form component
  */
@@ -26,7 +27,8 @@ export default function ChannelConfigForm({
   channel,
   onSave,
   onCancel,
-}: ChannelConfigFormProps) {
+}: ChannelConfigFormProps) {  const { t } = useTranslation();
+
   const [form] = Form.useForm();
   const [channelType, setChannelType] = useState<ChannelType>(
     channel?.type || "webhook",
@@ -82,20 +84,20 @@ export default function ChannelConfigForm({
       {/* Basic information */}
       <Form.Item
         name="name"
-        label="渠道名称"
-        rules={[{ required: true, message: "请输入渠道名称" }]}
+        label={t("渠道名称")}
+        rules={[{ required: true, message: t("请输入渠道名称") }]}
       >
-        <Input placeholder="请输入渠道名称" />
+        <Input placeholder={t("请输入渠道名称")} />
       </Form.Item>
 
-      <Form.Item name="description" label="描述">
-        <Input.TextArea rows={2} placeholder="请输入描述（可选）" />
+      <Form.Item name="description" label={t("描述")}>
+        <Input.TextArea rows={2} placeholder={t("请输入描述（可选）")} />
       </Form.Item>
 
       <Form.Item
         name="type"
-        label="渠道类型"
-        rules={[{ required: true, message: "请选择渠道类型" }]}
+        label={t("渠道类型")}
+        rules={[{ required: true, message: t("请选择渠道类型") }]}
       >
         <Select
           onChange={handleTypeChange}
@@ -112,7 +114,7 @@ export default function ChannelConfigForm({
         />
       </Form.Item>
 
-      <Divider>渠道配置</Divider>
+      <Divider>{t("渠道配置")}</Divider>
 
       {/* Render different config forms by type */}
       {channelType === "wechat" && <WechatConfigForm />}
@@ -136,7 +138,7 @@ export default function ChannelConfigForm({
 
       <Form.Item className="mb-0">
         <Space className="w-full justify-end">
-          <Button onClick={onCancel}>取消</Button>
+          <Button onClick={onCancel}>{t("取消")}</Button>
           <Button type="primary" onClick={handleSubmit}>
             {isEdit ? "保存" : "创建"}
           </Button>
@@ -278,140 +280,147 @@ function buildChannelConfig(
 }
 
 // WeChat configuration form
-function WechatConfigForm() {
+function WechatConfigForm() {  const { t } = useTranslation();
+
   return (
     <>
       <Form.Item name="app_id" label="App ID" rules={[{ required: true }]}>
-        <Input placeholder="微信公众号 AppID" />
+        <Input placeholder={t("微信公众号 AppID")} />
       </Form.Item>
       <Form.Item
         name="app_secret"
         label="App Secret"
         rules={[{ required: true }]}
       >
-        <Input.Password placeholder="微信公众号 AppSecret" />
+        <Input.Password placeholder={t("微信公众号 AppSecret")} />
       </Form.Item>
       <Form.Item name="token" label="Token" rules={[{ required: true }]}>
-        <Input placeholder="消息加密 Token" />
+        <Input placeholder={t("消息加密 Token")} />
       </Form.Item>
       <Form.Item name="encoding_aes_key" label="EncodingAESKey">
-        <Input placeholder="消息加密密钥（可选）" />
+        <Input placeholder={t("消息加密密钥（可选）")} />
       </Form.Item>
     </>
   );
 }
 
 // WeCom configuration form
-function WechatWorkConfigForm() {
+function WechatWorkConfigForm() {  const { t } = useTranslation();
+
   return (
     <>
       <Form.Item name="corp_id" label="Corp ID" rules={[{ required: true }]}>
-        <Input placeholder="企业 ID" />
+        <Input placeholder={t("企业 ID")} />
       </Form.Item>
       <Form.Item name="agent_id" label="Agent ID" rules={[{ required: true }]}>
-        <Input placeholder="应用 AgentId" />
+        <Input placeholder={t("应用 AgentId")} />
       </Form.Item>
       <Form.Item name="secret" label="Secret" rules={[{ required: true }]}>
-        <Input.Password placeholder="应用 Secret" />
+        <Input.Password placeholder={t("应用 Secret")} />
       </Form.Item>
       <Form.Item name="token" label="Token" rules={[{ required: true }]}>
-        <Input placeholder="消息加密 Token" />
+        <Input placeholder={t("消息加密 Token")} />
       </Form.Item>
       <Form.Item name="encoding_aes_key" label="EncodingAESKey">
-        <Input placeholder="消息加密密钥（可选）" />
+        <Input placeholder={t("消息加密密钥（可选）")} />
       </Form.Item>
     </>
   );
 }
 
 // DingTalk configuration form
-function DingtalkConfigForm() {
+function DingtalkConfigForm() {  const { t } = useTranslation();
+
   return (
     <>
       <Form.Item name="client_id" label="Client ID" rules={[{ required: true }]}>
-        <Input placeholder="钉钉应用 Client ID" />
+        <Input placeholder={t("钉钉应用 Client ID")} />
       </Form.Item>
       <Form.Item
         name="client_secret"
         label="Client Secret"
         rules={[{ required: true }]}
       >
-        <Input.Password placeholder="钉钉应用 Client Secret" />
+        <Input.Password placeholder={t("钉钉应用 Client Secret")} />
       </Form.Item>
       <Form.Item name="agent_id" label="Agent ID">
-        <Input placeholder="应用 AgentId（可选）" />
+        <Input placeholder={t("应用 AgentId（可选）")} />
       </Form.Item>
     </>
   );
 }
 
 // Feishu configuration form
-function FeishuConfigForm() {
+function FeishuConfigForm() {  const { t } = useTranslation();
+
   return (
     <>
       <Form.Item name="app_id" label="App ID" rules={[{ required: true }]}>
-        <Input placeholder="飞书应用 App ID" />
+        <Input placeholder={t("飞书应用 App ID")} />
       </Form.Item>
       <Form.Item
         name="app_secret"
         label="App Secret"
         rules={[{ required: true }]}
       >
-        <Input.Password placeholder="飞书应用 App Secret" />
+        <Input.Password placeholder={t("飞书应用 App Secret")} />
       </Form.Item>
       <Form.Item name="encrypt_key" label="Encrypt Key">
-        <Input placeholder="加密 Key（可选）" />
+        <Input placeholder={t("加密 Key（可选）")} />
       </Form.Item>
       <Form.Item name="verification_token" label="Verification Token">
-        <Input placeholder="验证 Token（可选）" />
+        <Input placeholder={t("验证 Token（可选）")} />
       </Form.Item>
     </>
   );
 }
 
 // Slack configuration form
-function SlackConfigForm() {
+function SlackConfigForm() {  const { t } = useTranslation();
+
   return (
     <>
       <Form.Item name="bot_token" label="Bot Token" rules={[{ required: true }]}>
         <Input.Password placeholder="xoxb-..." />
       </Form.Item>
       <Form.Item name="app_token" label="App Token">
-        <Input.Password placeholder="xapp-...（可选）" />
+        <Input.Password placeholder={t("xapp-...（可选）")} />
       </Form.Item>
       <Form.Item
         name="signing_secret"
         label="Signing Secret"
         rules={[{ required: true }]}
       >
-        <Input.Password placeholder="签名密钥" />
+        <Input.Password placeholder={t("签名密钥")} />
       </Form.Item>
       <Form.Item name="client_id" label="Client ID">
-        <Input placeholder="OAuth Client ID（可选）" />
+        <Input placeholder={t("OAuth Client ID（可选）")} />
       </Form.Item>
       <Form.Item name="client_secret" label="Client Secret">
-        <Input.Password placeholder="OAuth Client Secret（可选）" />
+        <Input.Password placeholder={t("OAuth Client Secret（可选）")} />
       </Form.Item>
     </>
   );
 }
 
 // Telegram configuration form
-function TelegramConfigForm() {
+function TelegramConfigForm() {  const { t } = useTranslation();
+
   return (
     <>
       <Form.Item name="bot_token" label="Bot Token" rules={[{ required: true }]}>
         <Input.Password placeholder="123456:ABC..." />
       </Form.Item>
       <Form.Item name="webhook_url" label="Webhook URL">
-        <Input placeholder="Webhook 地址（可选）" />
+        <Input placeholder={t("Webhook 地址（可选）")} />
       </Form.Item>
     </>
   );
 }
 
 // Discord configuration form
-function DiscordConfigForm() {
+function DiscordConfigForm() {  const { t } = useTranslation();
+
   return (
     <>
       <Form.Item name="bot_token" label="Bot Token" rules={[{ required: true }]}>
@@ -425,14 +434,15 @@ function DiscordConfigForm() {
         <Input placeholder="Discord Application ID" />
       </Form.Item>
       <Form.Item name="public_key" label="Public Key">
-        <Input placeholder="Public Key（可选）" />
+        <Input placeholder={t("Public Key（可选）")} />
       </Form.Item>
     </>
   );
 }
 
 // Webhook configuration form
-function WebhookConfigForm() {
+function WebhookConfigForm() {  const { t } = useTranslation();
+
   return (
     <>
       <Form.Item name="url" label="URL" rules={[{ required: true }]}>
@@ -459,14 +469,15 @@ function WebhookConfigForm() {
         />
       </Form.Item>
       <Form.Item name="secret" label="Secret">
-        <Input.Password placeholder="签名密钥（可选）" />
+        <Input.Password placeholder={t("签名密钥（可选）")} />
       </Form.Item>
     </>
   );
 }
 
 // Email configuration form
-function EmailConfigForm() {
+function EmailConfigForm() {  const { t } = useTranslation();
+
   return (
     <>
       <Form.Item name="smtp_host" label="SMTP Host" rules={[{ required: true }]}>
@@ -481,28 +492,28 @@ function EmailConfigForm() {
         <InputNumber min={1} max={65535} className="w-full" />
       </Form.Item>
       <Form.Item name="smtp_user" label="SMTP User" rules={[{ required: true }]}>
-        <Input placeholder="用户名" />
+        <Input placeholder={t("用户名")} />
       </Form.Item>
       <Form.Item
         name="smtp_password"
         label="SMTP Password"
         rules={[{ required: true }]}
       >
-        <Input.Password placeholder="密码" />
+        <Input.Password placeholder={t("密码")} />
       </Form.Item>
       <Form.Item
         name="from_address"
-        label="发件人地址"
+        label={t("发件人地址")}
         rules={[{ required: true }]}
       >
         <Input placeholder="noreply@example.com" />
       </Form.Item>
-      <Form.Item name="from_name" label="发件人名称">
+      <Form.Item name="from_name" label={t("发件人名称")}>
         <Input placeholder="mofa-studio" />
       </Form.Item>
       <Form.Item
         name="use_tls"
-        label="使用 TLS"
+        label={t("使用 TLS")}
         valuePropName="checked"
         initialValue={true}
       >
@@ -513,19 +524,20 @@ function EmailConfigForm() {
 }
 
 // SMS configuration form
-function SmsConfigForm() {
+function SmsConfigForm() {  const { t } = useTranslation();
+
   return (
     <>
       <Form.Item
         name="provider"
-        label="服务商"
+        label={t("服务商")}
         rules={[{ required: true }]}
         initialValue="aliyun"
       >
         <Select
           options={[
-            { value: "aliyun", label: "阿里云" },
-            { value: "tencent", label: "腾讯云" },
+            { value: "aliyun", label: t("阿里云") },
+            { value: "tencent", label: t("腾讯云") },
             { value: "twilio", label: "Twilio" },
           ]}
         />
@@ -544,25 +556,26 @@ function SmsConfigForm() {
       >
         <Input.Password placeholder="Access Key Secret" />
       </Form.Item>
-      <Form.Item name="sign_name" label="签名名称" rules={[{ required: true }]}>
-        <Input placeholder="短信签名" />
+      <Form.Item name="sign_name" label={t("签名名称")} rules={[{ required: true }]}>
+        <Input placeholder={t("短信签名")} />
       </Form.Item>
-      <Form.Item name="template_code" label="模板 Code">
-        <Input placeholder="短信模板 Code（可选）" />
+      <Form.Item name="template_code" label={t("模板 Code")}>
+        <Input placeholder={t("短信模板 Code（可选）")} />
       </Form.Item>
       <Form.Item name="region" label="Region">
-        <Input placeholder="地域（可选）" />
+        <Input placeholder={t("地域（可选）")} />
       </Form.Item>
     </>
   );
 }
 
 // Custom configuration form
-function CustomConfigForm() {
+function CustomConfigForm() {  const { t } = useTranslation();
+
   return (
     <>
       <Form.Item name="endpoint" label="Endpoint" rules={[{ required: true }]}>
-        <Input placeholder="API 端点" />
+        <Input placeholder={t("API 端点")} />
       </Form.Item>
       <Form.Item
         name="method"
@@ -585,13 +598,13 @@ function CustomConfigForm() {
           placeholder='{"Content-Type": "application/json"}'
         />
       </Form.Item>
-      <Form.Item name="request_template" label="请求模板">
+      <Form.Item name="request_template" label={t("请求模板")}>
         <Input.TextArea
           rows={4}
           placeholder='{"message": "{{message}}", "user": "{{userId}}"}'
         />
       </Form.Item>
-      <Form.Item name="response_mapping" label="响应映射">
+      <Form.Item name="response_mapping" label={t("响应映射")}>
         <Input.TextArea
           rows={3}
           placeholder='{"success": "$.success", "message": "$.data.message"}'
@@ -602,7 +615,8 @@ function CustomConfigForm() {
 }
 
 // WhatsApp configuration form
-function WhatsAppConfigForm() {
+function WhatsAppConfigForm() {  const { t } = useTranslation();
+
   return (
     <>
       <Form.Item
@@ -627,13 +641,13 @@ function WhatsAppConfigForm() {
         <Input.Password placeholder="Permanent Access Token" />
       </Form.Item>
       <Form.Item name="webhook_verify_token" label="Webhook Verify Token">
-        <Input placeholder="Webhook 验证 Token（可选）" />
+        <Input placeholder={t("Webhook 验证 Token（可选）")} />
       </Form.Item>
       <Form.Item name="app_id" label="App ID">
-        <Input placeholder="Facebook App ID（可选）" />
+        <Input placeholder={t("Facebook App ID（可选）")} />
       </Form.Item>
       <Form.Item name="app_secret" label="App Secret">
-        <Input.Password placeholder="Facebook App Secret（可选）" />
+        <Input.Password placeholder={t("Facebook App Secret（可选）")} />
       </Form.Item>
     </>
   );
@@ -669,7 +683,8 @@ function LineConfigForm() {
 }
 
 // Facebook Messenger configuration form
-function MessengerConfigForm() {
+function MessengerConfigForm() {  const { t } = useTranslation();
+
   return (
     <>
       <Form.Item name="page_id" label="Page ID" rules={[{ required: true }]}>
@@ -693,7 +708,7 @@ function MessengerConfigForm() {
         <Input.Password placeholder="Facebook App Secret" />
       </Form.Item>
       <Form.Item name="verify_token" label="Verify Token">
-        <Input placeholder="Webhook 验证 Token（可选）" />
+        <Input placeholder={t("Webhook 验证 Token（可选）")} />
       </Form.Item>
     </>
   );
@@ -732,7 +747,8 @@ function InstagramConfigForm() {
 }
 
 // Microsoft Teams configuration form
-function TeamsConfigForm() {
+function TeamsConfigForm() {  const { t } = useTranslation();
+
   return (
     <>
       <Form.Item name="tenant_id" label="Tenant ID" rules={[{ required: true }]}>
@@ -749,10 +765,10 @@ function TeamsConfigForm() {
         <Input.Password placeholder="Azure AD Application Client Secret" />
       </Form.Item>
       <Form.Item name="bot_id" label="Bot ID">
-        <Input placeholder="Microsoft App ID (Bot ID)（可选）" />
+        <Input placeholder={t("Microsoft App ID (Bot ID)（可选）")} />
       </Form.Item>
       <Form.Item name="bot_password" label="Bot Password">
-        <Input.Password placeholder="Bot Password/Secret（可选）" />
+        <Input.Password placeholder={t("Bot Password/Secret（可选）")} />
       </Form.Item>
     </>
   );

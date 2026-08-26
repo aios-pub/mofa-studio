@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Tiered routing settings card (PLAT-03): pick the strong planner and the
  * fast executor; unset tiers keep the engine's auto routing. Mounted on
@@ -15,7 +16,8 @@ import {
   type ModelRoutingPolicy,
 } from "@/services/api/modelPolicy";
 
-export default function ModelRoutingCard() {
+export default function ModelRoutingCard() {  const { t } = useTranslation();
+
   const [policy, setPolicy] = useState<ModelRoutingPolicy>(() => loadPolicy());
   const [models, setModels] = useState<EngineModel[]>([]);
   const [tiers, setTiers] = useState({ strong: [] as EngineModel[], fast: [] as EngineModel[] });
@@ -28,7 +30,7 @@ export default function ModelRoutingCard() {
   }, []);
 
   const options = (role: "strong" | "fast") => [
-    { value: AUTO_MODEL, label: "自动 · 引擎路由" },
+    { value: AUTO_MODEL, label: t("自动 · 引擎路由") },
     ...models.map((m) => ({
       value: m.id,
       label: `${m.id}${tiers[role].some((t) => t.id === m.id) ? (role === "strong" ? " · 强" : " · 快") : ""}`,
@@ -51,7 +53,7 @@ export default function ModelRoutingCard() {
 
       <div>
         <label className="block text-sm font-medium mb-1">
-          规划模型 <Tag color="purple">强</Tag>
+          规划模型 <Tag color="purple">{t("强")}</Tag>
         </label>
         <Select
           value={policy.planner || AUTO_MODEL}
@@ -59,7 +61,7 @@ export default function ModelRoutingCard() {
           options={options("strong")}
           style={{ width: "100%" }}
           showSearch
-          aria-label="规划模型选择"
+          aria-label={t("规划模型选择")}
         />
         {tiers.strong.length > 0 && (
           <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
@@ -70,7 +72,7 @@ export default function ModelRoutingCard() {
 
       <div>
         <label className="block text-sm font-medium mb-1">
-          执行模型 <Tag color="cyan">快</Tag>
+          执行模型 <Tag color="cyan">{t("快")}</Tag>
         </label>
         <Select
           value={policy.executor || AUTO_MODEL}
@@ -78,7 +80,7 @@ export default function ModelRoutingCard() {
           options={options("fast")}
           style={{ width: "100%" }}
           showSearch
-          aria-label="执行模型选择"
+          aria-label={t("执行模型选择")}
         />
         {tiers.fast.length > 0 && (
           <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
@@ -87,7 +89,7 @@ export default function ModelRoutingCard() {
         )}
       </div>
 
-      <Button block onClick={save} aria-label="保存分层路由">
+      <Button block onClick={save} aria-label={t("保存分层路由")}>
         保存分层路由
       </Button>
     </div>

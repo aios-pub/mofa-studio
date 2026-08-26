@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Skill detail component
  */
@@ -29,7 +30,8 @@ export function SkillDetail({
   skill,
   onUpdate: _onUpdate,
   onToggleEnabled,
-}: SkillDetailProps) {
+}: SkillDetailProps) {  const { t } = useTranslation();
+
   const [activeTab, setActiveTab] = useState<"params" | "test" | "logs">(
     "params",
   );
@@ -69,7 +71,7 @@ export function SkillDetail({
         {
           timestamp: new Date(),
           type: "info",
-          message: `开始执行 ${skill.name}...`,
+          message: t("开始执行 {{p0}}...", { p0: skill.name }),
         },
       ]);
 
@@ -83,8 +85,8 @@ export function SkillDetail({
           timestamp: new Date(),
           type: result.success ? "success" : "error",
           message: result.success
-            ? `执行成功 (${duration}ms)`
-            : `执行失败: ${result.result}`,
+            ? t("执行成功 ({{p0}}ms)", { p0: duration })
+            : t("执行失败: {{p0}}", { p0: result.result }),
         },
       ]);
     } catch (error) {
@@ -93,7 +95,7 @@ export function SkillDetail({
         {
           timestamp: new Date(),
           type: "error",
-          message: `执行错误: ${error}`,
+          message: t("执行错误: {{p0}}", { p0: error }),
         },
       ]);
     } finally {
@@ -111,8 +113,8 @@ export function SkillDetail({
 
   const getTypeTag = (type: Skill["type"]) => {
     const config: Record<string, { color: string; label: string }> = {
-      builtin: { color: "blue", label: "内置" },
-      custom: { color: "purple", label: "自定义" },
+      builtin: { color: "blue", label: t("内置") },
+      custom: { color: "purple", label: t("自定义") },
       api: { color: "orange", label: "API" },
     };
     const item = config[type ?? ""] ?? {
@@ -123,9 +125,9 @@ export function SkillDetail({
   };
 
   const tabs = [
-    { key: "params", label: "参数配置", icon: SettingOutlined },
-    { key: "test", label: "测试执行", icon: PlayCircleOutlined },
-    { key: "logs", label: "执行日志", icon: CodeOutlined },
+    { key: "params", label: t("参数配置"), icon: SettingOutlined },
+    { key: "test", label: t("测试执行"), icon: PlayCircleOutlined },
+    { key: "logs", label: t("执行日志"), icon: CodeOutlined },
   ];
 
   return (

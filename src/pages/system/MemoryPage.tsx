@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Memory management page (TASK-19 隐私四权能): every entry visible,
  * editable, and deletable; the master switch disables retrieval without
@@ -15,7 +16,8 @@ import {
   type MemoryKind,
 } from "@/services/api/memory";
 
-export default function MemoryPage() {
+export default function MemoryPage() {  const { t } = useTranslation();
+
   const [entries, setEntries] = useState<MemoryEntry[]>([]);
   const [enabled, setEnabled] = useState(true);
   const [draft, setDraft] = useState("");
@@ -41,11 +43,11 @@ export default function MemoryPage() {
     if (!trimmed) return;
     const created = await memoryService.create(trimmed, draftKind);
     if (created) {
-      message.success("已记入长期记忆");
+      message.success(t("已记入长期记忆"));
       setDraft("");
       await load();
     } else {
-      message.error("保存失败");
+      message.error(t("保存失败"));
     }
   }, [draft, draftKind, load]);
 
@@ -58,7 +60,7 @@ export default function MemoryPage() {
         setEditingId(null);
         await load();
       } else {
-        message.error("更新失败");
+        message.error(t("更新失败"));
       }
     },
     [editValue, load],
@@ -69,7 +71,7 @@ export default function MemoryPage() {
       if (await memoryService.remove(id)) {
         await load();
       } else {
-        message.error("删除失败");
+        message.error(t("删除失败"));
       }
     },
     [load],
@@ -81,7 +83,7 @@ export default function MemoryPage() {
       const ok = await memoryService.toggle(next);
       if (!ok) {
         setEnabled(!next);
-        message.error("开关设置失败");
+        message.error(t("开关设置失败"));
         return;
       }
       message[next ? "info" : "warning"](
@@ -102,8 +104,8 @@ export default function MemoryPage() {
           </span>
         </h2>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-[var(--color-text-tertiary)]">总开关</span>
-          <Switch checked={enabled} onChange={(v) => void toggle(v)} aria-label="记忆总开关" />
+          <span className="text-xs text-[var(--color-text-tertiary)]">{t("总开关")}</span>
+          <Switch checked={enabled} onChange={(v) => void toggle(v)} aria-label={t("记忆总开关")} />
         </div>
       </div>
 
@@ -119,8 +121,8 @@ export default function MemoryPage() {
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onPressEnter={() => void add()}
-          placeholder="例如：用户偏好简洁的中文回复 / 项目背景：… / 决定采用 A 方案"
-          aria-label="新记忆内容"
+          placeholder={t("例如：用户偏好简洁的中文回复 / 项目背景：… / 决定采用 A 方案")}
+          aria-label={t("新记忆内容")}
         />
         <Select
           value={draftKind}
@@ -130,9 +132,9 @@ export default function MemoryPage() {
             label: KIND_LABELS[k],
           }))}
           style={{ width: 96 }}
-          aria-label="记忆类型"
+          aria-label={t("记忆类型")}
         />
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => void add()} aria-label="添加记忆">
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => void add()} aria-label={t("添加记忆")}>
           记入
         </Button>
       </div>
@@ -140,7 +142,7 @@ export default function MemoryPage() {
       {/* Entries */}
       {entries.length === 0 ? (
         <div className="h-48 flex items-center justify-center">
-          <Empty description="还没有记忆条目" />
+          <Empty description={t("还没有记忆条目")} />
         </div>
       ) : (
         <div className="space-y-2">
@@ -159,7 +161,7 @@ export default function MemoryPage() {
                       onPressEnter={() => void saveEdit(entry.id)}
                       autoFocus
                       size="small"
-                      aria-label="编辑记忆内容"
+                      aria-label={t("编辑记忆内容")}
                     />
                     <Button size="small" type="primary" onClick={() => void saveEdit(entry.id)}>
                       保存
@@ -173,7 +175,7 @@ export default function MemoryPage() {
                       setEditValue(entry.content);
                     }}
                     aria-label={`编辑记忆 ${entry.content.slice(0, 12)}`}
-                    title="点击编辑"
+                    title={t("点击编辑")}
                   >
                     {entry.content}
                   </button>
@@ -183,12 +185,12 @@ export default function MemoryPage() {
                 </p>
               </div>
               <Popconfirm
-                title="删除这条记忆？"
+                title={t("删除这条记忆？")}
                 onConfirm={() => void remove(entry.id)}
-                okText="删除"
-                cancelText="取消"
+                okText={t("删除")}
+                cancelText={t("取消")}
               >
-                <Button size="small" danger icon={<DeleteOutlined />} aria-label={`删除记忆 ${entry.id}`} />
+                <Button size="small" danger icon={<DeleteOutlined />} aria-label={t("删除记忆 {{p0}}", { p0: entry.id })} />
               </Popconfirm>
             </div>
           ))}

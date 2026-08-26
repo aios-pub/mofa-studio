@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Web-search BYOK card (CHAT-03 收尾): provider + key, saved server-side.
  * Mounted on the key-setup page below the LLM wizard.
@@ -13,7 +14,8 @@ import {
   type SearchProvider,
 } from "@/services/api/searchConfig";
 
-export default function SearchConfigCard() {
+export default function SearchConfigCard() {  const { t } = useTranslation();
+
   const [provider, setProvider] = useState<SearchProvider>("tavily");
   const [apiKey, setApiKey] = useState("");
   const [configured, setConfigured] = useState<string | null>(null);
@@ -41,11 +43,11 @@ export default function SearchConfigCard() {
     const ok = await searchConfigService.save(provider, apiKey);
     setSaving(false);
     if (ok) {
-      setConfigured(`${provider}（已保存）`);
+      setConfigured(t("{{p0}}（已保存）", { p0: provider }));
       setApiKey("");
-      message.success("搜索配置已保存，密钥仅存本机服务端");
+      message.success(t("搜索配置已保存，密钥仅存本机服务端"));
     } else {
-      message.error("保存失败，请检查 Key 是否有效");
+      message.error(t("保存失败，请检查 Key 是否有效"));
     }
   };
 
@@ -61,19 +63,19 @@ export default function SearchConfigCard() {
 
       {configured && (
         <p className="text-xs">
-          <Tag color="green">已配置</Tag>
+          <Tag color="green">{t("已配置")}</Tag>
           {configured}
         </p>
       )}
 
       <div>
-        <label className="block text-sm font-medium mb-1">搜索厂商</label>
+        <label className="block text-sm font-medium mb-1">{t("搜索厂商")}</label>
         <Select
           value={provider}
           onChange={(value) => setProvider(value)}
           options={SEARCH_PROVIDERS.map((p) => ({ value: p.value, label: p.label }))}
           style={{ width: "100%" }}
-          aria-label="搜索厂商选择"
+          aria-label={t("搜索厂商选择")}
         />
         <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
           {active.hint}{" "}
@@ -84,12 +86,12 @@ export default function SearchConfigCard() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">搜索 API Key</label>
+        <label className="block text-sm font-medium mb-1">{t("搜索 API Key")}</label>
         <Input.Password
           value={apiKey}
           onChange={(e) => setApiKey(e.target.value)}
-          placeholder="粘贴搜索 API Key"
-          aria-label="搜索 API Key 输入"
+          placeholder={t("粘贴搜索 API Key")}
+          aria-label={t("搜索 API Key 输入")}
         />
         {validation && !validation.ok && (
           <p className="mt-1 text-xs text-red-400">{validation.reason}</p>
@@ -101,7 +103,7 @@ export default function SearchConfigCard() {
         loading={saving}
         disabled={!validation?.ok}
         onClick={save}
-        aria-label="保存搜索配置"
+        aria-label={t("保存搜索配置")}
       >
         保存搜索配置
       </Button>

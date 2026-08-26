@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Media toolbox page (TOOL-13/14/15): upload once, then convert video→GIF,
  * transcode to platform profiles, or compress an image to a target size —
@@ -21,7 +22,8 @@ import {
   type UploadResult,
 } from "@/services/api/media";
 
-export default function MediaPage() {
+export default function MediaPage() {  const { t } = useTranslation();
+
   const [source, setSource] = useState<UploadResult | null>(null);
   const [sourceName, setSourceName] = useState("");
   const [isImage, setIsImage] = useState(false);
@@ -42,7 +44,7 @@ export default function MediaPage() {
       message.success(`已上传 ${file.name}（${formatSize(uploaded.size)}）`);
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`上传失败：${detail}`);
+      message.error(t("上传失败：{{p0}}", { p0: detail }));
     }
   }, []);
 
@@ -68,7 +70,7 @@ export default function MediaPage() {
         message.success(note);
       } catch (error) {
         const detail = error instanceof Error ? error.message : String(error);
-        message.error(`处理失败：${detail}`);
+        message.error(t("处理失败：{{p0}}", { p0: detail }));
       } finally {
         setBusy(null);
       }
@@ -95,7 +97,7 @@ export default function MediaPage() {
             return false;
           }}
         >
-          <Button block icon={<UploadOutlined />} aria-label="上传文件">
+          <Button block icon={<UploadOutlined />} aria-label={t("上传文件")}>
             上传视频 / 图片
           </Button>
         </Upload>
@@ -106,7 +108,7 @@ export default function MediaPage() {
         )}
 
         <div className="space-y-2 pt-2 border-t border-(--color-border)">
-          <p className="text-xs font-medium text-[var(--color-text-secondary)]">视频 → GIF</p>
+          <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("视频 → GIF")}</p>
           <div className="flex gap-2">
             <InputNumber
               min={1}
@@ -115,7 +117,7 @@ export default function MediaPage() {
               onChange={(v) => setGifFps(v ?? 12)}
               addonBefore="fps"
               style={{ width: "50%" }}
-              aria-label="GIF 帧率"
+              aria-label={t("GIF 帧率")}
             />
             <InputNumber
               min={120}
@@ -125,7 +127,7 @@ export default function MediaPage() {
               onChange={(v) => setGifWidth(v ?? 480)}
               addonBefore="宽"
               style={{ width: "50%" }}
-              aria-label="GIF 宽度"
+              aria-label={t("GIF 宽度")}
             />
           </div>
           <Button
@@ -133,34 +135,34 @@ export default function MediaPage() {
             disabled={!source || isImage || busy !== null}
             loading={busy === "gif"}
             onClick={() => runOp("gif")}
-            aria-label="转换为 GIF"
+            aria-label={t("转换为 GIF")}
           >
             转换为 GIF（palette 两遍）
           </Button>
         </div>
 
         <div className="space-y-2 pt-2 border-t border-(--color-border)">
-          <p className="text-xs font-medium text-[var(--color-text-secondary)]">视频转码</p>
+          <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("视频转码")}</p>
           <Select
             value={profile}
             onChange={setProfile}
             options={TRANSCODE_PROFILES.map((p) => ({ value: p.value, label: p.label }))}
             style={{ width: "100%" }}
-            aria-label="转码预设"
+            aria-label={t("转码预设")}
           />
           <Button
             block
             disabled={!source || isImage || busy !== null}
             loading={busy === "transcode"}
             onClick={() => runOp("transcode")}
-            aria-label="转码"
+            aria-label={t("转码")}
           >
             转码
           </Button>
         </div>
 
         <div className="space-y-2 pt-2 border-t border-(--color-border)">
-          <p className="text-xs font-medium text-[var(--color-text-secondary)]">图片压缩</p>
+          <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("图片压缩")}</p>
           <InputNumber
             min={5}
             max={10000}
@@ -169,7 +171,7 @@ export default function MediaPage() {
             addonBefore="目标"
             addonAfter="KB"
             style={{ width: "100%" }}
-            aria-label="压缩目标体积"
+            aria-label={t("压缩目标体积")}
           />
           <Button
             block
@@ -177,7 +179,7 @@ export default function MediaPage() {
             loading={busy === "compress"}
             onClick={() => runOp("compress")}
             icon={<FileImageOutlined />}
-            aria-label="压缩图片"
+            aria-label={t("压缩图片")}
           >
             压缩（二分质量搜索）
           </Button>

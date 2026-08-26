@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Conversation page
  * Supports agent selection, file upload and context clearing
@@ -43,7 +44,8 @@ import {
 import VoiceCallOverlay from "@/components/conversation/VoiceCallOverlay";
 import { PhoneOutlined } from "@ant-design/icons";
 
-export default function ConversationPage() {
+export default function ConversationPage() {  const { t } = useTranslation();
+
   const [, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] =
     useState<Conversation | null>(null);
@@ -114,7 +116,7 @@ export default function ConversationPage() {
         size: 0,
         url: asset.ref_path,
       });
-      message.info("已从画廊附加作品，发送时将作为图片理解输入");
+      message.info(t("已从画廊附加作品，发送时将作为图片理解输入"));
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -174,7 +176,7 @@ export default function ConversationPage() {
 
   const handleConfirmCreate = async () => {
     if (!selectedAgentForNew) {
-      message.warning("请选择一个智能体");
+      message.warning(t("请选择一个智能体"));
       return;
     }
 
@@ -190,7 +192,7 @@ export default function ConversationPage() {
       setNewConversationTitle("");
     } catch (error) {
       console.error("Failed to create conversation:", error);
-      message.error("创建会话失败");
+      message.error(t("创建会话失败"));
     }
   };
 
@@ -357,8 +359,8 @@ export default function ConversationPage() {
           const fired = fireGuidance("search-unconfigured-connector");
           if (fired) setGuidance("search-unconfigured-connector");
         }
-        patchAssistant({ status: "error", content: `生成失败：${detail}` });
-        message.error("生成失败");
+        patchAssistant({ status: "error", content: t("生成失败：{{p0}}", { p0: detail }) });
+        message.error(t("生成失败"));
       } finally {
         setIsLoading(false);
         abortRef.current = null;
@@ -544,12 +546,12 @@ export default function ConversationPage() {
             ...prev,
             messages: prev.messages.map((m) =>
               m.id === assistantId
-                ? { ...m, status: "error", content: `生图失败：${detail}` }
+                ? { ...m, status: "error", content: t("生图失败：{{p0}}", { p0: detail }) }
                 : m,
             ),
           };
         });
-        message.error("生图失败");
+        message.error(t("生图失败"));
       } finally {
         setIsLoading(false);
       }
@@ -610,7 +612,7 @@ export default function ConversationPage() {
               },
             ],
           });
-          message.success("视频已生成");
+          message.success(t("视频已生成"));
         } else {
           patch({
             status: "error",
@@ -619,7 +621,7 @@ export default function ConversationPage() {
         }
       } catch (error) {
         const detail = error instanceof Error ? error.message : String(error);
-        patch({ status: "error", content: `视频生成失败：${detail}` });
+        patch({ status: "error", content: t("视频生成失败：{{p0}}", { p0: detail }) });
       } finally {
         setIsLoading(false);
       }
@@ -699,7 +701,7 @@ export default function ConversationPage() {
       );
       if (!snapshot || snapshot.length === 0) return;
       try {
-        const branchTitle = `源自「${selectedConversation.title}」`;
+        const branchTitle = t("源自「{{p0}}」", { p0: selectedConversation.title });
         const branch = await conversationApi.create({
           agentId: selectedConversation.agentId,
           title: branchTitle,
@@ -715,10 +717,10 @@ export default function ConversationPage() {
         setConversations((prev) => [seeded, ...prev]);
         setSelectedConversation(seeded);
         setSelectedAgentId(seeded.agentId);
-        message.success("已创建分支对话");
+        message.success(t("已创建分支对话"));
       } catch (error) {
         console.error("Failed to branch conversation:", error);
-        message.error("创建分支失败");
+        message.error(t("创建分支失败"));
       }
     },
     [selectedConversation],
@@ -815,16 +817,16 @@ export default function ConversationPage() {
 
       {/* Create conversation modal */}
       <Modal
-        title="新建对话"
+        title={t("新建对话")}
         open={createModalOpen}
         onOk={handleConfirmCreate}
         onCancel={() => setCreateModalOpen(false)}
-        okText="创建"
-        cancelText="取消"
+        okText={t("创建")}
+        cancelText={t("取消")}
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">选择智能体</label>
+            <label className="block text-sm font-medium mb-1">{t("选择智能体")}</label>
             <select
               value={selectedAgentForNew}
               onChange={(e) => setSelectedAgentForNew(e.target.value)}
@@ -842,7 +844,7 @@ export default function ConversationPage() {
               对话标题（可选）
             </label>
             <Input
-              placeholder="输入对话标题..."
+              placeholder={t("输入对话标题...")}
               value={newConversationTitle}
               onChange={(e) => setNewConversationTitle(e.target.value)}
             />

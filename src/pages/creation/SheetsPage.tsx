@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * AI spreadsheet workspace (TOOL-08): import xlsx/csv, issue natural-
  * language commands (LLM maps them to table operations), inspect the
@@ -30,7 +31,8 @@ interface HistoryEntry {
   note: string;
 }
 
-export default function SheetsPage() {
+export default function SheetsPage() {  const { t } = useTranslation();
+
   const [table, setTable] = useState<SheetTable>(emptyTable());
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [command, setCommand] = useState("");
@@ -44,15 +46,15 @@ export default function SheetsPage() {
         ? parseCsv(await file.text())
         : await importWorkbook(file);
       if (parsed.columns.length === 0) {
-        message.warning("文件为空或没有可识别的表头");
+        message.warning(t("文件为空或没有可识别的表头"));
         return;
       }
       setTable(parsed);
       setHistory([]);
-      message.success(`已导入「${file.name}」：${parsed.rows.length} 行 × ${parsed.columns.length} 列`);
+      message.success(t("已导入「{{p0}}」：{{p1}} 行 × {{p2}} 列", { p0: file.name, p1: parsed.rows.length, p2: parsed.columns.length }));
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`导入失败：${detail}`);
+      message.error(t("导入失败：{{p0}}", { p0: detail }));
     }
   }, []);
 
@@ -68,7 +70,7 @@ export default function SheetsPage() {
       message.success(result.note);
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`指令失败：${detail}`);
+      message.error(t("指令失败：{{p0}}", { p0: detail }));
     } finally {
       setBusy(false);
     }
@@ -80,7 +82,7 @@ export default function SheetsPage() {
     setTable(latest.table);
     setHistory(rest);
     undoRef.current = true;
-    message.info("已撤销上一步操作");
+    message.info(t("已撤销上一步操作"));
   }, [history]);
 
   return (
@@ -100,13 +102,13 @@ export default function SheetsPage() {
             return false;
           }}
         >
-          <Button block icon={<UploadOutlined />} aria-label="导入文件">
+          <Button block icon={<UploadOutlined />} aria-label={t("导入文件")}>
             导入 xlsx / csv
           </Button>
         </Upload>
 
         <div>
-          <label className="block text-sm font-medium mb-1">对话式操作</label>
+          <label className="block text-sm font-medium mb-1">{t("对话式操作")}</label>
           <Input.TextArea
             value={command}
             onChange={(e) => setCommand(e.target.value)}
@@ -119,7 +121,7 @@ export default function SheetsPage() {
             placeholder={'例如：\n· 按销量降序\n· 只要销量大于100的行\n· 新增一列等于销量的总和'}
             rows={4}
             disabled={table.columns.length === 0 || busy}
-            aria-label="表格指令输入"
+            aria-label={t("表格指令输入")}
           />
           <Button
             type="primary"
@@ -129,14 +131,14 @@ export default function SheetsPage() {
             loading={busy}
             disabled={!command.trim() || table.columns.length === 0}
             onClick={run}
-            aria-label="执行指令"
+            aria-label={t("执行指令")}
           >
             执行
           </Button>
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">模型</label>
+          <label className="block text-sm font-medium mb-1">{t("模型")}</label>
           <ModelPicker value={model} onChange={setModel} />
         </div>
 
@@ -146,7 +148,7 @@ export default function SheetsPage() {
             icon={<UndoOutlined />}
             disabled={history.length === 0}
             onClick={undo}
-            aria-label="撤销"
+            aria-label={t("撤销")}
           >
             撤销（{history.length}）
           </Button>
@@ -155,7 +157,7 @@ export default function SheetsPage() {
             icon={<DownloadOutlined />}
             disabled={table.columns.length === 0}
             onClick={() => exportXlsx(table, "导出表格")}
-            aria-label="导出 xlsx"
+            aria-label={t("导出 xlsx")}
           >
             导出 .xlsx
           </Button>
@@ -163,7 +165,7 @@ export default function SheetsPage() {
             block
             disabled={table.columns.length === 0}
             onClick={() => exportCsvFile(table, "导出表格")}
-            aria-label="导出 csv"
+            aria-label={t("导出 csv")}
           >
             导出 .csv
           </Button>
@@ -171,7 +173,7 @@ export default function SheetsPage() {
 
         {history.length > 0 && (
           <div className="pt-2 border-t border-(--color-border)">
-            <p className="text-xs font-medium mb-1 text-[var(--color-text-secondary)]">操作记录</p>
+            <p className="text-xs font-medium mb-1 text-[var(--color-text-secondary)]">{t("操作记录")}</p>
             {history.slice(0, 8).map((entry, index) => (
               <p key={index} className="text-xs text-[var(--color-text-tertiary)] truncate">
                 · {entry.note}
@@ -185,10 +187,10 @@ export default function SheetsPage() {
       <div className="flex-1 overflow-auto p-4">
         {table.columns.length === 0 ? (
           <div className="h-full flex items-center justify-center">
-            <Empty description="导入 xlsx / csv 文件，用一句话开始分析" />
+            <Empty description={t("导入 xlsx / csv 文件，用一句话开始分析")} />
           </div>
         ) : (
-          <table className="min-w-full text-sm border-collapse" aria-label="数据表格">
+          <table className="min-w-full text-sm border-collapse" aria-label={t("数据表格")}>
             <thead>
               <tr>
                 {table.columns.map((column, index) => (

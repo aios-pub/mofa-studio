@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Add provider modal component
  * Stepped flow: choose vendor -> configure -> select models -> confirm
@@ -56,7 +57,8 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
   onSubmit,
   provider,
   onEdit,
-}) => {
+}) => {  const { t } = useTranslation();
+
   const isEditMode = !!provider;
   const [currentStep, setCurrentStep] = useState<number>(isEditMode ? 1 : 0);
   const [selectedConfig, setSelectedConfig] = useState<ProviderConfig | null>(null);
@@ -139,7 +141,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
         // Validate required configuration fields
         for (const field of selectedConfig?.configFields || []) {
           if (field.required && !formData.config?.[field.key]) {
-            setError(`请填写 ${field.label}`);
+            setError(t("请填写 {{p0}}", { p0: field.label }));
             return false;
           }
         }
@@ -332,7 +334,7 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({
                   <p className="text-lg font-medium mb-2">{formData.name}</p>
                   <p>
                     {selectedModelIds.size > 0
-                      ? `已选择 ${selectedModelIds.size} 个模型`
+                      ? t("已选择 {{p0}} 个模型", { p0: selectedModelIds.size })
                       : '您可以稍后在 Provider 详情中选择要启用的模型'}
                   </p>
                 </div>

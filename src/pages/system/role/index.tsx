@@ -109,10 +109,10 @@ export default function RoleManagementPage() {
   const handleDelete = async (id: string) => {
     try {
       await roleApi.delete(id);
-      message.success("删除成功");
+      message.success(t("删除成功"));
       loadRoles();
     } catch (error) {
-      message.error("删除失败");
+      message.error(t("删除失败"));
     }
   };
 
@@ -127,15 +127,15 @@ export default function RoleManagementPage() {
       const values = await form.validateFields();
       if (editingRole) {
         await roleApi.update(editingRole.id, values);
-        message.success("更新成功");
+        message.success(t("更新成功"));
       } else {
         await roleApi.create(values);
-        message.success("创建成功");
+        message.success(t("创建成功"));
       }
       setModalVisible(false);
       loadRoles();
     } catch (error) {
-      message.error("操作失败");
+      message.error(t("操作失败"));
     }
   };
 
@@ -200,11 +200,11 @@ export default function RoleManagementPage() {
             编辑
           </Button>
           <Popconfirm
-            title="确定要删除这个角色吗？"
-            description="删除后无法恢复，该角色下的用户将失去相关权限。"
+            title={t("确定要删除这个角色吗？")}
+            description={t("删除后无法恢复，该角色下的用户将失去相关权限。")}
             onConfirm={() => handleDelete(record.id)}
-            okText="确定"
-            cancelText="取消"
+            okText={t("确定")}
+            cancelText={t("取消")}
           >
             <Button type="link" size="small" danger icon={<DeleteOutlined />}>
               删除
@@ -217,18 +217,18 @@ export default function RoleManagementPage() {
 
   // Preset permission options
   const permissionOptions = [
-    { value: "all", label: "全部权限" },
-    { value: "manage_users", label: "用户管理" },
-    { value: "manage_roles", label: "角色管理" },
-    { value: "manage_menus", label: "菜单管理" },
-    { value: "manage_agents", label: "Agent管理" },
-    { value: "manage_prompts", label: "提示词管理" },
-    { value: "manage_skills", label: "技能管理" },
-    { value: "manage_testsets", label: "测试集管理" },
-    { value: "manage_settings", label: "系统设置" },
-    { value: "use_agents", label: "使用Agent" },
-    { value: "view_conversations", label: "查看对话" },
-    { value: "view_agents", label: "查看Agent" },
+    { value: "all", label: t("全部权限") },
+    { value: "manage_users", label: t("用户管理") },
+    { value: "manage_roles", label: t("角色管理") },
+    { value: "manage_menus", label: t("菜单管理") },
+    { value: "manage_agents", label: t("Agent管理") },
+    { value: "manage_prompts", label: t("提示词管理") },
+    { value: "manage_skills", label: t("技能管理") },
+    { value: "manage_testsets", label: t("测试集管理") },
+    { value: "manage_settings", label: t("系统设置") },
+    { value: "use_agents", label: t("使用Agent") },
+    { value: "view_conversations", label: t("查看对话") },
+    { value: "view_agents", label: t("查看Agent") },
   ];
 
   return (
@@ -247,13 +247,13 @@ export default function RoleManagementPage() {
       <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="text-[var(--color-text-tertiary)]">加载中...</div>
+            <div className="text-[var(--color-text-tertiary)]">{t("加载中...")}</div>
           </div>
         ) : roles.length === 0 ? (
           <EmptyState
             type="user"
-            title="暂无角色"
-            description="点击上方按钮创建第一个角色"
+            title={t("暂无角色")}
+            description={t("点击上方按钮创建第一个角色")}
           />
         ) : (
           <Table
@@ -264,7 +264,7 @@ export default function RoleManagementPage() {
               pageSize: 10,
               showSizeChanger: true,
               showQuickJumper: true,
-              showTotal: (total) => `共 ${total} 个角色`,
+              showTotal: (total) => t("共 {{p0}} 个角色", { p0: total }),
             }}
           />
         )}
@@ -283,53 +283,53 @@ export default function RoleManagementPage() {
           <div className="grid grid-cols-2 gap-4">
             <Form.Item
               name="name"
-              label="角色名称"
-              rules={[{ required: true, message: "请输入角色名称" }]}
+              label={t("角色名称")}
+              rules={[{ required: true, message: t("请输入角色名称") }]}
             >
-              <Input placeholder="例如：系统管理员" />
+              <Input placeholder={t("例如：系统管理员")} />
             </Form.Item>
 
             <Form.Item
               name="code"
-              label="角色编码"
+              label={t("角色编码")}
               rules={[
-                { required: true, message: "请输入角色编码" },
-                { pattern: /^[a-z_]+$/, message: "只能包含小写字母和下划线" },
+                { required: true, message: t("请输入角色编码") },
+                { pattern: /^[a-z_]+$/, message: t("只能包含小写字母和下划线") },
               ]}
             >
-              <Input placeholder="例如：admin" disabled={!!editingRole} />
+              <Input placeholder={t("例如：admin")} disabled={!!editingRole} />
             </Form.Item>
           </div>
 
-          <Form.Item name="description" label="角色描述">
-            <TextArea rows={2} placeholder="描述角色的职责和权限范围" />
+          <Form.Item name="description" label={t("角色描述")}>
+            <TextArea rows={2} placeholder={t("描述角色的职责和权限范围")} />
           </Form.Item>
 
           <div className="grid grid-cols-2 gap-4">
-            <Form.Item name="order" label="排序" initialValue={0}>
+            <Form.Item name="order" label={t("排序")} initialValue={0}>
               <InputNumber min={0} className="w-full" />
             </Form.Item>
 
-            <Form.Item name="status" label="状态" rules={[{ required: true }]}>
+            <Form.Item name="status" label={t("状态")} rules={[{ required: true }]}>
               <Select
                 options={[
-                  { value: BasicStatus.ENABLE, label: "启用" },
-                  { value: BasicStatus.DISABLE, label: "禁用" },
+                  { value: BasicStatus.ENABLE, label: t("启用") },
+                  { value: BasicStatus.DISABLE, label: t("禁用") },
                 ]}
               />
             </Form.Item>
           </div>
 
-          <Form.Item name="permissions" label="功能权限">
+          <Form.Item name="permissions" label={t("功能权限")}>
             <Select
               mode="multiple"
-              placeholder="选择功能权限"
+              placeholder={t("选择功能权限")}
               options={permissionOptions}
               allowClear
             />
           </Form.Item>
 
-          <Form.Item name="menus" label="菜单权限" help="选择角色可访问的菜单">
+          <Form.Item name="menus" label={t("菜单权限")} help={t("选择角色可访问的菜单")}>
             <div className="border border-(--color-border) rounded-lg p-3 max-h-64 overflow-auto bg-(--color-bg-tertiary)">
               {menuTree.length > 0 ? (
                 <Tree

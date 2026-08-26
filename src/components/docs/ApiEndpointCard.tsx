@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * API endpoint card component
  * Show details of a single API endpoint
@@ -39,7 +40,8 @@ interface Header {
   example?: string;
 }
 
-export function ApiEndpointCard({ endpoint }: ApiEndpointCardProps) {
+export function ApiEndpointCard({ endpoint }: ApiEndpointCardProps) {  const { t } = useTranslation();
+
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
   };
@@ -55,40 +57,40 @@ export function ApiEndpointCard({ endpoint }: ApiEndpointCardProps) {
   // Parameter table column definitions
   const paramColumns: ColumnsType<Parameter> = [
     {
-      title: "名称",
+      title: t("名称"),
       dataIndex: "name",
       key: "name",
       width: 150,
     },
     {
-      title: "位置",
+      title: t("位置"),
       dataIndex: "in",
       key: "in",
       width: 80,
       render: (inLocation) => <Tag>{inLocation}</Tag>,
     },
     {
-      title: "类型",
+      title: t("类型"),
       dataIndex: "schema",
       key: "schema",
       width: 100,
       render: (schema) => schema?.type || "-",
     },
     {
-      title: "必填",
+      title: t("必填"),
       dataIndex: "required",
       key: "required",
       width: 60,
       render: (required) => (required ? "是" : "否"),
     },
     {
-      title: "说明",
+      title: t("说明"),
       dataIndex: "description",
       key: "description",
       ellipsis: true,
     },
     {
-      title: "示例",
+      title: t("示例"),
       dataIndex: "schema",
       key: "example",
       width: 120,
@@ -102,19 +104,19 @@ export function ApiEndpointCard({ endpoint }: ApiEndpointCardProps) {
 
   const headerColumns: ColumnsType<Header> = [
     {
-      title: "名称",
+      title: t("名称"),
       dataIndex: "name",
       key: "name",
       width: 150,
     },
     {
-      title: "说明",
+      title: t("说明"),
       dataIndex: "description",
       key: "description",
       ellipsis: true,
     },
     {
-      title: "示例",
+      title: t("示例"),
       dataIndex: "example",
       key: "example",
       render: (example) => (
@@ -183,14 +185,14 @@ export function ApiEndpointCard({ endpoint }: ApiEndpointCardProps) {
                     size="small"
                   />
                 ) : (
-                  <Text type="secondary">此接口无需参数</Text>
+                  <Text type="secondary">{t("此接口无需参数")}</Text>
                 )}
               </div>
             ),
           },
           {
             key: "headers",
-            label: <Space><ApiOutlined /> 请求头</Space>,
+            label: <Space><ApiOutlined />{t("请求头")}</Space>,
             children: (
               <div className="pt-2">
                 {endpoint.headers && endpoint.headers.length > 0 ? (
@@ -202,14 +204,14 @@ export function ApiEndpointCard({ endpoint }: ApiEndpointCardProps) {
                     size="small"
                   />
                 ) : (
-                  <Text type="secondary">此接口无需特殊请求头</Text>
+                  <Text type="secondary">{t("此接口无需特殊请求头")}</Text>
                 )}
               </div>
             ),
           },
           {
             key: "requestBody",
-            label: "请求体",
+            label: t("请求体"),
             children: (
               <div className="pt-2">
                 {endpoint.request_body ? (
@@ -230,7 +232,7 @@ export function ApiEndpointCard({ endpoint }: ApiEndpointCardProps) {
                     </div>
                     {endpoint.request_body.example && (
                       <div>
-                        <Text strong>示例</Text>
+                        <Text strong>{t("示例")}</Text>
                         <div className="mt-1 bg-gray-50 p-3 rounded">
                           <pre className="text-sm overflow-x-auto">
                             {JSON.stringify(endpoint.request_body.example, null, 2)}
@@ -240,14 +242,14 @@ export function ApiEndpointCard({ endpoint }: ApiEndpointCardProps) {
                     )}
                   </div>
                 ) : (
-                  <Text type="secondary">此接口不支持请求体</Text>
+                  <Text type="secondary">{t("此接口不支持请求体")}</Text>
                 )}
               </div>
             ),
           },
           {
             key: "responses",
-            label: "响应",
+            label: t("响应"),
             children: (
               <div className="pt-2">
                 {endpoint.responses && endpoint.responses.length > 0 ? (
@@ -262,7 +264,7 @@ export function ApiEndpointCard({ endpoint }: ApiEndpointCardProps) {
                         </div>
                         {response.headers && response.headers.length > 0 && (
                           <div className="mb-2">
-                            <Text className="text-xs">响应头</Text>
+                            <Text className="text-xs">{t("响应头")}</Text>
                             <div className="flex flex-wrap gap-1 mt-1">
                               {response.headers.map((header) => (
                                 <Tag key={header.name}>
@@ -274,7 +276,7 @@ export function ApiEndpointCard({ endpoint }: ApiEndpointCardProps) {
                         )}
                         {response.example && (
                           <div>
-                            <Text className="text-xs">响应示例</Text>
+                            <Text className="text-xs">{t("响应示例")}</Text>
                             <div className="mt-1 bg-gray-50 p-3 rounded">
                               <pre className="text-sm overflow-x-auto">
                                 {JSON.stringify(response.example, null, 2)}
@@ -286,7 +288,7 @@ export function ApiEndpointCard({ endpoint }: ApiEndpointCardProps) {
                     ))}
                   </div>
                 ) : (
-                  <Text type="secondary">暂无响应定义</Text>
+                  <Text type="secondary">{t("暂无响应定义")}</Text>
                 )}
               </div>
             ),

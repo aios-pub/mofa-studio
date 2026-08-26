@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Department management page
  */
@@ -18,7 +19,8 @@ import { organizationApi } from "@/services";
 import { formatDate } from "@/utils";
 import ResizableSidebar from "@/components/layout/ResizableSidebar";
 
-export default function DepartmentsPage() {
+export default function DepartmentsPage() {  const { t } = useTranslation();
+
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -66,7 +68,7 @@ export default function DepartmentsPage() {
   });
 
   const handleDeleteDepartment = async (id: string) => {
-    if (!confirm("确定要删除这个部门吗？")) return;
+    if (!confirm(t("确定要删除这个部门吗？"))) return;
     await organizationApi.deleteDepartment(id);
     if (selectedDepartment?.id === id) {
       setSelectedDepartment(null);
@@ -96,7 +98,7 @@ export default function DepartmentsPage() {
 
           {/* Search */}
           <Input
-            placeholder="搜索部门..."
+            placeholder={t("搜索部门...")}
             prefix={<SearchOutlined />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -120,7 +122,7 @@ export default function DepartmentsPage() {
           ) : filteredDepartments.length === 0 ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]">
               <HomeOutlined className="text-3xl mx-auto mb-2 opacity-50" />
-              <p>暂无部门</p>
+              <p>{t("暂无部门")}</p>
             </div>
           ) : (
             filteredDepartments.map((dept) => (
@@ -236,7 +238,7 @@ export default function DepartmentsPage() {
                 {departmentMembers.length === 0 ? (
                   <div className="p-8 text-center text-[var(--color-text-tertiary)]">
                     <UserOutlined className="text-2xl mx-auto mb-2 opacity-50" />
-                    <p>暂无成员</p>
+                    <p>{t("暂无成员")}</p>
                   </div>
                 ) : (
                   departmentMembers.map((member) => (

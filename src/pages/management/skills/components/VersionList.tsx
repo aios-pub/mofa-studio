@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Version list component
  * Supports version lifecycle actions: submit for review, confirm publish, withdraw, unpublish, republish, delete
@@ -43,7 +44,8 @@ const statusConfig: Record<
   YANKED: { color: 'error', icon: <StopOutlined />, text: '已下架' },
 };
 
-export function VersionList({ namespace, slug, versions, onVersionSelect, onRefresh }: VersionListProps) {
+export function VersionList({ namespace, slug, versions, onVersionSelect, onRefresh }: VersionListProps) {  const { t } = useTranslation();
+
   const {
     submitReview,
     confirmPublish,
@@ -87,7 +89,7 @@ export function VersionList({ namespace, slug, versions, onVersionSelect, onRefr
     // UPLOADED: submit for review, confirm publish (PRIVATE), delete
     if (version.status === 'UPLOADED') {
       actions.push(
-        <Tooltip title="提交审核" key="submit-review">
+        <Tooltip title={t("提交审核")} key="submit-review">
           <Button
             type="text"
             size="small"
@@ -104,7 +106,7 @@ export function VersionList({ namespace, slug, versions, onVersionSelect, onRefr
         </Tooltip>
       );
       actions.push(
-        <Tooltip title="确认发布" key="confirm-publish">
+        <Tooltip title={t("确认发布")} key="confirm-publish">
           <Button
             type="text"
             size="small"
@@ -123,15 +125,15 @@ export function VersionList({ namespace, slug, versions, onVersionSelect, onRefr
       actions.push(
         <Popconfirm
           key="delete"
-          title="删除版本"
-          description={`确定要删除版本 ${version.version} 吗？此操作不可撤销。`}
+          title={t("删除版本")}
+          description={t("确定要删除版本 {{p0}} 吗？此操作不可撤销。", { p0: version.version })}
           onConfirm={() =>
             handleAction('delete', version.version, () =>
               deleteVersion(namespace, slug, version.version)
             )
           }
-          okText="删除"
-          cancelText="取消"
+          okText={t("删除")}
+          cancelText={t("取消")}
           okButtonProps={{ danger: true }}
         >
           <Button
@@ -150,7 +152,7 @@ export function VersionList({ namespace, slug, versions, onVersionSelect, onRefr
     // PENDING_REVIEW: withdraw
     if (version.status === 'PENDING_REVIEW') {
       actions.push(
-        <Tooltip title="撤回审核" key="withdraw">
+        <Tooltip title={t("撤回审核")} key="withdraw">
           <Button
             type="text"
             size="small"
@@ -171,7 +173,7 @@ export function VersionList({ namespace, slug, versions, onVersionSelect, onRefr
     // PUBLISHED: yank
     if (version.status === 'PUBLISHED') {
       actions.push(
-        <Tooltip title="查看文件" key="files">
+        <Tooltip title={t("查看文件")} key="files">
           <Button
             type="text"
             size="small"
@@ -202,7 +204,7 @@ export function VersionList({ namespace, slug, versions, onVersionSelect, onRefr
     // YANKED: rerelease
     if (version.status === 'YANKED') {
       actions.push(
-        <Tooltip title="重新发布" key="rerelease">
+        <Tooltip title={t("重新发布")} key="rerelease">
           <Button
             type="text"
             size="small"
@@ -225,15 +227,15 @@ export function VersionList({ namespace, slug, versions, onVersionSelect, onRefr
       actions.push(
         <Popconfirm
           key="delete"
-          title="删除版本"
-          description={`确定要删除版本 ${version.version} 吗？此操作不可撤销。`}
+          title={t("删除版本")}
+          description={t("确定要删除版本 {{p0}} 吗？此操作不可撤销。", { p0: version.version })}
           onConfirm={() =>
             handleAction('delete', version.version, () =>
               deleteVersion(namespace, slug, version.version)
             )
           }
-          okText="删除"
-          cancelText="取消"
+          okText={t("删除")}
+          cancelText={t("取消")}
           okButtonProps={{ danger: true }}
         >
           <Button
@@ -293,21 +295,21 @@ export function VersionList({ namespace, slug, versions, onVersionSelect, onRefr
 
       {/* Yank Modal */}
       <Modal
-        title="下架版本"
+        title={t("下架版本")}
         open={yankModalOpen}
         onOk={handleYank}
         onCancel={() => {
           setYankModalOpen(false);
           setYankReason('');
         }}
-        okText="确认下架"
+        okText={t("确认下架")}
         okButtonProps={{ danger: true }}
       >
         <p className="mb-4">
           确定要下架版本 <strong>v{yankTargetVersion}</strong> 吗？
         </p>
         <Input.TextArea
-          placeholder="请输入下架原因（必填）"
+          placeholder={t("请输入下架原因（必填）")}
           value={yankReason}
           onChange={(e) => setYankReason(e.target.value)}
           rows={3}

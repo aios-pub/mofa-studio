@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Execution records tab
  * Modeled on apalis-board Tasks + Logs: status filter + search + paginated table
@@ -25,7 +26,8 @@ const execStatusLabel: Record<ExecutionStatus, string> = {
   pending: "等待中",
 };
 
-export default function ExecutionsTab() {
+export default function ExecutionsTab() {  const { t } = useTranslation();
+
   const [executions, setExecutions] = useState<TaskExecution[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -83,13 +85,13 @@ export default function ExecutionsTab() {
 
   const columns: ColumnsType<TaskExecution> = [
     {
-      title: "任务名称",
+      title: t("任务名称"),
       dataIndex: "taskName",
       key: "taskName",
       sorter: (a, b) => a.taskName.localeCompare(b.taskName),
     },
     {
-      title: "状态",
+      title: t("状态"),
       dataIndex: "status",
       key: "status",
       width: 90,
@@ -103,7 +105,7 @@ export default function ExecutionsTab() {
       ),
     },
     {
-      title: "开始时间",
+      title: t("开始时间"),
       dataIndex: "startedAt",
       key: "startedAt",
       width: 170,
@@ -113,7 +115,7 @@ export default function ExecutionsTab() {
       render: (v: Date) => formatDate(v),
     },
     {
-      title: "耗时",
+      title: t("耗时"),
       dataIndex: "duration",
       key: "duration",
       width: 80,
@@ -121,7 +123,7 @@ export default function ExecutionsTab() {
       render: (v: number) => formatDuration(v),
     },
     {
-      title: "结果",
+      title: t("结果"),
       key: "result",
       render: (_: unknown, record: TaskExecution) => (
         <span
@@ -134,7 +136,7 @@ export default function ExecutionsTab() {
       ),
     },
     {
-      title: "完成时间",
+      title: t("完成时间"),
       dataIndex: "completedAt",
       key: "completedAt",
       width: 170,
@@ -147,7 +149,7 @@ export default function ExecutionsTab() {
       {/* Toolbar */}
       <div className="flex items-center gap-3 p-3 border-b border-(--color-border)">
         <Input
-          placeholder="搜索执行记录..."
+          placeholder={t("搜索执行记录...")}
           prefix={<SearchOutlined />}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -157,26 +159,26 @@ export default function ExecutionsTab() {
         />
         <div className="flex gap-1.5">
           {[
-            { key: "" as const, label: "全部", count: counts.all },
+            { key: "" as const, label: t("全部"), count: counts.all },
             {
               key: "success" as const,
-              label: "成功",
+              label: t("成功"),
               count: counts.success,
               color: "text-green-500",
             },
             {
               key: "failure" as const,
-              label: "失败",
+              label: t("失败"),
               count: counts.failure,
               color: "text-red-500",
             },
             {
               key: "running" as const,
-              label: "运行中",
+              label: t("运行中"),
               count: counts.running,
               color: "text-blue-500",
             },
-            { key: "pending" as const, label: "等待中", count: counts.pending },
+            { key: "pending" as const, label: t("等待中"), count: counts.pending },
           ].map((f) => (
             <button
               key={f.key}
@@ -203,7 +205,7 @@ export default function ExecutionsTab() {
           loading={loading}
           pagination={{
             pageSize: 20,
-            showTotal: (t) => `共 ${t} 条`,
+            showTotal: (t) => t("共 {{p0}} 条", { p0: t }),
             size: "small",
           }}
           scroll={{ y: "calc(100vh - 280px)" }}
@@ -211,7 +213,7 @@ export default function ExecutionsTab() {
             emptyText: (
               <div className="py-8 text-[var(--color-text-tertiary)]">
                 <ClockCircleOutlined className="text-2xl mb-2 opacity-50" />
-                <p>暂无执行记录</p>
+                <p>{t("暂无执行记录")}</p>
               </div>
             ),
           }}

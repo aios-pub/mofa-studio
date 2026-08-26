@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Video generation workspace (TOOL-02): prompt → async task cards with
  * live polling, inline playback on completion, gallery recording, and
@@ -33,7 +34,8 @@ const STATUS_META: Record<
 /** Task cards survive page navigation in this session. */
 const taskStore = new Map<string, VideoTask>();
 
-export default function VideoGenPage() {
+export default function VideoGenPage() {  const { t } = useTranslation();
+
   const [prompt, setPrompt] = useState("");
   const [size, setSize] = useState(VIDEO_SIZES[0].value);
   const [duration, setDuration] = useState(5);
@@ -91,14 +93,14 @@ export default function VideoGenPage() {
         .pollUntilTerminal(submitted.task_id, syncTask, 3000, 200)
         .then((final) => {
           if (final.status === "succeeded") {
-            message.success("视频已生成");
+            message.success(t("视频已生成"));
           } else if (final.status === "failed") {
             message.error(`生成失败：${final.error ?? "未知错误"}`);
           }
         });
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`提交失败：${detail}`);
+      message.error(t("提交失败：{{p0}}", { p0: detail }));
     }
   }, [prompt, model, size, duration, syncTask]);
 
@@ -120,47 +122,47 @@ export default function VideoGenPage() {
         </h2>
 
         <div>
-          <label className="block text-sm font-medium mb-1">描述（Prompt）</label>
+          <label className="block text-sm font-medium mb-1">{t("描述（Prompt）")}</label>
           <Input.TextArea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="例如：一只橘猫追激光笔，镜头跟随"
+            placeholder={t("例如：一只橘猫追激光笔，镜头跟随")}
             rows={4}
-            aria-label="视频描述"
+            aria-label={t("视频描述")}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">画面尺寸</label>
+          <label className="block text-sm font-medium mb-1">{t("画面尺寸")}</label>
           <Select
             value={size}
             onChange={setSize}
             options={VIDEO_SIZES}
             style={{ width: "100%" }}
-            aria-label="画面尺寸"
+            aria-label={t("画面尺寸")}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">时长（秒）</label>
+          <label className="block text-sm font-medium mb-1">{t("时长（秒）")}</label>
           <Select
             value={duration}
             onChange={setDuration}
-            options={[3, 5, 10].map((d) => ({ value: d, label: `${d} 秒` }))}
+            options={[3, 5, 10].map((d) => ({ value: d, label: t("{{p0}} 秒", { p0: d }) }))}
             style={{ width: "100%" }}
-            aria-label="视频时长"
+            aria-label={t("视频时长")}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">模型</label>
+          <label className="block text-sm font-medium mb-1">{t("模型")}</label>
           {videoModels.length > 0 ? (
             <Select
               value={model}
               onChange={setModel}
-              options={[{ value: AUTO_MODEL, label: "自动 · 引擎路由" }, ...videoModels]}
+              options={[{ value: AUTO_MODEL, label: t("自动 · 引擎路由") }, ...videoModels]}
               style={{ width: "100%" }}
-              aria-label="视频模型"
+              aria-label={t("视频模型")}
             />
           ) : (
             <ModelPicker value={model} onChange={setModel} />
@@ -177,7 +179,7 @@ export default function VideoGenPage() {
           block
           disabled={!prompt.trim()}
           onClick={submit}
-          aria-label="提交生成"
+          aria-label={t("提交生成")}
         >
           生成视频（异步任务）
         </Button>
@@ -191,7 +193,7 @@ export default function VideoGenPage() {
       <div className="flex-1 overflow-y-auto p-6">
         {tasks.length === 0 ? (
           <div className="h-full flex items-center justify-center">
-            <Empty description="输入描述，创建你的第一个视频任务" />
+            <Empty description={t("输入描述，创建你的第一个视频任务")} />
           </div>
         ) : (
           <div className="space-y-4 max-w-3xl">
@@ -230,14 +232,14 @@ export default function VideoGenPage() {
                         src={task.video}
                         controls
                         className="w-full rounded-lg border border-(--color-border)"
-                        aria-label={`生成的视频 ${task.prompt}`}
+                        aria-label={t("生成的视频 {{p0}}", { p0: task.prompt })}
                       />
                       <div className="flex gap-2">
                         <Button
                           size="small"
                           icon={<DownloadOutlined />}
                           onClick={() => download(task)}
-                          aria-label={`下载视频 ${task.prompt}`}
+                          aria-label={t("下载视频 {{p0}}", { p0: task.prompt })}
                         >
                           下载
                         </Button>
@@ -248,7 +250,7 @@ export default function VideoGenPage() {
                           onClick={() =>
                             setTasks((prev) => prev.filter((t) => t.task_id !== task.task_id))
                           }
-                          aria-label={`移除任务 ${task.prompt}`}
+                          aria-label={t("移除任务 {{p0}}", { p0: task.prompt })}
                         />
                       </div>
                     </div>

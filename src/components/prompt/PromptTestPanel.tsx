@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Prompt test panel component
  */
@@ -26,7 +27,8 @@ export default function PromptTestPanel({
   prompt,
   content,
   variables,
-}: PromptTestPanelProps) {
+}: PromptTestPanelProps) {  const { t } = useTranslation();
+
   const [activeTab, setActiveTab] = useState<"preview" | "chat">("preview");
   const [variableValues, setVariableValues] = useState<Record<string, string>>(
     {},
@@ -98,7 +100,7 @@ export default function PromptTestPanel({
       console.error("Chat error:", error);
       setChatMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "抱歉，发生了错误，请稍后重试。" },
+        { role: "assistant", content: t("抱歉，发生了错误，请稍后重试。") },
       ]);
     } finally {
       setIsLoading(false);
@@ -236,12 +238,12 @@ export default function PromptTestPanel({
                 {copied ? (
                   <>
                     <CheckOutlined className="text-sm text-green-500" />
-                    <span className="text-green-500">已复制</span>
+                    <span className="text-green-500">{t("已复制")}</span>
                   </>
                 ) : (
                   <>
                     <CopyOutlined className="text-sm" />
-                    <span>复制</span>
+                    <span>{t("复制")}</span>
                   </>
                 )}
               </button>
@@ -261,8 +263,8 @@ export default function PromptTestPanel({
               {chatMessages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-tertiary)]">
                   <PlayCircleOutlined className="text-3xl mb-2 opacity-50" />
-                  <p>输入消息开始模拟对话</p>
-                  <p className="text-xs mt-1">将使用当前提示词作为系统提示</p>
+                  <p>{t("输入消息开始模拟对话")}</p>
+                  <p className="text-xs mt-1">{t("将使用当前提示词作为系统提示")}</p>
                 </div>
               ) : (
                 chatMessages.map((msg, index) => (
@@ -303,7 +305,7 @@ export default function PromptTestPanel({
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="输入消息测试提示词效果... (Enter 发送)"
+                  placeholder={t("输入消息测试提示词效果... (Enter 发送)")}
                   rows={2}
                   className="flex-1 px-3 py-2 text-sm bg-[var(--color-bg-base)] border border-(--color-border) rounded-lg resize-none focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
                 />

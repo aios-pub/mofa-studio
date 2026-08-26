@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Prompt version history component
  */
@@ -26,7 +27,8 @@ interface PromptVersionHistoryProps {
 export default function PromptVersionHistory({
   prompt,
   onRollback,
-}: PromptVersionHistoryProps) {
+}: PromptVersionHistoryProps) {  const { t } = useTranslation();
+
   const [versions, setVersions] = useState<PromptVersion[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVersion, setSelectedVersion] = useState<PromptVersion | null>(
@@ -82,7 +84,7 @@ export default function PromptVersionHistory({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="text-[var(--color-text-tertiary)]">加载版本历史...</div>
+        <div className="text-[var(--color-text-tertiary)]">{t("加载版本历史...")}</div>
       </div>
     );
   }
@@ -91,7 +93,7 @@ export default function PromptVersionHistory({
     return (
       <div className="flex flex-col items-center justify-center py-8 text-[var(--color-text-tertiary)]">
         <HistoryOutlined className="text-3xl mb-2 opacity-50" />
-        <p>暂无版本历史</p>
+        <p>{t("暂无版本历史")}</p>
       </div>
     );
   }
@@ -117,7 +119,7 @@ export default function PromptVersionHistory({
                   ? "bg-[var(--color-primary)] text-white"
                   : "text-[var(--color-text-tertiary)] hover:bg-(--color-bg-tertiary)"
               }`}
-              title="版本对比"
+              title={t("版本对比")}
             >
               <SwapOutlined />
             </button>
@@ -212,8 +214,8 @@ export default function PromptVersionHistory({
             {!compareFrom || !compareTo ? (
               <div className="text-center py-8 text-[var(--color-text-tertiary)]">
                 <SwapOutlined className="text-3xl mx-auto mb-2 opacity-50" />
-                <p>请在左侧选择两个版本进行对比</p>
-                <p className="text-xs mt-1">先选择版本 A，再选择版本 B</p>
+                <p>{t("请在左侧选择两个版本进行对比")}</p>
+                <p className="text-xs mt-1">{t("先选择版本 A，再选择版本 B")}</p>
               </div>
             ) : diff ? (
               <div className="space-y-4">
@@ -325,7 +327,7 @@ export default function PromptVersionHistory({
                 <p>
                   已选择版本 v{compareFrom.version} 和 v{compareTo.version}
                 </p>
-                <p className="text-xs mt-1">点击"开始对比"查看差异</p>
+                <p className="text-xs mt-1">{t("点击\"开始对比\"查看差异")}</p>
               </div>
             )}
           </div>
@@ -458,7 +460,7 @@ export default function PromptVersionHistory({
           <div className="flex items-center justify-center h-full">
             <div className="text-center text-[var(--color-text-tertiary)]">
               <HistoryOutlined className="text-3xl mx-auto mb-2 opacity-50" />
-              <p>选择一个版本查看详情</p>
+              <p>{t("选择一个版本查看详情")}</p>
             </div>
           </div>
         )}

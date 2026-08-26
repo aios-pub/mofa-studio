@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Test set management page
  */
@@ -74,7 +75,8 @@ const downloadAsFile = (data: unknown, filename: string, mimeType: string) => {
   URL.revokeObjectURL(url);
 };
 
-export default function TestSetsListPage() {
+export default function TestSetsListPage() {  const { t } = useTranslation();
+
   const navigate = useNavigate();
   const [testSets, setTestSets] = useState<TestSet[]>([]);
   const [categories, setCategories] = useState<TestCategory[]>([]);
@@ -165,11 +167,11 @@ export default function TestSetsListPage() {
         if (selectedTestSet?.id === editingTestSet.id) {
           setSelectedTestSet(updated);
         }
-        message.success("测试集已更新");
+        message.success(t("测试集已更新"));
       } else {
         const created = await testSetApi.create(data);
         setTestSets((prev) => [...prev, created]);
-        message.success("测试集已创建");
+        message.success(t("测试集已创建"));
       }
       setTestSetModalOpen(false);
     } catch (error) {
@@ -182,8 +184,8 @@ export default function TestSetsListPage() {
 
   const handleDeleteTestSet = (testSet: TestSet) => {
     showDeleteConfirm({
-      title: "删除测试集",
-      content: `确定要删除测试集「${testSet.name}」吗？此操作不可恢复。`,
+      title: t("删除测试集"),
+      content: t("确定要删除测试集「{{p0}}」吗？此操作不可恢复。", { p0: testSet.name }),
       onOk: async () => {
         try {
           await testSetApi.delete(testSet.id);
@@ -191,10 +193,10 @@ export default function TestSetsListPage() {
           if (selectedTestSet?.id === testSet.id) {
             setSelectedTestSet(null);
           }
-          message.success("测试集已删除");
+          message.success(t("测试集已删除"));
         } catch (error) {
           console.error("Failed to delete test set:", error);
-          message.error("删除失败");
+          message.error(t("删除失败"));
         }
       },
     });
@@ -223,13 +225,13 @@ export default function TestSetsListPage() {
 
   const handleDeleteCategory = (category: TestCategory) => {
     showDeleteConfirm({
-      title: "删除分类",
-      content: `确定要删除分类「${category.name}」吗？`,
+      title: t("删除分类"),
+      content: t("确定要删除分类「{{p0}}」吗？", { p0: category.name }),
       onOk: async () => {
         try {
           await testSetApi.deleteCategory(category.id);
           setCategories((prev) => prev.filter((c) => c.id !== category.id));
-          message.success("分类已删除");
+          message.success(t("分类已删除"));
         } catch (error: any) {
           console.error("Failed to delete category:", error);
           message.error(error?.message || "删除失败");
@@ -249,11 +251,11 @@ export default function TestSetsListPage() {
         setCategories((prev) =>
           prev.map((c) => (c.id === editingCategory.id ? updated : c)),
         );
-        message.success("分类已更新");
+        message.success(t("分类已更新"));
       } else {
         const created = await testSetApi.createCategory(data);
         setCategories((prev) => [...prev, created]);
-        message.success("分类已创建");
+        message.success(t("分类已创建"));
       }
       setCategoryModalOpen(false);
     } catch (error) {
@@ -278,20 +280,20 @@ export default function TestSetsListPage() {
               icon={<ImportOutlined />}
               size="small"
               onClick={() => setImportModalOpen(true)}
-              title="导入"
+              title={t("导入")}
             />
             <Button
               icon={<ExportOutlined />}
               size="small"
               onClick={() => setExportModalOpen(true)}
-              title="导出"
+              title={t("导出")}
             />
             <Button
               type="primary"
               icon={<PlusOutlined />}
               size="small"
               onClick={() => handleCreateTestSet()}
-              title="新建测试集"
+              title={t("新建测试集")}
             />
           </div>
         </div>
@@ -299,7 +301,7 @@ export default function TestSetsListPage() {
         {/* Tree list */}
         {loading ? (
           <div className="text-center py-8">
-            <Text type="secondary">加载中...</Text>
+            <Text type="secondary">{t("加载中...")}</Text>
           </div>
         ) : (
           <TestSetTree
@@ -341,7 +343,7 @@ export default function TestSetsListPage() {
               <Title level={5} type="secondary">
                 选择一个测试集
               </Title>
-              <Text type="secondary">从左侧树形列表中选择查看详情</Text>
+              <Text type="secondary">{t("从左侧树形列表中选择查看详情")}</Text>
             </div>
           </div>
         )}
@@ -399,7 +401,7 @@ export default function TestSetsListPage() {
             }
 
             message.success(
-              `导入成功！创建了 ${result.imported} 个测试集，跳过 ${result.skipped} 个`
+              t("导入成功！创建了 {{p0}} 个测试集，跳过 {{p1}} 个", { p0: result.imported, p1: result.skipped })
             );
 
             // Reload the test set list
@@ -434,7 +436,7 @@ export default function TestSetsListPage() {
             const mimeType = "application/json";
             downloadAsFile(data, filename, mimeType);
 
-            message.success("导出成功！");
+            message.success(t("导出成功！"));
             setExportModalOpen(false);
           } catch (error: any) {
             console.error("Export failed:", error);
@@ -461,7 +463,8 @@ function TestSetDetail({
   onEditTestSet: (testSet: TestSet) => void;
   onDeleteTestSet: (testSet: TestSet) => void;
   onOpenLoadTest?: (testSet: TestSet) => void;
-}) {
+}) {  const { t } = useTranslation();
+
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"cases" | "run" | "report">(
     "cases",
@@ -532,7 +535,7 @@ function TestSetDetail({
     } catch (error) {
       if (requestId !== reportDetailRequestIdRef.current) return;
       console.error("Failed to load report detail:", error);
-      message.error("加载报告详情失败");
+      message.error(t("加载报告详情失败"));
     } finally {
       if (requestId === reportDetailRequestIdRef.current) {
         setLoadingDetail(false);
@@ -574,7 +577,7 @@ function TestSetDetail({
 
   const handleRunAll = async () => {
     if (!selectedAgentId) {
-      message.warning("请先选择 Agent");
+      message.warning(t("请先选择 Agent"));
       return;
     }
     setIsRunning(true);
@@ -587,7 +590,7 @@ function TestSetDetail({
       loadCases(); // refresh test case status
     } catch (error) {
       console.error("Failed to run test set:", error);
-      message.error("测试运行失败");
+      message.error(t("测试运行失败"));
     } finally {
       setIsRunning(false);
     }
@@ -595,7 +598,7 @@ function TestSetDetail({
 
   const handleRunCase = async (testCase: TestCase) => {
     if (!selectedAgentId) {
-      message.warning("请先选择 Agent");
+      message.warning(t("请先选择 Agent"));
       return;
     }
     setRunningCaseId(testCase.id);
@@ -603,14 +606,14 @@ function TestSetDetail({
       const result = await testSetApi.runTestCase(testCase, selectedAgentId);
       message.success(
         result.status === "passed"
-          ? `测试用例 "${testCase.name}" 通过`
-          : `测试用例 "${testCase.name}" 失败`,
+          ? t("测试用例 \"{{p0}}\" 通过", { p0: testCase.name })
+          : t("测试用例 \"{{p0}}\" 失败", { p0: testCase.name }),
       );
       loadCases(); // refresh test case status
       loadReports(); // refresh report list
     } catch (error) {
       console.error("Failed to run test case:", error);
-      message.error("测试用例执行失败");
+      message.error(t("测试用例执行失败"));
     } finally {
       setRunningCaseId(null);
     }
@@ -633,10 +636,10 @@ function TestSetDetail({
       setCaseModalLoading(true);
       if (editingCase) {
         await testSetApi.updateCase(editingCase.id, testSet.id, data);
-        message.success("测试用例已更新");
+        message.success(t("测试用例已更新"));
       } else {
         await testSetApi.createCase(testSet.id, data);
-        message.success("测试用例已创建");
+        message.success(t("测试用例已创建"));
       }
       setCaseModalOpen(false);
       loadCases();
@@ -650,16 +653,16 @@ function TestSetDetail({
 
   const handleDeleteCase = (testCase: TestCase) => {
     showDeleteConfirm({
-      title: "删除测试用例",
-      content: `确定要删除测试用例「${testCase.name}」吗？`,
+      title: t("删除测试用例"),
+      content: t("确定要删除测试用例「{{p0}}」吗？", { p0: testCase.name }),
       onOk: async () => {
         try {
           await testSetApi.deleteCase(testCase.id);
-          message.success("测试用例已删除");
+          message.success(t("测试用例已删除"));
           loadCases();
         } catch (error) {
           console.error("Failed to delete test case:", error);
-          message.error("删除失败");
+          message.error(t("删除失败"));
         }
       },
     });
@@ -667,20 +670,20 @@ function TestSetDetail({
 
   const handleCopyCase = async (testCase: TestCase) => {
     try {
-      message.loading({ content: "正在复制测试用例...", key: "copyCase" });
+      message.loading({ content: t("正在复制测试用例..."), key: "copyCase" });
       const copiedCase = await testSetApi.copyCase(testCase.id, testSet.id);
-      message.success({ content: `测试用例「${copiedCase.name}」已复制`, key: "copyCase" });
+      message.success({ content: t("测试用例「{{p0}}」已复制", { p0: copiedCase.name }), key: "copyCase" });
       loadCases();
     } catch (error) {
       console.error("Failed to copy test case:", error);
-      message.error({ content: "复制失败", key: "copyCase" });
+      message.error({ content: t("复制失败"), key: "copyCase" });
     }
   };
 
   const tabs = [
-    { key: "cases", label: "测试用例", icon: FileTextOutlined },
-    { key: "run", label: "执行详情", icon: PlayCircleOutlined },
-    { key: "report", label: "测试报告", icon: BarChartOutlined },
+    { key: "cases", label: t("测试用例"), icon: FileTextOutlined },
+    { key: "run", label: t("执行详情"), icon: PlayCircleOutlined },
+    { key: "report", label: t("测试报告"), icon: BarChartOutlined },
   ];
 
   // Latest report
@@ -701,7 +704,7 @@ function TestSetDetail({
             value={selectedAgentId || undefined}
             onChange={setSelectedAgentId}
             style={{ width: 180 }}
-            placeholder="选择 Agent"
+            placeholder={t("选择 Agent")}
             options={agents.map((a) => ({ label: a.name, value: a.id }))}
           />
           <Button
@@ -843,7 +846,7 @@ function TestSetDetail({
               </span>
               <div className="flex items-center gap-2">
                 <Input
-                  placeholder="搜索用例"
+                  placeholder={t("搜索用例")}
                   prefix={<SearchOutlined className="text-gray-400" />}
                   value={caseSearchQuery}
                   onChange={(e) => setCaseSearchQuery(e.target.value)}
@@ -879,7 +882,7 @@ function TestSetDetail({
                     display: "block",
                   }}
                 />
-                <Text type="secondary">暂无测试用例，点击上方按钮添加</Text>
+                <Text type="secondary">{t("暂无测试用例，点击上方按钮添加")}</Text>
               </div>
             ) : (
               (() => {
@@ -989,7 +992,7 @@ function TestSetDetail({
                             <Button
                               type="text"
                               size="small"
-                              title="运行"
+                              title={t("运行")}
                               icon={runningCaseId === testCase.id ? <LoadingOutlined /> : <PlayCircleOutlined />}
                               onClick={() => handleRunCase(testCase)}
                               disabled={runningCaseId === testCase.id || isRunning}
@@ -997,14 +1000,14 @@ function TestSetDetail({
                             <Button
                               type="text"
                               size="small"
-                              title="复制"
+                              title={t("复制")}
                               icon={<CopyOutlined />}
                               onClick={() => handleCopyCase(testCase)}
                             />
                             <Button
                               type="text"
                               size="small"
-                              title="编辑"
+                              title={t("编辑")}
                               icon={<EditOutlined />}
                               onClick={() => handleEditCase(testCase)}
                             />
@@ -1012,7 +1015,7 @@ function TestSetDetail({
                               type="text"
                               size="small"
                               danger
-                              title="删除"
+                              title={t("删除")}
                               icon={<DeleteOutlined />}
                               onClick={() => handleDeleteCase(testCase)}
                             />
@@ -1251,7 +1254,7 @@ function TestSetDetail({
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-[var(--color-text-tertiary)]">
                 <PlayCircleOutlined className="text-4xl mb-4 opacity-50" />
-                <p>点击"运行全部"开始执行测试</p>
+                <p>{t("点击\"运行全部\"开始执行测试")}</p>
               </div>
             )}
           </div>
@@ -1347,7 +1350,7 @@ function TestSetDetail({
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-[var(--color-text-tertiary)]">
                 <BarChartOutlined className="text-4xl mb-4 opacity-50" />
-                <p>运行测试后查看详细报告</p>
+                <p>{t("运行测试后查看详细报告")}</p>
               </div>
             )}
           </div>
@@ -1371,7 +1374,7 @@ function TestSetDetail({
         title={
           <div className="flex items-center gap-2">
             <BarChartOutlined />
-            <span>测试报告详情</span>
+            <span>{t("测试报告详情")}</span>
           </div>
         }
         open={reportDetailModalOpen}

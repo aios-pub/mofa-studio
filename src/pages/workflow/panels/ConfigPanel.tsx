@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Config panel - right node configuration panel
  */
@@ -131,7 +132,8 @@ function AgentConfig({
   config: NodeConfig;
   agents: Agent[];
   onChange: (c: NodeConfig) => void;
-}) {
+}) {  const { t } = useTranslation();
+
   const agentConfig = config as {
     type: "agent";
     config: {
@@ -162,7 +164,7 @@ function AgentConfig({
             } as NodeConfig);
           }}
           options={agents.map((a) => ({ value: a.id, label: a.name }))}
-          placeholder="选择 Agent"
+          placeholder={t("选择 Agent")}
         />
       </div>
       <div>

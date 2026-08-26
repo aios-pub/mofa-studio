@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Test set tree component
  * Use Ant Design DirectoryTree to show the category/test set tree
@@ -44,7 +45,8 @@ export function TestSetTree({
   onCreateCategory,
   onEditCategory,
   onDeleteCategory,
-}: TestSetTreeProps) {
+}: TestSetTreeProps) {  const { t } = useTranslation();
+
   // Build tree data
   const treeData = useMemo(() => {
     // Filter
@@ -107,7 +109,7 @@ export function TestSetTree({
     if (uncategorizedTestSets.length > 0) {
       const uncategorizedNode: DataNode = {
         key: "uncategorized",
-        title: "未分类",
+        title: t("未分类"),
         icon: <FolderOutlined style={{ fontSize: 12 }} />,
         children: uncategorizedTestSets.map((ts) => ({
           key: `testset-${ts.id}`,
@@ -165,13 +167,13 @@ export function TestSetTree({
           items: [
             {
               key: "createTestSet",
-              label: "新建测试集",
+              label: t("新建测试集"),
               icon: <PlusOutlined />,
               onClick: () => onCreateTestSet(),
             },
             {
               key: "createSubCategory",
-              label: "新建分类",
+              label: t("新建分类"),
               icon: <FolderAddOutlined />,
               onClick: () => onCreateCategory(),
             },
@@ -183,26 +185,26 @@ export function TestSetTree({
         items: [
           {
             key: "createTestSet",
-            label: "新建测试集",
+            label: t("新建测试集"),
             icon: <PlusOutlined />,
             onClick: () => onCreateTestSet(cat.id),
           },
           {
             key: "createSubCategory",
-            label: "新建子分类",
+            label: t("新建子分类"),
             icon: <FolderAddOutlined />,
             onClick: () => onCreateCategory(cat.id),
           },
           { type: "divider" as const },
           {
             key: "rename",
-            label: "重命名",
+            label: t("重命名"),
             icon: <EditOutlined />,
             onClick: () => onEditCategory(cat),
           },
           {
             key: "delete",
-            label: "删除",
+            label: t("删除"),
             icon: <DeleteOutlined />,
             danger: true,
             onClick: () => onDeleteCategory(cat),
@@ -225,7 +227,7 @@ export function TestSetTree({
       <div className="p-3 space-y-2 border-b border-(--color-border)">
         <div className="flex items-center gap-2">
           <Input
-            placeholder="搜索测试集..."
+            placeholder={t("搜索测试集...")}
             prefix={<SearchOutlined />}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -237,7 +239,7 @@ export function TestSetTree({
             size="small"
             icon={<FolderAddOutlined />}
             onClick={() => onCreateCategory()}
-            title="新建分类"
+            title={t("新建分类")}
           />
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Channel typeSelect component
  */
@@ -16,7 +17,8 @@ export default function ChannelTypeSelector({
   open,
   onClose,
   onSelect,
-}: ChannelTypeSelectorProps) {
+}: ChannelTypeSelectorProps) {  const { t } = useTranslation();
+
   const channelTypes = Object.entries(channelTypeConfig) as [
     ChannelType,
     (typeof channelTypeConfig)[ChannelType],
@@ -24,7 +26,7 @@ export default function ChannelTypeSelector({
 
   return (
     <Modal
-      title="选择渠道类型"
+      title={t("选择渠道类型")}
       open={open}
       onCancel={onClose}
       footer={null}

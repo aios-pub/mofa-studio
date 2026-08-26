@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Octos live logs tab
  * Receive profile live logs via SSE
@@ -49,7 +50,8 @@ const LOG_COLORS: Record<LogLevel, string> = {
 
 const LOG_LEVELS: LogLevel[] = ['debug', 'info', 'warn', 'error'];
 
-export default function OctosLogsTab({ profileId, apiClient }: Props) {
+export default function OctosLogsTab({ profileId, apiClient }: Props) {  const { t } = useTranslation();
+
   const [logs, setLogs] = useState<OctosLogEntry[]>([]);
   const [paused, setPaused] = useState(false);
   const [filterLevel, setFilterLevel] = useState<LogLevel | 'all'>('all');
@@ -131,7 +133,7 @@ export default function OctosLogsTab({ profileId, apiClient }: Props) {
           style={{ width: 120 }}
           size="small"
         >
-          <Select.Option value="all">全部</Select.Option>
+          <Select.Option value="all">{t("全部")}</Select.Option>
           {LOG_LEVELS.map((level) => (
             <Select.Option key={level} value={level}>
               {level.toUpperCase()}
@@ -173,7 +175,7 @@ export default function OctosLogsTab({ profileId, apiClient }: Props) {
         {filteredLogs.length === 0 ? (
           <div className="py-8 text-center">
             <Empty
-              description="暂无日志"
+              description={t("暂无日志")}
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               styles={{ image: { height: 60 } }}
             >
@@ -231,8 +233,8 @@ export default function OctosLogsTab({ profileId, apiClient }: Props) {
         <Alert
           type="warning"
           showIcon
-          title="日志流未连接"
-          description="请确保 Octos 服务正在运行，且 Profile 已启动。"
+          title={t("日志流未连接")}
+          description={t("请确保 Octos 服务正在运行，且 Profile 已启动。")}
           className="text-xs"
         />
       )}

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * WebSocket test builder component
  * For configuring and testing WebSocket connections
@@ -43,7 +44,8 @@ export function WebSocketTestBuilder({
   value,
   onChange,
   readonly = false,
-}: WebSocketTestBuilderProps) {
+}: WebSocketTestBuilderProps) {  const { t } = useTranslation();
+
   const config = value || getDefaultConfig();
   const [connectionState, setConnectionState] = useState<ConnectionState>("disconnected");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -176,20 +178,20 @@ export function WebSocketTestBuilder({
   const getStatusTag = () => {
     switch (connectionState) {
       case "disconnected":
-        return <Tag color="default">未连接</Tag>;
+        return <Tag color="default">{t("未连接")}</Tag>;
       case "connecting":
-        return <Tag color="processing">连接中...</Tag>;
+        return <Tag color="processing">{t("连接中...")}</Tag>;
       case "connected":
-        return <Tag color="success">已连接</Tag>;
+        return <Tag color="success">{t("已连接")}</Tag>;
       case "error":
-        return <Tag color="error">连接错误</Tag>;
+        return <Tag color="error">{t("连接错误")}</Tag>;
     }
   };
 
   return (
     <div className="space-y-4">
       {/* Connection configuration */}
-      <Card title="连接配置" size="small">
+      <Card title={t("连接配置")} size="small">
         <div className="space-y-3">
           <div>
             <Text strong>WebSocket URL</Text>
@@ -203,7 +205,7 @@ export function WebSocketTestBuilder({
           </div>
 
           <div>
-            <Text strong>子协议（可选）</Text>
+            <Text strong>{t("子协议（可选）")}</Text>
             <div className="mt-1 space-y-2">
               {(config.protocols || []).map((protocol, index) => (
                 <div key={index} className="flex gap-2">
@@ -276,7 +278,7 @@ export function WebSocketTestBuilder({
 
       {/* Messages area */}
       <Card
-        title="消息"
+        title={t("消息")}
         size="small"
         extra={
           <Button
@@ -321,7 +323,7 @@ export function WebSocketTestBuilder({
             <TextArea
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="输入要发送的消息"
+              placeholder={t("输入要发送的消息")}
               disabled={connectionState !== "connected"}
               autoSize={{ minRows: 2, maxRows: 4 }}
               onPressEnter={(e) => {
@@ -345,7 +347,7 @@ export function WebSocketTestBuilder({
       </Card>
 
       {/* Expected events configuration */}
-      <Card title="预期事件" size="small">
+      <Card title={t("预期事件")} size="small">
         <div className="text-sm text-gray-500">
           配置预期收到的事件用于断言验证（开发中...）
         </div>

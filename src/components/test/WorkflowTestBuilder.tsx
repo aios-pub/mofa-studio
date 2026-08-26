@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Workflow test builder component
  * For configuring input mapping and expected output of workflow tests
@@ -34,7 +35,8 @@ export function WorkflowTestBuilder({
   value,
   onChange,
   readonly = false,
-}: WorkflowTestBuilderProps) {
+}: WorkflowTestBuilderProps) {  const { t } = useTranslation();
+
   const config = useMemo(() => value || getDefaultConfig(), [value]);
   const [selectedWorkflow, setSelectedWorkflow] = useState<string>("");
   const [paramMappings, setParamMappings] = useState<ParamMapping[]>([]);
@@ -71,9 +73,9 @@ export function WorkflowTestBuilder({
 
   // Simulated workflow list (should be fetched from API)
   const mockWorkflows = [
-    { id: "wf-1", name: "数据处理工作流" },
-    { id: "wf-2", name: "文档生成工作流" },
-    { id: "wf-3", name: "邮件发送工作流" },
+    { id: "wf-1", name: t("数据处理工作流") },
+    { id: "wf-2", name: t("文档生成工作流") },
+    { id: "wf-3", name: t("邮件发送工作流") },
   ];
 
   // Simulated workflow parameters (should be fetched from API)
@@ -206,15 +208,15 @@ export function WorkflowTestBuilder({
   return (
     <div className="space-y-4">
       {/* Workflow selection */}
-      <Card title="选择工作流" size="small">
+      <Card title={t("选择工作流")} size="small">
         <div className="space-y-3">
           <div>
-            <Text strong>工作流</Text>
+            <Text strong>{t("工作流")}</Text>
             <Select
               value={selectedWorkflow}
               onChange={handleWorkflowChange}
               options={mockWorkflows.map((wf) => ({ label: wf.name, value: wf.id }))}
-              placeholder="选择要测试的工作流"
+              placeholder={t("选择要测试的工作流")}
               disabled={readonly}
               className="w-full mt-1"
             />
@@ -232,7 +234,7 @@ export function WorkflowTestBuilder({
                       {param.name}
                     </Tag>
                     <Tag>{param.type}</Tag>
-                    {param.required && <Text type="danger">必填</Text>}
+                    {param.required && <Text type="danger">{t("必填")}</Text>}
                   </div>
                 ))}
               </div>
@@ -242,7 +244,7 @@ export function WorkflowTestBuilder({
       </Card>
 
       {/* Input parameter mapping */}
-      <Card title="输入参数映射" size="small">
+      <Card title={t("输入参数映射")} size="small">
         <div className="space-y-3">
           <div className="text-sm text-gray-500">
             将工作流参数映射到测试值
@@ -256,7 +258,7 @@ export function WorkflowTestBuilder({
             paramMappings.map((mapping, index) => (
               <div key={index} className="flex gap-2 items-start">
                 <div className="flex-1">
-                  <Text className="text-xs">工作流参数</Text>
+                  <Text className="text-xs">{t("工作流参数")}</Text>
                   <Select
                     value={mapping.workflowParam}
                     onChange={(value) => handleUpdateParamMapping(index, "workflowParam", value)}
@@ -264,23 +266,23 @@ export function WorkflowTestBuilder({
                       label: `${p.name} (${p.type})`,
                       value: p.name,
                     }))}
-                    placeholder="选择参数"
+                    placeholder={t("选择参数")}
                     disabled={readonly}
                     className="w-full"
                   />
                 </div>
 
                 <div className="flex-1">
-                  <Text className="text-xs">类型</Text>
+                  <Text className="text-xs">{t("类型")}</Text>
                   <Select
                     value={mapping.paramType}
                     onChange={(value) => handleUpdateParamMapping(index, "paramType", value)}
                     options={[
-                      { label: "字符串", value: "string" },
-                      { label: "数字", value: "number" },
-                      { label: "布尔值", value: "boolean" },
+                      { label: t("字符串"), value: "string" },
+                      { label: t("数字"), value: "number" },
+                      { label: t("布尔值"), value: "boolean" },
                       { label: "JSON", value: "json" },
-                      { label: "日期", value: "date" },
+                      { label: t("日期"), value: "date" },
                     ]}
                     disabled={readonly}
                     className="w-full"
@@ -288,7 +290,7 @@ export function WorkflowTestBuilder({
                 </div>
 
                 <div className="flex-[2]">
-                  <Text className="text-xs">测试值</Text>
+                  <Text className="text-xs">{t("测试值")}</Text>
                   {mapping.paramType === "boolean" ? (
                     <Switch
                       checked={mapping.testValue === "true"}
@@ -302,7 +304,7 @@ export function WorkflowTestBuilder({
                     <Input
                       value={mapping.testValue}
                       onChange={(e) => handleUpdateParamMapping(index, "testValue", e.target.value)}
-                      placeholder="输入测试值"
+                      placeholder={t("输入测试值")}
                       disabled={readonly}
                     />
                   )}
@@ -333,7 +335,7 @@ export function WorkflowTestBuilder({
       </Card>
 
       {/* Expected output configuration */}
-      <Card title="预期输出" size="small">
+      <Card title={t("预期输出")} size="small">
         <div className="space-y-3">
           <div className="text-sm text-gray-500">
             配置工作流执行后的预期输出值，用于断言验证
@@ -350,7 +352,7 @@ export function WorkflowTestBuilder({
                   <Input
                     value={output.key}
                     onChange={(e) => handleUpdateExpectedOutput(index, "key", e.target.value)}
-                    placeholder="输出字段名"
+                    placeholder={t("输出字段名")}
                     disabled={readonly}
                     addonBefore="字段"
                   />
@@ -359,7 +361,7 @@ export function WorkflowTestBuilder({
                   <Input
                     value={output.value}
                     onChange={(e) => handleUpdateExpectedOutput(index, "value", e.target.value)}
-                    placeholder="预期值（支持JSON）"
+                    placeholder={t("预期值（支持JSON）")}
                     disabled={readonly}
                     addonBefore="预期值"
                   />
@@ -390,7 +392,7 @@ export function WorkflowTestBuilder({
 
       {/* Test execution */}
       {selectedWorkflow && (
-        <Card title="执行测试" size="small">
+        <Card title={t("执行测试")} size="small">
           <div className="flex items-center justify-between">
             <div>
               <Text className="text-sm text-gray-600">

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * HTTP response viewer component
  * For displaying HTTP response results
@@ -20,7 +21,8 @@ interface ResponseViewerProps {
   loading?: boolean;
 }
 
-export function ResponseViewer({ response, loading = false }: ResponseViewerProps) {
+export function ResponseViewer({ response, loading = false }: ResponseViewerProps) {  const { t } = useTranslation();
+
   const [copied, setCopied] = useState(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -36,7 +38,7 @@ export function ResponseViewer({ response, loading = false }: ResponseViewerProp
     return (
       <Card size="small">
         <div className="text-center py-8">
-          <Text type="secondary">正在发送请求...</Text>
+          <Text type="secondary">{t("正在发送请求...")}</Text>
         </div>
       </Card>
     );
@@ -45,7 +47,7 @@ export function ResponseViewer({ response, loading = false }: ResponseViewerProp
   if (!response) {
     return (
       <Card size="small">
-        <Empty description="暂无响应数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        <Empty description={t("暂无响应数据")} image={Empty.PRESENTED_IMAGE_SIMPLE} />
       </Card>
     );
   }
@@ -163,7 +165,7 @@ export function ResponseViewer({ response, loading = false }: ResponseViewerProp
           },
           {
             key: "headers",
-            label: `响应头 (${headersArray.length})`,
+            label: t("响应头 ({{p0}})", { p0: headersArray.length }),
             children: (
               <div className="space-y-1">
                 {headersArray.map((header) => (
@@ -179,23 +181,23 @@ export function ResponseViewer({ response, loading = false }: ResponseViewerProp
           },
           {
             key: "info",
-            label: "详细信息",
+            label: t("详细信息"),
             children: (
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between">
-                  <Text type="secondary">状态码:</Text>
+                  <Text type="secondary">{t("状态码:")}</Text>
                   <Text>{response.statusCode}</Text>
                 </div>
                 <div className="flex justify-between">
-                  <Text type="secondary">状态消息:</Text>
+                  <Text type="secondary">{t("状态消息:")}</Text>
                   <Text>{response.statusMessage}</Text>
                 </div>
                 <div className="flex justify-between">
-                  <Text type="secondary">响应时间:</Text>
+                  <Text type="secondary">{t("响应时间:")}</Text>
                   <Text style={{ color: getResponseTimeColor() }}>{response.responseTime}ms</Text>
                 </div>
                 <div className="flex justify-between">
-                  <Text type="secondary">响应大小:</Text>
+                  <Text type="secondary">{t("响应大小:")}</Text>
                   <Text>{((response.body || "").length / 1024).toFixed(2)} KB</Text>
                 </div>
               </div>

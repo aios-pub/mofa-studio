@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * AvatarGroup component
  * For displaying multiple avatars with max count and folding
@@ -57,7 +58,8 @@ export default function AvatarGroup({
   className,
   onAvatarClick,
   onMoreClick,
-}: AvatarGroupProps) {
+}: AvatarGroupProps) {  const { t } = useTranslation();
+
   const displayAvatars = avatars.slice(0, max);
   const remainingCount = avatars.length - max;
   const isRtl = direction === 'rtl';
@@ -119,7 +121,7 @@ export default function AvatarGroup({
         <Tooltip
           title={
             <div className="max-w-[200px]">
-              <div className="font-medium mb-1">其他成员</div>
+              <div className="font-medium mb-1">{t("其他成员")}</div>
               <div className="text-xs opacity-80">
                 {avatars.slice(max).map(a => a.name).join('、')}
               </div>

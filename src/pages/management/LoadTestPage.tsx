@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Load test configuration page
  * For configuring and running load tests
@@ -58,7 +59,8 @@ interface LoadTestResult {
   errorRate: number;
 }
 
-export default function LoadTestPage() {
+export default function LoadTestPage() {  const { t } = useTranslation();
+
   const [form] = Form.useForm();
   const [tasks, setTasks] = useState<LoadTestTask[]>([]);
   const [creating, setCreating] = useState(false);
@@ -214,9 +216,9 @@ export default function LoadTestPage() {
         },
       ]);
       form.resetFields();
-      message.success("压测任务已创建");
+      message.success(t("压测任务已创建"));
     } catch (error) {
-      message.error("创建失败");
+      message.error(t("创建失败"));
     } finally {
       setCreating(false);
     }
@@ -232,19 +234,19 @@ export default function LoadTestPage() {
             : t
         )
       );
-      message.success("压测任务已启动");
+      message.success(t("压测任务已启动"));
     } catch (error) {
-      message.error("启动失败");
+      message.error(t("启动失败"));
     }
   };
 
   const handleStop = async (taskId: string) => {
     Modal.confirm({
-      title: "确认停止",
-      content: "停止后当前压测数据将保留，是否继续？",
-      okText: "停止",
+      title: t("确认停止"),
+      content: t("停止后当前压测数据将保留，是否继续？"),
+      okText: t("停止"),
       okType: "danger",
-      cancelText: "取消",
+      cancelText: t("取消"),
       onOk: async () => {
         try {
           await loadTestRealApi.stop(taskId);
@@ -253,9 +255,9 @@ export default function LoadTestPage() {
               t.id === taskId ? { ...t, status: "stopped" as const } : t
             )
           );
-          message.success("压测任务已停止");
+          message.success(t("压测任务已停止"));
         } catch (error) {
-          message.error("停止失败");
+          message.error(t("停止失败"));
         }
       },
     });
@@ -263,19 +265,19 @@ export default function LoadTestPage() {
 
   const handleDelete = async (taskId: string) => {
     Modal.confirm({
-      title: "确认删除",
-      content: "删除后无法恢复，是否继续？",
-      okText: "删除",
+      title: t("确认删除"),
+      content: t("删除后无法恢复，是否继续？"),
+      okText: t("删除"),
       okType: "danger",
-      cancelText: "取消",
+      cancelText: t("取消"),
       onOk: async () => {
         try {
           await loadTestRealApi.delete(taskId);
           setTasks((prev) => prev.filter((t) => t.id !== taskId));
-          message.success("压测任务已删除");
+          message.success(t("压测任务已删除"));
         } catch (error) {
           console.error("Failed to delete load test:", error);
-          message.error("删除失败");
+          message.error(t("删除失败"));
         }
       },
     });
@@ -308,16 +310,16 @@ export default function LoadTestPage() {
   const getStatusTag = (status: LoadTestTask["status"]) => {
     switch (status) {
       case "pending":
-        return <Tag color="default">待执行</Tag>;
+        return <Tag color="default">{t("待执行")}</Tag>;
       case "running":
-        return <Tag color="processing" icon={<PlayCircleOutlined />}>运行中</Tag>;
+        return <Tag color="processing" icon={<PlayCircleOutlined />}>{t("运行中")}</Tag>;
       case "completed":
-        return <Tag color="success">已完成</Tag>;
+        return <Tag color="success">{t("已完成")}</Tag>;
       case "stopped":
       case "paused":
-        return <Tag color="warning">已停止</Tag>;
+        return <Tag color="warning">{t("已停止")}</Tag>;
       case "failed":
-        return <Tag color="error">错误</Tag>;
+        return <Tag color="error">{t("错误")}</Tag>;
       default:
         return <Tag>{status}</Tag>;
     }
@@ -356,27 +358,27 @@ export default function LoadTestPage() {
   const formatElapsed = (startedAt?: string) => {
     if (!startedAt) return "-";
     const elapsed = Math.floor((currentTime - new Date(startedAt).getTime()) / 1000);
-    if (elapsed < 60) return `${elapsed}秒`;
+    if (elapsed < 60) return t("{{p0}}秒", { p0: elapsed });
     const minutes = Math.floor(elapsed / 60);
     const seconds = elapsed % 60;
-    return `${minutes}分${seconds}秒`;
+    return t("{{p0}}分{{p1}}秒", { p0: minutes, p1: seconds });
   };
 
   const columns: ColumnsType<LoadTestTask> = [
     {
-      title: "任务名称",
+      title: t("任务名称"),
       dataIndex: "name",
       key: "name",
       width: 200,
     },
     {
-      title: "测试集",
+      title: t("测试集"),
       dataIndex: "testSetName",
       key: "testSetName",
       width: 150,
     },
     {
-      title: "配置",
+      title: t("配置"),
       key: "config",
       width: 250,
       render: (_, record) => (
@@ -391,7 +393,7 @@ export default function LoadTestPage() {
       ),
     },
     {
-      title: "状态",
+      title: t("状态"),
       dataIndex: "status",
       key: "status",
       width: 120,
@@ -421,14 +423,14 @@ export default function LoadTestPage() {
       },
     },
     {
-      title: "启动时间",
+      title: t("启动时间"),
       key: "start_time",
       width: 150,
       render: (_, record) =>
         record.startedAt ? new Date(record.startedAt).toLocaleString() : "-",
     },
     {
-      title: "操作",
+      title: t("操作"),
       key: "actions",
       width: 250,
       render: (_, record) => (
@@ -487,7 +489,7 @@ export default function LoadTestPage() {
       <ResizableSidebar storageKey="sidebar:load-test">
         <div className="p-4">
           {/* Create load test task */}
-          <Card title="创建压测任务" size="small">
+          <Card title={t("创建压测任务")} size="small">
             <Form
               form={form}
               layout="vertical"
@@ -496,19 +498,19 @@ export default function LoadTestPage() {
             >
               <Form.Item
                 name="name"
-                label="任务名称"
-                rules={[{ required: true, message: "请输入任务名称" }]}
+                label={t("任务名称")}
+                rules={[{ required: true, message: t("请输入任务名称") }]}
               >
-                <Input placeholder="例如：API性能基准测试" />
+                <Input placeholder={t("例如：API性能基准测试")} />
               </Form.Item>
 
               <Form.Item
                 name="testSetId"
-                label="测试集"
-                rules={[{ required: true, message: "请选择测试集" }]}
+                label={t("测试集")}
+                rules={[{ required: true, message: t("请选择测试集") }]}
               >
                 <Select
-                  placeholder="选择要压测的测试集"
+                  placeholder={t("选择要压测的测试集")}
                   loading={testSets.length === 0}
                   options={testSets.map((ts) => ({
                     label: ts.name,
@@ -519,18 +521,18 @@ export default function LoadTestPage() {
 
               <Form.Item
                 name="targetUrl"
-                label="目标 URL"
-                rules={[{ required: true, message: "请输入目标 URL" }]}
+                label={t("目标 URL")}
+                rules={[{ required: true, message: t("请输入目标 URL") }]}
               >
-                <Input placeholder="例如：https://api.example.com/v1/users" />
+                <Input placeholder={t("例如：https://api.example.com/v1/users")} />
               </Form.Item>
 
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item
                     name="concurrentUsers"
-                    label="并发用户数"
-                    rules={[{ required: true, message: "请输入并发用户数" }]}
+                    label={t("并发用户数")}
+                    rules={[{ required: true, message: t("请输入并发用户数") }]}
                   >
                     <InputNumber min={1} max={10000} style={{ width: "100%" }} placeholder="10" />
                   </Form.Item>
@@ -538,8 +540,8 @@ export default function LoadTestPage() {
                 <Col span={12}>
                   <Form.Item
                     name="duration"
-                    label="持续时间（秒）"
-                    rules={[{ required: true, message: "请输入持续时间" }]}
+                    label={t("持续时间（秒）")}
+                    rules={[{ required: true, message: t("请输入持续时间") }]}
                   >
                     <InputNumber min={10} max={3600} style={{ width: "100%" }} placeholder="60" />
                   </Form.Item>
@@ -550,9 +552,9 @@ export default function LoadTestPage() {
                 <Col span={12}>
                   <Form.Item
                     name="rampUpTime"
-                    label="Ramp-up时间（秒）"
+                    label={t("Ramp-up时间（秒）")}
                     rules={[
-                      { required: true, message: "请输入Ramp-up时间" },
+                      { required: true, message: t("请输入Ramp-up时间") },
                       {
                         validator: (_, value) => {
                           const duration = form.getFieldValue("duration");
@@ -568,7 +570,7 @@ export default function LoadTestPage() {
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item name="targetRps" label="目标RPS（可选）">
+                  <Form.Item name="targetRps" label={t("目标RPS（可选）")}>
                     <InputNumber min={1} max={10000} style={{ width: "100%" }} placeholder="100" />
                   </Form.Item>
                 </Col>
@@ -593,7 +595,7 @@ export default function LoadTestPage() {
 
         {/* Load test task list */}
         <Card
-          title="压测任务列表"
+          title={t("压测任务列表")}
           size="small"
           extra={
             <Button
@@ -622,7 +624,7 @@ export default function LoadTestPage() {
 
       {/* Result detail modal */}
       <Modal
-        title="压测结果详情"
+        title={t("压测结果详情")}
         open={resultModalOpen}
         onCancel={() => setResultModalOpen(false)}
         footer={null}
@@ -630,32 +632,32 @@ export default function LoadTestPage() {
       >
         {!selectedTask?.results ? (
           <div className="text-center py-8 text-gray-400">
-            <div className="mb-2">暂无结果数据</div>
-            <div className="text-sm">该任务可能没有产生任何指标数据</div>
+            <div className="mb-2">{t("暂无结果数据")}</div>
+            <div className="text-sm">{t("该任务可能没有产生任何指标数据")}</div>
           </div>
         ) : (
           <div className="space-y-4">
             <Row gutter={16}>
               <Col span={6}>
-                <Statistic title="总请求数" value={selectedTask.results.totalRequests} />
+                <Statistic title={t("总请求数")} value={selectedTask.results.totalRequests} />
               </Col>
               <Col span={6}>
                 <Statistic
-                  title="失败请求数"
+                  title={t("失败请求数")}
                   value={selectedTask.results.failedRequests}
                   valueStyle={{ color: "#ef4444" }}
                 />
               </Col>
               <Col span={6}>
                 <Statistic
-                  title="平均响应时间"
+                  title={t("平均响应时间")}
                   value={selectedTask.results.avgResponseTime}
                   suffix="ms"
                 />
               </Col>
               <Col span={6}>
                 <Statistic
-                  title="错误率"
+                  title={t("错误率")}
                   value={selectedTask.results.errorRate}
                   suffix="%"
                   precision={2}
@@ -669,7 +671,7 @@ export default function LoadTestPage() {
             <Row gutter={16}>
               <Col span={12}>
                 <div className="mb-4">
-                  <Text strong>响应时间分布</Text>
+                  <Text strong>{t("响应时间分布")}</Text>
                   <div className="mt-2 space-y-2">
                     <div>
                       <div className="flex justify-between text-sm mb-1">
@@ -690,10 +692,10 @@ export default function LoadTestPage() {
               </Col>
               <Col span={12}>
                 <div>
-                  <Text strong>吞吐量</Text>
+                  <Text strong>{t("吞吐量")}</Text>
                   <div className="mt-2">
                     <Statistic
-                      title="实际RPS"
+                      title={t("实际RPS")}
                       value={selectedTask.results.rps}
                       suffix="请求/秒"
                     />
@@ -707,7 +709,7 @@ export default function LoadTestPage() {
 
       {/* Real-time monitoring modal */}
       <Modal
-        title="压测实时监控"
+        title={t("压测实时监控")}
         open={monitorModalOpen}
         onCancel={() => {
           setMonitorModalOpen(false);
@@ -722,14 +724,14 @@ export default function LoadTestPage() {
             <Row gutter={16}>
               <Col span={6}>
                 <Statistic
-                  title="活跃用户"
+                  title={t("活跃用户")}
                   value={getCurrentMetrics()?.active_users || 0}
                   valueStyle={{ color: "#3b82f6" }}
                 />
               </Col>
               <Col span={6}>
                 <Statistic
-                  title="当前RPS"
+                  title={t("当前RPS")}
                   value={getCurrentMetrics()?.requests_per_second.toFixed(2) || "0.00"}
                   suffix="请求/秒"
                   valueStyle={{ color: "#22c55e" }}
@@ -737,7 +739,7 @@ export default function LoadTestPage() {
               </Col>
               <Col span={6}>
                 <Statistic
-                  title="平均响应时间"
+                  title={t("平均响应时间")}
                   value={getCurrentMetrics()?.avg_response_time.toFixed(2) || "0.00"}
                   suffix="ms"
                   valueStyle={{ color: getCurrentMetrics()?.avg_response_time && getCurrentMetrics()!.avg_response_time > 500 ? "#ef4444" : "#f59e0b" }}
@@ -745,7 +747,7 @@ export default function LoadTestPage() {
               </Col>
               <Col span={6}>
                 <Statistic
-                  title="错误率"
+                  title={t("错误率")}
                   value={getCurrentMetrics()?.error_rate.toFixed(2) || "0.00"}
                   suffix="%"
                   precision={2}
@@ -759,7 +761,7 @@ export default function LoadTestPage() {
             <Row gutter={16}>
               <Col span={12}>
                 <div className="mb-4">
-                  <Text strong>响应时间分布</Text>
+                  <Text strong>{t("响应时间分布")}</Text>
                   <div className="mt-2 space-y-2">
                     <div>
                       <div className="flex justify-between text-sm mb-1">
@@ -787,19 +789,19 @@ export default function LoadTestPage() {
               </Col>
               <Col span={12}>
                 <div>
-                  <Text strong>请求统计</Text>
+                  <Text strong>{t("请求统计")}</Text>
                   <div className="mt-2 space-y-2">
                     <Row gutter={8}>
                       <Col span={12}>
                         <Statistic
-                          title="总请求数"
+                          title={t("总请求数")}
                           value={getCurrentMetrics()?.total_requests || 0}
                           valueStyle={{ fontSize: "20px" }}
                         />
                       </Col>
                       <Col span={12}>
                         <Statistic
-                          title="失败请求数"
+                          title={t("失败请求数")}
                           value={getCurrentMetrics()?.failed_requests || 0}
                           valueStyle={{ color: "#ef4444", fontSize: "20px" }}
                         />
@@ -813,14 +815,14 @@ export default function LoadTestPage() {
             <Divider />
 
             <div>
-              <Text strong>数据更新</Text>
+              <Text strong>{t("数据更新")}</Text>
               <div className="mt-2">
                 {(() => {
                   const task = tasks.find((t) => t.id === monitoringTaskId);
                   if (task?.status === "running") {
                     return (
                       <>
-                        <Tag color="processing">HTTP 轮询</Tag>
+                        <Tag color="processing">{t("HTTP 轮询")}</Tag>
                         <Text type="secondary" className="ml-2">
                           每 1 秒自动刷新
                         </Text>

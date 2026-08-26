@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Report form component
  */
@@ -34,7 +35,8 @@ export function ReportForm({
   namespace,
   slug,
   onCancel,
-}: ReportFormProps) {
+}: ReportFormProps) {  const { t } = useTranslation();
+
   const [form] = Form.useForm();
   const { submitReport } = useSkillHubStore();
   const [submitting, setSubmitting] = useState(false);
@@ -58,7 +60,7 @@ export function ReportForm({
       title={
         <Space>
           <FlagOutlined />
-          <span>举报技能</span>
+          <span>{t("举报技能")}</span>
         </Space>
       }
       open={visible}
@@ -67,7 +69,7 @@ export function ReportForm({
       width={500}
     >
       <div className="mb-4">
-        <span className="text-gray-600">举报对象: </span>
+        <span className="text-gray-600">{t("举报对象:")}</span>
         <span className="font-semibold">{skillName}</span>
       </div>
 
@@ -79,7 +81,7 @@ export function ReportForm({
       >
         <Form.Item
           name="reason"
-          label="举报原因"
+          label={t("举报原因")}
           rules={[{ required: true, message: '请选择举报原因' }]}
         >
           <Select options={reportReasons.map(r => ({ label: r, value: r }))} />
@@ -87,12 +89,12 @@ export function ReportForm({
 
         <Form.Item
           name="details"
-          label="详细说明"
+          label={t("详细说明")}
           rules={[{ required: true, message: '请提供详细说明' }]}
         >
           <TextArea
             rows={4}
-            placeholder="请详细描述您发现的问题..."
+            placeholder={t("请详细描述您发现的问题...")}
             maxLength={500}
             showCount
           />
@@ -100,7 +102,7 @@ export function ReportForm({
 
         <Form.Item className="mb-0">
           <Space style={{ float: 'right' }}>
-            <Button onClick={onCancel}>取消</Button>
+            <Button onClick={onCancel}>{t("取消")}</Button>
             <Button type="primary" danger htmlType="submit" loading={submitting}>
               提交举报
             </Button>

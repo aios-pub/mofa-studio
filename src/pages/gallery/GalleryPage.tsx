@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Asset gallery (PLAT-06): every produced artifact retrievable by
  * type × source, with cross-domain actions — download, send-to-chat
@@ -24,7 +25,8 @@ import {
 } from "@/services/api/assets";
 import { exportFilename } from "@/services/api/image";
 
-export default function GalleryPage() {
+export default function GalleryPage() {  const { t } = useTranslation();
+
   const navigate = useNavigate();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,9 +66,9 @@ export default function GalleryPage() {
     const ok = await assetService.remove(asset.id);
     if (ok) {
       setAssets((prev) => prev.filter((a) => a.id !== asset.id));
-      message.success("已删除");
+      message.success(t("已删除"));
     } else {
-      message.error("删除失败");
+      message.error(t("删除失败"));
     }
   };
 
@@ -83,14 +85,14 @@ export default function GalleryPage() {
           onChange={setType}
           options={ASSET_TYPES}
           style={{ width: 130 }}
-          aria-label="类型筛选"
+          aria-label={t("类型筛选")}
         />
         <Select
           value={source}
           onChange={setSource}
           options={ASSET_SOURCES}
           style={{ width: 130 }}
-          aria-label="来源筛选"
+          aria-label={t("来源筛选")}
         />
       </div>
 
@@ -101,7 +103,7 @@ export default function GalleryPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="h-full flex items-center justify-center">
-            <Empty description="还没有作品——去对话或创作页生成第一个吧" />
+            <Empty description={t("还没有作品——去对话或创作页生成第一个吧")} />
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-6xl">
@@ -132,35 +134,35 @@ export default function GalleryPage() {
                     <span>{asset.source}</span>·<span>{asset.type}</span>
                   </div>
                   <div className="flex justify-end gap-1">
-                    <Tooltip title="发送到对话">
+                    <Tooltip title={t("发送到对话")}>
                       <Button
                         size="small"
                         icon={<SendOutlined />}
                         onClick={() => sendToChat(asset)}
-                        aria-label={`发送到对话 ${asset.title}`}
+                        aria-label={t("发送到对话 {{p0}}", { p0: asset.title })}
                       />
                     </Tooltip>
                     {asset.ref_path.startsWith("data:") && (
-                      <Tooltip title="下载">
+                      <Tooltip title={t("下载")}>
                         <Button
                           size="small"
                           icon={<DownloadOutlined />}
                           onClick={() => download(asset)}
-                          aria-label={`下载 ${asset.title}`}
+                          aria-label={t("下载 {{p0}}", { p0: asset.title })}
                         />
                       </Tooltip>
                     )}
                     <Popconfirm
-                      title="确定删除这个作品？"
+                      title={t("确定删除这个作品？")}
                       onConfirm={() => void remove(asset)}
-                      okText="删除"
-                      cancelText="取消"
+                      okText={t("删除")}
+                      cancelText={t("取消")}
                     >
                       <Button
                         size="small"
                         danger
                         icon={<DeleteOutlined />}
-                        aria-label={`删除 ${asset.title}`}
+                        aria-label={t("删除 {{p0}}", { p0: asset.title })}
                       />
                     </Popconfirm>
                   </div>

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Create/edit task modal
  * Three-mode cron editing + dynamically rendered config form by task type
@@ -95,7 +96,8 @@ function AgentTestConfigForm({
 }: {
   config: TaskConfig;
   onChange: (config: TaskConfig) => void;
-}) {
+}) {  const { t } = useTranslation();
+
   const [agents, setAgents] = useState<Agent[]>([]);
   const [testSets, setTestSets] = useState<TestSet[]>([]);
   const [loading, setLoading] = useState(true);
@@ -126,11 +128,11 @@ function AgentTestConfigForm({
         Agent 测试配置
       </h4>
 
-      <Form.Item label="选择测试集" required className="mb-2">
+      <Form.Item label={t("选择测试集")} required className="mb-2">
         <Select
           value={config.test_set_id || undefined}
           onChange={(v) => onChange({ ...config, test_set_id: v })}
-          placeholder="选择要运行的测试集"
+          placeholder={t("选择要运行的测试集")}
           loading={loading}
           showSearch
           optionFilterProp="label"
@@ -142,12 +144,12 @@ function AgentTestConfigForm({
         />
       </Form.Item>
 
-      <Form.Item label="选择 Agent（可多选）" required className="mb-0">
+      <Form.Item label={t("选择 Agent（可多选）")} required className="mb-0">
         <Select
           mode="multiple"
           value={config.agent_ids || []}
           onChange={(v) => onChange({ ...config, agent_ids: v })}
-          placeholder="选择要测试的 Agent"
+          placeholder={t("选择要测试的 Agent")}
           loading={loading}
           showSearch
           optionFilterProp="label"
@@ -191,7 +193,8 @@ function AgentLoopConfigForm({
 }: {
   config: TaskConfig;
   onChange: (config: TaskConfig) => void;
-}) {
+}) {  const { t } = useTranslation();
+
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -219,11 +222,11 @@ function AgentLoopConfigForm({
         Agent 调度配置
       </h4>
 
-      <Form.Item label="选择 Agent" required className="mb-2">
+      <Form.Item label={t("选择 Agent")} required className="mb-2">
         <Select
           value={config.agent_id || undefined}
           onChange={(v) => onChange({ ...config, agent_id: v })}
-          placeholder="选择要调度的 Agent"
+          placeholder={t("选择要调度的 Agent")}
           loading={loading}
           showSearch
           optionFilterProp="label"
@@ -251,19 +254,19 @@ function AgentLoopConfigForm({
         </div>
       )}
 
-      <Form.Item label="任务提示词" required className="mb-2">
+      <Form.Item label={t("任务提示词")} required className="mb-2">
         <Input.TextArea
           value={config.prompt || ""}
           onChange={(e) => onChange({ ...config, prompt: e.target.value })}
           rows={4}
-          placeholder="描述 Agent 需要自主完成的任务，例如：&#10;检查所有数据源的健康状态，如果发现异常则生成报告并发送通知&#10;&#10;Agent 会基于自身的 System Prompt 和你提供的提示词自主执行任务"
+          placeholder={t("描述 Agent 需要自主完成的任务，例如：&#10;检查所有数据源的健康状态，如果发现异常则生成报告并发送通知&#10;&#10;Agent 会基于自身的 System Prompt 和你提供的提示词自主执行任务")}
           showCount
           maxLength={4000}
         />
       </Form.Item>
 
       <div className="grid grid-cols-2 gap-3">
-        <Form.Item label="最大迭代次数" className="mb-0">
+        <Form.Item label={t("最大迭代次数")} className="mb-0">
           <InputNumber
             value={config.max_iterations ?? 10}
             onChange={(v) => onChange({ ...config, max_iterations: v ?? 10 })}
@@ -273,7 +276,7 @@ function AgentLoopConfigForm({
             addonAfter="次"
           />
         </Form.Item>
-        <Form.Item label="超时时间" className="mb-0">
+        <Form.Item label={t("超时时间")} className="mb-0">
           <InputNumber
             value={config.timeout_seconds ?? 3600}
             onChange={(v) =>
@@ -336,7 +339,8 @@ export default function TaskFormModal({
   task_types?: TaskTypeDescriptor[];
   onClose: () => void;
   onSave: (data: Partial<ScheduledTask>) => Promise<void>;
-}) {
+}) {  const { t } = useTranslation();
+
   // Merge backend dynamic types + frontend static fallback
   const typeOptions =
     task_types && task_types.length > 0
@@ -365,35 +369,35 @@ export default function TaskFormModal({
 
   const handleSubmit = async () => {
     if (!formData.name.trim()) {
-      message.warning("请输入任务名称");
+      message.warning(t("请输入任务名称"));
       return;
     }
     if (cronError) {
-      message.warning("请修正 Cron 表达式");
+      message.warning(t("请修正 Cron 表达式"));
       return;
     }
     // agent_test type validation
     if (formData.type === "agent_test") {
       if (!formData.config.test_set_id) {
-        message.warning("请选择测试集");
+        message.warning(t("请选择测试集"));
         return;
       }
       if (
         !formData.config.agent_ids ||
         formData.config.agent_ids.length === 0
       ) {
-        message.warning("请至少选择一个 Agent");
+        message.warning(t("请至少选择一个 Agent"));
         return;
       }
     }
     // agent_loop type validation
     if (formData.type === "agent_loop") {
       if (!formData.config.agent_id) {
-        message.warning("请选择 Agent");
+        message.warning(t("请选择 Agent"));
         return;
       }
       if (!formData.config.prompt?.trim()) {
-        message.warning("请输入任务提示词");
+        message.warning(t("请输入任务提示词"));
         return;
       }
     }
@@ -436,24 +440,24 @@ export default function TaskFormModal({
             className="mb-4"
           />
         )}
-        <Form.Item label="任务名称" required>
+        <Form.Item label={t("任务名称")} required>
           <Input
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="例如：每日 Agent 健康检查"
+            placeholder={t("例如：每日 Agent 健康检查")}
           />
         </Form.Item>
-        <Form.Item label="任务描述">
+        <Form.Item label={t("任务描述")}>
           <Input.TextArea
             value={formData.description}
             onChange={(e) =>
               setFormData({ ...formData, description: e.target.value })
             }
             rows={2}
-            placeholder="输入任务描述"
+            placeholder={t("输入任务描述")}
           />
         </Form.Item>
-        <Form.Item label="任务类型">
+        <Form.Item label={t("任务类型")}>
           <Select
             value={formData.type}
             onChange={(v) =>
@@ -489,7 +493,7 @@ export default function TaskFormModal({
             />
           )}
 
-        <Form.Item label="执行频率" className="mt-4">
+        <Form.Item label={t("执行频率")} className="mt-4">
           <Tabs
             activeKey={cronMode}
             onChange={(key: string) =>
@@ -499,7 +503,7 @@ export default function TaskFormModal({
             items={[
               {
                 key: "visual",
-                label: "可视化",
+                label: t("可视化"),
                 children: (
                   <div className="cron-visual-container">
                     <Cron
@@ -542,7 +546,7 @@ export default function TaskFormModal({
               },
               {
                 key: "preset",
-                label: "常用",
+                label: t("常用"),
                 children: (
                   <div className="space-y-2">
                     <Select
@@ -577,7 +581,7 @@ export default function TaskFormModal({
               },
               {
                 key: "custom",
-                label: "自定义",
+                label: t("自定义"),
                 children: (
                   <div className="space-y-2">
                     <Input
@@ -592,7 +596,7 @@ export default function TaskFormModal({
                             : undefined,
                         );
                       }}
-                      placeholder="分 时 日 月 周 (如: 0 9 * * 1)"
+                      placeholder={t("分 时 日 月 周 (如: 0 9 * * 1)")}
                       className="font-mono"
                       status={cronError ? "error" : undefined}
                     />
@@ -604,11 +608,11 @@ export default function TaskFormModal({
                     </p>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {[
-                        { label: "每小时", value: "0 * * * *" },
-                        { label: "每30分钟", value: "*/30 * * * *" },
-                        { label: "工作日9点", value: "0 9 * * 1-5" },
-                        { label: "每天0和12点", value: "0 0,12 * * *" },
-                        { label: "每月1号和15号", value: "0 0 1,15 * *" },
+                        { label: t("每小时"), value: "0 * * * *" },
+                        { label: t("每30分钟"), value: "*/30 * * * *" },
+                        { label: t("工作日9点"), value: "0 9 * * 1-5" },
+                        { label: t("每天0和12点"), value: "0 0,12 * * *" },
+                        { label: t("每月1号和15号"), value: "0 0 1,15 * *" },
                       ].map((preset) => (
                         <Button
                           key={preset.value}

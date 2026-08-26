@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Publish skill view component
  * Supports ZIP upload, SKILL.md preview and namespace selection
@@ -50,7 +51,8 @@ interface PublishSkillViewProps {
 
 export function PublishSkillView({
   onSwitchToNamespaces,
-}: PublishSkillViewProps) {
+}: PublishSkillViewProps) {  const { t } = useTranslation();
+
   const { message } = App.useApp();
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<any[]>([]);
@@ -114,7 +116,7 @@ export function PublishSkillView({
 
       // Count files and total size
       const fileCount = Object.keys(zip.files).length;
-      message.success(`解析成功: ${fileCount} 个文件`);
+      message.success(t("解析成功: {{p0}} 个文件", { p0: fileCount }));
     } catch (err) {
       setError("ZIP 文件解析失败");
       return false;
@@ -175,7 +177,7 @@ export function PublishSkillView({
     visibility: SkillVisibility;
   }) => {
     if (fileList.length === 0) {
-      message.error("请先选择要上传的文件");
+      message.error(t("请先选择要上传的文件"));
       return;
     }
 
@@ -196,7 +198,7 @@ export function PublishSkillView({
     try {
       const file = fileList[0].originFileObj;
       if (!file) {
-        message.error("文件对象无效，请重新选择文件");
+        message.error(t("文件对象无效，请重新选择文件"));
         return;
       }
 
@@ -210,14 +212,14 @@ export function PublishSkillView({
       setUploadProgress(100);
 
       if (result) {
-        message.success("发布成功！技能已进入审核流程");
+        message.success(t("发布成功！技能已进入审核流程"));
         // Reset form
         setFileList([]);
         setParsedMetadata(null);
         setError(null);
         setUploadProgress(0);
       } else {
-        message.error("发布失败，请重试");
+        message.error(t("发布失败，请重试"));
       }
     } catch (err) {
       clearInterval(progressInterval);
@@ -267,11 +269,11 @@ export function PublishSkillView({
         >
           {/* Upload area */}
           <Card
-            title="上传技能包"
+            title={t("上传技能包")}
             size="small"
             className="mb-4"
             extra={
-              <a onClick={() => setFormatModalOpen(true)}>SKILL.md 格式说明</a>
+              <a onClick={() => setFormatModalOpen(true)}>{t("SKILL.md 格式说明")}</a>
             }
           >
             <Dragger
@@ -283,8 +285,8 @@ export function PublishSkillView({
               <p className="ant-upload-drag-icon">
                 <InboxOutlined style={{ fontSize: 48 }} />
               </p>
-              <p className="ant-upload-text">点击或拖拽文件到此区域上传</p>
-              <p className="ant-upload-hint">支持 ZIP 格式，最大 50MB</p>
+              <p className="ant-upload-text">{t("点击或拖拽文件到此区域上传")}</p>
+              <p className="ant-upload-hint">{t("支持 ZIP 格式，最大 50MB")}</p>
             </Dragger>
 
             {uploading && <Progress percent={uploadProgress} status="active" />}
@@ -303,29 +305,29 @@ export function PublishSkillView({
             {parsedMetadata && (
               <Alert
                 type="success"
-                title="SKILL.md 解析成功"
+                title={t("SKILL.md 解析成功")}
                 showIcon
                 icon={<CheckCircleOutlined />}
                 style={{ marginBottom: 16 }}
               >
                 <Descriptions size="small" column={2}>
                   {parsedMetadata.display_name && (
-                    <Descriptions.Item label="名称">
+                    <Descriptions.Item label={t("名称")}>
                       {parsedMetadata.display_name}
                     </Descriptions.Item>
                   )}
                   {parsedMetadata.name && (
-                    <Descriptions.Item label="标识">
+                    <Descriptions.Item label={t("标识")}>
                       {parsedMetadata.name}
                     </Descriptions.Item>
                   )}
                   {parsedMetadata.version && (
-                    <Descriptions.Item label="版本">
+                    <Descriptions.Item label={t("版本")}>
                       {parsedMetadata.version}
                     </Descriptions.Item>
                   )}
                   {parsedMetadata.author && (
-                    <Descriptions.Item label="作者">
+                    <Descriptions.Item label={t("作者")}>
                       {parsedMetadata.author}
                     </Descriptions.Item>
                   )}
@@ -347,11 +349,11 @@ export function PublishSkillView({
           </Card>
 
           {/* Publish settings */}
-          <Card title="发布设置" size="small" className="mb-4">
+          <Card title={t("发布设置")} size="small" className="mb-4">
             {namespaces.length === 0 && (
               <Alert
-                title="暂无可用命名空间"
-                description="发布技能需要先创建命名空间。请前往命名空间管理页面创建。"
+                title={t("暂无可用命名空间")}
+                description={t("发布技能需要先创建命名空间。请前往命名空间管理页面创建。")}
                 type="warning"
                 showIcon
                 action={
@@ -369,11 +371,11 @@ export function PublishSkillView({
             )}
             <Form.Item
               name="namespace"
-              label="命名空间"
-              rules={[{ required: true, message: "请选择命名空间" }]}
+              label={t("命名空间")}
+              rules={[{ required: true, message: t("请选择命名空间") }]}
             >
               <Select
-                placeholder="选择命名空间"
+                placeholder={t("选择命名空间")}
                 loading={namespaces.length === 0}
                 options={namespaces.map((ns) => ({
                   label: `${ns.display_name} (${ns.slug})`,
@@ -385,13 +387,13 @@ export function PublishSkillView({
 
             <Form.Item
               name="visibility"
-              label="可见性"
+              label={t("可见性")}
               rules={[{ required: true }]}
             >
               <Radio.Group>
-                <Radio value="PUBLIC">公开</Radio>
-                <Radio value="NAMESPACE_ONLY">仅命名空间内</Radio>
-                <Radio value="PRIVATE">私有</Radio>
+                <Radio value="PUBLIC">{t("公开")}</Radio>
+                <Radio value="NAMESPACE_ONLY">{t("仅命名空间内")}</Radio>
+                <Radio value="PRIVATE">{t("私有")}</Radio>
               </Radio.Group>
             </Form.Item>
 
@@ -404,14 +406,14 @@ export function PublishSkillView({
           </Card>
 
           {/* Release notes */}
-          <Card title="发布流程" size="small" className="mb-4">
+          <Card title={t("发布流程")} size="small" className="mb-4">
             <ol className="pl-4 space-y-1 text-sm text-gray-600">
-              <li>上传 ZIP 包后，系统会自动解析 SKILL.md 文件</li>
+              <li>{t("上传 ZIP 包后，系统会自动解析 SKILL.md 文件")}</li>
               <li>
-                技能将进入 <Tag color="default">草稿</Tag> 状态
+                技能将进入 <Tag color="default">{t("草稿")}</Tag> 状态
               </li>
-              <li>你可以选择直接发布（私有）或提交审核（公开/命名空间）</li>
-              <li>审核通过后，技能将发布到 Hub 供其他用户安装</li>
+              <li>{t("你可以选择直接发布（私有）或提交审核（公开/命名空间）")}</li>
+              <li>{t("审核通过后，技能将发布到 Hub 供其他用户安装")}</li>
             </ol>
           </Card>
 
@@ -443,7 +445,7 @@ export function PublishSkillView({
         {/* Publish result */}
         {publishResult && (
           <Card
-            title="发布结果"
+            title={t("发布结果")}
             size="small"
             className="mt-4"
             extra={
@@ -451,22 +453,22 @@ export function PublishSkillView({
             }
           >
             <Descriptions size="small" column={2}>
-              <Descriptions.Item label="技能 ID">
+              <Descriptions.Item label={t("技能 ID")}>
                 {publishResult.skill_id}
               </Descriptions.Item>
-              <Descriptions.Item label="标识">
+              <Descriptions.Item label={t("标识")}>
                 {publishResult.slug}
               </Descriptions.Item>
-              <Descriptions.Item label="版本">
+              <Descriptions.Item label={t("版本")}>
                 {publishResult.version}
               </Descriptions.Item>
-              <Descriptions.Item label="状态">
+              <Descriptions.Item label={t("状态")}>
                 {publishResult.status}
               </Descriptions.Item>
-              <Descriptions.Item label="文件数">
+              <Descriptions.Item label={t("文件数")}>
                 {publishResult.file_count}
               </Descriptions.Item>
-              <Descriptions.Item label="大小">
+              <Descriptions.Item label={t("大小")}>
                 {(publishResult.total_size / 1024).toFixed(1)} KB
               </Descriptions.Item>
             </Descriptions>
@@ -476,7 +478,7 @@ export function PublishSkillView({
 
       {/* SKILL.md format help modal */}
       <Modal
-        title="SKILL.md 格式说明"
+        title={t("SKILL.md 格式说明")}
         open={formatModalOpen}
         onCancel={() => setFormatModalOpen(false)}
         footer={[
@@ -489,21 +491,21 @@ export function PublishSkillView({
         <div className="space-y-4">
           {/* Skill package structure */}
           <div>
-            <Title level={5}>技能包结构</Title>
-            <Paragraph type="secondary">一个标准的技能包结构如下：</Paragraph>
+            <Title level={5}>{t("技能包结构")}</Title>
+            <Paragraph type="secondary">{t("一个标准的技能包结构如下：")}</Paragraph>
             <div className="bg-gray-50 p-3 rounded border border-gray-200 font-mono text-sm">
               my-skill/
               <br />
               ├─ SKILL.md{" "}
-              <span className="text-gray-500"># 主入口文件（必需）</span>
+              <span className="text-gray-500">{t("# 主入口文件（必需）")}</span>
               <br />
               ├─ references/{" "}
-              <span className="text-gray-500"># 参考资料（可选）</span>
+              <span className="text-gray-500">{t("# 参考资料（可选）")}</span>
               <br />
-              ├─ scripts/ <span className="text-gray-500"># 脚本（可选）</span>
+              ├─ scripts/ <span className="text-gray-500">{t("# 脚本（可选）")}</span>
               <br />
               └─ assets/{" "}
-              <span className="text-gray-500"># 静态资源（可选）</span>
+              <span className="text-gray-500">{t("# 静态资源（可选）")}</span>
             </div>
           </div>
 
@@ -511,7 +513,7 @@ export function PublishSkillView({
 
           {/* SKILL.md format */}
           <div>
-            <Title level={5}>SKILL.md 格式</Title>
+            <Title level={5}>{t("SKILL.md 格式")}</Title>
             <Paragraph type="secondary">
               SKILL.md 使用 YAML frontmatter + Markdown 正文格式：
             </Paragraph>
@@ -533,14 +535,14 @@ export function PublishSkillView({
 
           {/* Frontmatter field descriptions */}
           <div>
-            <Title level={5}>Frontmatter 字段说明</Title>
+            <Title level={5}>{t("Frontmatter 字段说明")}</Title>
             <div className="overflow-x-auto">
               <table className="w-full text-sm border-collapse">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2 px-3 font-semibold">字段</th>
-                    <th className="text-left py-2 px-3 font-semibold">必需</th>
-                    <th className="text-left py-2 px-3 font-semibold">说明</th>
+                    <th className="text-left py-2 px-3 font-semibold">{t("字段")}</th>
+                    <th className="text-left py-2 px-3 font-semibold">{t("必需")}</th>
+                    <th className="text-left py-2 px-3 font-semibold">{t("说明")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -564,7 +566,7 @@ export function PublishSkillView({
                         是
                       </Tag>
                     </td>
-                    <td className="py-2 px-3">技能简短描述</td>
+                    <td className="py-2 px-3">{t("技能简短描述")}</td>
                   </tr>
                   <tr className="border-b">
                     <td className="py-2 px-3 font-mono text-blue-600">
@@ -588,7 +590,7 @@ export function PublishSkillView({
                         否
                       </Tag>
                     </td>
-                    <td className="py-2 px-3">作者名称</td>
+                    <td className="py-2 px-3">{t("作者名称")}</td>
                   </tr>
                   <tr className="border-b">
                     <td className="py-2 px-3 font-mono text-blue-600">tags</td>
@@ -610,11 +612,11 @@ export function PublishSkillView({
 
           {/* File restrictions */}
           <div>
-            <Title level={5}>文件限制</Title>
+            <Title level={5}>{t("文件限制")}</Title>
             <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600">
-              <li>单文件大小：最大 1MB</li>
-              <li>总包大小：最大 50MB</li>
-              <li>文件数量：最多 100 个</li>
+              <li>{t("单文件大小：最大 1MB")}</li>
+              <li>{t("总包大小：最大 50MB")}</li>
+              <li>{t("文件数量：最多 100 个")}</li>
               <li>
                 允许的文件类型：
                 <code className="bg-gray-100 px-1 rounded">.md</code>、
@@ -635,7 +637,7 @@ export function PublishSkillView({
 
           {/* Example */}
           <div>
-            <Title level={5}>完整示例</Title>
+            <Title level={5}>{t("完整示例")}</Title>
             <Paragraph type="secondary">
               以下是一个完整的 SKILL.md 示例：
             </Paragraph>

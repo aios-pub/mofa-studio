@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Project workbench (M3 TASK-02/04): project list with phase tags, 立项
  * dialog (goal + output format), plan editor (add/remove/reorder steps
@@ -57,7 +58,8 @@ interface DraftStep {
   strategy: StepStrategy;
 }
 
-export default function ProjectsPage() {
+export default function ProjectsPage() {  const { t } = useTranslation();
+
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [selected, setSelected] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
@@ -99,7 +101,7 @@ export default function ProjectsPage() {
 
   const createProject = useCallback(async () => {
     if (!draftTitle.trim() || !draftGoal.trim()) {
-      message.warning("标题与目标必填");
+      message.warning(t("标题与目标必填"));
       return;
     }
     try {
@@ -111,7 +113,7 @@ export default function ProjectsPage() {
       if (draftSteps.length > 0) {
         await taskService.setPlan(project.id, draftSteps);
       }
-      message.success("项目已创建");
+      message.success(t("项目已创建"));
       setCreateOpen(false);
       setDraftTitle("");
       setDraftGoal("");
@@ -120,7 +122,7 @@ export default function ProjectsPage() {
       await openProject(project.id);
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`创建失败：${detail}`);
+      message.error(t("创建失败：{{p0}}", { p0: detail }));
     }
   }, [draftTitle, draftGoal, draftFormat, draftSteps, loadList, openProject]);
 
@@ -129,10 +131,10 @@ export default function ProjectsPage() {
     try {
       const updated = await taskService.setPlan(selected.id, draftSteps);
       setSelected(updated);
-      message.success("计划已保存");
+      message.success(t("计划已保存"));
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`保存失败：${detail}`);
+      message.error(t("保存失败：{{p0}}", { p0: detail }));
     }
   }, [selected, draftSteps]);
 
@@ -143,16 +145,16 @@ export default function ProjectsPage() {
       const result = await taskService.run(selected.id);
       setSelected(result.project);
       if (result.status === "awaiting_review") {
-        message.info("项目在评审门暂停——请审阅后通过或打回");
+        message.info(t("项目在评审门暂停——请审阅后通过或打回"));
       } else if (result.status === "failed") {
         message.error(`执行失败：${result.error ?? "未知错误"}`);
       } else {
-        message.success("项目已交付");
+        message.success(t("项目已交付"));
       }
       await loadList();
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      message.error(`运行失败：${detail}`);
+      message.error(t("运行失败：{{p0}}", { p0: detail }));
     } finally {
       setRunning(false);
     }
@@ -167,7 +169,7 @@ export default function ProjectsPage() {
         message.success(approve ? "评审通过" : "已打回返工");
       } catch (error) {
         const detail = error instanceof Error ? error.message : String(error);
-        message.error(`评审失败：${detail}`);
+        message.error(t("评审失败：{{p0}}", { p0: detail }));
       }
     },
     [selected],
@@ -179,10 +181,10 @@ export default function ProjectsPage() {
       try {
         const updated = await taskService.retry(selected.id, stepId);
         setSelected(updated);
-        message.info("步骤已重置，可重新运行");
+        message.info(t("步骤已重置，可重新运行"));
       } catch (error) {
         const detail = error instanceof Error ? error.message : String(error);
-        message.error(`重试失败：${detail}`);
+        message.error(t("重试失败：{{p0}}", { p0: detail }));
       }
     },
     [selected],
@@ -194,11 +196,11 @@ export default function ProjectsPage() {
     const saved = await sopService.save(packed);
     if (saved) {
       setSavedSopId(saved.id);
-      message.success(`已沉淀为 SOP「${saved.name}」（${saved.steps.length} 步）`);
+      message.success(t("已沉淀为 SOP「{{p0}}」（{{p1}} 步）", { p0: saved.name, p1: saved.steps.length }));
       setSopPrompt(false);
       setCronPrompt(true);
     } else {
-      message.error("SOP 保存失败");
+      message.error(t("SOP 保存失败"));
     }
   }, [selected]);
 
@@ -209,10 +211,10 @@ export default function ProjectsPage() {
       cron: cronValue,
     });
     if (bound) {
-      message.success(`已转为自动化流水线（cron: ${cronValue}）`);
+      message.success(t("已转为自动化流水线（cron: {{p0}}）", { p0: cronValue }));
       setCronPrompt(false);
     } else {
-      message.error("触发器绑定失败");
+      message.error(t("触发器绑定失败"));
     }
   }, [savedSopId, cronValue]);
 
@@ -235,14 +237,14 @@ export default function ProjectsPage() {
             size="small"
             icon={<PlusOutlined />}
             onClick={() => setCreateOpen(true)}
-            aria-label="新建项目"
+            aria-label={t("新建项目")}
           >
             立项
           </Button>
         </div>
         <div className="flex-1 overflow-y-auto px-2 space-y-1">
           {loading ? (
-            <p className="text-xs text-[var(--color-text-tertiary)] p-2">加载中…</p>
+            <p className="text-xs text-[var(--color-text-tertiary)] p-2">{t("加载中…")}</p>
           ) : projects.length === 0 ? (
             <p className="text-xs text-[var(--color-text-tertiary)] p-2">
               还没有项目——点击「立项」开始
@@ -257,7 +259,7 @@ export default function ProjectsPage() {
                     ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
                     : "border-(--color-border) hover:bg-(--color-bg-tertiary)"
                 }`}
-                aria-label={`打开项目 ${summary.title}`}
+                aria-label={t("打开项目 {{p0}}", { p0: summary.title })}
               >
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-sm font-medium text-[var(--color-text-primary)] truncate">
@@ -280,7 +282,7 @@ export default function ProjectsPage() {
       <div className="flex-1 overflow-y-auto p-6">
         {!selected ? (
           <div className="h-full flex items-center justify-center">
-            <Empty description="选择或创建一个项目" />
+            <Empty description={t("选择或创建一个项目")} />
           </div>
         ) : (
           <div className="max-w-3xl mx-auto space-y-5">
@@ -300,7 +302,7 @@ export default function ProjectsPage() {
             <Progress
               percent={Math.round(projectProgress(selected) * 100)}
               size="small"
-              aria-label="项目进度"
+              aria-label={t("项目进度")}
             />
 
             {/* Run controls */}
@@ -310,18 +312,18 @@ export default function ProjectsPage() {
                 icon={<PlayCircleOutlined />}
                 loading={running}
                 onClick={run}
-                aria-label="运行项目"
+                aria-label={t("运行项目")}
               >
                 {selected.phase === "planning" ? "开跑" : "继续执行"}
               </Button>
-              <Button onClick={savePlan} disabled={draftSteps.length === 0} aria-label="保存计划">
+              <Button onClick={savePlan} disabled={draftSteps.length === 0} aria-label={t("保存计划")}>
                 保存计划
               </Button>
               {selected.phase === "delivered" && (
                 <Button
                   icon={<SaveOutlined />}
                   onClick={() => setSopPrompt(true)}
-                  aria-label="存为 SOP"
+                  aria-label={t("存为 SOP")}
                 >
                   存为 SOP
                 </Button>
@@ -363,7 +365,7 @@ export default function ProjectsPage() {
                           size="small"
                           icon={<CheckOutlined />}
                           onClick={() => void review(step.id, true)}
-                          aria-label={`通过 ${step.title}`}
+                          aria-label={t("通过 {{p0}}", { p0: step.title })}
                         >
                           通过
                         </Button>
@@ -372,7 +374,7 @@ export default function ProjectsPage() {
                           danger
                           icon={<CloseOutlined />}
                           onClick={() => void review(step.id, false)}
-                          aria-label={`打回 ${step.title}`}
+                          aria-label={t("打回 {{p0}}", { p0: step.title })}
                         >
                           打回
                         </Button>
@@ -383,7 +385,7 @@ export default function ProjectsPage() {
                         size="small"
                         icon={<RedoOutlined />}
                         onClick={() => void retry(step.id)}
-                        aria-label={`重试 ${step.title}`}
+                        aria-label={t("重试 {{p0}}", { p0: step.title })}
                       >
                         重试
                       </Button>
@@ -408,7 +410,7 @@ export default function ProjectsPage() {
                       { title: "", prompt: "", strategy: "direct" },
                     ])
                   }
-                  aria-label="添加步骤"
+                  aria-label={t("添加步骤")}
                 >
                   添加步骤
                 </Button>
@@ -423,14 +425,14 @@ export default function ProjectsPage() {
                       size="small"
                       value={draft.title}
                       onChange={(e) => patchDraft(index, { title: e.target.value })}
-                      placeholder="步骤标题"
+                      placeholder={t("步骤标题")}
                       aria-label={`步骤标题 ${index + 1}`}
                     />
                     <Input.TextArea
                       size="small"
                       value={draft.prompt}
                       onChange={(e) => patchDraft(index, { prompt: e.target.value })}
-                      placeholder="执行指令"
+                      placeholder={t("执行指令")}
                       autoSize={{ minRows: 1, maxRows: 2 }}
                       aria-label={`步骤指令 ${index + 1}`}
                     />
@@ -464,12 +466,12 @@ export default function ProjectsPage() {
 
       {/* TASK-20: 存为 SOP */}
       <Modal
-        title="沉淀为 SOP 模板"
+        title={t("沉淀为 SOP 模板")}
         open={sopPrompt}
         onOk={() => void saveAsSop()}
         onCancel={() => setSopPrompt(false)}
-        okText="沉淀"
-        cancelText="取消"
+        okText={t("沉淀")}
+        cancelText={t("取消")}
       >
         {selected && (
           <div className="space-y-2 text-sm">
@@ -489,12 +491,12 @@ export default function ProjectsPage() {
 
       {/* TASK-20→05: 转自动化流水线 */}
       <Modal
-        title="转为自动化流水线"
+        title={t("转为自动化流水线")}
         open={cronPrompt}
         onOk={() => void toAutomation()}
         onCancel={() => setCronPrompt(false)}
-        okText="绑定触发器"
-        cancelText="以后再说"
+        okText={t("绑定触发器")}
+        cancelText={t("以后再说")}
       >
         <div className="space-y-2">
           <p className="text-sm">
@@ -503,8 +505,8 @@ export default function ProjectsPage() {
           <Input
             value={cronValue}
             onChange={(e) => setCronValue(e.target.value)}
-            placeholder="cron 表达式，如 0 9 * * 1（每周一 9 点）"
-            aria-label="cron 表达式"
+            placeholder={t("cron 表达式，如 0 9 * * 1（每周一 9 点）")}
+            aria-label={t("cron 表达式")}
             prefix={<ClockCircleOutlined />}
           />
         </div>
@@ -512,41 +514,41 @@ export default function ProjectsPage() {
 
       {/* 立项 dialog */}
       <Modal
-        title="立项"
+        title={t("立项")}
         open={createOpen}
         onOk={() => void createProject()}
         onCancel={() => setCreateOpen(false)}
-        okText="创建"
-        cancelText="取消"
+        okText={t("创建")}
+        cancelText={t("取消")}
       >
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium mb-1">项目标题</label>
+            <label className="block text-sm font-medium mb-1">{t("项目标题")}</label>
             <Input
               value={draftTitle}
               onChange={(e) => setDraftTitle(e.target.value)}
-              placeholder="例如：产品周报"
-              aria-label="项目标题"
+              placeholder={t("例如：产品周报")}
+              aria-label={t("项目标题")}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">目标</label>
+            <label className="block text-sm font-medium mb-1">{t("目标")}</label>
             <Input.TextArea
               value={draftGoal}
               onChange={(e) => setDraftGoal(e.target.value)}
-              placeholder="一句话说清要交付什么"
+              placeholder={t("一句话说清要交付什么")}
               rows={2}
-              aria-label="项目目标"
+              aria-label={t("项目目标")}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">交付格式</label>
+            <label className="block text-sm font-medium mb-1">{t("交付格式")}</label>
             <Select
               value={draftFormat}
               onChange={setDraftFormat}
               options={OUTPUT_FORMATS}
               style={{ width: "100%" }}
-              aria-label="交付格式"
+              aria-label={t("交付格式")}
             />
           </div>
         </div>

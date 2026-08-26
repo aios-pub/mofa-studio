@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Export modal component
  * Supports exporting to Postman Collection and OpenAPI formats
@@ -40,7 +41,8 @@ interface ExportOptions {
   includeEnvironment: boolean;
 }
 
-export function ExportModal({ open, onClose, testSets, onExport }: ExportModalProps) {
+export function ExportModal({ open, onClose, testSets, onExport }: ExportModalProps) {  const { t } = useTranslation();
+
   const [exporting, setExporting] = useState(false);
   const [format, setFormat] = useState<"postman" | "openapi">("postman");
   const [scope, setScope] = useState<"selected" | "all">("selected");
@@ -68,7 +70,7 @@ export function ExportModal({ open, onClose, testSets, onExport }: ExportModalPr
 
       await onExport(format, exportOptions);
 
-      message.success("导出成功");
+      message.success(t("导出成功"));
       handleClose();
     } catch (error: any) {
       message.error(error?.message || "导出失败");
@@ -95,13 +97,13 @@ export function ExportModal({ open, onClose, testSets, onExport }: ExportModalPr
 
   return (
     <Modal
-      title="导出测试集"
+      title={t("导出测试集")}
       open={open}
       onCancel={handleClose}
       width={600}
       footer={
         <Space>
-          <Button onClick={handleClose}>取消</Button>
+          <Button onClick={handleClose}>{t("取消")}</Button>
           <Button
             type="primary"
             icon={<ExportOutlined />}
@@ -117,7 +119,7 @@ export function ExportModal({ open, onClose, testSets, onExport }: ExportModalPr
       <div className="space-y-4">
         {/* Export format */}
         <div>
-          <Text strong>导出格式</Text>
+          <Text strong>{t("导出格式")}</Text>
           <div className="mt-2">
             <Radio.Group
               value={format}
@@ -164,15 +166,15 @@ export function ExportModal({ open, onClose, testSets, onExport }: ExportModalPr
 
         {/* Export scope */}
         <div>
-          <Text strong>导出范围</Text>
+          <Text strong>{t("导出范围")}</Text>
           <div className="mt-2">
             <Radio.Group
               value={scope}
               onChange={(e) => setScope(e.target.value)}
             >
               <Space direction="vertical">
-                <Radio value="selected">选中的测试集</Radio>
-                <Radio value="all">全部测试集</Radio>
+                <Radio value="selected">{t("选中的测试集")}</Radio>
+                <Radio value="all">{t("全部测试集")}</Radio>
               </Space>
             </Radio.Group>
           </div>
@@ -181,7 +183,7 @@ export function ExportModal({ open, onClose, testSets, onExport }: ExportModalPr
         {/* Select test set */}
         {scope === "selected" && (
           <div>
-            <Text strong>选择要导出的测试集</Text>
+            <Text strong>{t("选择要导出的测试集")}</Text>
             <div className="mt-2 space-y-2">
               {testSets.map((testSet) => (
                 <label key={testSet.id} className="flex items-center gap-2 block">
@@ -208,7 +210,7 @@ export function ExportModal({ open, onClose, testSets, onExport }: ExportModalPr
 
         {/* Export options */}
         <div>
-          <Text strong>导出选项</Text>
+          <Text strong>{t("导出选项")}</Text>
           <div className="mt-2 space-y-2">
             <label className="flex items-center gap-2">
               <Checkbox
@@ -259,12 +261,12 @@ export function ExportModal({ open, onClose, testSets, onExport }: ExportModalPr
             format === "postman" ? (
               <Space>
                 <FileTextOutlined />
-                <span>导出为 Postman Collection v2.1 格式</span>
+                <span>{t("导出为 Postman Collection v2.1 格式")}</span>
               </Space>
             ) : (
               <Space>
                 <ApiOutlined />
-                <span>导出为 OpenAPI 3.0 规范格式</span>
+                <span>{t("导出为 OpenAPI 3.0 规范格式")}</span>
               </Space>
             )
           }

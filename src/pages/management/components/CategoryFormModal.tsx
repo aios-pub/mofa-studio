@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Test category create/edit modal
  */
@@ -25,7 +26,8 @@ export function CategoryFormModal({
   parentId,
   categories = [],
   loading,
-}: CategoryFormModalProps) {
+}: CategoryFormModalProps) {  const { t } = useTranslation();
+
   const [form] = Form.useForm<TestCategoryFormData>();
   const isEdit = !!category;
   const { error, handleError, clearError } = useFormError(open);
@@ -70,15 +72,15 @@ export function CategoryFormModal({
       <Form form={form} layout="vertical" autoComplete="off">
         <Form.Item
           name="name"
-          label="分类名称"
-          rules={[{ required: true, message: "请输入分类名称" }]}
+          label={t("分类名称")}
+          rules={[{ required: true, message: t("请输入分类名称") }]}
         >
-          <Input placeholder="请输入分类名称" />
+          <Input placeholder={t("请输入分类名称")} />
         </Form.Item>
 
-        <Form.Item name="parentId" label="父分类">
+        <Form.Item name="parentId" label={t("父分类")}>
           <Select
-            placeholder="选择父分类（可选）"
+            placeholder={t("选择父分类（可选）")}
             allowClear
             options={parentOptions}
           />

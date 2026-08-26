@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Data-driven test configuration component
  * Supports CSV, JSON and Excel data source configuration
@@ -44,7 +45,8 @@ export function DataDrivenTestConfig({
   value,
   onChange,
   testCaseId,
-}: DataDrivenTestConfigProps) {
+}: DataDrivenTestConfigProps) {  const { t } = useTranslation();
+
   const [dataSourceType, setDataSourceType] = useState<DataSourceType>(
     value?.dataSourceType || "json",
   );
@@ -171,7 +173,7 @@ export function DataDrivenTestConfig({
     };
     reader.onerror = () => {
       console.error("Failed to read file:", file.name);
-      message.error(`文件读取失败: ${file.name}`);
+      message.error(t("文件读取失败: {{p0}}", { p0: file.name }));
     };
     reader.readAsText(file);
     return false; // prevent auto upload
@@ -193,7 +195,7 @@ export function DataDrivenTestConfig({
 
   const columns: ColumnsType<DataRow> = [
     {
-      title: "序号",
+      title: t("序号"),
       dataIndex: "index",
       key: "index",
       width: 60,
@@ -204,7 +206,7 @@ export function DataDrivenTestConfig({
           <div className="text-xs text-gray-500">列名: {header}</div>
           <Input
             size="small"
-            placeholder="变量名"
+            placeholder={t("变量名")}
             value={variableMapping[header]}
             onChange={(e) => handleMappingChange(header, e.target.value)}
             prefix="→"
@@ -216,7 +218,7 @@ export function DataDrivenTestConfig({
       render: (value: string) => <Text code>{value}</Text>,
     })),
     {
-      title: "预览变量",
+      title: t("预览变量"),
       key: "preview",
       render: (_, record) => (
         <Space size={4} wrap>
@@ -245,10 +247,10 @@ Bob,bob@example.com,30`,
 
   return (
     <div className="space-y-4">
-      <Card size="small" title="数据驱动测试配置">
+      <Card size="small" title={t("数据驱动测试配置")}>
         <Space direction="vertical" className="w-full">
           <div className="flex items-center justify-between">
-            <Text strong>启用数据驱动</Text>
+            <Text strong>{t("启用数据驱动")}</Text>
             <Switch
               checked={enabled}
               onChange={(checked) => {
@@ -263,7 +265,7 @@ Bob,bob@example.com,30`,
               <Divider />
 
               <div>
-                <Text strong>数据源类型</Text>
+                <Text strong>{t("数据源类型")}</Text>
                 <Select
                   value={dataSourceType}
                   onChange={handleTypeChange}
@@ -278,7 +280,7 @@ Bob,bob@example.com,30`,
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Text strong>数据源</Text>
+                  <Text strong>{t("数据源")}</Text>
                   <Space>
                     <Button
                       size="small"

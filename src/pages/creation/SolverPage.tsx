@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * 解题答疑 (TOOL-16): 拍照/上传题目 → 识图模型（vlm）分步讲解 →
  * KaTeX 公式渲染。边界声明: 只做拍照解题+讲解，不含错题本等教育闭环。
@@ -11,7 +12,8 @@ import { MarkdownRenderer } from "@/components/common";
 import { chatService } from "@/services/api/chat";
 import { SUBJECTS, buildSolverPrompt, validateSolverInput } from "@/utils/solverPrompt";
 
-export default function SolverPage() {
+export default function SolverPage() {  const { t } = useTranslation();
+
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
   const [subject, setSubject] = useState(SUBJECTS[0].id);
   const [extraNote, setExtraNote] = useState("");
@@ -21,7 +23,7 @@ export default function SolverPage() {
 
   const pickImage = (file: File) => {
     if (!file.type.startsWith("image/")) {
-      message.warning("请上传图片（拍照或截图）");
+      message.warning(t("请上传图片（拍照或截图）"));
       return;
     }
     const reader = new FileReader();
@@ -50,7 +52,7 @@ export default function SolverPage() {
         ],
       });
       if (!response.content?.trim()) {
-        message.error("模型没有返回内容（检查 vlm 模型配置）");
+        message.error(t("模型没有返回内容（检查 vlm 模型配置）"));
         return;
       }
       setSolution(response.content);
@@ -73,16 +75,16 @@ export default function SolverPage() {
         </p>
       </header>
 
-      <section className="space-y-3 rounded-xl border border-(--color-border) p-4" aria-label="题目输入">
+      <section className="space-y-3 rounded-xl border border-(--color-border) p-4" aria-label={t("题目输入")}>
         <div className="flex items-start gap-3">
           {imageDataUrl ? (
             <div className="space-y-1">
               <img
                 src={imageDataUrl}
-                alt="题目照片"
+                alt={t("题目照片")}
                 className="max-h-48 rounded-lg border border-(--color-border)"
               />
-              <Button size="small" onClick={() => uploadRef.current?.click()} aria-label="更换题目照片">
+              <Button size="small" onClick={() => uploadRef.current?.click()} aria-label={t("更换题目照片")}>
                 重拍/更换
               </Button>
             </div>
@@ -95,7 +97,7 @@ export default function SolverPage() {
                 return false;
               }}
             >
-              <Button icon={<CameraOutlined />} aria-label="上传题目照片">
+              <Button icon={<CameraOutlined />} aria-label={t("上传题目照片")}>
                 拍照 / 上传题目
               </Button>
             </Upload>
@@ -121,21 +123,21 @@ export default function SolverPage() {
               onChange={setSubject}
               options={SUBJECTS.map((s) => ({ value: s.id, label: s.label }))}
               style={{ width: "100%" }}
-              aria-label="学科选择"
+              aria-label={t("学科选择")}
             />
           </div>
           <Input
             value={extraNote}
             onChange={(e) => setExtraNote(e.target.value)}
-            placeholder="补充说明（可选），如：第二问没看懂"
-            aria-label="补充说明"
+            placeholder={t("补充说明（可选），如：第二问没看懂")}
+            aria-label={t("补充说明")}
           />
           <Button
             type="primary"
             loading={loading}
             disabled={!imageDataUrl}
             onClick={() => void solve()}
-            aria-label="开始讲解"
+            aria-label={t("开始讲解")}
           >
             讲解
           </Button>
@@ -149,16 +151,16 @@ export default function SolverPage() {
       )}
 
       {solution && (
-        <section className="space-y-2" aria-label="讲解结果">
+        <section className="space-y-2" aria-label={t("讲解结果")}>
           <div className="flex justify-end">
             <Button
               size="small"
               icon={<CopyOutlined />}
               onClick={() => {
                 void navigator.clipboard?.writeText(solution);
-                message.success("讲解已复制");
+                message.success(t("讲解已复制"));
               }}
-              aria-label="复制讲解"
+              aria-label={t("复制讲解")}
             >
               复制
             </Button>

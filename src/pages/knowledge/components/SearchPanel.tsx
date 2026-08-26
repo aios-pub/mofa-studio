@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Knowledge search panel component
  */
@@ -15,7 +16,8 @@ interface SearchPanelProps {
   knowledgeBaseId: string;
 }
 
-export default function SearchPanel({ knowledgeBaseId }: SearchPanelProps) {
+export default function SearchPanel({ knowledgeBaseId }: SearchPanelProps) {  const { t } = useTranslation();
+
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResultItem[]>([]);
@@ -67,7 +69,7 @@ export default function SearchPanel({ knowledgeBaseId }: SearchPanelProps) {
       {/* Search input */}
       <div className="flex gap-2">
         <Input
-          placeholder="输入问题进行知识检索..."
+          placeholder={t("输入问题进行知识检索...")}
           prefix={<SearchOutlined />}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -139,16 +141,16 @@ export default function SearchPanel({ knowledgeBaseId }: SearchPanelProps) {
               {item.metadata && (
                 <div className="mt-2 text-xs text-[var(--color-text-tertiary)]">
                   来源: {item.metadata.source}
-                  {item.metadata.author && ` · 作者: ${item.metadata.author}`}
+                  {item.metadata.author && t(" · 作者: {{p0}}", { p0: item.metadata.author })}
                 </div>
               )}
             </div>
           ))}
         </div>
       ) : query ? (
-        <Empty description="输入关键词进行搜索" className="py-8" />
+        <Empty description={t("输入关键词进行搜索")} className="py-8" />
       ) : (
-        <Empty description="暂无搜索结果" className="py-8" />
+        <Empty description={t("暂无搜索结果")} className="py-8" />
       )}
     </div>
   );

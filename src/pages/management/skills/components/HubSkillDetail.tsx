@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Hub skill detail page
  * Multi-tab layout: overview, versions, files, README
@@ -41,7 +42,8 @@ import { LabelPanel } from "./LabelPanel";
 
 const { Title, Paragraph, Text } = Typography;
 
-export function HubSkillDetail() {
+export function HubSkillDetail() {  const { t } = useTranslation();
+
   const { namespace, slug } = useParams<{ namespace: string; slug: string }>();
   const navigate = useNavigate();
 
@@ -89,7 +91,7 @@ export function HubSkillDetail() {
   const handleShare = () => {
     const url = window.location.href;
     navigator.clipboard.writeText(url);
-    message.success("链接已复制到剪贴板");
+    message.success(t("链接已复制到剪贴板"));
   };
 
   const handleDownload = async () => {
@@ -99,7 +101,7 @@ export function HubSkillDetail() {
         .getState()
         .downloadSkillBundle(namespace, slug);
       if (!blob) {
-        message.error("下载失败");
+        message.error(t("下载失败"));
         return;
       }
       const url = URL.createObjectURL(blob);
@@ -108,9 +110,9 @@ export function HubSkillDetail() {
       a.download = `${namespace}-${slug}.zip`;
       a.click();
       URL.revokeObjectURL(url);
-      message.success("下载成功");
+      message.success(t("下载成功"));
     } catch {
-      message.error("下载失败");
+      message.error(t("下载失败"));
     }
   };
 
@@ -122,7 +124,7 @@ export function HubSkillDetail() {
       selectedHubSkill.id,
     );
     if (success) {
-      message.success("安装成功");
+      message.success(t("安装成功"));
     }
   };
 
@@ -206,7 +208,7 @@ export function HubSkillDetail() {
             >
               {isInstalling ? "安装中..." : isInstalled ? "已安装" : "安装"}
             </Button>
-            <Tooltip title="下载 ZIP 包">
+            <Tooltip title={t("下载 ZIP 包")}>
               <Button icon={<DownloadOutlined />} onClick={handleDownload}>
                 下载
               </Button>
@@ -223,7 +225,7 @@ export function HubSkillDetail() {
         {/* Stats */}
         <div className="flex gap-6 mt-4">
           <div>
-            <Text type="secondary">下载</Text>
+            <Text type="secondary">{t("下载")}</Text>
             <div className="text-lg font-semibold">
               {selectedHubSkill.download_count}
             </div>
@@ -235,7 +237,7 @@ export function HubSkillDetail() {
             </div>
           </div>
           <div>
-            <Text type="secondary">评分</Text>
+            <Text type="secondary">{t("评分")}</Text>
             <div className="text-lg font-semibold">
               {selectedHubSkill.rating_count > 0
                 ? `${selectedHubSkill.rating_avg} (${selectedHubSkill.rating_count})`
@@ -243,7 +245,7 @@ export function HubSkillDetail() {
             </div>
           </div>
           <div>
-            <Text type="secondary">版本</Text>
+            <Text type="secondary">{t("版本")}</Text>
             <div className="text-lg font-semibold">
               {latestVersion?.version || "-"}
             </div>
@@ -279,28 +281,28 @@ export function HubSkillDetail() {
         items={[
           {
             key: "overview",
-            label: "概览",
+            label: t("概览"),
             children: (
               <div className="space-y-4">
-                <Card title="技能信息" variant={false}>
+                <Card title={t("技能信息")} variant={false}>
                   <Descriptions column={2}>
                     <Descriptions.Item label="ID">
                       {selectedHubSkill.id}
                     </Descriptions.Item>
-                    <Descriptions.Item label="创建时间">
+                    <Descriptions.Item label={t("创建时间")}>
                       {selectedHubSkill.created_at.toLocaleDateString()}
                     </Descriptions.Item>
-                    <Descriptions.Item label="更新时间">
+                    <Descriptions.Item label={t("更新时间")}>
                       {selectedHubSkill.updated_at.toLocaleDateString()}
                     </Descriptions.Item>
-                    <Descriptions.Item label="可见性">
+                    <Descriptions.Item label={t("可见性")}>
                       {selectedHubSkill.visibility}
                     </Descriptions.Item>
                   </Descriptions>
                 </Card>
 
                 {/* Install Command */}
-                <Card title="安装命令" variant={false}>
+                <Card title={t("安装命令")} variant={false}>
                   <InstallCommand
                     namespace={selectedHubSkill.namespace_slug}
                     slug={selectedHubSkill.slug}
@@ -330,7 +332,7 @@ export function HubSkillDetail() {
           },
           {
             key: "versions",
-            label: "版本",
+            label: t("版本"),
             children: (
               <VersionList
                 namespace={namespace || ""}
@@ -345,7 +347,7 @@ export function HubSkillDetail() {
           },
           {
             key: "files",
-            label: "文件",
+            label: t("文件"),
             children: selectedVersion ? (
               <div className="flex gap-4">
                 <div className="w-1/3">
@@ -372,7 +374,7 @@ export function HubSkillDetail() {
           },
           {
             key: "labels",
-            label: "标签",
+            label: t("标签"),
             children: <LabelPanel skillId={selectedHubSkill.id} />,
           },
         ]}

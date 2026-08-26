@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * SSE (Server-Sent Events) test builder component
  * For configuring and testing SSE connections
@@ -41,7 +42,8 @@ export function SSETestBuilder({
   value,
   onChange,
   readonly = false,
-}: SSETestBuilderProps) {
+}: SSETestBuilderProps) {  const { t } = useTranslation();
+
   const config = value || getDefaultConfig();
   const [connectionState, setConnectionState] = useState<ConnectionState>("disconnected");
   const [events, setEvents] = useState<SSEEvent[]>([]);
@@ -116,7 +118,7 @@ export function SSETestBuilder({
           connectTimeoutRef.current = null;
         }
         setConnectionState("error");
-        addEvent("error", `❌ 连接错误`);
+        addEvent("error", t("❌ 连接错误"));
         if (!autoReconnect) {
           eventSource.close();
         }
@@ -164,20 +166,20 @@ export function SSETestBuilder({
   const getStatusTag = () => {
     switch (connectionState) {
       case "disconnected":
-        return <Tag color="default">未连接</Tag>;
+        return <Tag color="default">{t("未连接")}</Tag>;
       case "connecting":
-        return <Tag color="processing">连接中...</Tag>;
+        return <Tag color="processing">{t("连接中...")}</Tag>;
       case "connected":
-        return <Tag color="success">已连接</Tag>;
+        return <Tag color="success">{t("已连接")}</Tag>;
       case "error":
-        return <Tag color="error">连接错误</Tag>;
+        return <Tag color="error">{t("连接错误")}</Tag>;
     }
   };
 
   return (
     <div className="space-y-4">
       {/* Connection configuration */}
-      <Card title="连接配置" size="small">
+      <Card title={t("连接配置")} size="small">
         <div className="space-y-3">
           <div>
             <Text strong>SSE URL</Text>
@@ -192,7 +194,7 @@ export function SSETestBuilder({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Text strong>最小事件数</Text>
+              <Text strong>{t("最小事件数")}</Text>
               <InputNumber
                 value={config.minEvents}
                 onChange={(value) => updateConfig({ minEvents: value || undefined })}
@@ -202,7 +204,7 @@ export function SSETestBuilder({
               />
             </div>
             <div>
-              <Text strong>最大持续时间（秒）</Text>
+              <Text strong>{t("最大持续时间（秒）")}</Text>
               <InputNumber
                 value={config.maxDuration}
                 onChange={(value) => updateConfig({ maxDuration: value || undefined })}
@@ -220,7 +222,7 @@ export function SSETestBuilder({
             </Space>
             <Space>
               <div className="flex items-center gap-2">
-                <Text>自动重连</Text>
+                <Text>{t("自动重连")}</Text>
                 <Switch
                   checked={autoReconnect}
                   onChange={setAutoReconnect}
@@ -254,7 +256,7 @@ export function SSETestBuilder({
 
       {/* Event stream display */}
       <Card
-        title="事件流"
+        title={t("事件流")}
         size="small"
         extra={
           <Button
@@ -294,7 +296,7 @@ export function SSETestBuilder({
       </Card>
 
       {/* Expected events configuration */}
-      <Card title="预期事件配置" size="small">
+      <Card title={t("预期事件配置")} size="small">
         <div className="text-sm text-gray-500">
           配置预期收到的事件用于断言验证（开发中...）
         </div>

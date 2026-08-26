@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Governance Inbox Component
  * Unified governance inbox: review queue, promotion requests, reports
@@ -38,7 +39,8 @@ interface GovernanceItem {
   data: ReviewTask | PromotionTask | SkillReport;
 }
 
-export function GovernanceInbox() {
+export function GovernanceInbox() {  const { t } = useTranslation();
+
   const {
     reviewTasks,
     reviewLoading,
@@ -170,7 +172,7 @@ export function GovernanceInbox() {
       <Card
         title={
           <Space>
-            <span className="font-medium">治理收件箱</span>
+            <span className="font-medium">{t("治理收件箱")}</span>
             {totalPending > 0 && (
               <Badge count={totalPending} overflowCount={99} />
             )}
@@ -192,7 +194,7 @@ export function GovernanceInbox() {
           items={[
             {
               key: 'all',
-              label: `全部 (${items.length})`,
+              label: t("全部 ({{p0}})", { p0: items.length }),
             },
             {
               key: 'review',
@@ -264,7 +266,7 @@ export function GovernanceInbox() {
 
           {filteredItems.length === 0 && !reviewLoading && !promotionsLoading && !reportsLoading && (
             <Empty
-              description="暂无待处理事项"
+              description={t("暂无待处理事项")}
               image={Empty.PRESENTED_IMAGE_SIMPLE}
             />
           )}

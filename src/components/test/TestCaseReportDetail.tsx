@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Test report detail component
  * Show detailed test case execution results including script execution results
@@ -17,13 +18,14 @@ interface TestCaseReportDetailProps {
   report: TestCaseReport;
 }
 
-export function TestCaseReportDetail({ report }: TestCaseReportDetailProps) {
+export function TestCaseReportDetail({ report }: TestCaseReportDetailProps) {  const { t } = useTranslation();
+
   const getStatusTag = (status: string) => {
     switch (status) {
       case "passed":
-        return <Tag color="success" icon={<CheckCircleOutlined />}>通过</Tag>;
+        return <Tag color="success" icon={<CheckCircleOutlined />}>{t("通过")}</Tag>;
       case "failed":
-        return <Tag color="error" icon={<CloseCircleOutlined />}>失败</Tag>;
+        return <Tag color="error" icon={<CloseCircleOutlined />}>{t("失败")}</Tag>;
       default:
         return <Tag>{status}</Tag>;
     }
@@ -32,25 +34,25 @@ export function TestCaseReportDetail({ report }: TestCaseReportDetailProps) {
   const items = [
     {
       key: "overview",
-      label: "概览",
+      label: t("概览"),
       children: (
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-gray-500">状态码:</span>
+              <span className="text-gray-500">{t("状态码:")}</span>
               <span className="ml-2 font-medium">{report.statusCode}</span>
             </div>
             <div>
-              <span className="text-gray-500">状态消息:</span>
+              <span className="text-gray-500">{t("状态消息:")}</span>
               <span className="ml-2 font-medium">{report.statusMessage}</span>
             </div>
             <div>
-              <span className="text-gray-500">耗时:</span>
+              <span className="text-gray-500">{t("耗时:")}</span>
               <span className="ml-2 font-medium">{report.duration}ms</span>
             </div>
             {report.error && (
               <div className="col-span-2">
-                <span className="text-gray-500">错误:</span>
+                <span className="text-gray-500">{t("错误:")}</span>
                 <span className="ml-2 text-red-500">{report.error}</span>
               </div>
             )}
@@ -58,9 +60,9 @@ export function TestCaseReportDetail({ report }: TestCaseReportDetailProps) {
 
           {report.request && (
             <div className="mt-3">
-              <Text strong className="text-sm">请求信息</Text>
+              <Text strong className="text-sm">{t("请求信息")}</Text>
               <div className="mt-2 bg-gray-50 p-2 rounded text-xs">
-                <div><span className="font-medium">方法:</span> {report.request.method}</div>
+                <div><span className="font-medium">{t("方法:")}</span> {report.request.method}</div>
                 <div><span className="font-medium">URL:</span> {report.request.url}</div>
                 {report.request.headers.length > 0 && (
                   <div className="mt-1">
@@ -88,9 +90,9 @@ export function TestCaseReportDetail({ report }: TestCaseReportDetailProps) {
 
           {report.response && (
             <div className="mt-3">
-              <Text strong className="text-sm">响应信息</Text>
+              <Text strong className="text-sm">{t("响应信息")}</Text>
               <div className="mt-2 bg-gray-50 p-2 rounded text-xs">
-                <div><span className="font-medium">状态码:</span> {report.response.statusCode}</div>
+                <div><span className="font-medium">{t("状态码:")}</span> {report.response.statusCode}</div>
                 {report.response.headers.length > 0 && (
                   <div className="mt-1">
                     <span className="font-medium">Headers:</span>
@@ -117,12 +119,12 @@ export function TestCaseReportDetail({ report }: TestCaseReportDetailProps) {
     },
     {
       key: "script",
-      label: `脚本执行 (${report.scriptLogs.length} 条日志, ${report.testResults.length} 个断言)`,
+      label: t("脚本执行 ({{p0}} 条日志, {{p1}} 个断言)", { p0: report.scriptLogs.length, p1: report.testResults.length }),
       children: (
         <div className="space-y-3">
           {report.scriptLogs.length > 0 ? (
             <div>
-              <Text strong className="text-sm">脚本日志</Text>
+              <Text strong className="text-sm">{t("脚本日志")}</Text>
               <div className="mt-2 bg-gray-50 p-2 rounded">
                 {report.scriptLogs.map((log, index) => (
                   <div key={`log-${index}`} className="text-xs font-mono text-gray-600 mb-1">
@@ -140,7 +142,7 @@ export function TestCaseReportDetail({ report }: TestCaseReportDetailProps) {
 
           {report.testResults.length > 0 ? (
             <div>
-              <Text strong className="text-sm">测试断言</Text>
+              <Text strong className="text-sm">{t("测试断言")}</Text>
               <div className="mt-2 space-y-1">
                 {report.testResults.map((result, index) => (
                   <div
@@ -177,7 +179,7 @@ export function TestCaseReportDetail({ report }: TestCaseReportDetailProps) {
   if (report.iterations && report.iterations.length > 0) {
     items.push({
       key: "iterations",
-      label: `数据迭代 (${report.iterations.length} 次)`,
+      label: t("数据迭代 ({{p0}} 次)", { p0: report.iterations.length }),
       children: (
         <div className="space-y-2">
           {report.iterations.map((iteration) => (
@@ -195,7 +197,7 @@ export function TestCaseReportDetail({ report }: TestCaseReportDetailProps) {
                 )}
                 {Object.keys(iteration.dataRow).length > 0 && (
                   <div className="mt-1">
-                    <span className="font-medium">数据:</span>
+                    <span className="font-medium">{t("数据:")}</span>
                     <pre className="ml-2 inline bg-white p-1 rounded">
                       {JSON.stringify(iteration.dataRow, null, 2)}
                     </pre>

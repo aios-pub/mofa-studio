@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Octos sub-account management
  * View, create, start/stop sub-accounts
@@ -49,7 +50,8 @@ const defaultConfig: Partial<OctosProfileConfig> = {
   env_vars: {},
 };
 
-export default function OctosSubAccountsTab({ profileId, apiClient }: Props) {
+export default function OctosSubAccountsTab({ profileId, apiClient }: Props) {  const { t } = useTranslation();
+
   const [loading, setLoading] = useState(true);
   const [subAccounts, setSubAccounts] = useState<OctosProfileResponse[]>([]);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -81,7 +83,7 @@ export default function OctosSubAccountsTab({ profileId, apiClient }: Props) {
         channels: [],
         env_vars: {},
       });
-      message.success("创建成功");
+      message.success(t("创建成功"));
       setCreateModalOpen(false);
       form.resetFields();
       fetchSubAccounts();
@@ -124,11 +126,11 @@ export default function OctosSubAccountsTab({ profileId, apiClient }: Props) {
 
       {loading ? (
         <div className="flex justify-center py-8">
-          <Spin description="加载中..." />
+          <Spin description={t("加载中...")} />
         </div>
       ) : subAccounts.length === 0 ? (
         <Empty
-          description="暂无子账户"
+          description={t("暂无子账户")}
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           styles={{ image: { height: 60 } }}
         />
@@ -192,35 +194,35 @@ export default function OctosSubAccountsTab({ profileId, apiClient }: Props) {
 
       {/* Create sub-account modal */}
       <Modal
-        title="新建子账户"
+        title={t("新建子账户")}
         open={createModalOpen}
         onCancel={() => setCreateModalOpen(false)}
         onOk={handleCreate}
         confirmLoading={creating}
-        okText="创建"
+        okText={t("创建")}
       >
         <Form form={form} layout="vertical" className="mt-4">
           <Form.Item
-            label="名称"
+            label={t("名称")}
             name="name"
-            rules={[{ required: true, message: "请输入名称" }]}
+            rules={[{ required: true, message: t("请输入名称") }]}
           >
             <Input placeholder="My Sub Account" />
           </Form.Item>
           <Form.Item
-            label="公共子域名（可选）"
+            label={t("公共子域名（可选）")}
             name="public_subdomain"
           >
             <Input placeholder="my-account" />
           </Form.Item>
           <Form.Item
-            label="邮箱（可选）"
+            label={t("邮箱（可选）")}
             name="email"
           >
             <Input placeholder="user@example.com" />
           </Form.Item>
           <Form.Item
-            label="系统提示词（可选）"
+            label={t("系统提示词（可选）")}
             name="system_prompt"
           >
             <Input.TextArea

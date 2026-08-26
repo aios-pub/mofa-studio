@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import type {
   CSSProperties,
@@ -134,7 +135,8 @@ const getRandomMessage = (state: PetState): string => {
   return messages[Math.floor(Math.random() * messages.length)];
 };
 
-export default function FloatingApp() {
+export default function FloatingApp() {  const { t } = useTranslation();
+
   const [expanded, setExpanded] = useState(false);
 
   const setExpandedWithTrace = useCallback(
@@ -843,21 +845,21 @@ export default function FloatingApp() {
               <img src="/mofa512.png" alt="mofa-studio" />
               <div>
                 <div className="floating-menu-name">mofa-studio</div>
-                <div className="floating-menu-subtitle">你的桌面伙伴</div>
+                <div className="floating-menu-subtitle">{t("你的桌面伙伴")}</div>
               </div>
             </div>
             <div className="floating-menu-header-actions">
               <button
                 className="floating-menu-action"
                 onClick={() => void convertToWindow()}
-                aria-label="窗口化"
+                aria-label={t("窗口化")}
               >
                 <Maximize2 size={14} />
               </button>
               <button
                 className="floating-menu-action"
                 onClick={() => void collapseMenu()}
-                aria-label="关闭菜单"
+                aria-label={t("关闭菜单")}
               >
                 <X size={14} />
               </button>
@@ -870,21 +872,21 @@ export default function FloatingApp() {
               onClick={() => handleFeed()}
             >
               <span>🍎</span>
-              <span>喂食</span>
+              <span>{t("喂食")}</span>
             </button>
             <button
               className="floating-menu-item floating-menu-item--pet-action"
               onClick={() => handlePlay()}
             >
               <span>🎾</span>
-              <span>玩耍</span>
+              <span>{t("玩耍")}</span>
             </button>
             <button
               className="floating-menu-item floating-menu-item--pet-action"
               onClick={() => handleSleep()}
             >
               <span>💤</span>
-              <span>睡觉</span>
+              <span>{t("睡觉")}</span>
             </button>
 
             <div
@@ -900,28 +902,28 @@ export default function FloatingApp() {
               onClick={() => void openMainWindow("/conversation")}
             >
               <MessageCircle size={18} />
-              <span>新对话</span>
+              <span>{t("新对话")}</span>
             </button>
             <button
               className="floating-menu-item"
               onClick={() => void openMainWindow("/conversation")}
             >
               <History size={18} />
-              <span>历史记录</span>
+              <span>{t("历史记录")}</span>
             </button>
             <button
               className="floating-menu-item"
               onClick={() => void openMainWindow("/system/settings")}
             >
               <Settings size={18} />
-              <span>设置</span>
+              <span>{t("设置")}</span>
             </button>
             <button
               className="floating-menu-item"
               onClick={() => void openMainWindow("/")}
             >
               <LayoutGrid size={18} />
-              <span>打开主界面</span>
+              <span>{t("打开主界面")}</span>
             </button>
           </div>
 
@@ -930,7 +932,7 @@ export default function FloatingApp() {
               className="floating-menu-item"
               onClick={() => void exitApp()}
             >
-              <span>👋 退出应用</span>
+              <span>{t("👋 退出应用")}</span>
             </button>
           </div>
 

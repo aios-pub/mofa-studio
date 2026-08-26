@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * My Stars Page
  * Show skills starred by the current user
@@ -26,7 +27,8 @@ import { useNavigate } from 'react-router-dom';
 import { skillHubV2Api } from '@/services';
 import type { HubSkill } from '@/types/skill';
 
-export function MyStarsPage() {
+export function MyStarsPage() {  const { t } = useTranslation();
+
   const navigate = useNavigate();
   const [myStars, setMyStars] = useState<HubSkill[]>([]);
   const [loading, setLoading] = useState(false);
@@ -147,7 +149,7 @@ export function MyStarsPage() {
       width: 150,
       render: (_: unknown, record: HubSkill) => (
         <Space size="small">
-          <Tooltip title="查看详情">
+          <Tooltip title={t("查看详情")}>
             <Button
               type="text"
               size="small"
@@ -155,14 +157,14 @@ export function MyStarsPage() {
               onClick={() => navigate(`/skills/hub/${record.namespace_slug}/${record.slug}`)}
             />
           </Tooltip>
-          <Tooltip title="下载">
+          <Tooltip title={t("下载")}>
             <Button
               type="text"
               size="small"
               icon={<CloudDownloadOutlined />}
             />
           </Tooltip>
-          <Tooltip title="取消收藏">
+          <Tooltip title={t("取消收藏")}>
             <Button
               type="text"
               size="small"
@@ -181,7 +183,7 @@ export function MyStarsPage() {
         <Col span={8}>
           <Card>
             <Statistic
-              title="收藏技能"
+              title={t("收藏技能")}
               value={stats.total}
               prefix={<StarFilled className="text-yellow-500" />}
             />
@@ -190,7 +192,7 @@ export function MyStarsPage() {
         <Col span={8}>
           <Card>
             <Statistic
-              title="涉及命名空间"
+              title={t("涉及命名空间")}
               value={stats.namespaces}
             />
           </Card>
@@ -198,7 +200,7 @@ export function MyStarsPage() {
         <Col span={8}>
           <Card>
             <Statistic
-              title="总下载量"
+              title={t("总下载量")}
               value={stats.totalDownloads}
             />
           </Card>
@@ -233,7 +235,7 @@ export function MyStarsPage() {
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={
               <div className="text-center">
-                <p className="mb-4">还没有收藏任何技能</p>
+                <p className="mb-4">{t("还没有收藏任何技能")}</p>
                 <Button type="primary" onClick={() => navigate('/skills/hub')}>
                   去探索技能
                 </Button>

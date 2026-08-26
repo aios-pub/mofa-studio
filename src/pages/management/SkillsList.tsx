@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Skills management page
  * Horizontal menu layout: grouped by skill workflow
@@ -65,7 +66,8 @@ interface MenuGroup {
   items: MenuItem[];
 }
 
-export default function SkillsListPage() {
+export default function SkillsListPage() {  const { t } = useTranslation();
+
   const [activeTab, setActiveTab] = useState<TabKey>("local");
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
 
@@ -86,33 +88,33 @@ export default function SkillsListPage() {
   const menuGroups: MenuGroup[] = [
     {
       key: "browse",
-      label: "浏览发现",
+      label: t("浏览发现"),
       icon: <AppstoreOutlined />,
       items: [
-        { key: "local", label: "本地 Skills", icon: <ThunderboltOutlined /> },
+        { key: "local", label: t("本地 Skills"), icon: <ThunderboltOutlined /> },
         { key: "hub", label: "Skill Hub", icon: <CloudOutlined /> },
-        { key: "my-stars", label: "我的收藏", icon: <StarOutlined /> },
+        { key: "my-stars", label: t("我的收藏"), icon: <StarOutlined /> },
       ],
     },
     {
       key: "create",
-      label: "创作发布",
+      label: t("创作发布"),
       icon: <CloudUploadOutlined />,
       items: [
-        { key: "namespaces", label: "命名空间", icon: <TeamOutlined /> },
-        { key: "publish", label: "发布 Skill", icon: <CloudUploadOutlined /> },
-        { key: "my-skills", label: "我的技能", icon: <FileTextOutlined /> },
+        { key: "namespaces", label: t("命名空间"), icon: <TeamOutlined /> },
+        { key: "publish", label: t("发布 Skill"), icon: <CloudUploadOutlined /> },
+        { key: "my-skills", label: t("我的技能"), icon: <FileTextOutlined /> },
       ],
     },
     {
       key: "manage",
-      label: "管理审核",
+      label: t("管理审核"),
       icon: <SettingOutlined />,
       items: [
-        { key: "tokens", label: "API 令牌", icon: <KeyOutlined /> },
-        { key: "review", label: "审核队列", icon: <AuditOutlined /> },
-        { key: "promotion", label: "推广队列", icon: <RocketOutlined /> },
-        { key: "governance", label: "治理收件箱", icon: <InboxOutlined /> },
+        { key: "tokens", label: t("API 令牌"), icon: <KeyOutlined /> },
+        { key: "review", label: t("审核队列"), icon: <AuditOutlined /> },
+        { key: "promotion", label: t("推广队列"), icon: <RocketOutlined /> },
+        { key: "governance", label: t("治理收件箱"), icon: <InboxOutlined /> },
       ],
     },
   ];
@@ -163,7 +165,7 @@ export default function SkillsListPage() {
                   <Title level={5} type="secondary">
                     选择一个 Skill
                   </Title>
-                  <Text type="secondary">从左侧列表中选择查看详情</Text>
+                  <Text type="secondary">{t("从左侧列表中选择查看详情")}</Text>
                 </div>
               </div>
             )}

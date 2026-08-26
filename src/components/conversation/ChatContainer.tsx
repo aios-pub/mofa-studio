@@ -23,6 +23,7 @@ import {
   GlobalOutlined,
   AppstoreOutlined,
   AudioOutlined,
+  CameraOutlined,
   SoundOutlined,
 } from "@ant-design/icons";
 import {
@@ -61,6 +62,7 @@ import { matchSkills } from "@/utils/skills";
 import { audioService, recordingSupported } from "@/services/api/audio";
 import { chatService } from "@/services/api/chat";
 import { loadSkills } from "@/utils/skills";
+import { captureScreenshot, screenCaptureSupported } from "@/utils/screenCapture";
 import { ragService, ragSupports } from "@/services/api/rag";
 import type {
   Message,
@@ -916,6 +918,37 @@ export default function ChatContainer({
                 ))
               )}
             </div>
+          )}
+
+          {screenCaptureSupported() && (
+            <button
+              onClick={() => {
+                void captureScreenshot()
+                  .then((frame) => {
+                    if (!frame) return;
+                    setAttachments((prev) => [
+                      ...prev,
+                      {
+                        id: `shot-${Date.now()}`,
+                        name: `截图_${new Date().toLocaleTimeString()}.png`,
+                        type: "image/png",
+                        size: 0,
+                        url: frame.dataUrl,
+                      },
+                    ]);
+                  })
+                  .catch((error) => {
+                    message.info(
+                      `截图取消或失败：${error instanceof Error ? error.message : error}`,
+                    );
+                  });
+              }}
+              className="px-3 py-2 border rounded-lg transition-colors flex items-center gap-1 text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-(--color-border) hover:text-[var(--color-text-primary)]"
+              title="截图提问：截取屏幕/窗口，作为图片发给 AI 识别（PLAT-11）"
+              aria-label="截图提问"
+            >
+              <CameraOutlined />
+            </button>
           )}
 
           {micSupported && (

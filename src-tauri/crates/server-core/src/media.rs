@@ -117,21 +117,57 @@ pub(crate) fn build_transcode_args(
     ]
 }
 
+/// Resolve the ffmpeg binary: bundled sidecar first (PLAT-12 — macOS
+/// universal / Windows NSIS 内置打包), then system PATH, then common
+/// Homebrew/macOS locations. The sidecar directory is the Tauri resource
+/// dir (or MOFA_FFMPEG_DIR override for tests/portable installs).
 fn ffmpeg_path() -> Option<String> {
-    let candidates = [
+    fn usable(candidate: &str) -> bool {
+        Command::new(candidate)
+            .arg("-version")
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false)
+    }
+
+    // Sidecar candidates: explicit override, Tauri resource dir patterns.
+    let sidecar_dirs: Vec<PathBuf> = {
+        let mut dirs = Vec::new();
+        if let Ok(dir) = std::env::var("MOFA_FFMPEG_DIR") {
+            dirs.push(PathBuf::from(dir));
+        }
+        // Tauri bundles resources alongside the executable on macOS
+        // (Contents/Resources) and in the installation dir on Windows.
+        if let Ok(exe) = std::env::current_exe() {
+            if let Some(parent) = exe.parent() {
+                // macOS: .../Contents/MacOS/../Resources/
+                dirs.push(parent.join("../Resources"));
+                // Windows/Linux: alongside the exe
+                dirs.push(parent.to_path_buf());
+            }
+        }
+        // Standard data_dir fallback (portable installs).
+        dirs.push(std::path::PathBuf::from("server-data").join("bin"));
+        dirs
+    };
+    for dir in &sidecar_dirs {
+        let candidate = dir.join("ffmpeg");
+        if let Some(path) = candidate.to_str() {
+            if usable(path) {
+                return Some(path.to_string());
+            }
+        }
+    }
+
+    // System PATH and well-known locations.
+    let system_candidates = [
         "ffmpeg",
         "/usr/local/bin/ffmpeg",
         "/opt/homebrew/bin/ffmpeg",
     ];
-    candidates
+    system_candidates
         .iter()
-        .find(|c| {
-            Command::new(c)
-                .arg("-version")
-                .output()
-                .map(|o| o.status.success())
-                .unwrap_or(false)
-        })
+        .find(|c| usable(c))
         .map(|c| c.to_string())
 }
 

@@ -129,3 +129,43 @@ export function defaultPreselect(text: string, cap = 3): CapabilityId[] {
   const ranked = suggestSelection(text);
   return ranked.slice(0, cap);
 }
+
+/**
+ * TASK-07 路由 v2 第①层: LLM 复合分类 —— a chat model refines the rule
+ * ranking when one is reachable; rules stay the honest fallback (offline
+ * first). The model is asked for zero or more known capability ids.
+ */
+export async function classifyWithModel(
+  text: string,
+  chat: (prompt: string) => Promise<string>,
+): Promise<CapabilityId[]> {
+  const trimmed = text.trim();
+  if (!trimmed) return [];
+  const known = CAPABILITIES.map((c) => c.id).join(", ");
+  const prompt =
+    `从这些能力里选出回复用户输入真正需要的（0-3 个，逗号分隔，只输出 id）：${known}\n输入：${trimmed}`;
+  try {
+    const raw = await chat(prompt);
+    const ids = raw
+      .split(/[,,\s]+/)
+      .map((token) => token.trim())
+      .filter((token): token is CapabilityId =>
+        CAPABILITIES.some((c) => c.id === token),
+      );
+    return [...new Set(ids)].slice(0, 3);
+  } catch {
+    // No model / engine down → rule-based ranking carries the UX.
+    return defaultPreselect(trimmed);
+  }
+}
+
+/**
+ * v2 composite: union of rule ranking and (when it resolves) model
+ * classification; rules first so the panel updates instantly.
+ */
+export function compositeSelection(
+  ruleIds: CapabilityId[],
+  modelIds: CapabilityId[],
+): CapabilityId[] {
+  return [...new Set([...ruleIds, ...modelIds])];
+}

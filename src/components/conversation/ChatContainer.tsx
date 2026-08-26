@@ -51,15 +51,16 @@ import {
 } from "@/utils/slashCommands";
 import {
   CAPABILITIES,
+  classifyWithModel,
+  compositeSelection,
   defaultPreselect,
   type CapabilityId,
 } from "@/utils/intentRouter";
-import {
-  capabilitiesInScope,
-  filterCommandsByScope,
-  type ToolScope,
-} from "@/utils/toolScope";
+import { filterCommandsByScope, type ToolScope } from "@/utils/toolScope";
+import { matchSkills } from "@/utils/skills";
 import { audioService, recordingSupported } from "@/services/api/audio";
+import { chatService } from "@/services/api/chat";
+import { loadSkills } from "@/utils/skills";
 import { ragService, ragSupports } from "@/services/api/rag";
 import type {
   Message,
@@ -154,6 +155,37 @@ export default function ChatContainer({
   const [routeCaps, setRouteCaps] = useState<Set<"image_gen" | "video_gen">>(
     new Set(),
   );
+  // TASK-07 v2: model-refined classification + skill retrieval signals.
+  const [modelSuggestions, setModelSuggestions] = useState<CapabilityId[]>([]);
+  const [skillsInstalled, setSkillsInstalled] = useState<ReturnType<typeof loadSkills>>([]);
+
+  useEffect(() => {
+    setSkillsInstalled(loadSkills());
+  }, []);
+
+  // Debounced LLM refinement over a stable input snapshot.
+  useEffect(() => {
+    const trimmed = input.trim();
+    if (!trimmed) {
+      setModelSuggestions([]);
+      return;
+    }
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      void classifyWithModel(trimmed, async (prompt) => {
+        const response = await chatService.chat({
+          messages: [{ role: "user", content: prompt }],
+        });
+        return response.content ?? "";
+      }).then((ids) => {
+        if (!cancelled) setModelSuggestions(ids);
+      });
+    }, 600);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [input]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -343,8 +375,9 @@ export default function ChatContainer({
     setSlotValues({});
   };
 
-  // TASK-06 能力面板: rule-based suggestions for the current input.
-  const suggestions = defaultPreselect(input);
+  // TASK-06 rules + TASK-07 v2 model refinement; skills via trigger scoring.
+  const suggestions = compositeSelection(defaultPreselect(input), modelSuggestions);
+  const skillHits = matchSkills(input, skillsInstalled, 3);
   const capabilityById = (id: CapabilityId) =>
     CAPABILITIES.find((c) => c.id === id);
 
@@ -390,6 +423,26 @@ export default function ChatContainer({
         <p className="text-xs text-[var(--color-text-tertiary)]">
           输入内容后按意图预选；也可手动勾选
         </p>
+      )}
+      {skillHits.length > 0 && (
+        <div className="pt-1 border-t border-(--color-border) space-y-1" data-testid="skill-hits">
+          <p className="text-xs font-medium">匹配技能</p>
+          {skillHits.map(({ skill }) => (
+            <button
+              key={skill.id}
+              onClick={() => {
+                const command = slashCommands.find((c) =>
+                  skill.commands.some((spec) => spec.name === c.name),
+                );
+                if (command) pickCommand(command);
+              }}
+              className="block w-full text-left text-xs px-2 py-1 rounded border border-(--color-border) hover:bg-(--color-bg-tertiary)"
+              aria-label={`技能-${skill.name}`}
+            >
+              {skill.name}：{skill.description.slice(0, 24)}
+            </button>
+          ))}
+        </div>
       )}
       <div className="flex flex-col gap-1">
         <Checkbox

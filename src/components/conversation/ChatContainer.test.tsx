@@ -8,6 +8,11 @@ import { describe, expect, it, vi } from "vitest";
 import ChatContainer from "./ChatContainer";
 import type { Conversation, Message } from "@/types";
 
+// TASK-07: the panel's model-assisted classification calls chat; stub it.
+vi.mock("@/services/api/chat", () => ({
+  chatService: { chat: vi.fn().mockRejectedValue(new Error("no model")) },
+}));
+
 // ModelPicker calls the engine service on mount; stub the module away.
 vi.mock("@/services/api/engine", () => ({
   AUTO_MODEL: "__auto__",
@@ -278,5 +283,46 @@ describe("conversation tool scope (TASK-10)", () => {
     expect(within(listbox).getByText("/翻译")).toBeInTheDocument();
     expect(within(listbox).queryByText("/总结")).not.toBeInTheDocument();
     expect(within(listbox).queryByText("/润色")).not.toBeInTheDocument();
+  });
+});
+
+describe("skill retrieval in the capability panel (TASK-07 第②层)", () => {
+  it("surfaces matching installed skills and clicking runs the command flow", async () => {
+    // Install a skill whose triggers match the typed input.
+    localStorage.setItem(
+      "mofa-studio-skills",
+      JSON.stringify([
+        {
+          skill_version: 1,
+          id: "skill-minutes",
+          name: "会议纪要",
+          description: "整理会议内容",
+          triggers: ["会议", "纪要"],
+          commands: [{ name: "纪要", template: "整理：{{会议内容}}" }],
+          installed_at: "",
+          enabled: true,
+        },
+      ]),
+    );
+    // Install the same way SkillsPage does: skill store + palette registration.
+    localStorage.setItem(
+      "mofa-studio-slash-commands",
+      JSON.stringify([
+        ...JSON.parse(localStorage.getItem("mofa-studio-slash-commands") ?? "[]"),
+        { id: "skill-skill-minutes-0", name: "纪要", template: "整理：{{会议内容}}", slots: ["会议内容"], builtin: false },
+      ]),
+    );
+    renderChat({});
+    fireEvent.change(screen.getByPlaceholderText(/输入消息/), {
+      target: { value: "帮我整理昨天的会议纪要" },
+    });
+    fireEvent.click(screen.getByLabelText("能力面板"));
+    const hit = await screen.findByLabelText("技能-会议纪要");
+    expect(hit.textContent).toContain("会议纪要");
+    // Clicking opens the skill's own slot modal (第③层 子路由).
+    fireEvent.click(hit);
+    expect(await screen.findByText(/填充指令参数/)).toBeInTheDocument();
+    localStorage.removeItem("mofa-studio-skills");
+    localStorage.removeItem("mofa-studio-slash-commands");
   });
 });

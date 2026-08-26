@@ -2,9 +2,11 @@
  * Tests for TASK-06 路由 v1: keyword-evidence ranking and capability-panel
  * preselection. Every cataloged capability must carry a real action.
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   CAPABILITIES,
+  classifyWithModel,
+  compositeSelection,
   defaultPreselect,
   suggestSelection,
   type CapabilityId,
@@ -72,5 +74,31 @@ describe("capability catalog", () => {
     for (const id of suggestSelection("查一下最新新闻画一张图做个视频总结翻译分析为什么写邮件")) {
       expect(ids.has(id as CapabilityId)).toBe(true);
     }
+  });
+});
+
+describe("TASK-07 v2 composite classification", () => {
+  it("classifies via the model and unions with rule ranking", async () => {
+    const modelIds = await classifyWithModel("帮我查一下最新新闻", async () => "web_search, summarize");
+    expect(modelIds).toEqual(["web_search", "summarize"]);
+
+    const composite = compositeSelection(["writing"], modelIds);
+    expect(composite).toEqual(["writing", "web_search", "summarize"]);
+  });
+
+  it("unknown model tokens are dropped; failures fall back to rules", async () => {
+    const noisy = await classifyWithModel("随便", async () => "web_search, bogus, image_gen, extra");
+    expect(noisy).toEqual(["web_search", "image_gen"]);
+
+    const fallback = await classifyWithModel("查一下最新新闻", async () => {
+      throw new Error("engine down");
+    });
+    expect(fallback[0]).toBe("web_search");
+  });
+
+  it("empty input short-circuits without calling the model", async () => {
+    const chat = vi.fn();
+    expect(await classifyWithModel("   ", chat)).toEqual([]);
+    expect(chat).not.toHaveBeenCalled();
   });
 });

@@ -207,6 +207,33 @@ unsafe fn pet_set_frame_impl(
         }
         let primary_height = screens.objectAtIndex(0).frame().size.height;
 
+        // Defensive clamp to FULL visibility: every frontend path funnels
+        // window moves through this one command, so no stale-coordinate or
+        // coordinate-space bug higher up can ever park the ball off-screen
+        // or half-hidden at an edge again. Judge on the nearest screen's
+        // visible frame (menu bar / dock excluded).
+        let cx = x + width / 2.0;
+        let cy = y + height / 2.0;
+        let mut best: Option<(f64, f64, f64, f64)> = None; // (vx, vy_top, vw, vh)
+        let mut best_dist = f64::INFINITY;
+        for i in 0..screens.len() {
+            let s = screens.objectAtIndex(i);
+            let vf = s.visibleFrame();
+            let sx = vf.origin.x;
+            let sy_top = primary_height - vf.origin.y - vf.size.height;
+            let (sw, sh) = (vf.size.width, vf.size.height);
+            let dx = if cx < sx { sx - cx } else if cx > sx + sw { cx - sx - sw } else { 0.0 };
+            let dy = if cy < sy_top { sy_top - cy } else if cy > sy_top + sh { cy - sy_top - sh } else { 0.0 };
+            let dist = dx * dx + dy * dy;
+            if dist < best_dist {
+                best_dist = dist;
+                best = Some((sx, sy_top, sw, sh));
+            }
+        }
+        let (vx, vy, vw, vh) = best.unwrap_or((0.0, 0.0, primary_height, 0.0));
+        let x = x.clamp(vx, (vx + vw - width).max(vx));
+        let y = y.clamp(vy, (vy + vh - height).max(vy));
+
         let mut frame = win.frame();
         frame.origin.x = x;
         frame.origin.y = primary_height - y - height;
@@ -329,34 +356,11 @@ fn start_window_drag(window: tauri::WebviewWindow) {
     {
         let handle = window.clone();
         let _ = window.run_on_main_thread(move || {
-            // Reel a stranded window back on-screen first so a drag always
-            // resumes from a visible point (the ball can be parked fully
-            // off-screen by past drags).
-            if let Ok(pos) = handle.outer_position() {
-                let scale = handle.scale_factor().unwrap_or(1.0);
-                let lx = pos.x as f64 / scale;
-                let ly = pos.y as f64 / scale;
-                unsafe {
-                    use objc2::MainThreadMarker;
-                    use objc2_app_kit::NSScreen;
-                    // Safe: this closure runs on the main thread.
-                    let mtm = MainThreadMarker::new_unchecked();
-                    let screens = NSScreen::screens(mtm);
-                    if screens.len() > 0 {
-                        let sw = screens.objectAtIndex(0).frame().size.width;
-                        let sh = screens.objectAtIndex(0).frame().size.height;
-                        const SIZE: f64 = 64.0;
-                        let off_screen =
-                            lx < -SIZE || ly < -SIZE || lx > sw || ly > sh;
-                        if off_screen {
-                            let _ = handle.set_position(tauri::LogicalPosition::new(
-                                (sw - SIZE - 50.0).max(0.0),
-                                ((sh - SIZE) / 2.0).round(),
-                            ));
-                        }
-                    }
-                }
-            }
+            // No pre-drag relocation here: an off-screen ball is recovered by
+            // the show-pet path, and pet_set_frame clamps every placement to
+            // full visibility anyway — a position probe at drag start once
+            // misjudged on-scale coordinates and teleported the ball
+            // mid-drag.
             if let Ok(ns_window_ptr) = handle.ns_window() {
                 unsafe { begin_drag_session(ns_window_ptr) };
             }

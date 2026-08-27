@@ -329,6 +329,34 @@ fn start_window_drag(window: tauri::WebviewWindow) {
     {
         let handle = window.clone();
         let _ = window.run_on_main_thread(move || {
+            // Reel a stranded window back on-screen first so a drag always
+            // resumes from a visible point (the ball can be parked fully
+            // off-screen by past drags).
+            if let Ok(pos) = handle.outer_position() {
+                let scale = handle.scale_factor().unwrap_or(1.0);
+                let lx = pos.x as f64 / scale;
+                let ly = pos.y as f64 / scale;
+                unsafe {
+                    use objc2::MainThreadMarker;
+                    use objc2_app_kit::NSScreen;
+                    // Safe: this closure runs on the main thread.
+                    let mtm = MainThreadMarker::new_unchecked();
+                    let screens = NSScreen::screens(mtm);
+                    if screens.len() > 0 {
+                        let sw = screens.objectAtIndex(0).frame().size.width;
+                        let sh = screens.objectAtIndex(0).frame().size.height;
+                        const SIZE: f64 = 64.0;
+                        let off_screen =
+                            lx < -SIZE || ly < -SIZE || lx > sw || ly > sh;
+                        if off_screen {
+                            let _ = handle.set_position(tauri::LogicalPosition::new(
+                                (sw - SIZE - 50.0).max(0.0),
+                                ((sh - SIZE) / 2.0).round(),
+                            ));
+                        }
+                    }
+                }
+            }
             if let Ok(ns_window_ptr) = handle.ns_window() {
                 unsafe { begin_drag_session(ns_window_ptr) };
             }

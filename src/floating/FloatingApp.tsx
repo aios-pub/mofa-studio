@@ -177,19 +177,20 @@ export default function FloatingApp() {  const { t } = useTranslation();
     return getCurrentWindow();
   }, []);
 
-  // Drag is driven entirely from JS: pointer deltas are applied as absolute
-  // window frames (rAF-batched, clamped to the display). This keeps the ball
-  // impossible to strand off-screen and avoids the synthetic-event race of
-  // the old native drag session.
-  const dragCursorRef = useRef<{ x: number; y: number } | null>(null);
-  const dragWinOriginRef = useRef<{ x: number; y: number } | null>(null);
-  const dragLatestRef = useRef<{ x: number; y: number } | null>(null);
-  const dragFrameRef = useRef<number | null>(null);
+  // Dragging uses the native window-drag session: WebKit drives the move at
+  // display refresh rate (buttery), while the protections below keep it
+  // well-behaved — no HTML5 image-drag ghost, click suppressed after
+  // release, and a post-release snap that always re-enters the screen.
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const ballRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const contextMenuRef = useRef<HTMLDivElement | null>(null);
   const isDraggingRef = useRef(false);
   const isMouseDownRef = useRef(false);
+  const dragTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // A mouseup at the end of a drag still produces a browser click; without
+  // suppression that click opens the menu immediately after every drag.
+  const suppressClickUntilRef = useRef(0);
   const particleIdRef = useRef(0);
   const bubbleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -552,7 +553,8 @@ export default function FloatingApp() {  const { t } = useTranslation();
 
   // ========== Event handling ==========
 
-  const DRAG_THRESHOLD_PX = 4;
+  const DRAG_THRESHOLD_PX = 15;
+  const DRAG_HOLD_MS = 300;
 
   const enterDraggingState = () => {
     isDraggingRef.current = true;
@@ -566,68 +568,53 @@ export default function FloatingApp() {  const { t } = useTranslation();
 
     isDraggingRef.current = false;
     isMouseDownRef.current = true;
-    // Anchor cursor and window origin synchronously so every move computes
-    // an absolute frame — a dropped event can never desync the position.
-    dragCursorRef.current = { x: event.clientX, y: event.clientY };
-    dragWinOriginRef.current = { x: window.screenX, y: window.screenY };
-    // Capture the pointer so move events keep flowing after the cursor
-    // leaves the ball bounds (required for the JS-driven drag).
-    try {
-      (event.currentTarget as Element).setPointerCapture(event.pointerId);
-    } catch {
-      /* capture unsupported — drag still works while over the ball */
-    }
+    dragStartRef.current = { x: event.clientX, y: event.clientY };
+
+    // Hold in place for a moment → treat as drag start.
+    dragTimerRef.current = setTimeout(() => {
+      if (isMouseDownRef.current && !isDraggingRef.current) {
+        enterDraggingState();
+        void petCall("start_window_drag");
+      }
+    }, DRAG_HOLD_MS);
   };
 
   const handlePointerMove = (event: ReactPointerEvent) => {
     if (!appWindow || expanded || !isMouseDownRef.current) return;
 
-    const anchor = dragCursorRef.current;
-    const origin = dragWinOriginRef.current;
-    if (!anchor || !origin) return;
+    const start = dragStartRef.current;
+    if (!start) return;
 
-    const dx = event.clientX - anchor.x;
-    const dy = event.clientY - anchor.y;
-    if (!isDraggingRef.current && Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
-    if (!isDraggingRef.current) enterDraggingState();
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
 
-    // Clamp inside the display: the ball cannot leave the screen mid-drag.
-    const targetX = clamp(origin.x + dx, 0, Math.max(0, window.screen.width - BALL_SIZE));
-    const targetY = clamp(origin.y + dy, 0, Math.max(0, window.screen.height - BALL_SIZE));
-    dragLatestRef.current = { x: targetX, y: targetY };
-
-    if (dragFrameRef.current !== null) return;
-    dragFrameRef.current = requestAnimationFrame(() => {
-      dragFrameRef.current = null;
-      const latest = dragLatestRef.current;
-      if (!latest) return;
-      void petCall("pet_set_frame", {
-        x: latest.x,
-        y: latest.y,
-        width: BALL_SIZE,
-        height: BALL_SIZE,
-      });
-    });
+    if (Math.hypot(dx, dy) > DRAG_THRESHOLD_PX && !isDraggingRef.current) {
+      if (dragTimerRef.current) {
+        clearTimeout(dragTimerRef.current);
+        dragTimerRef.current = null;
+      }
+      enterDraggingState();
+      void petCall("start_window_drag");
+    }
   };
 
   const handlePointerUp = async () => {
     if (!appWindow || expanded) return;
 
-    isMouseDownRef.current = false;
-    if (dragFrameRef.current !== null) {
-      cancelAnimationFrame(dragFrameRef.current);
-      dragFrameRef.current = null;
+    if (dragTimerRef.current) {
+      clearTimeout(dragTimerRef.current);
+      dragTimerRef.current = null;
     }
 
     const wasDragging = isDraggingRef.current;
     isDraggingRef.current = false;
-    dragCursorRef.current = null;
-    dragWinOriginRef.current = null;
-    dragLatestRef.current = null;
+    isMouseDownRef.current = false;
+    dragStartRef.current = null;
 
     if (wasDragging) {
       setPetState("idle");
       setShowBubble(false);
+      suppressClickUntilRef.current = Date.now() + 350;
       await snapToEdge();
     }
   };
@@ -635,11 +622,13 @@ export default function FloatingApp() {  const { t } = useTranslation();
   const handleClick = async () => {
     if (expanded) return;
     if (isDraggingRef.current) return;
+    if (Date.now() < suppressClickUntilRef.current) return;
     await toggleMenu();
   };
 
   const handleDoubleClick = async () => {
     if (expanded) return;
+    if (Date.now() < suppressClickUntilRef.current) return;
     isDraggingRef.current = false;
     isMouseDownRef.current = false;
     await toggleMenu();

@@ -206,34 +206,34 @@ const coreMenuItems = (t: TFunction): MenuProps["items"] => [
   {
     key: "/management/providers",
     icon: <CloudServerOutlined />,
-    label: t("nav.providers", "Provider 管理"),
+    label: t("nav.providers", "Provider"),
   },
   {
     key: "/management/prompts",
     icon: <FileTextOutlined />,
-    label: t("nav.prompts", "提示词管理"),
+    label: t("nav.prompts", "提示词"),
   },
   {
     key: "/management/skills",
     icon: <ThunderboltOutlined />,
-    label: t("nav.skills", "Skills 管理"),
+    label: t("nav.skills", "Skills"),
   },
   { type: "divider" },
   {
     key: "/scheduler",
     icon: <ClockCircleOutlined />,
-    label: t("nav.scheduler", "调度管理"),
+    label: t("nav.scheduler", "调度"),
   },
   { type: "divider" },
   {
     key: "/workflow",
     icon: <BranchesOutlined />,
-    label: t("nav.workflow", "工作流管理"),
+    label: t("nav.workflow", "工作流"),
   },
   {
     key: "/knowledge",
     icon: <DatabaseOutlined />,
-    label: t("nav.knowledge", "知识库管理"),
+    label: t("nav.knowledge", "知识库"),
   },
   { type: "divider" },
 ];

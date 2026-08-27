@@ -25,17 +25,17 @@ const horizontalMenuItems: MenuProps["items"] = [
     children: [
       {
         key: "/management/providers",
-        label: "Provider 管理",
+        label: "Provider",
         icon: <span className="i-lucide-server w-4 h-4" />,
       },
       {
         key: "/management/prompts",
-        label: "提示词管理",
+        label: "提示词",
         icon: <span className="i-lucide-file-text w-4 h-4" />,
       },
       {
         key: "/management/skills",
-        label: "Skills 管理",
+        label: "Skills",
         icon: <span className="i-lucide-zap w-4 h-4" />,
       },
       {

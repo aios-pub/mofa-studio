@@ -51,7 +51,7 @@ const searchItems = [
   },
   {
     id: "prompts",
-    title: "提示词管理",
+    title: "提示词",
     icon: <FileTextOutlined />,
     path: "/management/prompts",
     category: "管理",
@@ -59,7 +59,7 @@ const searchItems = [
   },
   {
     id: "skills",
-    title: "Skills 管理",
+    title: "Skills",
     icon: <ApiOutlined />,
     path: "/management/skills",
     category: "管理",
@@ -75,7 +75,7 @@ const searchItems = [
   },
   {
     id: "providers",
-    title: "Provider 管理",
+    title: "Provider",
     icon: <ApiOutlined />,
     path: "/management/providers",
     category: "管理",

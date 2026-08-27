@@ -308,12 +308,13 @@ export default function FloatingApp() {  const { t } = useTranslation();
       width: window.screen.width,
       height: window.screen.height,
     };
+    // Position fallback must be the SYNCHRONOUS window origin, never an
+    // invented one: env reads often time out right after a drag session,
+    // and a made-up position would teleport the ball away from where the
+    // user actually released it.
     const position = env
       ? { x: env.frame.x, y: env.frame.y }
-      : {
-          x: window.screen.width - BALL_SIZE - 50,
-          y: Math.round(window.screen.height / 2 - BALL_SIZE / 2),
-        };
+      : { x: window.screenX, y: window.screenY };
     const size = env?.frame ?? { width: BALL_SIZE, height: BALL_SIZE };
 
     let targetX = position.x;
@@ -477,11 +478,14 @@ export default function FloatingApp() {  const { t } = useTranslation();
     }
 
     setExpanded(false);
-    // window.screenX/Y is a synchronous read of the live window origin — no
-    // IPC hop, so collapsing never depends on a timed pet_env succeeding.
+    // While expanded the ball sits at a CORNER of the enlarged window, so
+    // shrinking to the window origin would shift it. Anchor on the ball's
+    // real on-screen position: window origin (synchronous) + the ball's
+    // offset inside the viewport.
+    const rect = ballRef.current?.getBoundingClientRect();
     await petCall("pet_set_frame", {
-      x: window.screenX,
-      y: window.screenY,
+      x: window.screenX + (rect?.left ?? 0),
+      y: window.screenY + (rect?.top ?? 0),
       width: BALL_SIZE,
       height: BALL_SIZE,
     });
@@ -532,8 +536,12 @@ export default function FloatingApp() {  const { t } = useTranslation();
 
   // ========== Event handling ==========
 
-  const DRAG_THRESHOLD_PX = 15;
-  const DRAG_HOLD_MS = 300;
+  // Enter the native drag session as early as possible: the session anchors
+  // the window to the cursor at the moment it STARTS, so every millisecond
+  // of threshold/queue delay before that becomes permanent cursor lead that
+  // the user perceives as "not following the mouse".
+  const DRAG_THRESHOLD_PX = 4;
+  const DRAG_HOLD_MS = 150;
 
   const enterDraggingState = () => {
     isDraggingRef.current = true;
@@ -650,9 +658,12 @@ export default function FloatingApp() {  const { t } = useTranslation();
 
     await petCall("pet_window_op", { op: "show_main" });
     setExpanded(false);
+    // Anchor the shrink on the ball's real position (it sits at a corner
+    // of the enlarged window while expanded), same as collapseMenu.
+    const rect = ballRef.current?.getBoundingClientRect();
     await petCall("pet_set_frame", {
-      x: window.screenX,
-      y: window.screenY,
+      x: window.screenX + (rect?.left ?? 0),
+      y: window.screenY + (rect?.top ?? 0),
       width: BALL_SIZE,
       height: BALL_SIZE,
     });

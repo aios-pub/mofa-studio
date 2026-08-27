@@ -723,12 +723,14 @@ export default function FloatingApp() {  const { t } = useTranslation();
             height: window.screen.height,
           };
 
+        // Off-screen means the ball CENTRE is outside the display. An
+        // edge-equality like frame.y === monitor.height must count as off.
         const isOffScreen =
           !frame ||
-          frame.x < monitor.x - BALL_SIZE ||
-          frame.x > monitor.x + monitor.width ||
-          frame.y < monitor.y - BALL_SIZE ||
-          frame.y > monitor.y + monitor.height;
+          frame.x + BALL_SIZE / 2 < monitor.x ||
+          frame.x + BALL_SIZE / 2 > monitor.x + monitor.width ||
+          frame.y + BALL_SIZE / 2 < monitor.y ||
+          frame.y + BALL_SIZE / 2 > monitor.y + monitor.height;
 
         if (isOffScreen) {
           await petCall("pet_set_frame", {

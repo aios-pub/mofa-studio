@@ -102,7 +102,12 @@ const petCall = async <T,>(
   }
 };
 
-const getPetEnv = () => petCall<PetEnvPayload>("pet_env");
+const getPetEnv = async (): Promise<PetEnvPayload | undefined> => {
+  // One retry: pet_env hops to the main thread and can outlive the 800ms
+  // budget while a window transition is in flight; a single retry has been
+  // enough in practice and beats blind-falling back to a default position.
+  return (await petCall<PetEnvPayload>("pet_env")) ?? (await petCall<PetEnvPayload>("pet_env"));
+};
 
 const getMenuWindowSize = () => ({
   width: MENU_WIDTH + BALL_SIZE + MENU_GAP,
@@ -172,7 +177,6 @@ export default function FloatingApp() {  const { t } = useTranslation();
     return getCurrentWindow();
   }, []);
 
-  const windowAnchorRef = useRef<{ x: number; y: number } | null>(null);
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const ballRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -371,10 +375,11 @@ export default function FloatingApp() {  const { t } = useTranslation();
       return;
     }
     const env = await getPetEnv();
+    // env can time out under main-thread pressure; the synchronous window
+    // origin keeps placement math grounded instead of teleporting to (0,0).
     const logicalPos = env
       ? { x: env.frame.x, y: env.frame.y }
-      : { x: 0, y: 0 };
-    windowAnchorRef.current = logicalPos;
+      : { x: window.screenX, y: window.screenY };
     const bounds = env?.monitor
       ? {
           x: env.monitor.x,
@@ -473,13 +478,11 @@ export default function FloatingApp() {  const { t } = useTranslation();
     }
 
     setExpanded(false);
-    const env = await getPetEnv();
-    const anchor = windowAnchorRef.current;
-    const x = anchor?.x ?? env?.frame.x ?? 0;
-    const y = anchor?.y ?? env?.frame.y ?? 0;
+    // window.screenX/Y is a synchronous read of the live window origin — no
+    // IPC hop, so collapsing never depends on a timed pet_env succeeding.
     await petCall("pet_set_frame", {
-      x,
-      y,
+      x: window.screenX,
+      y: window.screenY,
       width: BALL_SIZE,
       height: BALL_SIZE,
     });
@@ -636,11 +639,6 @@ export default function FloatingApp() {  const { t } = useTranslation();
       })();
     }
 
-    const env = await getPetEnv();
-    if (env) {
-      windowAnchorRef.current = { x: env.frame.x, y: env.frame.y };
-    }
-
     await collapseMenu();
     await petCall("pet_window_op", { op: "hide" });
   };
@@ -651,8 +649,8 @@ export default function FloatingApp() {  const { t } = useTranslation();
     await petCall("pet_window_op", { op: "show_main" });
     setExpanded(false);
     await petCall("pet_set_frame", {
-      x: (await getPetEnv())?.frame.x ?? 0,
-      y: (await getPetEnv())?.frame.y ?? 0,
+      x: window.screenX,
+      y: window.screenY,
       width: BALL_SIZE,
       height: BALL_SIZE,
     });
@@ -691,33 +689,31 @@ export default function FloatingApp() {  const { t } = useTranslation();
         setPetState("idle");
         setContextMenuVisible(false);
 
-        const env = await getPetEnv();
-        const frame = env?.frame;
-        await petCall("pet_set_frame", {
-          x: frame?.x ?? 0,
-          y: frame?.y ?? 0,
-          width: BALL_SIZE,
-          height: BALL_SIZE,
-        });
+        // Show first: orderOut preserves the pre-hide frame, so re-showing
+        // alone restores the last position without depending on a timed
+        // frame read succeeding. Only reposition on hard evidence that the
+        // ball ended up off-screen — never blind-move to (0,0).
         await petCall("pet_window_op", { op: "show" });
         await petCall("pet_window_op", { op: "focus" });
 
-        if (env?.monitor && frame) {
-          const b = env.monitor;
-          const isOffScreen =
-            frame.x < b.x - BALL_SIZE ||
-            frame.x > b.x + b.width ||
-            frame.y < b.y - BALL_SIZE ||
-            frame.y > b.y + b.height;
+        const env = await getPetEnv();
+        const frame = env?.frame;
+        const monitor = env?.monitor;
+        if (!frame || !monitor) return;
 
-          if (isOffScreen) {
-            await petCall("pet_set_frame", {
-              x: b.x + b.width - BALL_SIZE - 50,
-              y: b.y + b.height / 2,
-              width: BALL_SIZE,
-              height: BALL_SIZE,
-            });
-          }
+        const isOffScreen =
+          frame.x < monitor.x - BALL_SIZE ||
+          frame.x > monitor.x + monitor.width ||
+          frame.y < monitor.y - BALL_SIZE ||
+          frame.y > monitor.y + monitor.height;
+
+        if (isOffScreen) {
+          await petCall("pet_set_frame", {
+            x: monitor.x + monitor.width - BALL_SIZE - 50,
+            y: monitor.y + Math.round(monitor.height / 2 - BALL_SIZE / 2),
+            width: BALL_SIZE,
+            height: BALL_SIZE,
+          });
         }
       });
     };

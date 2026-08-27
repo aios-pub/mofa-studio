@@ -346,47 +346,26 @@ export default function FloatingApp() {  const { t } = useTranslation();
         targetY = bounds.y + bounds.height - EDGE_PEEK;
       }
 
-      const minX = bounds.x - size.width + EDGE_PEEK;
-      const maxX = bounds.x + bounds.width - EDGE_PEEK;
-      const minY = bounds.y - size.height + EDGE_PEEK;
-      const maxY = bounds.y + bounds.height - EDGE_PEEK;
+    const minX = bounds.x - size.width + EDGE_PEEK;
+    const maxX = bounds.x + bounds.width - EDGE_PEEK;
+    const minY = bounds.y - size.height + EDGE_PEEK;
+    const maxY = bounds.y + bounds.height - EDGE_PEEK;
 
       targetX = clamp(targetX, minX, maxX);
       targetY = clamp(targetY, minY, maxY);
     }
 
+    // Single relocation, no per-frame animation: this runs right after the
+    // native drag session releases the main thread, where a burst of
+    // frame-by-frame IPC would visibly stutter.
     setSnapping(true);
-
-    const startX = position.x;
-    const startY = position.y;
-    const duration = 280;
-    const startTime = performance.now();
-
-    const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
-
-    const animate = async (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = easeOutCubic(progress);
-
-      const currentX = startX + (targetX - startX) * eased;
-      const currentY = startY + (targetY - startY) * eased;
-
-      await petCall("pet_set_frame", {
-        x: currentX,
-        y: currentY,
-        width: size.width,
-        height: size.height,
-      });
-
-      if (progress < 1) {
-        requestAnimationFrame((time) => void animate(time));
-      } else {
-        setSnapping(false);
-      }
-    };
-
-    requestAnimationFrame((time) => void animate(time));
+    await petCall("pet_set_frame", {
+      x: targetX,
+      y: targetY,
+      width: size.width,
+      height: size.height,
+    });
+    setSnapping(false);
   }, [appWindow]);
 
   const expandMenu = useCallback(async () => {
@@ -705,8 +684,22 @@ export default function FloatingApp() {  const { t } = useTranslation();
     if (!appWindow) return;
 
     let unlisten: (() => void) | undefined;
+    let unlistenDragEnd: (() => void) | undefined;
 
     const setup = async () => {
+      // The native drag session blocks the main thread until release, so
+      // the page never sees the pointerup — the Rust side emits this the
+      // moment the session returns. All post-drag cleanup lives here.
+      unlistenDragEnd = await appWindow.listen("pet:drag-ended", async () => {
+        isMouseDownRef.current = false;
+        isDraggingRef.current = false;
+        dragStartRef.current = null;
+        setPetState("idle");
+        setShowBubble(false);
+        suppressClickUntilRef.current = Date.now() + 350;
+        await snapToEdge();
+      });
+
       unlisten = await appWindow.listen("tray:reset-pet", async () => {
         setExpanded(false);
         setPetState("idle");
@@ -754,7 +747,10 @@ export default function FloatingApp() {  const { t } = useTranslation();
     };
 
     void setup();
-    return () => unlisten?.();
+    return () => {
+      unlisten?.();
+      unlistenDragEnd?.();
+    };
   }, [appWindow]);
 
   // Show a welcome bubble on first load

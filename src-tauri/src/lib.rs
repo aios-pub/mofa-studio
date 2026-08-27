@@ -3,7 +3,7 @@ mod tray;
 use serde::Deserialize;
 use std::fs;
 use std::net::{IpAddr, Ipv4Addr};
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 /// Floating ball mode configuration
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -360,6 +360,11 @@ fn start_window_drag(window: tauri::WebviewWindow) {
             if let Ok(ns_window_ptr) = handle.ns_window() {
                 unsafe { begin_drag_session(ns_window_ptr) };
             }
+            // performWindowDragWithEvent BLOCKS the main thread until the
+            // mouse is released — while it runs the webview receives no
+            // events at all, so the page never sees the pointerup. Emit the
+            // release signal from here, where delivery is guaranteed.
+            let _ = handle.emit_to("floating", "pet:drag-ended", ());
         });
     }
     #[cfg(not(target_os = "macos"))]

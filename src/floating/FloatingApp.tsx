@@ -39,7 +39,6 @@ const BALL_SIZE = 64;
 const MENU_WIDTH = 240;
 const MENU_HEIGHT = 380;
 const MENU_GAP = 12;
-const EDGE_PEEK = 32;
 
 // Idle bubble trigger interval range (milliseconds)
 const IDLE_BUBBLE_MIN_INTERVAL = 15000;
@@ -162,7 +161,6 @@ export default function FloatingApp() {  const { t } = useTranslation();
     horizontal: "left",
     vertical: "up",
   });
-  const [snapping, setSnapping] = useState(false);
   const [contextMenuVisible, setContextMenuVisible] = useState(false);
   const [alwaysOnTop, setAlwaysOnTop] = useState(true);
   const [petState, setPetState] = useState<PetState>("idle");
@@ -294,14 +292,20 @@ export default function FloatingApp() {  const { t } = useTranslation();
 
   // ========== Window operations ==========
 
-  const snapToEdge = useCallback(async () => {
+  /**
+   * Guarantee the ball is FULLY visible, nothing more.
+   *
+   * The old release-snap slid the ball to the nearest screen edge and left
+   * only EDGE_PEEK px visible — users read that half-hidden state as "the
+   * pet disappeared", and it silently rewrote the resting position, so
+   * hide/show cycles came back "in the wrong place". Now the ball simply
+   * stays wherever it was released; only a placement that leaves part of it
+   * off-screen gets nudged back entirely inside.
+   */
+  const ensureOnScreen = useCallback(async () => {
     if (!appWindow) return;
 
     const env = await getPetEnv();
-    // The monitor is null whenever the ball centre left every display
-    // (dragged past an edge), which is exactly when the snap matters most —
-    // fall back to the JS screen object so release ALWAYS pulls the ball
-    // back on-screen instead of stranding it off-screen.
     const bounds = env?.monitor ?? {
       x: 0,
       y: 0,
@@ -317,56 +321,17 @@ export default function FloatingApp() {  const { t } = useTranslation();
       : { x: window.screenX, y: window.screenY };
     const size = env?.frame ?? { width: BALL_SIZE, height: BALL_SIZE };
 
-    let targetX = position.x;
-    let targetY = position.y;
+    const targetX = clamp(position.x, bounds.x, bounds.x + bounds.width - size.width);
+    const targetY = clamp(position.y, bounds.y, bounds.y + bounds.height - size.height);
 
-    if (bounds) {
-      const leftDistance = Math.abs(position.x - bounds.x);
-      const rightDistance = Math.abs(
-        bounds.x + bounds.width - (position.x + size.width),
-      );
-      const topDistance = Math.abs(position.y - bounds.y);
-      const bottomDistance = Math.abs(
-        bounds.y + bounds.height - (position.y + size.height),
-      );
+    if (targetX === position.x && targetY === position.y) return;
 
-      const minDistance = Math.min(
-        leftDistance,
-        rightDistance,
-        topDistance,
-        bottomDistance,
-      );
-
-      if (minDistance === leftDistance) {
-        targetX = bounds.x - (size.width - EDGE_PEEK);
-      } else if (minDistance === rightDistance) {
-        targetX = bounds.x + bounds.width - EDGE_PEEK;
-      } else if (minDistance === topDistance) {
-        targetY = bounds.y - (size.height - EDGE_PEEK);
-      } else {
-        targetY = bounds.y + bounds.height - EDGE_PEEK;
-      }
-
-    const minX = bounds.x - size.width + EDGE_PEEK;
-    const maxX = bounds.x + bounds.width - EDGE_PEEK;
-    const minY = bounds.y - size.height + EDGE_PEEK;
-    const maxY = bounds.y + bounds.height - EDGE_PEEK;
-
-      targetX = clamp(targetX, minX, maxX);
-      targetY = clamp(targetY, minY, maxY);
-    }
-
-    // Single relocation, no per-frame animation: this runs right after the
-    // native drag session releases the main thread, where a burst of
-    // frame-by-frame IPC would visibly stutter.
-    setSnapping(true);
     await petCall("pet_set_frame", {
       x: targetX,
       y: targetY,
       width: size.width,
       height: size.height,
     });
-    setSnapping(false);
   }, [appWindow]);
 
   const expandMenu = useCallback(async () => {
@@ -602,7 +567,7 @@ export default function FloatingApp() {  const { t } = useTranslation();
       setPetState("idle");
       setShowBubble(false);
       suppressClickUntilRef.current = Date.now() + 350;
-      await snapToEdge();
+      await ensureOnScreen();
     }
   };
 
@@ -708,7 +673,7 @@ export default function FloatingApp() {  const { t } = useTranslation();
         setPetState("idle");
         setShowBubble(false);
         suppressClickUntilRef.current = Date.now() + 350;
-        await snapToEdge();
+        await ensureOnScreen();
       });
 
       unlisten = await appWindow.listen("tray:reset-pet", async () => {
@@ -789,7 +754,6 @@ export default function FloatingApp() {  const { t } = useTranslation();
 
   const getPetStateClassName = () => {
     const classes: string[] = [];
-    if (snapping) classes.push("is-snapping");
     if (petState === "dragging") classes.push("is-dragging");
     if (petState === "happy") classes.push("is-happy");
     if (petState === "sleepy") classes.push("is-sleepy");

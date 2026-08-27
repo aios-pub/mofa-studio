@@ -391,6 +391,18 @@ unsafe fn begin_drag_session(ns_window_ptr: *mut std::ffi::c_void) {
         return;
     };
 
+    // A fast flick can release the mouse before this IPC reaches the main
+    // thread; performWindowDrag would then start a session that waits for a
+    // mouseUp which already happened — the session wedges (cursor freezes,
+    // later drags re-enter it, clicks get eaten). Refuse to start unless
+    // the button is actually down right now.
+    let pressed: isize = unsafe {
+        objc2::msg_send![objc2::class!(NSEvent), pressedMouseButtons]
+    };
+    if pressed & 1 == 0 {
+        return;
+    }
+
     // NSEventTypeLeftMouseDown
     const LEFT_MOUSE_DOWN: usize = 1;
     let location = NSEvent::mouseLocation();

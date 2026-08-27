@@ -501,12 +501,11 @@ export default function FloatingApp() {  const { t } = useTranslation();
 
   // ========== Event handling ==========
 
-  // Enter the native drag session as early as possible: the session anchors
-  // the window to the cursor at the moment it STARTS, so every millisecond
-  // of threshold/queue delay before that becomes permanent cursor lead that
-  // the user perceives as "not following the mouse".
-  const DRAG_THRESHOLD_PX = 4;
-  const DRAG_HOLD_MS = 150;
+  // Original cadence: a deliberate hold or a clear 15px move starts the
+  // drag; quick clicks never enter a session. (An earlier 4px/150ms setting
+  // made ordinary clicks race into drag sessions.)
+  const DRAG_THRESHOLD_PX = 15;
+  const DRAG_HOLD_MS = 300;
 
   const enterDraggingState = () => {
     isDraggingRef.current = true;

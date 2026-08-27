@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Input, Table, Tag } from "antd";
+import { Input, Segmented, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { SearchOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import type { TaskExecution, ExecutionStatus } from "@/services";
@@ -56,7 +56,7 @@ export default function ExecutionsTab() {  const { t } = useTranslation();
       const q = search.toLowerCase();
       result = result.filter(
         (e) =>
-          e.taskName.toLowerCase().includes(q) ||
+          e.task_name.toLowerCase().includes(q) ||
           e.result?.toLowerCase().includes(q) ||
           e.error?.toLowerCase().includes(q),
       );
@@ -88,7 +88,7 @@ export default function ExecutionsTab() {  const { t } = useTranslation();
       title: t("任务名称"),
       dataIndex: "taskName",
       key: "taskName",
-      sorter: (a, b) => a.taskName.localeCompare(b.taskName),
+      sorter: (a, b) => a.task_name.localeCompare(b.task_name),
     },
     {
       title: t("状态"),
@@ -110,7 +110,7 @@ export default function ExecutionsTab() {  const { t } = useTranslation();
       key: "startedAt",
       width: 170,
       sorter: (a, b) =>
-        new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime(),
+        new Date(a.started_at).getTime() - new Date(b.started_at).getTime(),
       defaultSortOrder: "descend",
       render: (v: Date) => formatDate(v),
     },
@@ -157,42 +157,20 @@ export default function ExecutionsTab() {  const { t } = useTranslation();
           style={{ width: 250 }}
           size="small"
         />
-        <div className="flex gap-1.5">
-          {[
-            { key: "" as const, label: t("全部"), count: counts.all },
-            {
-              key: "success" as const,
-              label: t("成功"),
-              count: counts.success,
-              color: "text-green-500",
-            },
-            {
-              key: "failure" as const,
-              label: t("失败"),
-              count: counts.failure,
-              color: "text-red-500",
-            },
-            {
-              key: "running" as const,
-              label: t("运行中"),
-              count: counts.running,
-              color: "text-blue-500",
-            },
-            { key: "pending" as const, label: t("等待中"), count: counts.pending },
-          ].map((f) => (
-            <button
-              key={f.key}
-              onClick={() => setStatusFilter(f.key)}
-              className={`px-2.5 py-1 text-xs rounded-full transition-colors ${
-                statusFilter === f.key
-                  ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)] font-medium"
-                  : `bg-(--color-bg-tertiary) text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] ${f.color || ""}`
-              }`}
-            >
-              {f.label} ({f.count})
-            </button>
-          ))}
-        </div>
+        <Segmented
+          value={statusFilter}
+          onChange={(v) => setStatusFilter(v as typeof statusFilter)}
+          options={[
+            { key: "", label: t("全部"), count: counts.all },
+            { key: "success", label: t("成功"), count: counts.success },
+            { key: "failure", label: t("失败"), count: counts.failure },
+            { key: "running", label: t("运行中"), count: counts.running },
+            { key: "pending", label: t("等待中"), count: counts.pending },
+          ].map((f) => ({
+            value: f.key,
+            label: `${f.label} (${f.count})`,
+          }))}
+        />
       </div>
 
       {/* Table */}
@@ -205,7 +183,7 @@ export default function ExecutionsTab() {  const { t } = useTranslation();
           loading={loading}
           pagination={{
             pageSize: 20,
-            showTotal: (t) => t("共 {{p0}} 条", { p0: t }),
+            showTotal: (total) => t("共 {{p0}} 条", { p0: total }),
             size: "small",
           }}
           scroll={{ y: "calc(100vh - 280px)" }}

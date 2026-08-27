@@ -19,7 +19,10 @@ import {
   Tabs,
   Card,
   Empty,
+  Table,
+  Typography,
 } from "antd";
+import type { TableProps } from "antd";
 import {
   PlusOutlined,
   SearchOutlined,
@@ -547,9 +550,9 @@ export default function PromptListPage() {  const { t } = useTranslation();
 
       {/* Create/edit drawer */}
       <Drawer
-        title={editingPrompt ? "编辑提示词" : "新建提示词"}
+        title={editingPrompt ? t("编辑提示词") : t("新建提示词")}
         placement="right"
-        size={{ width: 720 }}
+        width={720}
         open={editorOpen}
         onClose={handleEditorCancel}
         destroyOnHidden
@@ -829,10 +832,10 @@ function PromptDetail({
         </div>
         <Space>
           <Button icon={<DeleteOutlined />} danger onClick={onDelete}>
-            删除
+            {t("删除")}
           </Button>
           <Button type="primary" icon={<EditOutlined />} onClick={onEdit}>
-            编辑
+            {t("编辑")}
           </Button>
         </Space>
       </div>
@@ -841,7 +844,7 @@ function PromptDetail({
       <div className="grid grid-cols-3 gap-4 px-6 pb-4">
         <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg">
           <span className="text-xs text-[var(--color-text-tertiary)]">
-            分类
+            {t("分类")}
           </span>
           <p className="text-sm text-[var(--color-text-primary)]">
             {currentPrompt.category}
@@ -849,7 +852,7 @@ function PromptDetail({
         </div>
         <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg">
           <span className="text-xs text-[var(--color-text-tertiary)]">
-            版本
+            {t("版本")}
           </span>
           <p className="text-sm text-[var(--color-text-primary)]">
             v{currentPrompt.version}
@@ -857,7 +860,7 @@ function PromptDetail({
         </div>
         <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg">
           <span className="text-xs text-[var(--color-text-tertiary)]">
-            变量数
+            {t("变量数")}
           </span>
           <p className="text-sm text-[var(--color-text-primary)]">
             {currentPrompt.variables.length}
@@ -866,25 +869,23 @@ function PromptDetail({
       </div>
 
       {/* Tabs bar */}
-      <div className="flex gap-1 px-6 border-b border-(--color-border)">
-        {tabs.map((tab) => {
+      <Tabs
+        activeKey={activeTab}
+        onChange={(key) => setActiveTab(key as typeof activeTab)}
+        className="px-6"
+        items={tabs.map((tab) => {
           const Icon = tab.icon;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key as typeof activeTab)}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.key
-                  ? "text-[var(--color-primary)] border-(--color-primary)"
-                  : "text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]"
-              }`}
-            >
-              <Icon />
-              {tab.label}
-            </button>
-          );
+          return {
+            key: tab.key,
+            label: (
+              <span className="flex items-center gap-1.5">
+                <Icon />
+                {tab.label}
+              </span>
+            ),
+          };
         })}
-      </div>
+      />
 
       {/* Content area */}
       <div className="flex-1 overflow-hidden">
@@ -902,55 +903,19 @@ function PromptDetail({
           <div className="p-6 h-full overflow-y-auto">
             <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
               {currentPrompt.variables.length === 0 ? (
-                <p className="text-center text-[var(--color-text-tertiary)] py-4">
-                  暂无变量
-                </p>
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description={t("暂无变量")}
+                  className="py-4"
+                />
               ) : (
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-(--color-border)">
-                      <th className="text-left py-2 text-[var(--color-text-tertiary)]">
-                        变量名
-                      </th>
-                      <th className="text-left py-2 text-[var(--color-text-tertiary)]">
-                        类型
-                      </th>
-                      <th className="text-left py-2 text-[var(--color-text-tertiary)]">
-                        默认值
-                      </th>
-                      <th className="text-left py-2 text-[var(--color-text-tertiary)]">
-                        必填
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {currentPrompt.variables.map((variable) => (
-                      <tr
-                        key={variable.name}
-                        className="border-b border-(--color-border)/50"
-                      >
-                        <td className="py-2">
-                          <code className="text-[var(--color-primary)]">{`{{${variable.name}}}`}</code>
-                        </td>
-                        <td className="py-2 text-[var(--color-text-secondary)]">
-                          {variable.type}
-                        </td>
-                        <td className="py-2 text-[var(--color-text-secondary)]">
-                          {variable.defaultValue || "-"}
-                        </td>
-                        <td className="py-2">
-                          {variable.required ? (
-                            <span className="text-red-500">{t("是")}</span>
-                          ) : (
-                            <span className="text-[var(--color-text-tertiary)]">
-                              否
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <Table<PromptVariable>
+                  rowKey="name"
+                  dataSource={currentPrompt.variables}
+                  pagination={false}
+                  size="small"
+                  columns={variableColumns(t)}
+                />
               )}
             </div>
           </div>
@@ -977,4 +942,41 @@ function PromptDetail({
       </div>
     </div>
   );
+}
+
+// Columns for the prompt variable table in the detail view
+function variableColumns(t: (key: string, options?: any) => string): TableProps<PromptVariable>["columns"] {
+  const { Text } = Typography;
+  return [
+    {
+      title: t("变量名"),
+      dataIndex: "name",
+      render: (name: string) => (
+        <code className="text-[var(--color-primary)]">{`{{${name}}}`}</code>
+      ),
+    },
+    {
+      title: t("类型"),
+      dataIndex: "type",
+    },
+    {
+      title: t("默认值"),
+      dataIndex: "defaultValue",
+      render: (value?: string) => (
+        <Text type={value ? undefined : "secondary"}>
+          {value || "-"}
+        </Text>
+      ),
+    },
+    {
+      title: t("必填"),
+      dataIndex: "required",
+      render: (required?: boolean) =>
+        required ? (
+          <span className="text-red-500">{t("是")}</span>
+        ) : (
+          <span className="text-[var(--color-text-tertiary)]">{t("否")}</span>
+        ),
+    },
+  ];
 }

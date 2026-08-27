@@ -13,13 +13,11 @@ import {
   ClockCircleOutlined,
   AimOutlined,
   ThunderboltOutlined,
-  RiseOutlined,
-  FallOutlined,
   BarChartOutlined,
 } from '@ant-design/icons';
 import type { UsageStats as ApiUsageStats, DailyStats as ApiDailyStats } from '@/services';
 import type { ColumnsType } from 'antd/es/table';
-import { PageHeader } from '@/components/common';
+import { PageHeader, StatCard } from '@/components/common';
 import { analyticsApi, agentApi } from '@/services';
 
 // Time range options
@@ -29,45 +27,6 @@ const timeOptions = [
   { label: '本月', value: 'month' },
   { label: '本季度', value: 'quarter' },
 ];
-
-// Statistics card component
-interface StatCardProps {
-  title: string;
-  value: string;
-  change: number;
-  changeLabel: string;
-  icon: React.ReactNode;
-  color: string;
-}
-
-function StatCard({ title, value, change, changeLabel, icon, color }: StatCardProps) {
-  const isPositive = change >= 0;
-
-  return (
-    <Card className="h-full">
-      <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <p className="text-sm text-[var(--color-text-secondary)]">{title}</p>
-          <p className="text-2xl font-bold">{value}</p>
-          <div className="flex items-center gap-1 text-sm">
-            {isPositive ? (
-              <RiseOutlined className="text-green-500" />
-            ) : (
-              <FallOutlined className="text-red-500" />
-            )}
-            <span className={isPositive ? 'text-green-500' : 'text-red-500'}>
-              {isPositive ? '+' : ''}{change}%
-            </span>
-            <span className="text-[var(--color-text-tertiary)]">{changeLabel}</span>
-          </div>
-        </div>
-        <div className={`p-3 rounded-lg ${color}`}>
-          {icon}
-        </div>
-      </div>
-    </Card>
-  );
-}
 
 // Bar chart component
 function SimpleBarChart({ data }: { data: { label: string; value: number }[] }) {
@@ -314,42 +273,42 @@ export default function InsightPage() {
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
           <StatCard
-            title={t('insight.totalConversations', '总对话数')}
+            icon={<MessageOutlined />}
+            label={t('insight.totalConversations', '总对话数')}
             value={stats.totalConversations.toLocaleString()}
-            change={stats.conversationsChange}
-            changeLabel={t('insight.vsLastWeek', '较上周')}
-            icon={<MessageOutlined className="text-xl text-white" />}
-            color="bg-blue-500"
+            trend={stats.conversationsChange}
+            trendLabel={t('insight.vsLastWeek', '较上周')}
+            color="blue"
           />
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <StatCard
-            title={t('insight.avgResponseTime', '平均响应时间')}
+            icon={<ClockCircleOutlined />}
+            label={t('insight.avgResponseTime', '平均响应时间')}
             value={`${stats.avgResponseTime}s`}
-            change={stats.responseTimeChange}
-            changeLabel={t('insight.vsLastWeek', '较上周')}
-            icon={<ClockCircleOutlined className="text-xl text-white" />}
-            color="bg-green-500"
+            trend={stats.responseTimeChange}
+            trendLabel={t('insight.vsLastWeek', '较上周')}
+            color="green"
           />
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <StatCard
-            title={t('insight.successRate', '成功率')}
+            icon={<AimOutlined />}
+            label={t('insight.successRate', '成功率')}
             value={`${stats.successRate}%`}
-            change={stats.successRateChange}
-            changeLabel={t('insight.vsLastWeek', '较上周')}
-            icon={<AimOutlined className="text-xl text-white" />}
-            color="bg-purple-500"
+            trend={stats.successRateChange}
+            trendLabel={t('insight.vsLastWeek', '较上周')}
+            color="purple"
           />
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <StatCard
-            title={t('insight.totalTokens', 'Token 消耗')}
+            icon={<ThunderboltOutlined />}
+            label={t('insight.totalTokens', 'Token 消耗')}
             value={(stats.totalTokens / 1000000).toFixed(2) + 'M'}
-            change={stats.tokensChange}
-            changeLabel={t('insight.vsLastWeek', '较上周')}
-            icon={<ThunderboltOutlined className="text-xl text-white" />}
-            color="bg-orange-500"
+            trend={stats.tokensChange}
+            trendLabel={t('insight.vsLastWeek', '较上周')}
+            color="orange"
           />
         </Col>
       </Row>

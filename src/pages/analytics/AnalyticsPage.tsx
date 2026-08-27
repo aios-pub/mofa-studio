@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 /**
  * Analytics page
+ * Usage statistics with overview, agent and user breakdowns
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -12,13 +13,25 @@ import {
   DollarOutlined,
   DownloadOutlined,
   SyncOutlined,
-  FilterOutlined,
   DownOutlined,
-  CalendarOutlined,
   MessageOutlined,
   ApiOutlined,
-  RiseOutlined,
 } from "@ant-design/icons";
+import {
+  Button,
+  Card,
+  DatePicker,
+  Dropdown,
+  Progress,
+  Select,
+  Space,
+  Spin,
+  Table,
+  Tabs,
+  Typography,
+} from "antd";
+import type { TableProps } from "antd";
+import dayjs from "dayjs";
 import type {
   AnalyticsFilter,
   UsageStats,
@@ -28,6 +41,10 @@ import type {
   HourlyDistribution,
 } from "@/services";
 import { analyticsApi } from "@/services";
+import { PageContainer } from "@/components/layout";
+import { StatCard } from "@/components/common";
+
+const { Text } = Typography;
 
 // Date range options
 const dateRangeOptions = [
@@ -50,21 +67,24 @@ const getDateRange = (
     case "today":
       start_date = end_date;
       break;
-    case "yesterday":
+    case "yesterday": {
       const yesterday = new Date(today);
       yesterday.setDate(yesterday.getDate() - 1);
       start_date = yesterday.toISOString().split("T")[0];
       break;
-    case "7days":
+    }
+    case "7days": {
       const sevenDaysAgo = new Date(today);
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       start_date = sevenDaysAgo.toISOString().split("T")[0];
       break;
-    case "30days":
+    }
+    case "30days": {
       const thirtyDaysAgo = new Date(today);
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       start_date = thirtyDaysAgo.toISOString().split("T")[0];
       break;
+    }
     default:
       break;
   }
@@ -72,7 +92,8 @@ const getDateRange = (
   return { start_date, end_date };
 };
 
-export default function AnalyticsPage() {  const { t } = useTranslation();
+export default function AnalyticsPage() {
+  const { t } = useTranslation();
 
   const [loading, setLoading] = useState(true);
   const [overviewStats, setOverviewStats] = useState<UsageStats | null>(null);
@@ -90,7 +111,6 @@ export default function AnalyticsPage() {  const { t } = useTranslation();
   const [dateRangeOption, setDateRangeOption] = useState("30days");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
 
   const loadStats = useCallback(async () => {
     setLoading(true);
@@ -191,164 +211,149 @@ export default function AnalyticsPage() {  const { t } = useTranslation();
     ? Math.max(...hourlyDistribution.map((h) => h.count))
     : 0;
 
-  return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-(--color-border)">
-        <div>
-          <h1 className="text-xl font-semibold text-[var(--color-text-primary)]">
-            统计分析
-          </h1>
-          <p className="text-sm text-[var(--color-text-secondary)]">
-            查看使用数据和趋势分析
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg ${
-              showFilters
-                ? "bg-[var(--color-primary)] text-white"
-                : "bg-[var(--color-bg-secondary)] border border-(--color-border)"
-            }`}
-          >
-            <FilterOutlined />
-            筛选
-          </button>
-          <button
-            onClick={loadStats}
-            disabled={loading}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-(--color-bg-tertiary) disabled:opacity-50"
-          >
-            <SyncOutlined spin={loading} />
-            刷新
-          </button>
-          <div className="relative group">
-            <button className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)]">
-              <DownloadOutlined />
-              导出
-              <DownOutlined className="text-xs" />
-            </button>
-            <div className="absolute right-0 mt-1 w-32 py-1 bg-[var(--color-bg-base)] border border-(--color-border) rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-              <button
-                onClick={() => handleExport("csv")}
-                className="w-full px-3 py-1.5 text-sm text-left hover:bg-(--color-bg-tertiary)"
-              >
-                导出 CSV
-              </button>
-              <button
-                onClick={() => handleExport("json")}
-                className="w-full px-3 py-1.5 text-sm text-left hover:bg-(--color-bg-tertiary)"
-              >
-                导出 JSON
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      {showFilters && (
-        <div className="p-4 bg-[var(--color-bg-secondary)] border-b border-(--color-border)">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <CalendarOutlined className="text-[var(--color-text-tertiary)]" />
-              <span className="text-sm text-[var(--color-text-secondary)]">
-                日期范围:
-              </span>
-            </div>
-            <select
-              value={dateRangeOption}
-              onChange={(e) => setDateRangeOption(e.target.value)}
-              className="px-3 py-1.5 text-sm bg-[var(--color-bg-base)] border border-(--color-border) rounded-lg focus:outline-none focus:border-(--color-primary)"
-            >
-              {dateRangeOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-
-            {dateRangeOption === "custom" && (
-              <div className="flex items-center gap-2">
-                <input
-                  type="date"
-                  value={customStartDate}
-                  onChange={(e) => setCustomStartDate(e.target.value)}
-                  className="px-3 py-1.5 text-sm bg-[var(--color-bg-base)] border border-(--color-border) rounded-lg focus:outline-none focus:border-(--color-primary)"
-                />
-                <span className="text-[var(--color-text-tertiary)]">{t("至")}</span>
-                <input
-                  type="date"
-                  value={customEndDate}
-                  onChange={(e) => setCustomEndDate(e.target.value)}
-                  className="px-3 py-1.5 text-sm bg-[var(--color-bg-base)] border border-(--color-border) rounded-lg focus:outline-none focus:border-(--color-primary)"
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Tabs bar */}
-      <div className="flex gap-1 px-6 border-b border-(--color-border)">
-        {[
-          { key: "overview", label: t("使用概览"), icon: BarChartOutlined },
-          { key: "agents", label: t("Agent 统计"), icon: ThunderboltOutlined },
-          { key: "users", label: t("用户统计"), icon: UserOutlined },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key as typeof activeTab)}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.key
-                  ? "text-[var(--color-primary)] border-(--color-primary)"
-                  : "text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]"
-              }`}
-            >
-              <Icon />
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Content area */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <SyncOutlined
-              spin
-              className="text-3xl text-[var(--color-primary)]"
-            />
-          </div>
-        ) : activeTab === "overview" ? (
-          <OverviewTab
-            stats={overviewStats}
-            dailyStats={dailyStats}
-            hourlyDistribution={hourlyDistribution}
-            calculateTrend={calculateTrend}
-            formatNumber={formatNumber}
-            formatCurrency={formatCurrency}
-            maxHourlyCount={maxHourlyCount}
-          />
-        ) : activeTab === "agents" ? (
-          <AgentsTab
-            stats={agentStats}
-            formatNumber={formatNumber}
-            formatCurrency={formatCurrency}
-          />
-        ) : (
-          <UsersTab stats={userStats} formatNumber={formatNumber} />
-        )}
-      </div>
+  const loadingView = (
+    <div className="flex items-center justify-center h-64">
+      <Spin size="large" />
     </div>
+  );
+
+  const tabItems = [
+    {
+      key: "overview",
+      label: (
+        <span className="flex items-center gap-1.5">
+          <BarChartOutlined />
+          {t("使用概览")}
+        </span>
+      ),
+      children: loading ? (
+        loadingView
+      ) : (
+        <OverviewTab
+          stats={overviewStats}
+          dailyStats={dailyStats}
+          hourlyDistribution={hourlyDistribution}
+          calculateTrend={calculateTrend}
+          formatNumber={formatNumber}
+          formatCurrency={formatCurrency}
+          maxHourlyCount={maxHourlyCount}
+        />
+      ),
+    },
+    {
+      key: "agents",
+      label: (
+        <span className="flex items-center gap-1.5">
+          <ThunderboltOutlined />
+          {t("Agent 统计")}
+        </span>
+      ),
+      children: loading ? (
+        loadingView
+      ) : (
+        <AgentsTab
+          stats={agentStats}
+          formatNumber={formatNumber}
+          formatCurrency={formatCurrency}
+        />
+      ),
+    },
+    {
+      key: "users",
+      label: (
+        <span className="flex items-center gap-1.5">
+          <UserOutlined />
+          {t("用户统计")}
+        </span>
+      ),
+      children: loading ? (
+        loadingView
+      ) : (
+        <UsersTab stats={userStats} formatNumber={formatNumber} />
+      ),
+    },
+  ];
+
+  return (
+    <PageContainer
+      title={t("统计分析")}
+      description={t("查看使用数据和趋势分析")}
+      headerActions={
+        <Space wrap>
+          <Select
+            value={dateRangeOption}
+            onChange={setDateRangeOption}
+            options={dateRangeOptions.map((opt) => ({
+              value: opt.value,
+              label: t(opt.label),
+            }))}
+            style={{ minWidth: 120 }}
+          />
+          {dateRangeOption === "custom" && (
+            <DatePicker.RangePicker
+              value={[
+                customStartDate ? dayjs(customStartDate) : null,
+                customEndDate ? dayjs(customEndDate) : null,
+              ]}
+              onChange={(dates) => {
+                setCustomStartDate(dates?.[0]?.format("YYYY-MM-DD") ?? "");
+                setCustomEndDate(dates?.[1]?.format("YYYY-MM-DD") ?? "");
+              }}
+            />
+          )}
+          <Button
+            icon={<SyncOutlined spin={loading} />}
+            onClick={loadStats}
+            loading={loading}
+          >
+            {t("刷新")}
+          </Button>
+          <Dropdown
+            menu={{
+              items: [
+                { key: "csv", label: t("导出 CSV") },
+                { key: "json", label: t("导出 JSON") },
+              ],
+              onClick: ({ key }) => handleExport(key as "csv" | "json"),
+            }}
+          >
+            <Button type="primary" icon={<DownloadOutlined />}>
+              {t("导出")}
+              <DownOutlined className="text-xs" />
+            </Button>
+          </Dropdown>
+        </Space>
+      }
+    >
+      <Tabs
+        activeKey={activeTab}
+        onChange={(key) => setActiveTab(key as typeof activeTab)}
+        items={tabItems}
+      />
+    </PageContainer>
   );
 }
 
-// Overview tabs
+// Rank badge with medal colors for the top three
+function renderRank(index: number) {
+  const cls =
+    index === 0
+      ? "bg-yellow-500/10 text-yellow-500"
+      : index === 1
+        ? "bg-gray-400/10 text-gray-400"
+        : index === 2
+          ? "bg-orange-500/10 text-orange-500"
+          : "text-[var(--color-text-tertiary)]";
+  return (
+    <span
+      className={`w-6 h-6 flex items-center justify-center rounded text-xs font-medium ${cls}`}
+    >
+      {index + 1}
+    </span>
+  );
+}
+
+// Overview tab
 function OverviewTab({
   stats,
   dailyStats,
@@ -365,42 +370,47 @@ function OverviewTab({
   formatNumber: (num: number) => string;
   formatCurrency: (num: number) => string;
   maxHourlyCount: number;
-}) {  const { t } = useTranslation();
+}) {
+  const { t } = useTranslation();
 
   if (!stats) return null;
 
   const conversationTrend = calculateTrend(dailyStats, "conversations");
   const tokenTrend = calculateTrend(dailyStats, "tokens");
   const costTrend = calculateTrend(dailyStats, "cost");
+  const maxTokens = Math.max(...dailyStats.map((d) => d.tokens), 1);
 
   return (
     <div className="space-y-6">
       {/* Statistics cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
-          icon={MessageOutlined}
+          icon={<MessageOutlined />}
           label={t("总对话数")}
           value={formatNumber(stats.total_conversations)}
           trend={conversationTrend}
           color="blue"
         />
         <StatCard
-          icon={ApiOutlined}
+          icon={<ApiOutlined />}
           label={t("总 Tokens")}
           value={formatNumber(stats.total_tokens)}
-          subValue={`输入 ${formatNumber(stats.input_tokens)} / 输出 ${formatNumber(stats.output_tokens)}`}
+          subValue={t("输入 {{in}} / 输出 {{out}}", {
+            in: formatNumber(stats.input_tokens),
+            out: formatNumber(stats.output_tokens),
+          })}
           trend={tokenTrend}
           color="green"
         />
         <StatCard
-          icon={ClockCircleOutlined}
+          icon={<ClockCircleOutlined />}
           label={t("平均响应时间")}
           value={`${stats.avg_response_time}ms`}
-          subValue={t("成功率 {{p0}}%", { p0: stats.success_rate })}
+          subValue={t("成功率 {{rate}}%", { rate: stats.success_rate })}
           color="orange"
         />
         <StatCard
-          icon={DollarOutlined}
+          icon={<DollarOutlined />}
           label={t("预估费用")}
           value={formatCurrency(stats.total_cost)}
           trend={costTrend}
@@ -408,14 +418,10 @@ function OverviewTab({
         />
       </div>
 
-      {/* Trend chart */}
-      <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
-        <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-4">
-          使用趋势
-        </h3>
+      {/* Trend chart (custom bar chart, no chart library in the project) */}
+      <Card title={t("使用趋势")} className="rounded-lg">
         <div className="h-48 flex items-end gap-1">
           {dailyStats.slice(-14).map((day, index) => {
-            const maxTokens = Math.max(...dailyStats.map((d) => d.tokens));
             const height = (day.tokens / maxTokens) * 100;
             return (
               <div
@@ -435,16 +441,13 @@ function OverviewTab({
           <span>{dailyStats[dailyStats.length - 14]?.date || ""}</span>
           <span>{dailyStats[dailyStats.length - 1]?.date || ""}</span>
         </div>
-      </div>
+      </Card>
 
       {/* Hourly distribution heatmap */}
-      <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
-        <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-4">
-          24小时使用分布
-        </h3>
+      <Card title={t("24小时使用分布")} className="rounded-lg">
         <div className="grid grid-cols-24 gap-1">
           {hourlyDistribution.map((hour) => {
-            const intensity = (hour.count / maxHourlyCount) * 100;
+            const intensity = (hour.count / (maxHourlyCount || 1)) * 100;
             return (
               <div
                 key={hour.hour}
@@ -452,7 +455,10 @@ function OverviewTab({
                 style={{
                   backgroundColor: `rgba(59, 130, 246, ${intensity / 100})`,
                 }}
-                title={t("{{p0}}:00 - {{p1}} 次调用", { p0: hour.hour, p1: hour.count })}
+                title={t("{{hour}}:00 - {{count}} 次调用", {
+                  hour: hour.hour,
+                  count: hour.count,
+                })}
               />
             );
           })}
@@ -464,12 +470,12 @@ function OverviewTab({
           <span>18:00</span>
           <span>24:00</span>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
 
-// Agent statistics tabs
+// Agent statistics tab
 function AgentsTab({
   stats,
   formatNumber,
@@ -479,72 +485,81 @@ function AgentsTab({
   formatNumber: (num: number) => string;
   formatCurrency: (num: number) => string;
 }) {
-  const maxConversations = Math.max(...stats.map((s) => s.conversations));
+  const { t } = useTranslation();
+  const maxConversations = Math.max(...stats.map((s) => s.conversations), 1);
+
+  const columns: TableProps<AgentStats>["columns"] = [
+    {
+      title: t("排名"),
+      width: 64,
+      render: (_, __, index) => renderRank(index),
+    },
+    {
+      title: t("Agent"),
+      dataIndex: "agent_name",
+      render: (name: string) => (
+        <Text strong className="text-[var(--color-text-primary)]">
+          {name}
+        </Text>
+      ),
+    },
+    {
+      title: t("对话数"),
+      dataIndex: "conversations",
+      align: "right",
+      render: (_, record) => (
+        <div className="flex items-center justify-end gap-2">
+          <span>{formatNumber(record.conversations)}</span>
+          <div className="w-16">
+            <Progress
+              percent={Math.round((record.conversations / maxConversations) * 100)}
+              showInfo={false}
+              size="small"
+            />
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Tokens",
+      dataIndex: "tokens",
+      align: "right",
+      render: (tokens: number) => formatNumber(tokens),
+    },
+    {
+      title: t("平均响应"),
+      dataIndex: "avg_response_time",
+      align: "right",
+      render: (ms: number) => `${ms}ms`,
+    },
+    {
+      title: t("成功率"),
+      dataIndex: "success_rate",
+      align: "right",
+      render: (rate: number) => `${rate.toFixed(1)}%`,
+    },
+    {
+      title: t("费用"),
+      dataIndex: "cost",
+      align: "right",
+      render: (cost: number) => formatCurrency(cost),
+    },
+  ];
 
   return (
-    <div className="space-y-4">
-      {/* Agent leaderboard */}
-      <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
-        <div className="p-3 border-b border-(--color-border)">
-          <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
-            Agent 使用排行
-          </h3>
-        </div>
-        <div className="divide-y divide-[var(--color-border)]">
-          {stats.map((agent, index) => (
-            <div key={agent.agent_id} className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`w-6 h-6 flex items-center justify-center rounded text-xs font-medium ${
-                      index === 0
-                        ? "bg-yellow-500/10 text-yellow-500"
-                        : index === 1
-                          ? "bg-gray-400/10 text-gray-400"
-                          : index === 2
-                            ? "bg-orange-500/10 text-orange-500"
-                            : "bg-(--color-bg-tertiary) text-[var(--color-text-tertiary)]"
-                    }`}
-                  >
-                    {index + 1}
-                  </span>
-                  <span className="font-medium text-[var(--color-text-primary)]">
-                    {agent.agent_name}
-                  </span>
-                </div>
-                <div className="text-right">
-                  <span className="text-sm font-medium text-[var(--color-text-primary)]">
-                    {formatNumber(agent.conversations)} 次对话
-                  </span>
-                  <span className="text-xs text-[var(--color-text-tertiary)] ml-2">
-                    {formatCurrency(agent.cost)}
-                  </span>
-                </div>
-              </div>
-              <div className="h-2 bg-(--color-bg-tertiary) rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[var(--color-primary)] rounded-full"
-                  style={{
-                    width: `${(agent.conversations / maxConversations) * 100}%`,
-                  }}
-                />
-              </div>
-              <div className="flex items-center gap-4 mt-2 text-xs text-[var(--color-text-tertiary)]">
-                <span>Tokens: {formatNumber(agent.tokens)}</span>
-                <span>•</span>
-                <span>响应: {agent.avg_response_time}ms</span>
-                <span>•</span>
-                <span>成功率: {agent.success_rate.toFixed(1)}%</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+    <Card className="rounded-lg">
+      <Table<AgentStats>
+        rowKey="agent_id"
+        columns={columns}
+        dataSource={stats}
+        pagination={false}
+        size="middle"
+      />
+    </Card>
   );
 }
 
-// User statistics tabs
+// User statistics tab
 function UsersTab({
   stats,
   formatNumber,
@@ -552,7 +567,8 @@ function UsersTab({
   stats: UserStats[];
   formatNumber: (num: number) => string;
 }) {
-  const maxConversations = Math.max(...stats.map((s) => s.conversations));
+  const { t } = useTranslation();
+  const maxConversations = Math.max(...stats.map((s) => s.conversations), 1);
 
   // Group by department
   const departmentStats = stats.reduce(
@@ -571,166 +587,87 @@ function UsersTab({
     >,
   );
 
+  const columns: TableProps<UserStats>["columns"] = [
+    {
+      title: t("排名"),
+      width: 64,
+      render: (_, __, index) => renderRank(index),
+    },
+    {
+      title: t("用户"),
+      dataIndex: "user_name",
+      render: (name: string) => (
+        <Text strong className="text-[var(--color-text-primary)]">
+          {name}
+        </Text>
+      ),
+    },
+    {
+      title: t("部门"),
+      dataIndex: "department",
+    },
+    {
+      title: t("对话数"),
+      dataIndex: "conversations",
+      align: "right",
+      render: (_, record) => (
+        <div className="flex items-center justify-end gap-2">
+          <span>{formatNumber(record.conversations)}</span>
+          <div className="w-16">
+            <Progress
+              percent={Math.round((record.conversations / maxConversations) * 100)}
+              showInfo={false}
+              size="small"
+            />
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Tokens",
+      dataIndex: "tokens",
+      align: "right",
+      render: (tokens: number) => formatNumber(tokens),
+    },
+    {
+      title: t("平均响应"),
+      dataIndex: "avg_response_time",
+      align: "right",
+      render: (ms: number) => `${ms}ms`,
+    },
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Department statistics */}
-      <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
-        <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-4">
-          部门使用统计
-        </h3>
-        <div className="grid grid-cols-4 gap-4">
+      {/* Department summary */}
+      <Card title={t("部门使用统计")} className="rounded-lg">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {Object.entries(departmentStats).map(([dept, data]) => (
-            <div key={dept} className="p-3 bg-(--color-bg-tertiary) rounded-lg">
-              <p className="text-sm font-medium text-[var(--color-text-primary)]">
+            <Card key={dept} size="small" className="rounded-lg">
+              <Text strong className="text-sm">
                 {dept}
-              </p>
-              <p className="text-lg font-semibold text-[var(--color-primary)] mt-1">
+              </Text>
+              <div className="text-lg font-semibold text-[var(--color-primary)] mt-1">
                 {formatNumber(data.conversations)}
-              </p>
-              <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
-                {data.users} 用户 • {formatNumber(data.tokens)} tokens
-              </p>
-            </div>
+              </div>
+              <Text type="secondary" className="text-xs">
+                {data.users} {t("用户")} • {formatNumber(data.tokens)} tokens
+              </Text>
+            </Card>
           ))}
         </div>
-      </div>
+      </Card>
 
       {/* User leaderboard */}
-      <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
-        <div className="p-3 border-b border-(--color-border)">
-          <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
-            用户使用排行
-          </h3>
-        </div>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-(--color-border)">
-              <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
-                排名
-              </th>
-              <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
-                用户
-              </th>
-              <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
-                部门
-              </th>
-              <th className="text-right py-2 px-4 text-[var(--color-text-tertiary)]">
-                对话数
-              </th>
-              <th className="text-right py-2 px-4 text-[var(--color-text-tertiary)]">
-                Tokens
-              </th>
-              <th className="text-right py-2 px-4 text-[var(--color-text-tertiary)]">
-                平均响应
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {stats.slice(0, 10).map((user, index) => (
-              <tr
-                key={user.user_id}
-                className="border-b border-(--color-border)/50"
-              >
-                <td className="py-2 px-4">
-                  <span
-                    className={`w-6 h-6 flex items-center justify-center rounded text-xs font-medium ${
-                      index === 0
-                        ? "bg-yellow-500/10 text-yellow-500"
-                        : index === 1
-                          ? "bg-gray-400/10 text-gray-400"
-                          : index === 2
-                            ? "bg-orange-500/10 text-orange-500"
-                            : "text-[var(--color-text-tertiary)]"
-                    }`}
-                  >
-                    {index + 1}
-                  </span>
-                </td>
-                <td className="py-2 px-4 font-medium text-[var(--color-text-primary)]">
-                  {user.user_name}
-                </td>
-                <td className="py-2 px-4 text-[var(--color-text-secondary)]">
-                  {user.department}
-                </td>
-                <td className="py-2 px-4 text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <span className="text-[var(--color-text-primary)]">
-                      {formatNumber(user.conversations)}
-                    </span>
-                    <div className="w-16 h-1.5 bg-(--color-bg-tertiary) rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-[var(--color-primary)] rounded-full"
-                        style={{
-                          width: `${(user.conversations / maxConversations) * 100}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                </td>
-                <td className="py-2 px-4 text-right text-[var(--color-text-secondary)]">
-                  {formatNumber(user.tokens)}
-                </td>
-                <td className="py-2 px-4 text-right text-[var(--color-text-secondary)]">
-                  {user.avg_response_time}ms
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-// Statistics card component
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  subValue,
-  trend,
-  color,
-}: {
-  icon: React.ComponentType;
-  label: string;
-  value: string;
-  subValue?: string;
-  trend?: number;
-  color: "blue" | "green" | "orange" | "purple";
-}) {
-  const colorClasses = {
-    blue: "bg-blue-500/10 text-blue-500",
-    green: "bg-green-500/10 text-green-500",
-    orange: "bg-orange-500/10 text-orange-500",
-    purple: "bg-purple-500/10 text-purple-500",
-  };
-
-  return (
-    <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
-      <div className="flex items-center justify-between mb-2">
-        <span className={`p-2 rounded-lg ${colorClasses[color]}`}>
-          <Icon />
-        </span>
-        {trend !== undefined && (
-          <span
-            className={`flex items-center gap-0.5 text-xs ${
-              trend >= 0 ? "text-green-500" : "text-red-500"
-            }`}
-          >
-            <RiseOutlined className={trend < 0 ? "rotate-180" : ""} />
-            {Math.abs(trend).toFixed(1)}%
-          </span>
-        )}
-      </div>
-      <p className="text-2xl font-semibold text-[var(--color-text-primary)]">
-        {value}
-      </p>
-      <p className="text-sm text-[var(--color-text-tertiary)]">{label}</p>
-      {subValue && (
-        <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
-          {subValue}
-        </p>
-      )}
+      <Card className="rounded-lg">
+        <Table<UserStats>
+          rowKey="user_id"
+          columns={columns}
+          dataSource={stats.slice(0, 10)}
+          pagination={false}
+          size="middle"
+        />
+      </Card>
     </div>
   );
 }

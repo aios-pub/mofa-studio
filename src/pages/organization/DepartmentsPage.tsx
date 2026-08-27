@@ -4,22 +4,35 @@ import { useTranslation } from "react-i18next";
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { Input, Button } from "antd";
+import {
+  App,
+  Avatar,
+  Button,
+  Card,
+  Empty,
+  Form,
+  Input,
+  Modal,
+  Spin,
+  Statistic,
+  Tag,
+} from "antd";
 import {
   PlusOutlined,
   SearchOutlined,
   EditOutlined,
   DeleteOutlined,
   HomeOutlined,
-  UserOutlined,
-  CloseCircleOutlined,
 } from "@ant-design/icons";
 import type { Department, User as UserType } from "@/services";
 import { organizationApi } from "@/services";
 import { formatDate } from "@/utils";
 import ResizableSidebar from "@/components/layout/ResizableSidebar";
+import { showDeleteConfirm } from "@/components/common";
 
-export default function DepartmentsPage() {  const { t } = useTranslation();
+export default function DepartmentsPage() {
+  const { t } = useTranslation();
+  const { modal } = App.useApp();
 
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,16 +81,31 @@ export default function DepartmentsPage() {  const { t } = useTranslation();
   });
 
   const handleDeleteDepartment = async (id: string) => {
-    if (!confirm(t("确定要删除这个部门吗？"))) return;
-    await organizationApi.deleteDepartment(id);
-    if (selectedDepartment?.id === id) {
-      setSelectedDepartment(null);
-    }
-    loadDepartments();
+    showDeleteConfirm(
+      {
+        title: t("确认删除"),
+        content: t("确定要删除这个部门吗？"),
+        okText: t("删除"),
+        onOk: async () => {
+          await organizationApi.deleteDepartment(id);
+          if (selectedDepartment?.id === id) {
+            setSelectedDepartment(null);
+          }
+          loadDepartments();
+        },
+      },
+      modal,
+    );
   };
 
   // Statistics info
   const totalMembers = departments.reduce((sum, d) => sum + d.memberCount, 0);
+
+  const roleTag = (role: string) => {
+    if (role === "admin") return <Tag color="purple">{t("管理员")}</Tag>;
+    if (role === "manager") return <Tag color="blue">{t("经理")}</Tag>;
+    return <Tag>{t("成员")}</Tag>;
+  };
 
   return (
     <div className="flex h-full">
@@ -87,7 +115,7 @@ export default function DepartmentsPage() {  const { t } = useTranslation();
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-              部门管理
+              {t("部门管理")}
             </h2>
             <Button
               type="primary"
@@ -107,23 +135,28 @@ export default function DepartmentsPage() {  const { t } = useTranslation();
 
           {/* Statistics */}
           <div className="flex items-center gap-4 text-xs text-[var(--color-text-tertiary)]">
-            <span>{departments.length} 个部门</span>
+            <span>
+              {departments.length} {t("个部门")}
+            </span>
             <span>•</span>
-            <span>{totalMembers} 名成员</span>
+            <span>
+              {totalMembers} {t("名成员")}
+            </span>
           </div>
         </div>
 
         {/* List */}
         <div className="flex-1 overflow-y-auto p-2">
           {loading ? (
-            <div className="text-center py-8 text-[var(--color-text-tertiary)]">
-              加载中...
+            <div className="flex justify-center py-8">
+              <Spin />
             </div>
           ) : filteredDepartments.length === 0 ? (
-            <div className="text-center py-8 text-[var(--color-text-tertiary)]">
-              <HomeOutlined className="text-3xl mx-auto mb-2 opacity-50" />
-              <p>{t("暂无部门")}</p>
-            </div>
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={t("暂无部门")}
+              className="py-8"
+            />
           ) : (
             filteredDepartments.map((dept) => (
               <div
@@ -145,7 +178,7 @@ export default function DepartmentsPage() {  const { t } = useTranslation();
                         {dept.name}
                       </span>
                       <span className="text-xs text-[var(--color-text-tertiary)]">
-                        {dept.memberCount} 人
+                        {dept.memberCount} {t("人")}
                       </span>
                     </div>
                     {dept.description && (
@@ -155,7 +188,7 @@ export default function DepartmentsPage() {  const { t } = useTranslation();
                     )}
                     {dept.manager && (
                       <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
-                        负责人: {dept.manager}
+                        {t("负责人")}: {dept.manager}
                       </p>
                     )}
                   </div>
@@ -184,73 +217,71 @@ export default function DepartmentsPage() {  const { t } = useTranslation();
                   icon={<EditOutlined />}
                   onClick={() => setEditingDepartment(selectedDepartment)}
                 >
-                  编辑
+                  {t("编辑")}
                 </Button>
                 <Button
                   danger
                   icon={<DeleteOutlined />}
                   onClick={() => handleDeleteDepartment(selectedDepartment.id)}
                 >
-                  删除
+                  {t("删除")}
                 </Button>
               </div>
             </div>
 
             {/* Department information */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
-                <span className="text-xs text-[var(--color-text-tertiary)]">
-                  成员数量
-                </span>
-                <p className="text-xl font-semibold text-[var(--color-text-primary)] mt-1">
-                  {selectedDepartment.memberCount}
-                </p>
-              </div>
-              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
-                <span className="text-xs text-[var(--color-text-tertiary)]">
-                  负责人
-                </span>
-                <p className="text-xl font-semibold text-[var(--color-text-primary)] mt-1">
-                  {selectedDepartment.manager || "-"}
-                </p>
-              </div>
-              <div className="p-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
-                <span className="text-xs text-[var(--color-text-tertiary)]">
-                  创建时间
-                </span>
-                <p className="text-xl font-semibold text-[var(--color-text-primary)] mt-1">
-                  {formatDate(selectedDepartment.createdAt)}
-                </p>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Card className="rounded-lg">
+                <Statistic
+                  title={t("成员数量")}
+                  value={selectedDepartment.memberCount}
+                />
+              </Card>
+              <Card className="rounded-lg">
+                <Statistic
+                  title={t("负责人")}
+                  value={selectedDepartment.manager || "-"}
+                />
+              </Card>
+              <Card className="rounded-lg">
+                <Statistic
+                  title={t("创建时间")}
+                  value={formatDate(selectedDepartment.createdAt)}
+                />
+              </Card>
             </div>
 
             {/* Member list */}
-            <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)">
-              <div className="p-3 border-b border-(--color-border) flex items-center justify-between">
-                <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
-                  部门成员
-                </h3>
+            <Card
+              title={t("部门成员")}
+              extra={
                 <span className="text-xs text-[var(--color-text-tertiary)]">
-                  {departmentMembers.length} 人
+                  {departmentMembers.length} {t("人")}
                 </span>
-              </div>
-              <div className="divide-y divide-[var(--color-border)]">
-                {departmentMembers.length === 0 ? (
-                  <div className="p-8 text-center text-[var(--color-text-tertiary)]">
-                    <UserOutlined className="text-2xl mx-auto mb-2 opacity-50" />
-                    <p>{t("暂无成员")}</p>
-                  </div>
-                ) : (
-                  departmentMembers.map((member) => (
+              }
+              className="rounded-lg"
+            >
+              {departmentMembers.length === 0 ? (
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description={t("暂无成员")}
+                  className="py-8"
+                />
+              ) : (
+                <div className="divide-y divide-[var(--color-border)]">
+                  {departmentMembers.map((member) => (
                     <div
                       key={member.id}
-                      className="p-3 flex items-center gap-3"
+                      className="py-3 flex items-center gap-3"
                     >
-                      <div className="w-8 h-8 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
-                        <span className="text-sm font-medium text-[var(--color-primary)]">
-                          {member.name.charAt(0)}
-                        </span>
-                      </div>
+                      <Avatar
+                        style={{
+                          backgroundColor: "var(--color-primary)",
+                          opacity: 0.9,
+                        }}
+                      >
+                        {member.name.charAt(0)}
+                      </Avatar>
                       <div className="flex-1">
                         <p className="font-medium text-[var(--color-text-primary)]">
                           {member.name}
@@ -259,38 +290,29 @@ export default function DepartmentsPage() {  const { t } = useTranslation();
                           {member.email}
                         </p>
                       </div>
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded ${
-                          member.role === "admin"
-                            ? "bg-purple-500/10 text-purple-500"
-                            : member.role === "manager"
-                              ? "bg-blue-500/10 text-blue-500"
-                              : "bg-gray-500/10 text-gray-500"
-                        }`}
-                      >
-                        {member.role === "admin"
-                          ? "管理员"
-                          : member.role === "manager"
-                            ? "经理"
-                            : "成员"}
-                      </span>
+                      {roleTag(member.role)}
                     </div>
-                  ))
-                )}
-              </div>
-            </div>
+                  ))}
+                </div>
+              )}
+            </Card>
           </div>
         ) : (
           <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <HomeOutlined className="text-5xl text-[var(--color-text-tertiary)] mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-[var(--color-text-primary)]">
-                选择一个部门
-              </h3>
-              <p className="text-[var(--color-text-secondary)]">
-                从左侧列表中选择查看详情
-              </p>
-            </div>
+            <Empty
+              image={<HomeOutlined className="text-5xl text-[var(--color-text-tertiary)]" />}
+              description={
+                <div>
+                  <h3 className="text-lg font-medium text-[var(--color-text-primary)]">
+                    {t("选择一个部门")}
+                  </h3>
+                  <p className="text-[var(--color-text-secondary)]">
+                    {t("从左侧列表中选择查看详情")}
+                  </p>
+                </div>
+              }
+              className="mt-0"
+            />
           </div>
         )}
       </div>
@@ -322,7 +344,7 @@ export default function DepartmentsPage() {  const { t } = useTranslation();
   );
 }
 
-// Department edit modal
+// Department create/edit modal
 function DepartmentModal({
   department,
   onClose,
@@ -332,100 +354,63 @@ function DepartmentModal({
   onClose: () => void;
   onSave: (data: Partial<Department>) => Promise<void>;
 }) {
-  const [formData, setFormData] = useState({
-    name: department?.name || "",
-    description: department?.description || "",
-    manager: department?.manager || "",
-  });
+  const { t } = useTranslation();
+  const [form] = Form.useForm<{
+    name: string;
+    description: string;
+    manager: string;
+  }>();
   const [saving, setSaving] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleOk = async () => {
+    let values;
+    try {
+      values = await form.validateFields();
+    } catch {
+      return;
+    }
     setSaving(true);
     try {
-      await onSave(formData);
+      await onSave(values);
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md bg-[var(--color-bg-base)] rounded-lg shadow-xl border border-(--color-border)">
-        <div className="flex items-center justify-between p-4 border-b border-(--color-border)">
-          <h3 className="text-lg font-medium text-[var(--color-text-primary)]">
-            {department ? "编辑部门" : "添加部门"}
-          </h3>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-(--color-bg-tertiary) rounded"
-          >
-            <CloseCircleOutlined className="text-[var(--color-text-tertiary)]" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          <div>
-            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">
-              部门名称
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">
-              部门描述
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              rows={3}
-              className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)] resize-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-[var(--color-text-secondary)] mb-1">
-              负责人
-            </label>
-            <input
-              type="text"
-              value={formData.manager}
-              onChange={(e) =>
-                setFormData({ ...formData, manager: e.target.value })
-              }
-              className="w-full px-3 py-2 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
-            />
-          </div>
-
-          <div className="flex justify-end gap-2 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-(--color-bg-tertiary)"
-            >
-              取消
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-4 py-2 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-            >
-              {saving ? "保存中..." : "保存"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <Modal
+      open
+      title={department ? t("编辑部门") : t("添加部门")}
+      onCancel={onClose}
+      onOk={handleOk}
+      confirmLoading={saving}
+      okText={t("保存")}
+      cancelText={t("取消")}
+      destroyOnHidden
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{
+          name: department?.name || "",
+          description: department?.description || "",
+          manager: department?.manager || "",
+        }}
+      >
+        <Form.Item
+          name="name"
+          label={t("部门名称")}
+          rules={[{ required: true, message: t("请输入部门名称") }]}
+        >
+          <Input placeholder={t("部门名称")} />
+        </Form.Item>
+        <Form.Item name="description" label={t("部门描述")}>
+          <Input.TextArea rows={3} placeholder={t("部门描述")} />
+        </Form.Item>
+        <Form.Item name="manager" label={t("负责人")}>
+          <Input placeholder={t("负责人")} />
+        </Form.Item>
+      </Form>
+    </Modal>
   );
 }

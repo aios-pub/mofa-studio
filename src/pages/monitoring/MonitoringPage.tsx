@@ -1,13 +1,13 @@
-import { useTranslation } from "react-i18next";
 /**
  * Real-time monitoring page
+ * Monitors Agent status and system metrics
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AlertOutlined,
   ExclamationCircleOutlined,
-  CheckCircleOutlined,
   DashboardOutlined,
   DatabaseOutlined,
   WifiOutlined,
@@ -20,27 +20,41 @@ import {
   PlayCircleOutlined,
   ExperimentOutlined,
   WarningOutlined,
-} from "@ant-design/icons";
+} from '@ant-design/icons';
+import {
+  Tabs,
+  Card,
+  Tag,
+  Typography,
+  Space,
+  Button,
+  Badge,
+  Spin,
+  Empty,
+} from 'antd';
+import type { TFunction } from 'i18next';
 import type {
   AgentStatus,
   ActivityEvent,
   SystemMetrics,
   Alert,
-} from "@/services";
-import { monitoringApi } from "@/services";
+} from '@/services';
+import { monitoringApi } from '@/services';
+import { PageContainer } from '@/components/layout';
+import { StatCard } from '@/components/common';
+import type { StatColor } from '@/components/common';
 
-export default function MonitoringPage() {  const { t } = useTranslation();
+const { Text } = Typography;
+
+export default function MonitoringPage() {
+  const { t } = useTranslation();
 
   const [agentStatuses, setAgentStatuses] = useState<AgentStatus[]>([]);
   const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
-  const [systemMetrics, setSystemMetrics] = useState<SystemMetrics | null>(
-    null,
-  );
+  const [systemMetrics, setSystemMetrics] = useState<SystemMetrics | null>(null);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"agents" | "activity" | "alerts">(
-    "agents",
-  );
+  const [activeTab, setActiveTab] = useState<'agents' | 'activity' | 'alerts'>('agents');
 
   // Load initial data
   const loadData = useCallback(async () => {
@@ -57,7 +71,7 @@ export default function MonitoringPage() {  const { t } = useTranslation();
       setSystemMetrics(metrics);
       setAlerts(alertsData);
     } catch (error) {
-      console.error("Failed to load monitoring data:", error);
+      console.error('Failed to load monitoring data:', error);
     } finally {
       setLoading(false);
     }
@@ -67,17 +81,13 @@ export default function MonitoringPage() {  const { t } = useTranslation();
     loadData();
 
     // Subscribe to real-time updates
-    const unsubscribeEvents = monitoringApi.subscribeToUpdates(
-      (event: ActivityEvent) => {
-        setActivityEvents((prev) => [event, ...prev].slice(0, 50));
-      },
-    );
+    const unsubscribeEvents = monitoringApi.subscribeToUpdates((event: ActivityEvent) => {
+      setActivityEvents((prev) => [event, ...prev].slice(0, 50));
+    });
 
-    const unsubscribeMetrics = monitoringApi.subscribeToMetrics(
-      (metrics: SystemMetrics) => {
-        setSystemMetrics(metrics);
-      },
-    );
+    const unsubscribeMetrics = monitoringApi.subscribeToMetrics((metrics: SystemMetrics) => {
+      setSystemMetrics(metrics);
+    });
 
     return () => {
       unsubscribeEvents();
@@ -88,492 +98,281 @@ export default function MonitoringPage() {  const { t } = useTranslation();
   const handleAcknowledgeAlert = async (alertId: string) => {
     const success = await monitoringApi.acknowledgeAlert(alertId);
     if (success) {
-      setAlerts((prev) =>
-        prev.map((a) => (a.id === alertId ? { ...a, acknowledged: true } : a)),
-      );
+      setAlerts((prev) => prev.map((a) => (a.id === alertId ? { ...a, acknowledged: true } : a)));
     }
   };
 
   const unacknowledgedAlerts = alerts.filter((a) => !a.acknowledged);
 
-  return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-(--color-border)">
-        <div>
-          <h1 className="text-xl font-semibold text-[var(--color-text-primary)]">
-            实时监控
-          </h1>
-          <p className="text-sm text-[var(--color-text-secondary)]">
-            监控 Agent 状态和系统运行情况
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {unacknowledgedAlerts.length > 0 && (
-            <span className="flex items-center gap-1 px-2 py-1 text-sm bg-red-500/10 text-red-500 rounded-lg">
-              <ExclamationCircleOutlined />
-              {unacknowledgedAlerts.length} 个未处理告警
-            </span>
-          )}
-          <button
-            onClick={loadData}
-            disabled={loading}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-(--color-bg-tertiary) disabled:opacity-50"
-          >
-            <SyncOutlined spin={loading} />
-            刷新
-          </button>
-        </div>
-      </div>
+  const tabItems = [
+    {
+      key: 'agents',
+      label: (
+        <span className="flex items-center gap-1.5">
+          <ThunderboltOutlined />
+          {t('Agent 状态')}
+          <Badge count={agentStatuses.filter((a) => a.status === 'online').length} color="green" />
+        </span>
+      ),
+      children: <AgentsTab agents={agentStatuses} loading={loading} />,
+    },
+    {
+      key: 'activity',
+      label: (
+        <span className="flex items-center gap-1.5">
+          <AlertOutlined />
+          {t('活动流')}
+        </span>
+      ),
+      children: <ActivityTab events={activityEvents} loading={loading} />,
+    },
+    {
+      key: 'alerts',
+      label: (
+        <span className="flex items-center gap-1.5">
+          <BellOutlined />
+          {t('告警')}
+          <Badge count={unacknowledgedAlerts.length} color="red" />
+        </span>
+      ),
+      children: <AlertsTab alerts={alerts} onAcknowledge={handleAcknowledgeAlert} loading={loading} />,
+    },
+  ];
 
+  return (
+    <PageContainer
+      title={t('实时监控')}
+      description={t('监控 Agent 状态和系统运行情况')}
+      headerActions={
+        <Space>
+          {unacknowledgedAlerts.length > 0 && (
+            <Tag color="error" icon={<ExclamationCircleOutlined />}>
+              {unacknowledgedAlerts.length} {t('个未处理告警')}
+            </Tag>
+          )}
+          <Button icon={<SyncOutlined spin={loading} />} onClick={loadData} loading={loading}>
+            {t('刷新')}
+          </Button>
+        </Space>
+      }
+    >
       {/* System metrics bar */}
       {systemMetrics && (
-        <div className="grid grid-cols-5 gap-4 p-4 bg-[var(--color-bg-secondary)] border-b border-(--color-border)">
-          <MetricCard
-            icon={DashboardOutlined}
-            label="CPU"
-            value={`${systemMetrics.cpu.toFixed(1)}%`}
-            color={
-              systemMetrics.cpu > 70
-                ? "red"
-                : systemMetrics.cpu > 50
-                  ? "yellow"
-                  : "green"
-            }
-          />
-          <MetricCard
-            icon={DatabaseOutlined}
-            label={t("内存")}
-            value={`${systemMetrics.memory.toFixed(1)}%`}
-            color={
-              systemMetrics.memory > 80
-                ? "red"
-                : systemMetrics.memory > 60
-                  ? "yellow"
-                  : "green"
-            }
-          />
-          <MetricCard
-            icon={WifiOutlined}
-            label={t("网络")}
-            value={`${systemMetrics.network.toFixed(1)}%`}
-            color="blue"
-          />
-          <MetricCard
-            icon={AlertOutlined}
-            label={t("活跃连接")}
-            value={systemMetrics.active_connections.toString()}
-            color="blue"
-          />
-          <MetricCard
-            icon={UnorderedListOutlined}
-            label={t("队列长度")}
-            value={systemMetrics.queue_length.toString()}
-            color={systemMetrics.queue_length > 10 ? "yellow" : "green"}
-          />
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <StatCard icon={<DashboardOutlined />} label="CPU" value={`${systemMetrics.cpu.toFixed(1)}%`} color={getThresholdColor(systemMetrics.cpu, 70, 50)} />
+          <StatCard icon={<DatabaseOutlined />} label={t('内存')} value={`${systemMetrics.memory.toFixed(1)}%`} color={getThresholdColor(systemMetrics.memory, 80, 60)} />
+          <StatCard icon={<WifiOutlined />} label={t('网络')} value={`${systemMetrics.network.toFixed(1)}%`} color="blue" />
+          <StatCard icon={<AlertOutlined />} label={t('活跃连接')} value={systemMetrics.active_connections.toString()} color="blue" />
+          <StatCard icon={<UnorderedListOutlined />} label={t('队列长度')} value={systemMetrics.queue_length.toString()} color={systemMetrics.queue_length > 10 ? 'orange' : 'green'} />
         </div>
       )}
 
-      {/* Tabs bar */}
-      <div className="flex gap-1 px-6 border-b border-(--color-border)">
-        {[
-          {
-            key: "agents",
-            label: t("Agent 状态"),
-            icon: ThunderboltOutlined,
-            badge: agentStatuses.filter((a) => a.status === "online").length,
-          },
-          {
-            key: "activity",
-            label: t("活动流"),
-            icon: AlertOutlined,
-          },
-          {
-            key: "alerts",
-            label: t("告警"),
-            icon: BellOutlined,
-            badge: unacknowledgedAlerts.length,
-            badgeColor: "red",
-          },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key as typeof activeTab)}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.key
-                  ? "text-[var(--color-primary)] border-(--color-primary)"
-                  : "text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]"
-              }`}
-            >
-              <Icon />
-              {tab.label}
-              {tab.badge !== undefined && (
-                <span
-                  className={`px-1.5 py-0.5 text-xs rounded ${
-                    tab.badgeColor === "red"
-                      ? "bg-red-500/10 text-red-500"
-                      : "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
-                  }`}
-                >
-                  {tab.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Content area */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <SyncOutlined
-              spin
-              className="text-3xl text-[var(--color-primary)]"
-            />
-          </div>
-        ) : activeTab === "agents" ? (
-          <AgentsTab statuses={agentStatuses} />
-        ) : activeTab === "activity" ? (
-          <ActivityTab events={activityEvents} />
-        ) : (
-          <AlertsTab alerts={alerts} onAcknowledge={handleAcknowledgeAlert} />
-        )}
-      </div>
-    </div>
+      {/* Tabs */}
+      <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key as typeof activeTab)} items={tabItems} />
+    </PageContainer>
   );
 }
 
-// Agent statusTabs
-function AgentsTab({ statuses }: { statuses: AgentStatus[] }) {  const { t } = useTranslation();
+// Get threshold color
+function getThresholdColor(value: number, high: number, medium: number): StatColor {
+  if (value > high) return 'red';
+  if (value > medium) return 'orange';
+  return 'green';
+}
 
-  const getStatusColor = (status: AgentStatus["status"]) => {
-    switch (status) {
-      case "online":
-        return "bg-green-500";
-      case "busy":
-        return "bg-yellow-500";
-      case "offline":
-        return "bg-gray-400";
-      case "error":
-        return "bg-red-500";
-    }
-  };
-
-  const getStatusLabel = (status: AgentStatus["status"]) => {
-    switch (status) {
-      case "online":
-        return "在线";
-      case "busy":
-        return "忙碌";
-      case "offline":
-        return "离线";
-      case "error":
-        return "错误";
-    }
-  };
-
+// Agents tab component
+function AgentsTab({
+  agents,
+  loading,
+}: {
+  agents: AgentStatus[];
+  loading: boolean;
+}) {
+  const { t } = useTranslation();
   return (
-    <div className="grid grid-cols-2 gap-4">
-      {statuses.map((agent) => (
-        <div
-          key={agent.agent_id}
-          className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4"
-        >
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span
-                className={`w-2 h-2 rounded-full ${getStatusColor(agent.status)}`}
-              />
-              <span className="font-medium text-[var(--color-text-primary)]">
-                {agent.agent_name}
-              </span>
-            </div>
-            <span
-              className={`text-xs px-2 py-0.5 rounded ${
-                agent.status === "online"
-                  ? "bg-green-500/10 text-green-500"
-                  : agent.status === "busy"
-                    ? "bg-yellow-500/10 text-yellow-500"
-                    : agent.status === "error"
-                      ? "bg-red-500/10 text-red-500"
-                      : "bg-gray-500/10 text-gray-500"
-              }`}
-            >
-              {getStatusLabel(agent.status)}
-            </span>
-          </div>
-
-          {agent.current_conversation && (
-            <div className="mb-3 p-2 bg-(--color-bg-tertiary) rounded text-xs">
-              <span className="text-[var(--color-text-tertiary)]">
-                当前对话:{" "}
-              </span>
-              <span className="text-[var(--color-text-secondary)]">
-                {agent.current_conversation}
-              </span>
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <span className="text-[var(--color-text-tertiary)]">
-                今日对话
-              </span>
-              <p className="font-medium text-[var(--color-text-primary)]">
-                {agent.metrics.conversations_today}
-              </p>
-            </div>
-            <div>
-              <span className="text-[var(--color-text-tertiary)]">
-                平均响应
-              </span>
-              <p className="font-medium text-[var(--color-text-primary)]">
-                {agent.metrics.avg_response_time}ms
-              </p>
-            </div>
-            <div>
-              <span className="text-[var(--color-text-tertiary)]">{t("成功率")}</span>
-              <p className="font-medium text-green-500">
-                {agent.metrics.success_rate}%
-              </p>
-            </div>
-            <div>
-              <span className="text-[var(--color-text-tertiary)]">
-                Token 用量
-              </span>
-              <p className="font-medium text-[var(--color-text-primary)]">
-                {(agent.metrics.tokens_used / 1000).toFixed(0)}K
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-3 pt-3 border-t border-(--color-border) text-xs text-[var(--color-text-tertiary)]">
-            最后活跃: {formatTime(agent.last_active)}
-          </div>
+    <div className="space-y-3">
+      {loading ? (
+        <div className="flex justify-center py-8">
+          <Spin size="large" />
         </div>
-      ))}
-    </div>
-  );
-}
-
-// Activity stream tabs
-function ActivityTab({ events }: { events: ActivityEvent[] }) {
-  const getEventIcon = (type: ActivityEvent["type"]) => {
-    switch (type) {
-      case "conversation_start":
-        return <PlayCircleOutlined className="text-blue-500" />;
-      case "conversation_end":
-        return <CheckCircleOutlined className="text-green-500" />;
-      case "message":
-        return <MessageOutlined className="text-purple-500" />;
-      case "skill_call":
-        return <ThunderboltOutlined className="text-yellow-500" />;
-      case "error":
-        return <ExclamationCircleOutlined className="text-red-500" />;
-      case "test_run":
-        return <ExperimentOutlined className="text-cyan-500" />;
-    }
-  };
-
-  const getEventLabel = (type: ActivityEvent["type"]) => {
-    switch (type) {
-      case "conversation_start":
-        return "开始对话";
-      case "conversation_end":
-        return "结束对话";
-      case "message":
-        return "消息处理";
-      case "skill_call":
-        return "技能调用";
-      case "error":
-        return "错误";
-      case "test_run":
-        return "测试运行";
-    }
-  };
-
-  return (
-    <div className="space-y-2">
-      {events.map((event) => (
-        <div
-          key={event.id}
-          className="flex items-start gap-3 p-3 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border)"
-        >
-          <div className="p-2 bg-(--color-bg-tertiary) rounded-lg">
-            {getEventIcon(event.type)}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-[var(--color-text-primary)]">
-                {event.agent_name}
-              </span>
-              <span className="text-xs text-[var(--color-text-tertiary)]">
-                {getEventLabel(event.type)}
-              </span>
+      ) : agents.length === 0 ? (
+        <Empty description={t('暂无 Agent 数据')} className="py-8" />
+      ) : (
+        agents.map((agent) => (
+          <Card key={agent.agent_id} className="rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-2 h-2 rounded-full ${
+                  agent.status === 'online' ? 'bg-green-500' :
+                  agent.status === 'busy' ? 'bg-yellow-500' :
+                  agent.status === 'error' ? 'bg-red-500' : 'bg-gray-400'
+                }`} />
+                <div>
+                  <Text strong className="text-[var(--color-text-primary)]">{agent.agent_name}</Text>
+                  <Text type="secondary" className="text-xs ml-2">{agent.agent_id}</Text>
+                </div>
+              </div>
+              <Tag color={
+                agent.status === 'online' ? 'green' :
+                agent.status === 'busy' ? 'orange' :
+                agent.status === 'error' ? 'red' : 'default'
+              }>
+                {agent.status}
+              </Tag>
             </div>
-            <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">
-              {event.details}
-            </p>
-            {event.user_name && (
-              <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
-                用户: {event.user_name}
-              </p>
-            )}
-            {event.metadata && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {Object.entries(event.metadata).map(([key, value]) => (
-                  <span
-                    key={key}
-                    className="text-xs px-2 py-0.5 bg-(--color-bg-tertiary) rounded text-[var(--color-text-tertiary)]"
-                  >
-                    {key}: {String(value)}
-                  </span>
-                ))}
+            {agent.metrics && (
+              <div className="mt-3 grid grid-cols-3 gap-4 text-sm">
+                <div>
+                  <Text type="secondary">{t('对话数')}:</Text>
+                  <Text className="ml-2">{agent.metrics.conversations_today ?? 0}</Text>
+                </div>
+                <div>
+                  <Text type="secondary">{t('响应时间')}:</Text>
+                  <Text className="ml-2">{agent.metrics.avg_response_time ?? 0}ms</Text>
+                </div>
+                <div>
+                  <Text type="secondary">{t('成功率')}:</Text>
+                  <Text className={`ml-2 ${(agent.metrics.success_rate || 100) >= 95 ? 'text-green-500' : 'text-yellow-500'}`}>
+                    {agent.metrics.success_rate || 100}%
+                  </Text>
+                </div>
               </div>
             )}
-          </div>
-          <span className="text-xs text-[var(--color-text-tertiary)] whitespace-nowrap">
-            {formatTime(event.timestamp)}
-          </span>
-        </div>
-      ))}
+          </Card>
+        ))
+      )}
     </div>
   );
 }
 
-// Alerts tabs
-function AlertsTab({
-  alerts,
-  onAcknowledge,
+// Activity tab component
+function ActivityTab({
+  events,
+  loading,
 }: {
-  alerts: Alert[];
-  onAcknowledge: (id: string) => void;
-}) {  const { t } = useTranslation();
-
-  const getAlertIcon = (type: Alert["type"]) => {
+  events: ActivityEvent[];
+  loading: boolean;
+}) {
+  const { t } = useTranslation();
+  const getEventIcon = (type: string) => {
     switch (type) {
-      case "error":
-        return <ExclamationCircleOutlined className="text-red-500" />;
-      case "warning":
-        return <WarningOutlined className="text-yellow-500" />;
-      case "info":
-        return <BellOutlined className="text-blue-500" />;
+      case 'conversation': return <MessageOutlined className="text-blue-500" />;
+      case 'agent_start': return <PlayCircleOutlined className="text-green-500" />;
+      case 'agent_end': return <ExperimentOutlined className="text-purple-500" />;
+      case 'tool_call': return <ThunderboltOutlined className="text-orange-500" />;
+      default: return <AlertOutlined className="text-gray-500" />;
     }
   };
 
   return (
     <div className="space-y-3">
-      {alerts.map((alert) => (
-        <div
-          key={alert.id}
-          className={`p-4 rounded-lg border ${
-            alert.acknowledged
-              ? "bg-[var(--color-bg-secondary)] border-(--color-border) opacity-60"
-              : alert.type === "error"
-                ? "bg-red-500/5 border-red-500/30"
-                : alert.type === "warning"
-                  ? "bg-yellow-500/5 border-yellow-500/30"
-                  : "bg-[var(--color-bg-secondary)] border-(--color-border)"
-          }`}
-        >
-          <div className="flex items-start gap-3">
-            {getAlertIcon(alert.type)}
-            <div className="flex-1">
+      {loading ? (
+        <div className="flex justify-center py-8">
+          <Spin size="large" />
+        </div>
+      ) : events.length === 0 ? (
+        <Empty description={t('暂无活动记录')} className="py-8" />
+      ) : (
+        events.map((event, index) => (
+          <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-[var(--color-bg-secondary)]">
+            <div className="mt-0.5">{getEventIcon(event.type)}</div>
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-medium text-[var(--color-text-primary)]">
-                  {alert.title}
-                </span>
-                {alert.acknowledged && (
-                  <span className="text-xs px-1.5 py-0.5 bg-green-500/10 text-green-500 rounded">
-                    已处理
-                  </span>
-                )}
+                <Text strong className="text-[var(--color-text-primary)]">{event.title ?? event.agent_name ?? event.type}</Text>
+                <Text type="secondary" className="text-xs">{formatTime(event.timestamp, t)}</Text>
               </div>
-              <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-                {alert.message}
-              </p>
-              {alert.agent_name && (
-                <p className="text-xs text-[var(--color-text-tertiary)] mt-2">
-                  相关 Agent: {alert.agent_name}
-                </p>
+              {event.details && (
+                <Text className="text-sm text-[var(--color-text-secondary)] block mt-1">{event.details}</Text>
               )}
-              <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
-                {formatTime(alert.timestamp)}
-              </p>
+              {event.user_name && (
+                <Text type="secondary" className="text-xs block mt-1">{t('用户')}: {event.user_name}</Text>
+              )}
             </div>
-            {!alert.acknowledged && (
-              <button
-                onClick={() => onAcknowledge(alert.id)}
-                className="flex items-center gap-1 px-3 py-1.5 text-sm bg-(--color-bg-tertiary) border border-(--color-border) rounded-lg hover:bg-[var(--color-bg-base)]"
-              >
-                <BellFilled />
-                确认
-              </button>
-            )}
           </div>
-        </div>
-      ))}
-
-      {alerts.length === 0 && (
-        <div className="text-center py-12 text-[var(--color-text-tertiary)]">
-          <BellOutlined className="text-4xl mx-auto mb-2 opacity-50" />
-          <p>{t("暂无告警")}</p>
-        </div>
+        ))
       )}
     </div>
   );
 }
 
-// System metrics cards
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-  color,
+// Alerts tab component
+function AlertsTab({
+  alerts,
+  onAcknowledge,
+  loading,
 }: {
-  icon: React.ComponentType;
-  label: string;
-  value: string;
-  color: "green" | "yellow" | "red" | "blue";
+  alerts: Alert[];
+  onAcknowledge: (id: string) => void;
+  loading: boolean;
 }) {
-  const colorClasses = {
-    green: "text-green-500",
-    yellow: "text-yellow-500",
-    red: "text-red-500",
-    blue: "text-blue-500",
+  const { t } = useTranslation();
+  const getAlertIcon = (type: string) => {
+    switch (type) {
+      case 'error': return <ExclamationCircleOutlined className="text-red-500" />;
+      case 'warning': return <WarningOutlined className="text-yellow-500" />;
+      case 'info': return <BellOutlined className="text-blue-500" />;
+      default: return <AlertOutlined className="text-gray-500" />;
+    }
   };
 
   return (
-    <div className="flex items-center gap-3">
-      <div
-        className={`p-2 bg-(--color-bg-tertiary) rounded-lg ${colorClasses[color]}`}
-      >
-        <Icon />
-      </div>
-      <div>
-        <p className="text-xs text-[var(--color-text-tertiary)]">{label}</p>
-        <p className={`font-medium ${colorClasses[color]}`}>{value}</p>
-      </div>
+    <div className="space-y-3">
+      {loading ? (
+        <div className="flex justify-center py-8">
+          <Spin size="large" />
+        </div>
+      ) : alerts.length === 0 ? (
+        <Empty description={t('暂无告警')} className="py-8" />
+      ) : (
+        alerts.map((alert) => (
+          <Card
+            key={alert.id}
+            className={`rounded-lg ${
+              alert.acknowledged
+                ? 'opacity-60'
+                : alert.type === 'error'
+                  ? 'border-red-500/30 bg-red-500/5'
+                  : alert.type === 'warning'
+                    ? 'border-yellow-500/30 bg-yellow-500/5'
+                    : ''
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              {getAlertIcon(alert.type)}
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <Text strong className="text-[var(--color-text-primary)]">{alert.title}</Text>
+                  {alert.acknowledged && (
+                    <Tag color="success">{t('已处理')}</Tag>
+                  )}
+                </div>
+                <Text className="text-sm text-[var(--color-text-secondary)] block mt-1">{alert.message}</Text>
+                {alert.agent_name && (
+                  <Text type="secondary" className="text-xs block mt-2">{t('相关 Agent')}: {alert.agent_name}</Text>
+                )}
+                <Text type="secondary" className="text-xs block mt-1">{formatTime(alert.timestamp, t)}</Text>
+              </div>
+              {!alert.acknowledged && (
+                <Button size="small" icon={<BellFilled />} onClick={() => onAcknowledge(alert.id)}>
+                  {t('确认')}
+                </Button>
+              )}
+            </div>
+          </Card>
+        ))
+      )}
     </div>
   );
 }
 
-// Format time
-function formatTime(date: Date) {
+// Format time as a human-friendly relative label
+function formatTime(date: Date | string, t: TFunction) {
   const now = new Date();
-  const diff = now.getTime() - new Date(date).getTime();
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  const diff = now.getTime() - dateObj.getTime();
 
-  if (diff < 60000) {
-    return "刚刚";
-  }
-  if (diff < 3600000) {
-    return `${Math.floor(diff / 60000)} 分钟前`;
-  }
-  if (diff < 86400000) {
-    return `${Math.floor(diff / 3600000)} 小时前`;
-  }
-  return new Date(date).toLocaleDateString("zh-CN");
+  if (diff < 60000) return t('刚刚');
+  if (diff < 3600000) return t('{{n}} 分钟前', { n: Math.floor(diff / 60000) });
+  if (diff < 86400000) return t('{{n}} 小时前', { n: Math.floor(diff / 3600000) });
+  return dateObj.toLocaleDateString();
 }

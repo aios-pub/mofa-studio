@@ -445,7 +445,11 @@
     "heroDesc": "One-stop platform to manage and monitor your AI Agents with powerful prompt management, conversation tracking, and performance evaluation.",
     "feature1": "Multi-Agent Collaboration",
     "feature2": "Real-time Performance Monitoring",
-    "feature3": "Flexible Prompt Configuration"
+    "feature3": "Flexible Prompt Configuration",
+    "usernameRequired": "Please enter a username",
+    "emailRequired": "Please enter an email",
+    "emailInvalid": "Invalid email format",
+    "passwordMinLength": "Password must be at least 6 characters"
   },
   "theme": {
     "light": "Light",

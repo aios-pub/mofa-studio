@@ -28,6 +28,7 @@ export interface ActivityEvent {
     | "error"
     | "skill_call"
     | "test_run";
+  title?: string;
   agent_id: string;
   agent_name: string;
   user_id?: string;

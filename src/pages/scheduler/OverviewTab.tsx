@@ -8,9 +8,9 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
-  ClockCircleOutlined,
   ThunderboltOutlined,
 } from "@ant-design/icons";
+import { Card, Spin, Tag } from "antd";
 import type {
   ScheduledTask,
   TaskType,
@@ -18,6 +18,8 @@ import type {
   TaskTypeDescriptor,
 } from "@/services";
 import { scheduledTaskApi, taskTypeConfig } from "@/services";
+import { StatCard } from "@/components/common";
+import type { StatColor } from "@/components/common";
 
 // Merge backend dynamic types + frontend static fallback
 function getTaskTypeConfig(type: string, dynamicTypes: TaskTypeDescriptor[]) {
@@ -49,7 +51,7 @@ function groupExecutionsByDay(
     dayStart.setDate(dayStart.getDate() - i);
     dayStart.setHours(0, 0, 0, 0);
     const dayEnd = new Date(dayStart);
-    dayEnd.setDate(dayEnd.getDate() + 1);
+    dayEnd.setDate(dayStart.getDate() + 1);
     const count = executions.filter((e) => {
       const d = new Date(e.started_at);
       return d >= dayStart && d < dayEnd;
@@ -86,56 +88,6 @@ function MiniBarChart({
   );
 }
 
-// Stats card (see apalis-board stats_card)
-function StatCard({
-  title,
-  value,
-  subtitle,
-  icon,
-  data,
-  color,
-}: {
-  title: string;
-  value: string | number;
-  subtitle?: string;
-  icon?: React.ReactNode;
-  data?: number[];
-  color?: string;
-}) {
-  return (
-    <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs text-[var(--color-text-tertiary)]">
-          {title}
-        </span>
-        {icon && <span className="text-lg opacity-60">{icon}</span>}
-      </div>
-      <div className="flex items-end justify-between">
-        <div>
-          <span
-            className={`text-2xl font-bold ${color || "text-[var(--color-text-primary)]"}`}
-          >
-            {value}
-          </span>
-          {subtitle && (
-            <p className="text-xs text-[var(--color-text-tertiary)] mt-0.5">
-              {subtitle}
-            </p>
-          )}
-        </div>
-        {data && data.length > 0 && (
-          <MiniBarChart
-            data={data}
-            height="h-6"
-            barWidth="w-1"
-            color={color || "bg-[var(--color-primary)]"}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
 // Task type card (see apalis-board queue_card)
 function TypeCard({
   type,
@@ -150,6 +102,7 @@ function TypeCard({
   dynamicTypes: TaskTypeDescriptor[];
   onClick: () => void;
 }) {
+  const { t } = useTranslation();
   const config = getTaskTypeConfig(type, dynamicTypes);
   const enabled = tasks.filter((t) => t.status === "enabled").length;
   const totalSuccess = tasks.reduce((s, t) => s + t.success_count, 0);
@@ -160,9 +113,11 @@ function TypeCard({
       : null;
 
   return (
-    <div
+    <Card
+      hoverable
       onClick={onClick}
-      className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4 cursor-pointer hover:border-(--color-primary)/50 transition-colors"
+      className="rounded-lg"
+      styles={{ body: { padding: 16 } }}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -171,19 +126,19 @@ function TypeCard({
             {config.label}
           </h3>
         </div>
-        <span className="text-xs px-1.5 py-0.5 rounded bg-(--color-bg-tertiary) text-[var(--color-text-tertiary)]">
-          {tasks.length} 任务
-        </span>
+        <Tag>
+          {tasks.length} {t("任务")}
+        </Tag>
       </div>
 
       <div className="flex items-end justify-between mb-2">
         <div className="space-y-1 text-xs text-[var(--color-text-tertiary)]">
           <div>
-            已启用: <span className="text-green-500">{enabled}</span>
+            {t("已启用")}: <span className="text-green-500">{enabled}</span>
           </div>
           {rate !== null && (
             <div>
-              成功率:{" "}
+              {t("成功率")}:{" "}
               <span
                 className={
                   rate >= 90
@@ -209,7 +164,7 @@ function TypeCard({
       <p className="text-xs text-[var(--color-text-tertiary)]">
         {config.description}
       </p>
-    </div>
+    </Card>
   );
 }
 
@@ -217,7 +172,8 @@ interface Props {
   onNavigateToTasks?: (type?: TaskType) => void;
 }
 
-export default function OverviewTab({ onNavigateToTasks }: Props) {  const { t } = useTranslation();
+export default function OverviewTab({ onNavigateToTasks }: Props) {
+  const { t } = useTranslation();
 
   const [tasks, setTasks] = useState<ScheduledTask[]>([]);
   const [executions, setExecutions] = useState<TaskExecution[]>([]);
@@ -300,56 +256,63 @@ export default function OverviewTab({ onNavigateToTasks }: Props) {  const { t }
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-center text-[var(--color-text-tertiary)]">
-          <ClockCircleOutlined className="text-3xl mb-2 animate-spin" />
-          <p>{t("加载中...")}</p>
-        </div>
+        <Spin size="large" />
       </div>
     );
   }
+
+  const successRateColor: StatColor =
+    stats.rate >= 90 ? "green" : stats.rate >= 70 ? "orange" : "red";
 
   return (
     <div className="p-4 space-y-8 overflow-y-auto h-full">
       {/* Statistics overview */}
       <section>
         <h2 className="text-base font-semibold text-[var(--color-text-primary)] mb-1">
-          概览
+          {t("概览")}
         </h2>
         <p className="text-sm text-[var(--color-text-tertiary)] mb-4">
-          定时任务调度统计
+          {t("定时任务调度统计")}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <StatCard
-            title={t("总任务数")}
+            label={t("总任务数")}
             value={stats.total}
             icon={<ThunderboltOutlined />}
-            data={statsActivity}
-          />
-          <StatCard
-            title={t("已启用")}
-            value={stats.enabled}
-            color="text-green-500"
-            icon={<CheckCircleOutlined />}
-            data={statsActivity}
-          />
-          <StatCard
-            title={t("已禁用")}
-            value={stats.disabled}
-            icon={<CloseCircleOutlined />}
-            data={statsActivity}
-          />
-          <StatCard
-            title={t("成功率")}
-            value={`${stats.rate.toFixed(1)}%`}
-            color={
-              stats.rate >= 90
-                ? "text-green-500"
-                : stats.rate >= 70
-                  ? "text-orange-500"
-                  : "text-red-500"
+            extra={
+              <MiniBarChart data={statsActivity} height="h-6" barWidth="w-1" />
             }
-            subtitle={t("{{p0}} 成功 / {{p1}} 失败", { p0: stats.totalSuccess, p1: stats.totalFailure })}
-            data={statsActivity}
+          />
+          <StatCard
+            label={t("已启用")}
+            value={stats.enabled}
+            color="green"
+            icon={<CheckCircleOutlined />}
+            extra={
+              <MiniBarChart data={statsActivity} height="h-6" barWidth="w-1" />
+            }
+          />
+          <StatCard
+            label={t("已禁用")}
+            value={stats.disabled}
+            color="orange"
+            icon={<CloseCircleOutlined />}
+            extra={
+              <MiniBarChart data={statsActivity} height="h-6" barWidth="w-1" />
+            }
+          />
+          <StatCard
+            label={t("成功率")}
+            value={`${stats.rate.toFixed(1)}%`}
+            color={successRateColor}
+            icon={<ThunderboltOutlined />}
+            subValue={t("{{p0}} 成功 / {{p1}} 失败", {
+              p0: stats.totalSuccess,
+              p1: stats.totalFailure,
+            })}
+            extra={
+              <MiniBarChart data={statsActivity} height="h-6" barWidth="w-1" />
+            }
           />
         </div>
       </section>
@@ -357,10 +320,10 @@ export default function OverviewTab({ onNavigateToTasks }: Props) {  const { t }
       {/* Task type cards */}
       <section>
         <h2 className="text-base font-semibold text-[var(--color-text-primary)] mb-1">
-          任务类型
+          {t("任务类型")}
         </h2>
         <p className="text-sm text-[var(--color-text-tertiary)] mb-4">
-          按类型查看任务调度状态
+          {t("按类型查看任务调度状态")}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {Object.keys(tasksByType).map((type) => (

@@ -445,7 +445,11 @@
     "heroDesc": "一站式管理和监控您的 AI Agent，提供强大的提示词管理、对话追踪和性能评估功能。",
     "feature1": "多 Agent 协同管理",
     "feature2": "实时性能监控",
-    "feature3": "灵活的提示词配置"
+    "feature3": "灵活的提示词配置",
+    "usernameRequired": "请输入用户名",
+    "emailRequired": "请输入邮箱",
+    "emailInvalid": "邮箱格式不正确",
+    "passwordMinLength": "密码至少 6 位"
   },
   "theme": {
     "light": "浅色",

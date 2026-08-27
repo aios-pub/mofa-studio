@@ -195,3 +195,6 @@ export type { LoadingButtonProps } from './LoadingButton';
 
 // Route loading progress bar
 export { default as RouteLoadingProgress } from './RouteLoadingProgress';
+
+export { default as StatCard } from './StatCard';
+export type { StatCardProps, StatColor } from './StatCard';

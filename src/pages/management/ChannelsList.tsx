@@ -15,6 +15,7 @@ import {
   Spin,
   Empty,
   Alert,
+  Tabs,
 } from "antd";
 import {
   PlusOutlined,
@@ -28,7 +29,12 @@ import {
   ExclamationCircleOutlined,
   SyncOutlined,
   StopOutlined,
+  MessageOutlined,
+  CloseCircleOutlined,
+  ClockCircleOutlined,
 } from "@ant-design/icons";
+import { StatCard } from "@/components/common";
+import type { StatColor } from "@/components/common";
 import { channelApi, channelTypeConfig } from "@/services";
 import { agentApi } from "@/services";
 import ChannelConfigForm from "./components/ChannelConfigForm";
@@ -430,8 +436,8 @@ function ChannelDetail({
           <Switch
             checked={channel.enabled}
             onChange={onToggleStatus}
-            checkedChildren="启用"
-            unCheckedChildren="禁用"
+            checkedChildren={t("启用")}
+            unCheckedChildren={t("禁用")}
           />
         </div>
       </div>
@@ -444,10 +450,10 @@ function ChannelDetail({
           loading={testLoading}
           onClick={onTest}
         >
-          测试连接
+          {t("测试连接")}
         </Button>
         <Button icon={<EditOutlined />} onClick={() => setEditing(true)}>
-          编辑配置
+          {t("编辑配置")}
         </Button>
       </div>
 
@@ -455,7 +461,7 @@ function ChannelDetail({
       {testResult && (
         <Alert
           type={testResult.success ? "success" : "error"}
-          title={testResult.message}
+          message={testResult.message}
           showIcon
           closable
           className="mb-6"
@@ -463,49 +469,50 @@ function ChannelDetail({
       )}
 
       {/* Statistics cards */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <StatCard
-          title={t("总消息数")}
+          icon={<MessageOutlined />}
+          label={t("总消息数")}
           value={(channel.stats?.totalMessages ?? 0).toLocaleString()}
         />
         <StatCard
-          title={t("成功率")}
+          icon={<CheckCircleOutlined />}
+          label={t("成功率")}
           value={`${(channel.stats?.successRate ?? 0).toFixed(1)}%`}
-          status={
-            (channel.stats?.successRate ?? 0) >= 95
-              ? "success"
-              : (channel.stats?.successRate ?? 0) >= 80
-                ? "warning"
-                : "error"
-          }
+          color={successRateColor(channel.stats?.successRate)}
         />
         <StatCard
-          title={t("失败消息")}
+          icon={<CloseCircleOutlined />}
+          label={t("失败消息")}
           value={(channel.stats?.failedMessages ?? 0).toLocaleString()}
+          color="red"
         />
         <StatCard
-          title={t("平均响应")}
+          icon={<ClockCircleOutlined />}
+          label={t("平均响应")}
           value={`${channel.stats?.avgResponseTime ?? 0}ms`}
+          color="orange"
         />
       </div>
 
       {/* Tabs bar */}
-      <div className="flex gap-1 mb-6 border-b border-(--color-border)">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key as typeof activeTab)}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === tab.key
-                ? "text-[var(--color-primary)] border-(--color-primary)"
-                : "text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]"
-            }`}
-          >
-            <tab.icon className="w-4 h-4" />
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        activeKey={activeTab}
+        onChange={(key) => setActiveTab(key as typeof activeTab)}
+        className="mb-6"
+        items={tabs.map((tab) => {
+          const Icon = tab.icon;
+          return {
+            key: tab.key,
+            label: (
+              <span className="flex items-center gap-1.5">
+                <Icon />
+                {tab.label}
+              </span>
+            ),
+          };
+        })}
+      />
 
       {/* Content area */}
       <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
@@ -530,32 +537,12 @@ function ChannelDetail({
   );
 }
 
-// Statistics cards
-function StatCard({
-  title,
-  value,
-  status,
-}: {
-  title: string;
-  value: string;
-  status?: "success" | "warning" | "error";
-}) {
-  const statusColors = {
-    success: "text-green-500",
-    warning: "text-orange-500",
-    error: "text-red-500",
-  };
-
-  return (
-    <div className="bg-(--color-bg-tertiary) rounded-lg p-4">
-      <div className="text-sm text-[var(--color-text-tertiary)]">{title}</div>
-      <div
-        className={`text-xl font-semibold mt-1 ${status ? statusColors[status] : "text-[var(--color-text-primary)]"}`}
-      >
-        {value}
-      </div>
-    </div>
-  );
+// Map success rate to a stat card color
+function successRateColor(rate?: number): StatColor {
+  if (rate === undefined) return "blue";
+  if (rate >= 95) return "green";
+  if (rate >= 80) return "orange";
+  return "red";
 }
 
 // Configuration view

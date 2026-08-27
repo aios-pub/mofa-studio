@@ -5,7 +5,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Card, DatePicker, Select, Spin, Table, Tag, Empty } from "antd";
+import { Card, DatePicker, Segmented, Select, Spin, Table, Tag, Empty } from "antd";
 import { LineChartOutlined } from "@ant-design/icons";
 import {
   DEFAULT_FILTER,
@@ -41,6 +41,7 @@ export default function UsagePage() {
   const [spans, setSpans] = useState<UsageSpan[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<SpanFilter>(DEFAULT_FILTER);
+  const [presetDays, setPresetDays] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -64,6 +65,7 @@ export default function UsagePage() {
   );
 
   const setPreset = (days: number) => {
+    setPresetDays(days);
     setFilter((prev) => ({ ...prev, from: dayOffset(-days + 1), to: dayOffset(0) }));
   };
 
@@ -74,21 +76,16 @@ export default function UsagePage() {
           <LineChartOutlined className="text-[var(--color-primary)]" />
           用量与日志
         </h2>
-        <div className="flex gap-2 text-xs">
-          {[
-            { label: "今天", days: 1 },
-            { label: "近 7 天", days: 7 },
-            { label: "近 30 天", days: 30 },
-          ].map((preset) => (
-            <button
-              key={preset.days}
-              onClick={() => setPreset(preset.days)}
-              className="px-3 py-1 rounded-lg border border-(--color-border) hover:border-[var(--color-primary)] transition-colors"
-            >
-              {preset.label}
-            </button>
-          ))}
-        </div>
+        <Segmented
+          size="small"
+          value={presetDays}
+          onChange={(v) => setPreset(v as number)}
+          options={[
+            { value: 1, label: "今天" },
+            { value: 7, label: "近 7 天" },
+            { value: 30, label: "近 30 天" },
+          ]}
+        />
       </div>
 
       {/* Filters */}
@@ -117,16 +114,18 @@ export default function UsagePage() {
         />
         <DatePicker
           placeholder="开始日期"
-          onChange={(_date, text) =>
-            setFilter((prev) => ({ ...prev, from: typeof text === "string" ? text : "" }))
-          }
+          onChange={(_date, text) => {
+            setPresetDays(null);
+            setFilter((prev) => ({ ...prev, from: typeof text === "string" ? text : "" }));
+          }}
           aria-label="开始日期"
         />
         <DatePicker
           placeholder="结束日期"
-          onChange={(_date, text) =>
-            setFilter((prev) => ({ ...prev, to: typeof text === "string" ? text : "" }))
-          }
+          onChange={(_date, text) => {
+            setPresetDays(null);
+            setFilter((prev) => ({ ...prev, to: typeof text === "string" ? text : "" }));
+          }}
           aria-label="结束日期"
         />
       </div>

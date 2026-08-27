@@ -11,6 +11,7 @@ import {
   Button,
   Typography,
   Card,
+  Table,
   Upload,
   Progress,
   App,
@@ -294,7 +295,7 @@ export function PublishSkillView({
             {error && (
               <Alert
                 type="error"
-                title={error}
+                message={error}
                 showIcon
                 closable
                 onClose={() => setError(null)}
@@ -305,46 +306,49 @@ export function PublishSkillView({
             {parsedMetadata && (
               <Alert
                 type="success"
-                title={t("SKILL.md 解析成功")}
+                message={t("SKILL.md 解析成功")}
                 showIcon
                 icon={<CheckCircleOutlined />}
                 style={{ marginBottom: 16 }}
-              >
-                <Descriptions size="small" column={2}>
-                  {parsedMetadata.display_name && (
-                    <Descriptions.Item label={t("名称")}>
-                      {parsedMetadata.display_name}
-                    </Descriptions.Item>
-                  )}
-                  {parsedMetadata.name && (
-                    <Descriptions.Item label={t("标识")}>
-                      {parsedMetadata.name}
-                    </Descriptions.Item>
-                  )}
-                  {parsedMetadata.version && (
-                    <Descriptions.Item label={t("版本")}>
-                      {parsedMetadata.version}
-                    </Descriptions.Item>
-                  )}
-                  {parsedMetadata.author && (
-                    <Descriptions.Item label={t("作者")}>
-                      {parsedMetadata.author}
-                    </Descriptions.Item>
-                  )}
-                </Descriptions>
-                {parsedMetadata.description && (
-                  <Paragraph style={{ marginTop: 12, marginBottom: 0 }}>
-                    {parsedMetadata.description}
-                  </Paragraph>
-                )}
-                {parsedMetadata.tags && parsedMetadata.tags.length > 0 && (
-                  <div style={{ marginTop: 8 }}>
-                    {parsedMetadata.tags.map((tag) => (
-                      <Tag key={tag}>{tag}</Tag>
-                    ))}
-                  </div>
-                )}
-              </Alert>
+                description={
+                  <>
+                    <Descriptions size="small" column={2}>
+                      {parsedMetadata.displayName && (
+                        <Descriptions.Item label={t("名称")}>
+                          {parsedMetadata.displayName}
+                        </Descriptions.Item>
+                      )}
+                      {parsedMetadata.name && (
+                        <Descriptions.Item label={t("标识")}>
+                          {parsedMetadata.name}
+                        </Descriptions.Item>
+                      )}
+                      {parsedMetadata.version && (
+                        <Descriptions.Item label={t("版本")}>
+                          {parsedMetadata.version}
+                        </Descriptions.Item>
+                      )}
+                      {parsedMetadata.author && (
+                        <Descriptions.Item label={t("作者")}>
+                          {parsedMetadata.author}
+                        </Descriptions.Item>
+                      )}
+                    </Descriptions>
+                    {parsedMetadata.description && (
+                      <Paragraph style={{ marginTop: 12, marginBottom: 0 }}>
+                        {parsedMetadata.description}
+                      </Paragraph>
+                    )}
+                    {parsedMetadata.tags && parsedMetadata.tags.length > 0 && (
+                      <div style={{ marginTop: 8 }}>
+                        {parsedMetadata.tags.map((tag) => (
+                          <Tag key={tag}>{tag}</Tag>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                }
+              />
             )}
           </Card>
 
@@ -536,76 +540,70 @@ export function PublishSkillView({
           {/* Frontmatter field descriptions */}
           <div>
             <Title level={5}>{t("Frontmatter 字段说明")}</Title>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm border-collapse">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2 px-3 font-semibold">{t("字段")}</th>
-                    <th className="text-left py-2 px-3 font-semibold">{t("必需")}</th>
-                    <th className="text-left py-2 px-3 font-semibold">{t("说明")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b">
-                    <td className="py-2 px-3 font-mono text-blue-600">name</td>
-                    <td className="py-2 px-3">
+            <Table
+              pagination={false}
+              size="small"
+              columns={[
+                {
+                  title: t("字段"),
+                  dataIndex: "field",
+                  render: (field: string) => (
+                    <span className="font-mono text-blue-600">{field}</span>
+                  ),
+                },
+                {
+                  title: t("必需"),
+                  dataIndex: "required",
+                  width: 80,
+                  render: (required: boolean) =>
+                    required ? (
                       <Tag color="red" className="m-0">
-                        是
+                        {t("是")}
                       </Tag>
-                    </td>
-                    <td className="py-2 px-3">
-                      技能标识，kebab-case 格式（小写字母、数字、连字符）
-                    </td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="py-2 px-3 font-mono text-blue-600">
-                      description
-                    </td>
-                    <td className="py-2 px-3">
-                      <Tag color="red" className="m-0">
-                        是
-                      </Tag>
-                    </td>
-                    <td className="py-2 px-3">{t("技能简短描述")}</td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="py-2 px-3 font-mono text-blue-600">
-                      version
-                    </td>
-                    <td className="py-2 px-3">
-                      <Tag color="default" className="m-0">
-                        否
-                      </Tag>
-                    </td>
-                    <td className="py-2 px-3">
-                      版本号，遵循语义化版本规范（如 1.0.0）
-                    </td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="py-2 px-3 font-mono text-blue-600">
-                      author
-                    </td>
-                    <td className="py-2 px-3">
-                      <Tag color="default" className="m-0">
-                        否
-                      </Tag>
-                    </td>
-                    <td className="py-2 px-3">{t("作者名称")}</td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="py-2 px-3 font-mono text-blue-600">tags</td>
-                    <td className="py-2 px-3">
-                      <Tag color="default" className="m-0">
-                        否
-                      </Tag>
-                    </td>
-                    <td className="py-2 px-3">
-                      标签数组，JSON 格式，如 ["code", "review"]
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+                    ) : (
+                      <Tag className="m-0">{t("否")}</Tag>
+                    ),
+                },
+                {
+                  title: t("说明"),
+                  dataIndex: "description",
+                },
+              ]}
+              dataSource={[
+                {
+                  key: "name",
+                  field: "name",
+                  required: true,
+                  description: t(
+                    "技能标识，kebab-case 格式（小写字母、数字、连字符）",
+                  ),
+                },
+                {
+                  key: "description",
+                  field: "description",
+                  required: true,
+                  description: t("技能简短描述"),
+                },
+                {
+                  key: "version",
+                  field: "version",
+                  required: false,
+                  description: t("版本号，遵循语义化版本规范（如 1.0.0）"),
+                },
+                {
+                  key: "author",
+                  field: "author",
+                  required: false,
+                  description: t("作者名称"),
+                },
+                {
+                  key: "tags",
+                  field: "tags",
+                  required: false,
+                  description: t('标签数组，JSON 格式，如 ["code", "review"]'),
+                },
+              ]}
+            />
           </div>
 
           <Divider />

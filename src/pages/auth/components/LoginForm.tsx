@@ -91,7 +91,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
       </div>
 
       {/* Error hint */}
-      {error && <Alert title={error} type="error" showIcon className="mb-4" />}
+      {error && <Alert message={error} type="error" showIcon className="mb-4" />}
 
       {/* Form */}
       <Form

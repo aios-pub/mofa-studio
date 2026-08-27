@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Input, Button, Select, message, Popconfirm, Table, Tag } from "antd";
+import { Input, Button, Select, message, Popconfirm, Table, Tag, Segmented } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import {
   PlusOutlined,
@@ -37,7 +37,7 @@ function buildTypeConfig(dynamicTypes: TaskTypeDescriptor[]) {
     { label: string; description: string; icon: string }
   > = { ...taskTypeConfig };
   for (const t of dynamicTypes) {
-    merged[t.taskType] = {
+    merged[t.task_type] = {
       label: t.label,
       description: t.description,
       icon: t.icon,
@@ -110,14 +110,14 @@ export default function TasksTab({
       case "disabled":
         return tasks.filter((t) => t.status === "disabled");
       case "running":
-        return tasks.filter((t) => t.lastRunStatus === "running");
+        return tasks.filter((t) => t.last_run_status === "running");
       default:
         return tasks;
     }
   }, [tasks, statusTab]);
 
   const runningCount = tasks.filter(
-    (t) => t.lastRunStatus === "running",
+    (t) => t.last_run_status === "running",
   ).length;
   const enabledCount = tasks.filter((t) => t.status === "enabled").length;
   const disabledCount = tasks.filter((t) => t.status === "disabled").length;
@@ -227,23 +227,23 @@ export default function TasksTab({
       title: t("成功/失败"),
       key: "counts",
       width: 120,
-      sorter: (a, b) => a.successCount - b.successCount,
+      sorter: (a, b) => a.success_count - b.success_count,
       render: (_: unknown, record: ScheduledTask) => {
         const rate =
-          record.successCount + record.failureCount > 0
-            ? (record.successCount /
-                (record.successCount + record.failureCount)) *
+          record.success_count + record.failure_count > 0
+            ? (record.success_count /
+                (record.success_count + record.failure_count)) *
               100
             : null;
         return (
           <div className="flex items-center gap-2 text-xs">
             <span className="flex items-center gap-0.5 text-green-500">
               <CheckCircleOutlined />
-              {record.successCount}
+              {record.success_count}
             </span>
             <span className="flex items-center gap-0.5 text-red-500">
               <CloseCircleOutlined />
-              {record.failureCount}
+              {record.failure_count}
             </span>
             {rate !== null && (
               <span
@@ -270,20 +270,20 @@ export default function TasksTab({
       render: (v: Date | undefined, record: ScheduledTask) => (
         <div className="text-xs">
           <div>{formatDate(v)}</div>
-          {record.lastRunStatus && (
+          {record.last_run_status && (
             <Tag
               color={
-                record.lastRunStatus === "success"
+                record.last_run_status === "success"
                   ? "green"
-                  : record.lastRunStatus === "failure"
+                  : record.last_run_status === "failure"
                     ? "red"
                     : "blue"
               }
               className="text-xs mt-0.5"
             >
-              {record.lastRunStatus === "success"
+              {record.last_run_status === "success"
                 ? "成功"
-                : record.lastRunStatus === "failure"
+                : record.last_run_status === "failure"
                   ? "失败"
                   : "运行中"}
             </Tag>
@@ -367,6 +367,24 @@ export default function TasksTab({
             value: type,
           }))}
         />
+        <Segmented
+          value={statusTab}
+          onChange={(v) => setStatusTab(v as typeof statusTab)}
+          options={[
+            { key: "all", label: t("全部"), count: tasks.length },
+            { key: "enabled", label: t("已启用"), count: enabledCount },
+            { key: "disabled", label: t("已禁用"), count: disabledCount },
+            { key: "running", label: t("运行中"), count: runningCount },
+          ].map((tab) => ({
+            value: tab.key,
+            label: (
+              <span className="flex items-center gap-1">
+                {tab.label}
+                <span className="text-xs opacity-70">{tab.count}</span>
+              </span>
+            ),
+          }))}
+        />
         <div className="flex-1" />
         <Button
           type="primary"
@@ -374,31 +392,8 @@ export default function TasksTab({
           size="small"
           onClick={() => setShowModal(true)}
         >
-          创建任务
+          {t("创建任务")}
         </Button>
-      </div>
-
-      {/* Status tabs */}
-      <div className="flex border-b border-(--color-border)">
-        {[
-          { key: "all" as const, label: t("全部"), count: tasks.length },
-          { key: "enabled" as const, label: t("已启用"), count: enabledCount },
-          { key: "disabled" as const, label: t("已禁用"), count: disabledCount },
-          { key: "running" as const, label: t("运行中"), count: runningCount },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setStatusTab(tab.key)}
-            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
-              statusTab === tab.key
-                ? "text-[var(--color-primary)] border-(--color-primary)"
-                : "text-[var(--color-text-tertiary)] border-transparent hover:text-[var(--color-text-secondary)]"
-            }`}
-          >
-            {tab.label}
-            <span className="ml-1 text-xs opacity-70">{tab.count}</span>
-          </button>
-        ))}
       </div>
 
       {/* Data table */}
@@ -411,7 +406,7 @@ export default function TasksTab({
           loading={loading}
           pagination={{
             pageSize: 15,
-            showTotal: (t) => t("共 {{p0}} 条", { p0: t }),
+            showTotal: (total) => t("共 {{p0}} 条", { p0: total }),
             size: "small",
           }}
           onRow={(record) => ({
@@ -431,7 +426,7 @@ export default function TasksTab({
           <TaskDetail
             task={selectedTask}
             executions={executions}
-            taskTypes={taskTypes}
+            task_types={taskTypes}
             onExecute={handleExecute}
             onToggle={handleToggle}
             onEdit={(t) => setEditingTask(t)}
@@ -444,7 +439,7 @@ export default function TasksTab({
       {(showModal || editingTask) && (
         <TaskFormModal
           task={editingTask}
-          taskTypes={taskTypes}
+          task_types={taskTypes}
           onClose={() => {
             setShowModal(false);
             setEditingTask(null);

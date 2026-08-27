@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 /**
  * Prompt editor component
+ * Three-pane layout: preset templates, main editing area, and preview
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -17,8 +18,23 @@ import {
   EyeOutlined,
   BulbOutlined,
 } from "@ant-design/icons";
+import {
+  App,
+  Button,
+  Checkbox,
+  Empty,
+  Input,
+  Select,
+  Space,
+  Spin,
+  Tabs,
+  Tag,
+  Typography,
+} from "antd";
 import type { Prompt, PromptVariable } from "@/services";
 import { promptApi } from "@/services";
+
+const { Text } = Typography;
 
 interface PromptEditorProps {
   promptId?: string;
@@ -157,7 +173,7 @@ const presetTemplates = [
   },
 ];
 
-// Variable type mapping
+// Variable type options (labels resolved through i18n at usage site)
 const variableTypes = [
   { value: "string", label: "字符串", icon: FontSizeOutlined },
   { value: "number", label: "数字", icon: NumberOutlined },
@@ -169,7 +185,9 @@ export default function PromptEditor({
   promptId,
   onSave,
   onCancel,
-}: PromptEditorProps) {  const { t } = useTranslation();
+}: PromptEditorProps) {
+  const { t } = useTranslation();
+  const { message } = App.useApp();
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -260,11 +278,11 @@ export default function PromptEditor({
     setVariables((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Insert variable into content
+  // Insert variable into content at the textarea cursor
   const insertVariable = (varName: string) => {
     const textarea = document.querySelector(
       'textarea[name="content"]',
-    ) as HTMLTextAreaElement;
+    ) as HTMLTextAreaElement | null;
     if (textarea) {
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
@@ -300,22 +318,22 @@ export default function PromptEditor({
       let value = "";
       switch (sv.name) {
         case "current_date":
-          value = now.toLocaleDateString("zh-CN");
+          value = now.toLocaleDateString();
           break;
         case "current_time":
-          value = now.toLocaleTimeString("zh-CN");
+          value = now.toLocaleTimeString();
           break;
         case "current_datetime":
-          value = now.toLocaleString("zh-CN");
+          value = now.toLocaleString();
           break;
         case "user_name":
-          value = "当前用户";
+          value = t("当前用户");
           break;
         case "user_id":
           value = "user-current";
           break;
         case "agent_name":
-          value = "AI助手";
+          value = t("AI助手");
           break;
         case "agent_id":
           value = "agent-current";
@@ -327,12 +345,12 @@ export default function PromptEditor({
       );
     });
     return preview;
-  }, [content, variables, previewValues]);
+  }, [content, variables, previewValues, t]);
 
   // Save
   const handleSave = async () => {
     if (!name.trim() || !content.trim()) {
-      alert(t("请填写名称和内容"));
+      message.warning(t("请填写名称和内容"));
       return;
     }
 
@@ -365,10 +383,40 @@ export default function PromptEditor({
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-[var(--color-text-tertiary)]">{t("加载中...")}</div>
+        <Spin size="large" />
       </div>
     );
   }
+
+  const tabItems = [
+    {
+      key: "content",
+      label: (
+        <span className="flex items-center gap-1.5">
+          <FileTextOutlined />
+          {t("内容")}
+        </span>
+      ),
+    },
+    {
+      key: "variables",
+      label: (
+        <span className="flex items-center gap-1.5">
+          <FunctionOutlined />
+          {t("变量")}
+        </span>
+      ),
+    },
+    {
+      key: "preview",
+      label: (
+        <span className="flex items-center gap-1.5">
+          <EyeOutlined />
+          {t("预览")}
+        </span>
+      ),
+    },
+  ];
 
   return (
     <div className="flex flex-col h-full bg-[var(--color-bg-base)]">
@@ -376,37 +424,25 @@ export default function PromptEditor({
       <div className="flex items-center justify-between px-6 py-4 border-b border-(--color-border)">
         <div className="flex items-center gap-4">
           <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-            {originalPrompt ? "编辑提示词" : "新建提示词"}
+            {originalPrompt ? t("编辑提示词") : t("新建提示词")}
           </h2>
-          {hasChanges && (
-            <span className="text-xs text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 px-2 py-0.5 rounded">
-              有未保存的更改
-            </span>
-          )}
+          {hasChanges && <Tag color="warning">{t("有未保存的更改")}</Tag>}
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onCancel}
-            className="px-3 py-1.5 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
-          >
-            取消
-          </button>
-          <button
-            onClick={() => setActiveTab("preview")}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg hover:bg-(--color-bg-tertiary)"
-          >
-            <EyeOutlined />
-            预览
-          </button>
-          <button
+        <Space>
+          <Button onClick={onCancel}>{t("取消")}</Button>
+          <Button icon={<EyeOutlined />} onClick={() => setActiveTab("preview")}>
+            {t("预览")}
+          </Button>
+          <Button
+            type="primary"
+            icon={<SaveOutlined />}
             onClick={handleSave}
-            disabled={saving || !name.trim() || !content.trim()}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+            loading={saving}
+            disabled={!name.trim() || !content.trim()}
           >
-            <SaveOutlined />
-            {saving ? "保存中..." : "保存"}
-          </button>
-        </div>
+            {t("保存")}
+          </Button>
+        </Space>
       </div>
 
       <div className="flex-1 overflow-hidden">
@@ -414,43 +450,51 @@ export default function PromptEditor({
           {/* Left: preset templates */}
           <div className="w-56 border-r border-(--color-border) p-3 overflow-y-auto bg-[var(--color-bg-secondary)]">
             <h3 className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
-              预设模板
+              {t("预设模板")}
             </h3>
             <div className="space-y-1">
               {presetTemplates.map((template) => (
-                <button
+                <Button
                   key={template.id}
+                  type="text"
+                  block
                   onClick={() => applyTemplate(template)}
-                  className="w-full text-left p-2 rounded-lg hover:bg-(--color-bg-tertiary) transition-colors"
+                  className="!justify-start !h-auto !py-2"
                 >
-                  <div className="flex items-center gap-2">
-                    <BulbOutlined className="text-[var(--color-primary)]" />
-                    <span className="text-sm text-[var(--color-text-primary)]">
-                      {template.name}
+                  <div className="text-left">
+                    <div className="flex items-center gap-2">
+                      <BulbOutlined className="text-[var(--color-primary)]" />
+                      <span className="text-sm text-[var(--color-text-primary)]">
+                        {template.name}
+                      </span>
+                    </div>
+                    <span className="text-xs text-[var(--color-text-tertiary)]">
+                      {template.category}
                     </span>
                   </div>
-                  <span className="text-xs text-[var(--color-text-tertiary)]">
-                    {template.category}
-                  </span>
-                </button>
+                </Button>
               ))}
             </div>
 
             <h3 className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2 mt-4">
-              系统变量
+              {t("系统变量")}
             </h3>
             <div className="space-y-1">
               {systemVariables.map((sv) => (
-                <button
+                <Button
                   key={sv.name}
+                  type="text"
+                  block
                   onClick={() => insertVariable(sv.name)}
-                  className="w-full text-left p-2 rounded-lg hover:bg-(--color-bg-tertiary) transition-colors"
+                  className="!justify-start !h-auto !py-2"
                 >
-                  <code className="text-xs text-[var(--color-primary)]">{`{{${sv.name}}}`}</code>
-                  <p className="text-xs text-[var(--color-text-tertiary)]">
-                    {sv.label}
-                  </p>
-                </button>
+                  <div className="text-left">
+                    <code className="text-xs text-[var(--color-primary)]">{`{{${sv.name}}}`}</code>
+                    <p className="text-xs text-[var(--color-text-tertiary)]">
+                      {t(sv.label)}
+                    </p>
+                  </div>
+                </Button>
               ))}
             </div>
           </div>
@@ -458,102 +502,87 @@ export default function PromptEditor({
           {/* Center: editing area */}
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Basic info form */}
-            <div className="p-4 border-b border-(--color-border) space-y-3">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 border-b border-(--color-border)">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                    名称 *
+                    {t("名称")} *
                   </label>
-                  <input
-                    type="text"
+                  <Input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder={t("提示词名称")}
-                    className="w-full px-3 py-2 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg text-sm focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                    分类
+                    {t("分类")}
                   </label>
-                  <input
-                    type="text"
+                  <Input
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     placeholder={t("分类名称")}
-                    className="w-full px-3 py-2 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg text-sm focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
                   />
                 </div>
               </div>
-              <div>
+              <div className="mt-3">
                 <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                  描述
+                  {t("描述")}
                 </label>
-                <input
-                  type="text"
+                <Input
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder={t("简短描述提示词的用途")}
-                  className="w-full px-3 py-2 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg text-sm focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)]"
                 />
               </div>
             </div>
 
-            {/* Tabs bar */}
-            <div className="flex border-b border-(--color-border)">
-              {[
-                { key: "content", label: t("内容"), icon: FileTextOutlined },
-                { key: "variables", label: t("变量"), icon: FunctionOutlined },
-                { key: "preview", label: t("预览"), icon: EyeOutlined },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key as typeof activeTab)}
-                  className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                    activeTab === tab.key
-                      ? "text-[var(--color-primary)] border-(--color-primary)"
-                      : "text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]"
-                  }`}
-                >
-                  <tab.icon className="w-4 h-4" />
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Content area */}
-            <div className="flex-1 overflow-y-auto p-4">
+            {/* Tabs bar + content */}
+            <Tabs
+              activeKey={activeTab}
+              onChange={(key) => setActiveTab(key as typeof activeTab)}
+              items={tabItems}
+            />
+            <div
+              className={`flex-1 p-4 ${
+                activeTab === "content" ? "overflow-hidden" : "overflow-y-auto"
+              }`}
+            >
               {activeTab === "content" && (
-                <textarea
+                <Input.TextArea
                   name="content"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder={t("输入提示词内容，使用 {{变量名}} 插入变量...")}
-                  className="w-full h-full p-4 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg text-sm focus:outline-none focus:border-(--color-primary) text-[var(--color-text-primary)] font-mono resize-none"
+                  className="font-mono"
+                  style={{ height: "100%", resize: "none" }}
                 />
               )}
 
               {activeTab === "variables" && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
-                      自定义变量
-                    </h3>
-                    <button
+                    <Text strong>{t("自定义变量")}</Text>
+                    <Button
+                      size="small"
+                      type="primary"
+                      icon={<PlusOutlined />}
                       onClick={addVariable}
-                      className="flex items-center gap-1 px-2 py-1 text-xs bg-[var(--color-primary)] text-white rounded hover:bg-[var(--color-primary-hover)]"
                     >
-                      <PlusOutlined className="text-xs" />
-                      添加变量
-                    </button>
+                      {t("添加变量")}
+                    </Button>
                   </div>
 
                   {variables.length === 0 ? (
-                    <div className="text-center py-8 text-[var(--color-text-tertiary)]">
-                      <FunctionOutlined className="text-2xl mx-auto mb-2 opacity-50" />
-                      <p>{t("暂无自定义变量")}</p>
-                      <p className="text-xs">{t("点击上方按钮添加变量")}</p>
-                    </div>
+                    <Empty
+                      image={Empty.PRESENTED_IMAGE_SIMPLE}
+                      description={t("暂无自定义变量")}
+                      className="py-8"
+                    >
+                      <Text type="secondary" className="text-xs block">
+                        {t("点击上方按钮添加变量")}
+                      </Text>
+                    </Empty>
                   ) : (
                     <div className="space-y-3">
                       {variables.map((v, index) => (
@@ -563,48 +592,43 @@ export default function PromptEditor({
                         >
                           <div className="flex items-center gap-2 mb-2">
                             <code className="text-sm text-[var(--color-primary)]">{`{{${v.name}}}`}</code>
-                            <button
+                            <Button
+                              type="link"
+                              size="small"
                               onClick={() => insertVariable(v.name)}
-                              className="text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-primary)]"
                             >
-                              插入
-                            </button>
+                              {t("插入")}
+                            </Button>
                             <div className="flex-1" />
-                            <button
-                              onClick={() => removeVariable(index)}
-                              className="p-1 text-[var(--color-text-tertiary)] hover:text-red-500"
-                            >
-                              <DeleteOutlined />
-                            </button>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <input
+                            <Button
                               type="text"
+                              size="small"
+                              danger
+                              icon={<DeleteOutlined />}
+                              onClick={() => removeVariable(index)}
+                            />
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <Input
                               value={v.name}
                               onChange={(e) =>
                                 updateVariable(index, { name: e.target.value })
                               }
                               placeholder={t("变量名")}
-                              className="px-2 py-1 text-sm bg-(--color-bg-tertiary) border border-(--color-border) rounded"
+                              size="small"
                             />
-                            <select
+                            <Select
                               value={v.type}
-                              onChange={(e) =>
-                                updateVariable(index, {
-                                  type: e.target
-                                    .value as PromptVariable["type"],
-                                })
+                              onChange={(type) =>
+                                updateVariable(index, { type })
                               }
-                              className="px-2 py-1 text-sm bg-(--color-bg-tertiary) border border-(--color-border) rounded"
-                            >
-                              {variableTypes.map((t) => (
-                                <option key={t.value} value={t.value}>
-                                  {t.label}
-                                </option>
-                              ))}
-                            </select>
-                            <input
-                              type="text"
+                              options={variableTypes.map((vt) => ({
+                                value: vt.value,
+                                label: t(vt.label),
+                              }))}
+                              size="small"
+                            />
+                            <Input
                               value={v.defaultValue || ""}
                               onChange={(e) =>
                                 updateVariable(index, {
@@ -612,26 +636,20 @@ export default function PromptEditor({
                                 })
                               }
                               placeholder={t("默认值")}
-                              className="px-2 py-1 text-sm bg-(--color-bg-tertiary) border border-(--color-border) rounded"
+                              size="small"
                             />
-                            <label className="flex items-center gap-1">
-                              <input
-                                type="checkbox"
-                                checked={v.required}
-                                onChange={(e) =>
-                                  updateVariable(index, {
-                                    required: e.target.checked,
-                                  })
-                                }
-                                className="rounded"
-                              />
-                              <span className="text-sm">{t("必填")}</span>
-                            </label>
+                            <Checkbox
+                              checked={v.required}
+                              onChange={(e) =>
+                                updateVariable(index, { required: e.target.checked })
+                              }
+                            >
+                              {t("必填")}
+                            </Checkbox>
                           </div>
                           {v.type === "enum" && (
                             <div className="mt-2">
-                              <input
-                                type="text"
+                              <Input
                                 value={(v.options || []).join(", ")}
                                 onChange={(e) =>
                                   updateVariable(index, {
@@ -641,7 +659,7 @@ export default function PromptEditor({
                                   })
                                 }
                                 placeholder={t("枚举值，用逗号分隔")}
-                                className="w-full px-2 py-1 text-sm bg-(--color-bg-tertiary) border border-(--color-border) rounded"
+                                size="small"
                               />
                             </div>
                           )}
@@ -657,39 +675,40 @@ export default function PromptEditor({
                   {/* Variable input */}
                   {variables.length > 0 && (
                     <div className="p-4 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg">
-                      <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">
-                        填写变量值
-                      </h4>
-                      <div className="grid grid-cols-2 gap-3">
+                      <Text strong className="block mb-3">
+                        {t("填写变量值")}
+                      </Text>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {variables.map((v) => (
                           <div key={v.name}>
                             <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">
                               {v.name}
                               {v.required && (
-                                <span className="text-red-500">*</span>
+                                <span className="text-red-500 ml-0.5">*</span>
                               )}
                             </label>
                             {v.type === "enum" ? (
-                              <select
+                              <Select
+                                className="w-full"
                                 value={
-                                  previewValues[v.name] || v.defaultValue || ""
+                                  previewValues[v.name] ||
+                                  v.defaultValue ||
+                                  undefined
                                 }
-                                onChange={(e) =>
+                                onChange={(value) =>
                                   setPreviewValues({
                                     ...previewValues,
-                                    [v.name]: e.target.value,
+                                    [v.name]: value,
                                   })
                                 }
-                                className="w-full px-2 py-1 text-sm bg-(--color-bg-tertiary) border border-(--color-border) rounded"
-                              >
-                                {(v.options || []).map((opt) => (
-                                  <option key={opt} value={opt}>
-                                    {opt}
-                                  </option>
-                                ))}
-                              </select>
+                                options={(v.options || []).map((opt) => ({
+                                  value: opt,
+                                  label: opt,
+                                }))}
+                                size="small"
+                              />
                             ) : (
-                              <input
+                              <Input
                                 type={
                                   v.type === "number"
                                     ? "number"
@@ -707,7 +726,7 @@ export default function PromptEditor({
                                   })
                                 }
                                 placeholder={v.defaultValue}
-                                className="w-full px-2 py-1 text-sm bg-(--color-bg-tertiary) border border-(--color-border) rounded"
+                                size="small"
                               />
                             )}
                           </div>
@@ -718,9 +737,9 @@ export default function PromptEditor({
 
                   {/* Preview result */}
                   <div className="p-4 bg-[var(--color-bg-secondary)] border border-(--color-border) rounded-lg">
-                    <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">
-                      预览结果
-                    </h4>
+                    <Text strong className="block mb-3">
+                      {t("预览结果")}
+                    </Text>
                     <pre className="text-sm text-[var(--color-text-primary)] whitespace-pre-wrap font-mono">
                       {getPreviewContent()}
                     </pre>

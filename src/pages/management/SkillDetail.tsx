@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
  */
 
 import { useState, useEffect } from "react";
-import { Button, Tag, Typography, Card, Statistic, Tabs, Input } from "antd";
+import { Button, Tag, Typography, Card, Statistic, Tabs, Input, Table, Empty } from "antd";
 import {
   EditOutlined,
   SettingOutlined,
@@ -15,7 +15,7 @@ import {
   CloseOutlined,
   LoadingOutlined,
 } from "@ant-design/icons";
-import type { Skill } from "@/services";
+import type { Skill, SkillParameter } from "@/services";
 import { skillApi } from "@/services";
 
 const { Text, Title } = Typography;
@@ -248,76 +248,62 @@ export function SkillDetail({
       <div className="flex-1 overflow-hidden">
         {activeTab === "params" && (
           <div className="p-6 h-full overflow-y-auto">
-            <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">
-              <div className="p-3 border-b border-(--color-border) bg-(--color-bg-tertiary)">
-                <span className="text-sm font-medium text-[var(--color-text-primary)]">
-                  参数定义
-                </span>
-              </div>
+            <Card title={t("参数定义")} className="rounded-lg">
               {(Array.isArray(skill.parameters) ? skill.parameters : [])
                 .length === 0 ? (
-                <div className="p-4 text-center text-[var(--color-text-tertiary)]">
-                  暂无参数
-                </div>
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description={t("暂无参数")}
+                  className="py-6"
+                />
               ) : (
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-(--color-border)">
-                      <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
-                        参数名
-                      </th>
-                      <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
-                        类型
-                      </th>
-                      <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
-                        描述
-                      </th>
-                      <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
-                        默认值
-                      </th>
-                      <th className="text-left py-2 px-4 text-[var(--color-text-tertiary)]">
-                        必填
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(Array.isArray(skill.parameters)
-                      ? skill.parameters
-                      : []
-                    ).map((param) => (
-                      <tr
-                        key={param.name}
-                        className="border-b border-(--color-border)/50"
-                      >
-                        <td className="py-2 px-4">
-                          <code className="text-[var(--color-primary)]">
-                            {param.name}
-                          </code>
-                        </td>
-                        <td className="py-2 px-4 text-[var(--color-text-secondary)]">
-                          {param.type}
-                        </td>
-                        <td className="py-2 px-4 text-[var(--color-text-secondary)]">
-                          {param.description}
-                        </td>
-                        <td className="py-2 px-4 text-[var(--color-text-secondary)]">
-                          {param.defaultValue !== undefined
-                            ? JSON.stringify(param.defaultValue)
-                            : "-"}
-                        </td>
-                        <td className="py-2 px-4">
-                          {param.required ? (
-                            <CheckOutlined className="text-green-500" />
-                          ) : (
-                            <CloseOutlined className="text-[var(--color-text-tertiary)]" />
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <Table<SkillParameter>
+                  rowKey="name"
+                  dataSource={
+                    Array.isArray(skill.parameters) ? skill.parameters : []
+                  }
+                  pagination={false}
+                  size="small"
+                  columns={[
+                    {
+                      title: t("参数名"),
+                      dataIndex: "name",
+                      render: (name: string) => (
+                        <code className="text-[var(--color-primary)]">
+                          {name}
+                        </code>
+                      ),
+                    },
+                    {
+                      title: t("类型"),
+                      dataIndex: "type",
+                    },
+                    {
+                      title: t("描述"),
+                      dataIndex: "description",
+                    },
+                    {
+                      title: t("默认值"),
+                      render: (_, param) =>
+                        param.defaultValue !== undefined
+                          ? JSON.stringify(param.defaultValue)
+                          : "-",
+                    },
+                    {
+                      title: t("必填"),
+                      dataIndex: "required",
+                      width: 72,
+                      render: (required?: boolean) =>
+                        required ? (
+                          <CheckOutlined className="text-green-500" />
+                        ) : (
+                          <CloseOutlined className="text-[var(--color-text-tertiary)]" />
+                        ),
+                    },
+                  ]}
+                />
               )}
-            </div>
+            </Card>
 
             {/* JSON Schema display */}
             <div className="mt-4 bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) overflow-hidden">

@@ -1,5 +1,6 @@
 /**
  * Register form component
+ * Use Ant Design components for visual consistency
  */
 
 import { useState } from "react";
@@ -9,12 +10,10 @@ import {
   UserOutlined,
   LockOutlined,
   MailOutlined,
-  EyeOutlined,
-  EyeInvisibleOutlined,
   SyncOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { Button, Checkbox, Divider } from "antd";
+import { Alert, Button, Checkbox, Divider, Form, Input } from "antd";
 import { useUserActions } from "../../../stores/useUserStore";
 import { authApi } from "@/services";
 
@@ -22,29 +21,25 @@ interface RegisterFormProps {
   onSwitchToLogin?: () => void;
 }
 
+interface FormValues {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { setUserToken, setUserInfo } = useUserActions();
+  const [form] = Form.useForm<FormValues>();
 
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (values: FormValues) => {
     setError("");
-
-    // Validate
-    if (password !== confirmPassword) {
-      setError(t("auth.passwordMismatch", "两次输入的密码不一致"));
-      return;
-    }
 
     if (!agreed) {
       setError(t("auth.agreeTerms", "请阅读并同意用户协议"));
@@ -54,7 +49,11 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
     setLoading(true);
 
     try {
-      const res = await authApi.signup({ username, email, password });
+      const res = await authApi.signup({
+        username: values.username,
+        email: values.email,
+        password: values.password,
+      });
       setUserToken({
         accessToken: res.accessToken,
         refreshToken: res.refreshToken,
@@ -62,7 +61,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
       setUserInfo(res.user);
       navigate("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message: t("注册失败"));
+      setError(err instanceof Error ? err.message : t("注册失败"));
     } finally {
       setLoading(false);
     }
@@ -89,100 +88,121 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
       </div>
 
       {/* Error hint */}
-      {error && (
-        <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm flex items-center gap-2">
-          <span className="i-ant-design:exclamation-circle-filled" />
-          {error}
-        </div>
-      )}
+      {error && <Alert message={error} type="error" showIcon className="mb-4" />}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <Form
+        form={form}
+        onFinish={handleSubmit}
+        layout="vertical"
+        requiredMark={false}
+      >
         {/* Username */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
-            {t("auth.username", "用户名")}
-          </label>
-          <div className="relative">
-            <UserOutlined className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-(--color-border) bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-(--color-primary) transition-all"
-              placeholder={t("auth.usernamePlaceholder", "请输入用户名")}
-              required
-            />
-          </div>
-        </div>
+        <Form.Item
+          name="username"
+          label={t("auth.username", "用户名")}
+          rules={[
+            {
+              required: true,
+              message: t("auth.usernameRequired", "请输入用户名"),
+            },
+          ]}
+        >
+          <Input
+            prefix={
+              <UserOutlined className="text-[var(--color-text-tertiary)]" />
+            }
+            placeholder={t("auth.usernamePlaceholder", "请输入用户名")}
+            size="large"
+          />
+        </Form.Item>
 
         {/* Email */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
-            {t("auth.email", "邮箱")}
-          </label>
-          <div className="relative">
-            <MailOutlined className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-(--color-border) bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-(--color-primary) transition-all"
-              placeholder={t("auth.emailPlaceholder", "请输入邮箱")}
-              required
-            />
-          </div>
-        </div>
+        <Form.Item
+          name="email"
+          label={t("auth.email", "邮箱")}
+          rules={[
+            {
+              required: true,
+              message: t("auth.emailRequired", "请输入邮箱"),
+            },
+            {
+              type: "email",
+              message: t("auth.emailInvalid", "邮箱格式不正确"),
+            },
+          ]}
+        >
+          <Input
+            prefix={
+              <MailOutlined className="text-[var(--color-text-tertiary)]" />
+            }
+            placeholder={t("auth.emailPlaceholder", "请输入邮箱")}
+            size="large"
+          />
+        </Form.Item>
 
         {/* Password */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
-            {t("auth.password", "密码")}
-          </label>
-          <div className="relative">
-            <LockOutlined className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
-            <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full pl-10 pr-12 py-2.5 rounded-lg border border-(--color-border) bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-(--color-primary) transition-all"
-              placeholder={t("auth.passwordPlaceholder", "请输入密码")}
-              required
-              minLength={6}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] transition-colors"
-            >
-              {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-            </button>
-          </div>
-        </div>
+        <Form.Item
+          name="password"
+          label={t("auth.password", "密码")}
+          rules={[
+            {
+              required: true,
+              message: t("auth.passwordRequired", "请输入密码"),
+            },
+            {
+              min: 6,
+              message: t("auth.passwordMinLength", "密码至少 6 位"),
+            },
+          ]}
+        >
+          <Input.Password
+            prefix={
+              <LockOutlined className="text-[var(--color-text-tertiary)]" />
+            }
+            placeholder={t("auth.passwordPlaceholder", "请输入密码")}
+            size="large"
+          />
+        </Form.Item>
 
         {/* Confirm password */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
-            {t("auth.confirmPassword", "确认密码")}
-          </label>
-          <div className="relative">
-            <LockOutlined className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
-            <input
-              type={showPassword ? "text" : "password"}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-(--color-border) bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-(--color-primary) transition-all"
-              placeholder={t(
+        <Form.Item
+          name="confirmPassword"
+          label={t("auth.confirmPassword", "确认密码")}
+          dependencies={["password"]}
+          rules={[
+            {
+              required: true,
+              message: t(
                 "auth.confirmPasswordPlaceholder",
                 "请再次输入密码",
-              )}
-              required
-            />
-          </div>
-        </div>
+              ),
+            },
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                if (!value || getFieldValue("password") === value) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(
+                  new Error(
+                    t("auth.passwordMismatch", "两次输入的密码不一致"),
+                  ),
+                );
+              },
+            }),
+          ]}
+        >
+          <Input.Password
+            prefix={
+              <LockOutlined className="text-[var(--color-text-tertiary)]" />
+            }
+            placeholder={t("auth.confirmPasswordPlaceholder", "请再次输入密码")}
+            size="large"
+          />
+        </Form.Item>
 
         {/* Agree to terms */}
-        <div className="flex items-start gap-2">
+        <div className="mb-4">
           <Checkbox
             checked={agreed}
             onChange={(e) => setAgreed(e.target.checked)}
@@ -201,20 +221,22 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
         </div>
 
         {/* Register button */}
-        <Button
-          type="primary"
-          htmlType="submit"
-          block
-          size="large"
-          disabled={loading}
-          icon={loading ? <SyncOutlined spin /> : null}
-          className="h-11 font-medium"
-        >
-          {loading
-            ? t("auth.registering", "注册中...")
-            : t("auth.register", "注册")}
-        </Button>
-      </form>
+        <Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            block
+            size="large"
+            disabled={loading}
+            icon={loading ? <SyncOutlined spin /> : null}
+            className="h-11 font-medium"
+          >
+            {loading
+              ? t("auth.registering", "注册中...")
+              : t("auth.register", "注册")}
+          </Button>
+        </Form.Item>
+      </Form>
 
       {/* Divider */}
       <Divider className="!my-6 !text-[var(--color-text-tertiary)]">

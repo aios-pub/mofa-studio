@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
  */
 
 import { useState, useEffect } from "react";
-import { Input, Button, Tag, Modal, message } from "antd";
+import { Input, Button, Tag, Modal, message, Tabs } from "antd";
 import {
   PlusOutlined,
   SearchOutlined,
@@ -70,7 +70,7 @@ export default function ProvidersListPage() {  const { t } = useTranslation();
     loadProviders();
   }, []);
 
-  const loadProviders = async () => {
+  const loadProviders = async (): Promise<Provider[]> => {
     try {
       setLoading(true);
       const data = await providerApi.getAll();
@@ -640,25 +640,23 @@ function ProviderDetail({
       </div>
 
       {/* Tabs bar */}
-      <div className="flex gap-1 px-6 border-b border-(--color-border)">
-        {tabs.map((tab) => {
+      <Tabs
+        activeKey={activeTab}
+        onChange={(key) => setActiveTab(key as typeof activeTab)}
+        className="px-6"
+        items={tabs.map((tab) => {
           const Icon = tab.icon;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key as typeof activeTab)}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.key
-                  ? "text-[var(--color-primary)] border-(--color-primary)"
-                  : "text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]"
-              }`}
-            >
-              <Icon />
-              {tab.label}
-            </button>
-          );
+          return {
+            key: tab.key,
+            label: (
+              <span className="flex items-center gap-1.5">
+                <Icon />
+                {tab.label}
+              </span>
+            ),
+          };
         })}
-      </div>
+      />
 
       {/* Content area */}
       <div className="flex-1 overflow-hidden">

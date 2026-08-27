@@ -14,6 +14,7 @@ import {
   Empty,
   Spin,
   Alert,
+  Tabs,
 } from "antd";
 import {
   PlusOutlined,
@@ -344,27 +345,39 @@ export default function KnowledgeBaseListPage() {  const { t } = useTranslation(
                 </div>
               ))}
             </div>
-            <div className="flex gap-1 mb-6 border-b border-(--color-border)">
-              {[
-                { k: "documents", l: "文档管理", i: FileTextOutlined },
-                { k: "search", l: "知识搜索", i: SearchOutlined },
-                { k: "settings", l: "配置", i: SettingOutlined },
-              ].map((t) => (
-                <button
-                  key={t.k}
-                  onClick={() => setActiveTab(t.k as typeof activeTab)}
-                  className={
-                    "flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors " +
-                    (activeTab === t.k
-                      ? "text-[var(--color-primary)] border-(--color-primary)"
-                      : "text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]")
-                  }
-                >
-                  <t.i className="w-4 h-4" />
-                  {t.l}
-                </button>
-              ))}
-            </div>
+            <Tabs
+              activeKey={activeTab}
+              onChange={(key) => setActiveTab(key as typeof activeTab)}
+              className="mb-6"
+              items={[
+                {
+                  k: "documents",
+                  l: t("文档管理"),
+                  i: FileTextOutlined,
+                },
+                {
+                  k: "search",
+                  l: t("知识搜索"),
+                  i: SearchOutlined,
+                },
+                {
+                  k: "settings",
+                  l: t("配置"),
+                  i: SettingOutlined,
+                },
+              ].map((tab) => {
+                const Icon = tab.i;
+                return {
+                  key: tab.k,
+                  label: (
+                    <span className="flex items-center gap-1.5">
+                      <Icon />
+                      {tab.l}
+                    </span>
+                  ),
+                };
+              })}
+            />
             <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-(--color-border) p-4">
               {activeTab === "documents" && (
                 <div className="space-y-4">

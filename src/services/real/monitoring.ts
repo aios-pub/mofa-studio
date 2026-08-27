@@ -25,6 +25,7 @@ export interface AgentStatus {
 export interface ActivityEvent {
   id: string;
   type: string;  // WebSocket events use 'type', REST API uses 'event_type'
+  title?: string;
   agent_id?: string;
   agent_name?: string;
   user_id?: string;

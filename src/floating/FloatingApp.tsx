@@ -804,9 +804,13 @@ export default function FloatingApp() {  const { t } = useTranslation();
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}
         onContextMenu={handleContextMenu}
+        // WebKit starts an HTML5 image-drag (ghost sprite follows the
+        // cursor) whenever the native window-drag session is a tick late;
+        // abort that path at the source.
+        onDragStart={(event) => event.preventDefault()}
         aria-label={expanded ? "收起菜单" : "展开菜单"}
       >
-        <img src="/mofa512.png" alt="mofa-studio" />
+        <img src="/mofa512.png" alt="mofa-studio" draggable={false} />
 
         <div className="pet-effects">
           {particles.map((p) => (
@@ -836,9 +840,9 @@ export default function FloatingApp() {  const { t } = useTranslation();
           className="floating-menu"
           style={getMenuStyle(menuPlacement)}
         >
-          <div className="floating-menu-header">
-            <div className="floating-menu-title">
-              <img src="/mofa512.png" alt="mofa-studio" />
+            <div className="floating-menu-header">
+              <div className="floating-menu-title">
+                <img src="/mofa512.png" alt="mofa-studio" draggable={false} />
               <div>
                 <div className="floating-menu-name">mofa-studio</div>
                 <div className="floating-menu-subtitle">{t("你的桌面伙伴")}</div>

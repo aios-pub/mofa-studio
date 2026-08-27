@@ -291,10 +291,23 @@ export default function FloatingApp() {  const { t } = useTranslation();
     if (!appWindow) return;
 
     const env = await getPetEnv();
-    if (!env) return;
-    const bounds = env.monitor;
-    const position = { x: env.frame.x, y: env.frame.y };
-    const size = { width: env.frame.width, height: env.frame.height };
+    // The monitor is null whenever the ball centre left every display
+    // (dragged past an edge), which is exactly when the snap matters most —
+    // fall back to the JS screen object so release ALWAYS pulls the ball
+    // back on-screen instead of stranding it off-screen.
+    const bounds = env?.monitor ?? {
+      x: 0,
+      y: 0,
+      width: window.screen.width,
+      height: window.screen.height,
+    };
+    const position = env
+      ? { x: env.frame.x, y: env.frame.y }
+      : {
+          x: window.screen.width - BALL_SIZE - 50,
+          y: Math.round(window.screen.height / 2 - BALL_SIZE / 2),
+        };
+    const size = env?.frame ?? { width: BALL_SIZE, height: BALL_SIZE };
 
     let targetX = position.x;
     let targetY = position.y;

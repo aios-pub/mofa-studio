@@ -467,6 +467,10 @@ pub fn run() {
                             // Basic transparency settings
                             ns_window.setOpaque(false);
                             ns_window.setBackgroundColor(Some(&NSColor::clearColor()));
+                            // Belt and braces: config `shadow: false` should
+                            // cover this, but a window shadow here would read
+                            // as a square frame against light backgrounds.
+                            ns_window.setHasShadow(false);
                             ns_window.setAcceptsMouseMovedEvents(true);
                             ns_window.setIgnoresMouseEvents(false);
                             ns_window.setStyleMask(NSWindowStyleMask::Borderless);

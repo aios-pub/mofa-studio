@@ -698,10 +698,20 @@ export default function FloatingApp() {  const { t } = useTranslation();
 
         const env = await getPetEnv();
         const frame = env?.frame;
-        const monitor = env?.monitor;
-        if (!frame || !monitor) return;
+        // monitor is null whenever the ball centre sits off-screen (e.g. it
+        // was dragged below the display) — fall back to the JS screen object
+        // so recovery never bails out and strands the ball off-screen.
+        const monitor =
+          env?.monitor ??
+          {
+            x: 0,
+            y: 0,
+            width: window.screen.width,
+            height: window.screen.height,
+          };
 
         const isOffScreen =
+          !frame ||
           frame.x < monitor.x - BALL_SIZE ||
           frame.x > monitor.x + monitor.width ||
           frame.y < monitor.y - BALL_SIZE ||

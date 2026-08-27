@@ -177,13 +177,19 @@ export default function FloatingApp() {  const { t } = useTranslation();
     return getCurrentWindow();
   }, []);
 
-  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
+  // Drag is driven entirely from JS: pointer deltas are applied as absolute
+  // window frames (rAF-batched, clamped to the display). This keeps the ball
+  // impossible to strand off-screen and avoids the synthetic-event race of
+  // the old native drag session.
+  const dragCursorRef = useRef<{ x: number; y: number } | null>(null);
+  const dragWinOriginRef = useRef<{ x: number; y: number } | null>(null);
+  const dragLatestRef = useRef<{ x: number; y: number } | null>(null);
+  const dragFrameRef = useRef<number | null>(null);
   const ballRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const contextMenuRef = useRef<HTMLDivElement | null>(null);
   const isDraggingRef = useRef(false);
   const isMouseDownRef = useRef(false);
-  const dragTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const particleIdRef = useRef(0);
   const bubbleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -546,59 +552,78 @@ export default function FloatingApp() {  const { t } = useTranslation();
 
   // ========== Event handling ==========
 
+  const DRAG_THRESHOLD_PX = 4;
+
+  const enterDraggingState = () => {
+    isDraggingRef.current = true;
+    setPetState("dragging");
+    // Show dragging message while dragging
+    showBubbleMessage(getRandomMessage("dragging"), 3000);
+  };
+
   const handlePointerDown = (event: ReactPointerEvent) => {
     if (!appWindow || expanded || event.button !== 0) return;
 
     isDraggingRef.current = false;
     isMouseDownRef.current = true;
-    dragStartRef.current = { x: event.clientX, y: event.clientY };
-
-    dragTimerRef.current = setTimeout(() => {
-      if (isMouseDownRef.current && !isDraggingRef.current) {
-        isDraggingRef.current = true;
-        setPetState("dragging");
-        // Show dragging message while dragging
-        showBubbleMessage(getRandomMessage("dragging"), 3000);
-        void petCall("start_window_drag");
-      }
-    }, 300);
+    // Anchor cursor and window origin synchronously so every move computes
+    // an absolute frame — a dropped event can never desync the position.
+    dragCursorRef.current = { x: event.clientX, y: event.clientY };
+    dragWinOriginRef.current = { x: window.screenX, y: window.screenY };
+    // Capture the pointer so move events keep flowing after the cursor
+    // leaves the ball bounds (required for the JS-driven drag).
+    try {
+      (event.currentTarget as Element).setPointerCapture(event.pointerId);
+    } catch {
+      /* capture unsupported — drag still works while over the ball */
+    }
   };
 
   const handlePointerMove = (event: ReactPointerEvent) => {
     if (!appWindow || expanded || !isMouseDownRef.current) return;
 
-    const start = dragStartRef.current;
-    if (!start) return;
+    const anchor = dragCursorRef.current;
+    const origin = dragWinOriginRef.current;
+    if (!anchor || !origin) return;
 
-    const dx = event.clientX - start.x;
-    const dy = event.clientY - start.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
+    const dx = event.clientX - anchor.x;
+    const dy = event.clientY - anchor.y;
+    if (!isDraggingRef.current && Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
+    if (!isDraggingRef.current) enterDraggingState();
 
-    if (distance > 15 && !isDraggingRef.current) {
-      if (dragTimerRef.current) {
-        clearTimeout(dragTimerRef.current);
-        dragTimerRef.current = null;
-      }
-      isDraggingRef.current = true;
-      setPetState("dragging");
-      // Show dragging message while dragging
-      showBubbleMessage(getRandomMessage("dragging"), 3000);
-      void petCall("start_window_drag");
-    }
+    // Clamp inside the display: the ball cannot leave the screen mid-drag.
+    const targetX = clamp(origin.x + dx, 0, Math.max(0, window.screen.width - BALL_SIZE));
+    const targetY = clamp(origin.y + dy, 0, Math.max(0, window.screen.height - BALL_SIZE));
+    dragLatestRef.current = { x: targetX, y: targetY };
+
+    if (dragFrameRef.current !== null) return;
+    dragFrameRef.current = requestAnimationFrame(() => {
+      dragFrameRef.current = null;
+      const latest = dragLatestRef.current;
+      if (!latest) return;
+      void petCall("pet_set_frame", {
+        x: latest.x,
+        y: latest.y,
+        width: BALL_SIZE,
+        height: BALL_SIZE,
+      });
+    });
   };
 
   const handlePointerUp = async () => {
     if (!appWindow || expanded) return;
 
-    if (dragTimerRef.current) {
-      clearTimeout(dragTimerRef.current);
-      dragTimerRef.current = null;
+    isMouseDownRef.current = false;
+    if (dragFrameRef.current !== null) {
+      cancelAnimationFrame(dragFrameRef.current);
+      dragFrameRef.current = null;
     }
 
     const wasDragging = isDraggingRef.current;
-    isMouseDownRef.current = false;
-    dragStartRef.current = null;
     isDraggingRef.current = false;
+    dragCursorRef.current = null;
+    dragWinOriginRef.current = null;
+    dragLatestRef.current = null;
 
     if (wasDragging) {
       setPetState("idle");
@@ -615,10 +640,6 @@ export default function FloatingApp() {  const { t } = useTranslation();
 
   const handleDoubleClick = async () => {
     if (expanded) return;
-    if (dragTimerRef.current) {
-      clearTimeout(dragTimerRef.current);
-      dragTimerRef.current = null;
-    }
     isDraggingRef.current = false;
     isMouseDownRef.current = false;
     await toggleMenu();
@@ -761,7 +782,6 @@ export default function FloatingApp() {  const { t } = useTranslation();
       if (bubbleTimeoutRef.current) clearTimeout(bubbleTimeoutRef.current);
       if (stateTimeoutRef.current) clearTimeout(stateTimeoutRef.current);
       if (idleBubbleTimerRef.current) clearTimeout(idleBubbleTimerRef.current);
-      if (dragTimerRef.current) clearTimeout(dragTimerRef.current);
     };
   }, []);
 

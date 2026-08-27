@@ -24,18 +24,33 @@ const init = async () => {
       if (label === "main") {
         // Rounded window shell (see globals.css) plus square-off tracking
         document.documentElement.classList.add("tauri-window");
+        // Window-state tracking: resize events can arrive in bursts (and the
+        // isMaximized/isFullscreen round-trips hop through the main thread),
+        // so debounce and keep at most one query in flight — otherwise the
+        // pending IPC queue grows without bound and starves the whole app.
+        let shellQueryInFlight = false;
+        let shellDebounce: ReturnType<typeof setTimeout> | undefined;
         const syncShellChrome = () => {
+          if (shellQueryInFlight) return;
+          shellQueryInFlight = true;
           void Promise.all([
             appWindow.isMaximized(),
             appWindow.isFullscreen(),
-          ]).then(([maximized, fullscreen]) => {
-            document.documentElement.classList.toggle(
-              "window-maximized",
-              maximized || fullscreen,
-            );
-          });
+          ])
+            .then(([maximized, fullscreen]) => {
+              document.documentElement.classList.toggle(
+                "window-maximized",
+                maximized || fullscreen,
+              );
+            })
+            .finally(() => {
+              shellQueryInFlight = false;
+            });
         };
-        void appWindow.onResized(syncShellChrome);
+        void appWindow.onResized(() => {
+          clearTimeout(shellDebounce);
+          shellDebounce = setTimeout(syncShellChrome, 150);
+        });
         syncShellChrome();
 
         RootApp = (

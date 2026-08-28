@@ -9,6 +9,9 @@ import i18n from "../i18n";
 // the jsdom navigator language. Set synchronously at module scope — inside
 // beforeAll it loses the race against the first component render.
 (i18n as unknown as { language: string }).language = "zh-CN";
+// Prevent the LanguageDetector from overriding our forced zh-CN.
+// The detector checks localStorage first, so pre-populate it.
+localStorage.setItem("mofa-studio-language", "zh-CN");
 
 // Test-isolation guard: a late poll timer can fire after teardown and call
 // window.dispatchEvent while jsdom is partially torn down, which crashes the
@@ -38,6 +41,20 @@ beforeAll(() => {
       dispatchEvent: vi.fn(),
     })),
   });
+  // Force navigator.language to zh-CN so i18next's LanguageDetector picks zh-CN
+  // instead of en-US (which would override our explicit language setting).
+  Object.defineProperty(navigator, "language", {
+    writable: true,
+    value: "zh-CN",
+    configurable: true,
+  });
+  Object.defineProperty(navigator, "languages", {
+    writable: true,
+    value: ["zh-CN", "zh", "en-US"],
+    configurable: true,
+  });
+  // Re-lock language after LanguageDetector may have run and switched to en-US.
+  void i18n.changeLanguage("zh-CN");
   class ResizeObserverStub {
     observe() {}
     unobserve() {}
@@ -56,4 +73,8 @@ afterEach(() => {
   // skills, saved commands, history) would flip later files' UI states.
   localStorage.clear();
   sessionStorage.clear();
+  // Re-lock language to zh-CN after localStorage is cleared, since the
+  // LanguageDetector reads from localStorage and would otherwise fall back
+  // to navigator (en-US in jsdom).
+  void i18n.changeLanguage("zh-CN");
 });

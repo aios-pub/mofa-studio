@@ -106,7 +106,7 @@ export default function ExpertsPage() {
       description={t('以什么身份、什么视角处理 —— 召唤后整段对话按该专家的人设与方法作答')}
       headerActions={
         <Space>
-          <Button icon={<UserAddOutlined />} onClick={() => setCreating(true)}>
+          <Button icon={<UserAddOutlined />} onClick={() => setCreating(true)} aria-label={t('创建我的专家')}>
             {t('我的专家')}
           </Button>
           <Button icon={<PlusOutlined />} onClick={() => importRef.current?.click()}>
@@ -174,15 +174,21 @@ export default function ExpertsPage() {
               {expert.methodology}
             </Text>
             <div className="flex gap-2 pt-1 border-t border-[var(--color-border)]">
-              <Button type="primary" size="small" onClick={() => summon(expert)}>
-                {t('召唤进对话')}
+              <Button
+                type="primary"
+                size="small"
+                aria-label={t('召唤 {{p0}}', { p0: expert.name })}
+                onClick={() => summon(expert)}
+              >
+                {t('召唤 {{p0}}', { p0: expert.name })}
               </Button>
               <Button
                 size="small"
                 icon={<ExportOutlined />}
+                aria-label={t('导出 {{p0}}', { p0: expert.name })}
                 onClick={() => downloadCard(expert)}
               >
-                {t('分享')}
+                {t('导出 {{p0}}', { p0: expert.name })}
               </Button>
               {!expert.builtin && (
                 <Button
@@ -215,30 +221,35 @@ export default function ExpertsPage() {
       >
         <div className="space-y-3 py-4">
           <div>
-            <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
+            <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1" htmlFor="expert-draft-name">
               {t('名称 *')}
             </label>
             <Input
+              id="expert-draft-name"
+              aria-label={t('专家名称')}
               value={draft.name}
               onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
               placeholder={t('例如：跨境电商运营')}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
+            <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1" htmlFor="expert-draft-industry">
               {t('行业')}
             </label>
             <Input
+              id="expert-draft-industry"
               value={draft.industry}
               onChange={(e) => setDraft((d) => ({ ...d, industry: e.target.value }))}
               placeholder={t('例如：电商')}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
+            <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1" htmlFor="expert-draft-persona">
               {t('人设 *（它是谁、怎么说话）')}
             </label>
             <Input.TextArea
+              id="expert-draft-persona"
+              aria-label={t('专家人设')}
               value={draft.persona}
               onChange={(e) => setDraft((d) => ({ ...d, persona: e.target.value }))}
               rows={3}
@@ -246,10 +257,11 @@ export default function ExpertsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
+            <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1" htmlFor="expert-draft-methodology">
               {t('方法论（怎么干活）')}
             </label>
             <Input.TextArea
+              id="expert-draft-methodology"
               value={draft.methodology}
               onChange={(e) => setDraft((d) => ({ ...d, methodology: e.target.value }))}
               rows={3}

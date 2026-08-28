@@ -1106,7 +1106,7 @@
   "导出 csv": "Export csv",
   "导出 pptx": "Export pptx",
   "导出 xlsx": "Export xlsx",
-  "导出 {{p0}}": "Export{{p0}}",
+  "导出 {{p0}}": "Export {{p0}}",
   "导出为 OpenAPI 3.0 规范格式": "Export as OpenAPI 3.0 spec",
   "导出为 Postman Collection v2.1 格式": "Export as Postman Collection v2.1",
   "导出失败：{{p0}}": "Export failed：{{p0}}",
@@ -2278,5 +2278,13 @@
   "默认模型（可修改）": "Default model (editable)",
   "（时长约 {{p0}}）": "(about {{p0}})",
   "👋 退出应用": "👋 Quit",
-  "版本历史（{{id}}）": "Version history ({{id}})"
+  "版本历史（{{id}}）": "Version history ({{id}})",
+  "召唤进对话": "Summon",
+  "分享": "Share",
+  "我的专家": "My Experts",
+  "人设": "Persona",
+  "方法论": "Methodology",
+  "描述专家的角色和说话风格": "Describe the expert's role and speaking style",
+  "描述专家的工作方法和流程": "Describe the expert's workflow and approach",
+  "以什么身份、什么视角处理 —— 召唤后整段对话按该专家的人设与方法作答": "Choose your identity and perspective — after summoning, all responses follow the expert's persona and methodology"
 }
